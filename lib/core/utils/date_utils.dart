@@ -1,13 +1,33 @@
 import 'package:intl/intl.dart';
 
 class GameDateUtils {
-  /// Returns today's level ID format, e.g. "2026-08-17"
-  static String getTodayLevelId() {
-    final now = DateTime.now();
-    return DateFormat('yyyy-MM-dd').format(now);
+  static int _dayOffset = 0;
+
+  /// Gün simülatörü için gün ötelemesini döndürür
+  static int get dayOffset => _dayOffset;
+
+  /// Gün ötelemesini bir gün ileri alır
+  static void advanceToNextDay() {
+    _dayOffset++;
   }
 
-  /// Formats date for display in Turkish, e.g. "17 Ağustos 2026"
+  /// Gün ötelemesini sıfırlar
+  static void resetDayOffset() {
+    _dayOffset = 0;
+  }
+
+  /// Mevcut aktif tarihi (gün ötelemesi uygulanmış) döner
+  static DateTime getActiveDate() {
+    return DateTime.now().add(Duration(days: _dayOffset));
+  }
+
+  /// Returns today's level ID format, e.g. "2026-08-20"
+  static String getTodayLevelId() {
+    final active = getActiveDate();
+    return DateFormat('yyyy-MM-dd').format(active);
+  }
+
+  /// Formats date for display in Turkish, e.g. "20 Ağustos 2026"
   static String getFormattedDate(DateTime date) {
     final months = [
       'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',

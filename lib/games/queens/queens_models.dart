@@ -1,26 +1,30 @@
 import 'package:flutter/material.dart';
-import '../../core/theme/app_theme.dart';
+import '../../core/theme/app_colors.dart';
 
-enum CellContent { empty, cross, queen }
+enum CellContent {
+  empty,
+  cross,
+  queen,
+}
 
 enum QueensDifficulty {
-  basit(
-    label: 'BASİT',
-    gridSize: 5,
-    color: AppColors.accentCyan,
-    description: '5x5 - Kolay mantıksal başlangıç',
-  ),
-  temel(
-    label: 'TEMEL',
+  kolay(
+    label: 'KOLAY',
     gridSize: 6,
+    color: AppColors.accentCyan,
+    description: '6x6 - Net mantıksal bloklar',
+  ),
+  orta(
+    label: 'ORTA',
+    gridSize: 8,
     color: AppColors.accentPurple,
-    description: '6x6 - Dengeli mantık bulmacası',
+    description: '8x8 - Dengeli kısıtlar',
   ),
   zor(
     label: 'ZOR',
-    gridSize: 8,
+    gridSize: 9,
     color: AppColors.accentOrange,
-    description: '8x8 - İleri düzey eleme stratejisi',
+    description: '9x9 - İleri düzey girintili bölgeler',
   );
 
   final String label;
@@ -42,6 +46,7 @@ class QueensCell {
   final int regionId;
   CellContent content;
   bool isConflict;
+  bool isHighlighted;
 
   QueensCell({
     required this.row,
@@ -49,21 +54,70 @@ class QueensCell {
     required this.regionId,
     this.content = CellContent.empty,
     this.isConflict = false,
+    this.isHighlighted = false,
   });
+
+  QueensCell copyWith({
+    int? row,
+    int? col,
+    int? regionId,
+    CellContent? content,
+    bool? isConflict,
+    bool? isHighlighted,
+  }) {
+    return QueensCell(
+      row: row ?? this.row,
+      col: col ?? this.col,
+      regionId: regionId ?? this.regionId,
+      content: content ?? this.content,
+      isConflict: isConflict ?? this.isConflict,
+      isHighlighted: isHighlighted ?? this.isHighlighted,
+    );
+  }
 }
 
 class QueensLevel {
   final String id;
   final int gridSize;
   final QueensDifficulty difficulty;
-  final List<List<int>> regionMap; // Grid size N x N mapping region IDs (0 to N-1)
-  final List<List<int>> solution; // Array of [row, col] for correct queen positions
+  final List<List<int>> regionMap; // N x N grid containing region IDs (0 .. N-1)
+  final List<List<int>> solution; // Array of [row, col] positions for queens
 
-  QueensLevel({
+  const QueensLevel({
     required this.id,
     required this.gridSize,
     required this.difficulty,
     required this.regionMap,
     required this.solution,
   });
+}
+
+/// Sınır hesaplamaları (LinkedIn tarzı kalın ve ince çizgiler için)
+class CellBorders {
+  final bool hasTopBorder;
+  final bool hasBottomBorder;
+  final bool hasLeftBorder;
+  final bool hasRightBorder;
+
+  const CellBorders({
+    required this.hasTopBorder,
+    required this.hasBottomBorder,
+    required this.hasLeftBorder,
+    required this.hasRightBorder,
+  });
+
+  static CellBorders compute(List<List<int>> regionMap, int r, int c, int size) {
+    final currentRegion = regionMap[r][c];
+    final top = r == 0 || regionMap[r - 1][c] != currentRegion;
+    final bottom = r == size - 1 || regionMap[r + 1][c] != currentRegion;
+    final left = c == 0 || regionMap[r][c - 1] != currentRegion;
+    final right = c == size - 1 || regionMap[r][c + 1] != currentRegion;
+
+    return CellBorders(
+      hasTopBorder: top,
+      hasBottomBorder: bottom,
+      hasLeftBorder: left,
+      hasRightBorder: right,
+    );
+  }
 }

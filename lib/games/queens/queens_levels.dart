@@ -5,7 +5,6 @@ class QueensDifficultyScheduler {
   static final DateTime _epoch = DateTime(2026, 1, 1);
 
   /// Günlük seviye ID'sinden (örn. "2026-08-18") o günün zorluğunu belirler.
-  /// Kural: Hiçbir zorluk art arda 2 günden fazla (en fazla 2 gün) gelmez.
   static QueensDifficulty getDifficultyForDate(String levelId) {
     DateTime date;
     try {
@@ -22,7 +21,7 @@ class QueensDifficultyScheduler {
     final rand = Random(202608);
     QueensDifficulty? prev1;
     QueensDifficulty? prev2;
-    QueensDifficulty current = QueensDifficulty.basit;
+    QueensDifficulty current = QueensDifficulty.kolay;
 
     final count = days.abs();
     for (int i = 0; i <= count; i++) {
@@ -40,134 +39,111 @@ class QueensDifficultyScheduler {
 
 class QueensLevelRepository {
   // ==========================================
-  // 1. BASİT (5x5) SEVİYELER - %100 MANTIKLA ÇÖZÜLEBİLİR
+  // 1. KOLAY (6x6) SEVİYELER - %100 SAF MANTIKLA ÇÖZÜLEBİLİR
   // ==========================================
-  static const List<Map<String, dynamic>> _basitPresets = [
-    // B1: Çözüm: (0,3), (1,0), (2,2), (3,4), (4,1)
-    {
-      'gridSize': 5,
-      'regionMap': [
-        [1, 0, 0, 0, 3],
-        [1, 1, 0, 3, 3],
-        [1, 2, 2, 2, 3],
-        [4, 4, 2, 3, 3],
-        [4, 4, 4, 4, 3],
-      ],
-      'solution': [[0, 3], [1, 0], [2, 2], [3, 4], [4, 1]],
-    },
-    // B2: Çözüm: (0,2), (1,4), (2,0), (3,3), (4,1)
-    {
-      'gridSize': 5,
-      'regionMap': [
-        [0, 0, 0, 1, 1],
-        [2, 0, 0, 1, 1],
-        [2, 2, 3, 3, 1],
-        [2, 4, 3, 3, 3],
-        [4, 4, 4, 4, 3],
-      ],
-      'solution': [[0, 2], [1, 4], [2, 0], [3, 3], [4, 1]],
-    },
-    // B3: Çözüm: (0,1), (1,3), (2,0), (3,4), (4,2)
-    {
-      'gridSize': 5,
-      'regionMap': [
-        [0, 0, 1, 1, 1],
-        [2, 0, 1, 1, 3],
-        [2, 2, 4, 3, 3],
-        [2, 4, 4, 3, 3],
-        [4, 4, 4, 4, 3],
-      ],
-      'solution': [[0, 1], [1, 3], [2, 0], [3, 4], [4, 2]],
-    },
-    // B4: Çözüm: (0,4), (1,1), (2,3), (3,0), (4,2)
-    {
-      'gridSize': 5,
-      'regionMap': [
-        [1, 1, 0, 0, 0],
-        [1, 1, 2, 0, 0],
-        [3, 1, 2, 2, 2],
-        [3, 3, 4, 2, 2],
-        [3, 4, 4, 4, 4],
-      ],
-      'solution': [[0, 4], [1, 1], [2, 3], [3, 0], [4, 2]],
-    },
-    // B5: Çözüm: (0,1), (1,4), (2,2), (3,0), (4,3)
-    {
-      'gridSize': 5,
-      'regionMap': [
-        [0, 0, 0, 1, 1],
-        [3, 0, 2, 1, 1],
-        [3, 2, 2, 2, 4],
-        [3, 3, 2, 4, 4],
-        [3, 3, 4, 4, 4],
-      ],
-      'solution': [[0, 1], [1, 4], [2, 2], [3, 0], [4, 3]],
-    },
-  ];
-
-  // ==========================================
-  // 2. TEMEL (6x6) SEVİYELER - DENGELİ MANTIK BULMACALARI
-  // ==========================================
-  static const List<Map<String, dynamic>> _temelPresets = [
-    // T1: Çözüm: (0,4), (1,1), (2,3), (3,5), (4,0), (5,2)
+  static const List<Map<String, dynamic>> _kolayPresets = [
+    // K1: Çözüm: (0,0), (1,3), (2,1), (3,4), (4,2), (5,5)
     {
       'gridSize': 6,
       'regionMap': [
-        [1, 1, 0, 0, 0, 3],
-        [1, 1, 0, 0, 3, 3],
-        [4, 1, 2, 2, 3, 3],
-        [4, 4, 2, 2, 3, 3],
-        [4, 4, 5, 5, 5, 3],
-        [4, 5, 5, 5, 5, 5],
+        [0, 0, 1, 1, 1, 1],
+        [0, 0, 1, 1, 1, 1],
+        [0, 2, 2, 2, 1, 3],
+        [2, 2, 2, 2, 3, 3],
+        [2, 2, 4, 4, 3, 5],
+        [4, 4, 4, 4, 3, 5],
       ],
-      'solution': [[0, 4], [1, 1], [2, 3], [3, 5], [4, 0], [5, 2]],
+      'solution': [[0, 0], [1, 3], [2, 1], [3, 4], [4, 2], [5, 5]],
     },
-    // T2: Çözüm: (0,2), (1,5), (2,0), (3,3), (4,1), (5,4)
+    // K2: Çözüm: (0,2), (1,0), (2,3), (3,5), (4,1), (5,4)
     {
       'gridSize': 6,
       'regionMap': [
-        [0, 0, 0, 1, 1, 1],
-        [2, 0, 0, 1, 1, 1],
-        [2, 2, 3, 3, 3, 1],
-        [2, 4, 3, 3, 5, 5],
-        [4, 4, 4, 5, 5, 5],
-        [4, 4, 5, 5, 5, 5],
-      ],
-      'solution': [[0, 2], [1, 5], [2, 0], [3, 3], [4, 1], [5, 4]],
-    },
-    // T3: Çözüm: (0,3), (1,0), (2,5), (3,2), (4,4), (5,1)
-    {
-      'gridSize': 6,
-      'regionMap': [
-        [1, 0, 0, 0, 2, 2],
+        [1, 1, 0, 0, 0, 2],
         [1, 1, 0, 2, 2, 2],
-        [1, 3, 3, 2, 2, 2],
-        [5, 3, 3, 4, 4, 2],
-        [5, 5, 3, 4, 4, 4],
-        [5, 5, 5, 5, 4, 4],
+        [1, 1, 0, 2, 2, 2],
+        [1, 4, 4, 4, 5, 3],
+        [1, 4, 4, 4, 5, 3],
+        [1, 4, 4, 4, 5, 3],
       ],
-      'solution': [[0, 3], [1, 0], [2, 5], [3, 2], [4, 4], [5, 1]],
+      'solution': [[0, 2], [1, 0], [2, 3], [3, 5], [4, 1], [5, 4]],
     },
-    // T4: Çözüm: (0,1), (1,4), (2,2), (3,5), (4,3), (5,0)
+    // K3: Çözüm: (0,2), (1,5), (2,3), (3,1), (4,4), (5,0)
     {
       'gridSize': 6,
       'regionMap': [
-        [0, 0, 0, 1, 1, 1],
-        [0, 0, 2, 1, 1, 3],
-        [5, 2, 2, 2, 3, 3],
-        [5, 5, 2, 4, 4, 3],
-        [5, 5, 4, 4, 4, 3],
+        [3, 0, 0, 0, 1, 1],
+        [3, 3, 0, 2, 1, 1],
+        [3, 3, 2, 2, 4, 4],
+        [5, 3, 3, 4, 4, 4],
+        [5, 5, 5, 4, 4, 4],
         [5, 5, 5, 4, 4, 4],
       ],
-      'solution': [[0, 1], [1, 4], [2, 2], [3, 5], [4, 3], [5, 0]],
+      'solution': [[0, 2], [1, 5], [2, 3], [3, 1], [4, 4], [5, 0]],
+    },
+    // K4: Çözüm: (0,0), (1,2), (2,4), (3,1), (4,3), (5,5)
+    {
+      'gridSize': 6,
+      'regionMap': [
+        [0, 0, 0, 1, 1, 2],
+        [0, 1, 1, 1, 1, 2],
+        [0, 1, 1, 1, 2, 2],
+        [3, 3, 3, 2, 2, 2],
+        [3, 3, 3, 4, 4, 4],
+        [3, 3, 4, 4, 5, 5],
+      ],
+      'solution': [[0, 0], [1, 2], [2, 4], [3, 1], [4, 3], [5, 5]],
+    },
+    // K5: Çözüm: (0,0), (1,4), (2,1), (3,3), (4,5), (5,2)
+    {
+      'gridSize': 6,
+      'regionMap': [
+        [0, 0, 3, 1, 1, 1],
+        [0, 2, 3, 1, 1, 1],
+        [0, 2, 3, 1, 1, 1],
+        [0, 2, 3, 3, 4, 4],
+        [0, 5, 5, 4, 4, 4],
+        [5, 5, 5, 4, 4, 4],
+      ],
+      'solution': [[0, 0], [1, 4], [2, 1], [3, 3], [4, 5], [5, 2]],
     },
   ];
 
   // ==========================================
-  // 3. ZOR (8x8) SEVİYELER - İLERİ DÜZEY ELEME STRATEJİSİ
+  // 2. ORTA (8x8) SEVİYELER - DENGELİ KISITLAR
   // ==========================================
-  static const List<Map<String, dynamic>> _zorPresets = [
-    // Z1: Çözüm: (0,3), (1,6), (2,0), (3,5), (4,7), (5,1), (6,4), (7,2)
+  static const List<Map<String, dynamic>> _ortaPresets = [
+    // O1: Çözüm: (0,6), (1,4), (2,7), (3,5), (4,1), (5,3), (6,0), (7,2)
+    {
+      'gridSize': 8,
+      'regionMap': [
+        [4, 1, 1, 1, 1, 1, 0, 0],
+        [4, 4, 5, 5, 1, 1, 0, 2],
+        [4, 4, 5, 5, 1, 3, 3, 2],
+        [4, 4, 4, 5, 5, 3, 3, 3],
+        [4, 4, 4, 5, 5, 5, 3, 3],
+        [6, 6, 6, 5, 7, 7, 3, 3],
+        [6, 6, 6, 7, 7, 7, 3, 3],
+        [7, 7, 7, 7, 7, 7, 7, 3],
+      ],
+      'solution': [[0, 6], [1, 4], [2, 7], [3, 5], [4, 1], [5, 3], [6, 0], [7, 2]],
+    },
+    // O2: Çözüm: (0,6), (1,3), (2,7), (3,5), (4,0), (5,2), (6,4), (7,1)
+    {
+      'gridSize': 8,
+      'regionMap': [
+        [1, 1, 1, 1, 1, 0, 0, 0],
+        [1, 1, 1, 1, 1, 0, 0, 0],
+        [1, 1, 1, 1, 2, 2, 2, 2],
+        [1, 1, 1, 1, 1, 3, 2, 2],
+        [4, 4, 4, 3, 3, 3, 2, 2],
+        [4, 4, 5, 5, 5, 3, 3, 3],
+        [4, 4, 5, 7, 6, 6, 6, 3],
+        [4, 7, 7, 7, 6, 6, 6, 6],
+      ],
+      'solution': [[0, 6], [1, 3], [2, 7], [3, 5], [4, 0], [5, 2], [6, 4], [7, 1]],
+    },
+    // O3: Çözüm: (0,3), (1,6), (2,0), (3,5), (4,7), (5,1), (6,4), (7,2)
     {
       'gridSize': 8,
       'regionMap': [
@@ -182,7 +158,7 @@ class QueensLevelRepository {
       ],
       'solution': [[0, 3], [1, 6], [2, 0], [3, 5], [4, 7], [5, 1], [6, 4], [7, 2]],
     },
-    // Z2: Çözüm: (0,2), (1,5), (2,7), (3,0), (4,3), (5,6), (6,4), (7,1)
+    // O4: Çözüm: (0,2), (1,5), (2,7), (3,0), (4,3), (5,6), (6,4), (7,1)
     {
       'gridSize': 8,
       'regionMap': [
@@ -197,43 +173,78 @@ class QueensLevelRepository {
       ],
       'solution': [[0, 2], [1, 5], [2, 7], [3, 0], [4, 3], [5, 6], [6, 4], [7, 1]],
     },
-    // Z3: Çözüm: (0,4), (1,1), (2,7), (3,5), (4,2), (5,0), (6,6), (7,3)
+  ];
+
+  // ==========================================
+  // 3. ZOR (9x9) SEVİYELER - İLERİ DÜZEY GİRİNTİLİ BÖLGELER
+  // ==========================================
+  static const List<Map<String, dynamic>> _zorPresets = [
+    // Z1: Çözüm: (0,4), (1,7), (2,1), (3,8), (4,5), (5,2), (6,0), (7,3), (8,6)
     {
-      'gridSize': 8,
+      'gridSize': 9,
       'regionMap': [
-        [1, 1, 0, 0, 0, 0, 2, 2],
-        [1, 1, 1, 0, 0, 2, 2, 2],
-        [1, 1, 4, 4, 3, 3, 2, 2],
-        [5, 4, 4, 4, 3, 3, 3, 2],
-        [5, 5, 4, 4, 3, 3, 6, 6],
-        [5, 5, 5, 7, 7, 6, 6, 6],
-        [5, 5, 7, 7, 7, 6, 6, 6],
-        [7, 7, 7, 7, 7, 7, 6, 6],
+        [0, 0, 0, 0, 0, 1, 1, 1, 1],
+        [2, 0, 0, 0, 1, 1, 1, 1, 1],
+        [2, 2, 3, 3, 3, 4, 4, 1, 1],
+        [2, 2, 3, 3, 3, 4, 4, 4, 4],
+        [2, 5, 5, 5, 3, 4, 4, 4, 4],
+        [2, 5, 5, 5, 6, 6, 6, 4, 4],
+        [7, 7, 5, 5, 6, 6, 6, 8, 8],
+        [7, 7, 7, 7, 6, 6, 6, 8, 8],
+        [7, 7, 7, 7, 7, 7, 8, 8, 8],
       ],
-      'solution': [[0, 4], [1, 1], [2, 7], [3, 5], [4, 2], [5, 0], [6, 6], [7, 3]],
+      'solution': [[0, 4], [1, 7], [2, 1], [3, 8], [4, 5], [5, 2], [6, 0], [7, 3], [8, 6]],
+    },
+    // Z2: Çözüm: (0,2), (1,5), (2,8), (3,1), (4,4), (5,7), (6,0), (7,3), (8,6)
+    {
+      'gridSize': 9,
+      'regionMap': [
+        [0, 0, 0, 1, 1, 1, 2, 2, 2],
+        [0, 0, 0, 1, 1, 1, 2, 2, 2],
+        [3, 0, 0, 1, 1, 1, 2, 2, 2],
+        [3, 3, 3, 4, 4, 4, 5, 5, 5],
+        [3, 3, 3, 4, 4, 4, 5, 5, 5],
+        [6, 3, 3, 4, 4, 4, 5, 5, 5],
+        [6, 6, 6, 7, 7, 7, 8, 8, 8],
+        [6, 6, 6, 7, 7, 7, 8, 8, 8],
+        [6, 6, 6, 7, 7, 7, 8, 8, 8],
+      ],
+      'solution': [[0, 2], [1, 5], [2, 8], [3, 1], [4, 4], [5, 7], [6, 0], [7, 3], [8, 6]],
+    },
+    // Z3: Çözüm: (0,3), (1,6), (2,0), (3,8), (4,5), (5,2), (6,7), (7,1), (8,4)
+    {
+      'gridSize': 9,
+      'regionMap': [
+        [0, 0, 0, 0, 1, 1, 1, 1, 1],
+        [2, 0, 0, 0, 1, 1, 1, 1, 1],
+        [2, 2, 3, 3, 3, 1, 1, 4, 4],
+        [2, 2, 3, 3, 3, 4, 4, 4, 4],
+        [5, 5, 5, 3, 3, 4, 4, 4, 4],
+        [5, 5, 5, 6, 6, 6, 4, 7, 7],
+        [5, 5, 6, 6, 6, 6, 7, 7, 7],
+        [8, 8, 8, 6, 6, 6, 7, 7, 7],
+        [8, 8, 8, 8, 8, 7, 7, 7, 7],
+      ],
+      'solution': [[0, 3], [1, 6], [2, 0], [3, 8], [4, 5], [5, 2], [6, 7], [7, 1], [8, 4]],
     },
   ];
 
-  /// Verilen levelId (tarih) için doğru zorlukta ve doğrulanmış seviyeyi döner
-  static QueensLevel getLevelForDate(String levelId) {
-    final difficulty = QueensDifficultyScheduler.getDifficultyForDate(levelId);
-    
-    // Seviye havuzunu seç
+  /// Verilen levelId (tarih) ve zorluk için doğrulanmış seviyeyi döner
+  static QueensLevel getLevelForDateAndDifficulty(String levelId, QueensDifficulty difficulty) {
     final List<Map<String, dynamic>> pool;
     switch (difficulty) {
-      case QueensDifficulty.basit:
-        pool = _basitPresets;
+      case QueensDifficulty.kolay:
+        pool = _kolayPresets;
         break;
-      case QueensDifficulty.temel:
-        pool = _temelPresets;
+      case QueensDifficulty.orta:
+        pool = _ortaPresets;
         break;
       case QueensDifficulty.zor:
         pool = _zorPresets;
         break;
     }
 
-    // Tarihe göre o havuzdan deterministik bir seviye seç
-    final hash = levelId.hashCode.abs();
+    final hash = (levelId + difficulty.name).hashCode.abs();
     final data = pool[hash % pool.length];
 
     return QueensLevel(
@@ -247,5 +258,11 @@ class QueensLevelRepository {
           .map((pt) => (pt as List<dynamic>).map((val) => val as int).toList())
           .toList(),
     );
+  }
+
+  /// Varsayılan günlük seviyeyi (tarihe göre programlanmış zorluk) döner
+  static QueensLevel getLevelForDate(String levelId) {
+    final difficulty = QueensDifficultyScheduler.getDifficultyForDate(levelId);
+    return getLevelForDateAndDifficulty(levelId, difficulty);
   }
 }

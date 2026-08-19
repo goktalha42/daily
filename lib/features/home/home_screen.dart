@@ -194,7 +194,7 @@ class _GamesTab extends StatefulWidget {
 class _GamesTabState extends State<_GamesTab> {
   late Timer _countdownTimer;
   Duration _timeRemaining = GameDateUtils.getTimeUntilMidnight();
-  final String _todayLevelId = GameDateUtils.getTodayLevelId();
+  String get _todayLevelId => GameDateUtils.getTodayLevelId();
 
   @override
   void initState() {
@@ -208,6 +208,21 @@ class _GamesTabState extends State<_GamesTab> {
   void dispose() {
     _countdownTimer.cancel();
     super.dispose();
+  }
+
+  void _advanceToNextDay() {
+    setState(() {
+      GameDateUtils.advanceToNextDay();
+    });
+    HapticFeedback.mediumImpact();
+    final newDateStr = GameDateUtils.getFormattedDate(GameDateUtils.getActiveDate());
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('🌅 Yeni Gün Başladı: $newDateStr! Tüm oyunlar yeni bölümlerle yenilendi.'),
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 3),
+      ),
+    );
   }
 
   void _launchGame(GameType game) {
@@ -225,7 +240,8 @@ class _GamesTabState extends State<_GamesTab> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final formattedDate = GameDateUtils.getFormattedDate(DateTime.now());
+    final activeDate = GameDateUtils.getActiveDate();
+    final formattedDate = GameDateUtils.getFormattedDate(activeDate);
 
     return CustomScrollView(
       physics: const BouncingScrollPhysics(),
@@ -244,10 +260,42 @@ class _GamesTabState extends State<_GamesTab> {
                     Text('Bento Lobi', style: theme.textTheme.headlineLarge),
                   ],
                 ),
-                CircleAvatar(
-                  radius: 24,
-                  backgroundColor: theme.colorScheme.primary.withOpacity(0.05),
-                  child: Icon(Icons.person_rounded, color: theme.colorScheme.primary, size: 26),
+                Row(
+                  children: [
+                    // Yeni Gün Butonu
+                    InkWell(
+                      onTap: _advanceToNextDay,
+                      borderRadius: BorderRadius.circular(14),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: AppColors.accentCyan.withOpacity(0.12),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: AppColors.accentCyan.withOpacity(0.3)),
+                        ),
+                        child: const Row(
+                          children: [
+                            Icon(Icons.auto_mode_rounded, size: 16, color: AppColors.accentCyan),
+                            SizedBox(width: 4),
+                            Text(
+                              'Yeni Gün',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w900,
+                                color: AppColors.accentCyan,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    CircleAvatar(
+                      radius: 20,
+                      backgroundColor: theme.colorScheme.primary.withOpacity(0.05),
+                      child: Icon(Icons.person_rounded, color: theme.colorScheme.primary, size: 22),
+                    ),
+                  ],
                 ),
               ],
             ),
