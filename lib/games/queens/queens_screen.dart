@@ -7,6 +7,8 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:uuid/uuid.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/date_utils.dart';
+import '../../core/services/game_stats_service.dart';
+import '../../core/widgets/genius_win_dialog.dart';
 import '../common/base_game.dart';
 import '../../features/leaderboard/leaderboard_service.dart';
 import 'queens_models.dart';
@@ -464,20 +466,23 @@ class _QueensScreenState extends ConsumerState<QueensScreen> {
     );
 
     ref.read(leaderboardServiceProvider).submitScore(result);
+    ref.read(gameStatsServiceProvider.notifier).recordGameResult(
+          gameType: GameType.queens,
+          score: score,
+          durationMs: _elapsedMs,
+          moveCount: _moveCount,
+        );
 
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => _WinDialog(
-        result: result,
-        difficulty: _level.difficulty,
-        onRestart: () {
-          Navigator.pop(ctx);
-          setState(() {
-            _initGame();
-          });
-        },
-      ),
+    GeniusWinDialog.show(
+      context,
+      result: result,
+      gameTitle: 'Vezirler',
+      onRestart: () {
+        Navigator.pop(context);
+        setState(() {
+          _initGame();
+        });
+      },
     );
   }
 
@@ -940,96 +945,6 @@ class _ActionButton extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-class _WinDialog extends StatelessWidget {
-  final GameResult result;
-  final QueensDifficulty difficulty;
-  final VoidCallback onRestart;
-
-  const _WinDialog({
-    required this.result,
-    required this.difficulty,
-    required this.onRestart,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      backgroundColor: AppColors.surface,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-      title: Column(
-        children: [
-          Container(
-            width: 76,
-            height: 76,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: const LinearGradient(colors: [Color(0xFFFFDF00), Color(0xFFFFB300)]),
-              boxShadow: [
-                BoxShadow(color: AppColors.warning.withOpacity(0.4), blurRadius: 20, spreadRadius: 4),
-              ],
-            ),
-            child: const Icon(Icons.workspace_premium_rounded, color: Color(0xFF5A3A00), size: 46),
-          ).animate().scale(duration: 500.ms, curve: Curves.elasticOut),
-          const SizedBox(height: 14),
-          const Text(
-            'Tebrikler! 🎉',
-            style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w900, fontSize: 22),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Günün ${difficulty.label} (${difficulty.gridSize}x${difficulty.gridSize}) Vezirler bulmacasını çözdünüz!',
-            style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-      content: Container(
-        padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(
-          color: AppColors.background,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppColors.border),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _ResultRow(label: 'Zorluk Seviyesi:', value: difficulty.label, valueColor: difficulty.color),
-            const Divider(color: AppColors.border),
-            _ResultRow(label: 'Tamamlama Süresi:', value: GameDateUtils.formatGameTime(result.durationMs)),
-            const Divider(color: AppColors.border),
-            _ResultRow(label: 'Toplam Hamle:', value: '${result.moveCount}'),
-            const Divider(color: AppColors.border),
-            _ResultRow(
-              label: 'Kazanılan Skor:',
-              value: '${result.score} P',
-              valueColor: AppColors.success,
-            ),
-          ],
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () {
-            Navigator.pop(context);
-            Navigator.pop(context);
-          },
-          child: const Text('Ana Sayfa'),
-        ),
-        ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primary,
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-          ),
-          onPressed: onRestart,
-          child: const Text('Tekrar Oyna'),
-        ),
-      ],
     );
   }
 }

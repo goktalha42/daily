@@ -5,6 +5,8 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:uuid/uuid.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/date_utils.dart';
+import '../../core/services/game_stats_service.dart';
+import '../../core/widgets/genius_win_dialog.dart';
 import '../common/base_game.dart';
 import '../../features/leaderboard/leaderboard_service.dart';
 import '../common/neo_game_layout.dart';
@@ -109,72 +111,23 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> {
     );
 
     ref.read(leaderboardServiceProvider).submitScore(result);
+    ref.read(gameStatsServiceProvider.notifier).recordGameResult(
+          gameType: GameType.crossclimb,
+          score: score,
+          durationMs: _elapsedMs,
+          moveCount: _level.steps.length,
+        );
 
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: Column(
-          children: [
-            const Icon(Icons.stairs_rounded, color: AppColors.crossclimbGame, size: 64)
-                .animate()
-                .scale(duration: 500.ms, curve: Curves.elasticOut),
-            const SizedBox(height: 12),
-            const Text(
-              'Zirveye Ulaştınız! 🧗',
-              style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              '${_level.startWord} ➔ ${_level.endWord}',
-              style: const TextStyle(fontSize: 16, color: AppColors.primaryLight, fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
-        content: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: AppColors.background,
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _WinRow(label: 'Tırmanış Süresi:', value: GameDateUtils.formatGameTime(_elapsedMs)),
-              const Divider(color: AppColors.border),
-              _WinRow(
-                label: 'Kazanılan Puan:',
-                value: '$score P',
-                valueColor: AppColors.success,
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              Navigator.pop(context);
-            },
-            child: const Text('Ana Sayfa'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.crossclimbGame,
-              foregroundColor: Colors.white,
-            ),
-            onPressed: () {
-              Navigator.pop(context);
-              setState(() {
-                _initGame();
-              });
-            },
-            child: const Text('Tekrar Oyna'),
-          ),
-        ],
-      ),
+    GeniusWinDialog.show(
+      context,
+      result: result,
+      gameTitle: 'Kelime Tırmanışı',
+      onRestart: () {
+        Navigator.pop(context);
+        setState(() {
+          _initGame();
+        });
+      },
     );
   }
 
@@ -478,31 +431,3 @@ class _LadderWordTile extends StatelessWidget {
   }
 }
 
-class _WinRow extends StatelessWidget {
-  final String label;
-  final String value;
-  final Color valueColor;
-
-  const _WinRow({
-    required this.label,
-    required this.value,
-    this.valueColor = AppColors.textPrimary,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label, style: const TextStyle(color: AppColors.textSecondary)),
-          Text(
-            value,
-            style: TextStyle(fontWeight: FontWeight.bold, color: valueColor, fontSize: 16),
-          ),
-        ],
-      ),
-    );
-  }
-}

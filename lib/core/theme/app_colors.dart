@@ -1,15 +1,23 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  // Ultra Modern Neo-Light
-  static const Color backgroundLight = Color(0xFFFAFAFC);      
+  // Ultra Modern Açık Gri Zemin
+  static const Color backgroundLight = Color(0xFFEDEFF3); // Canlı ve temiz açık gri
   static const Color surfaceLight = Color(0xFFFFFFFF);         
-  static const Color surfaceSecondaryLight = Color(0xFFF0F1F5);
+  static const Color surfaceSecondaryLight = Color(0xFFE4E7ED);
+  static const Color cardBgLight = Color(0xFFFFFFFF);
 
   // OLED Neo-Dark
-  static const Color backgroundDark = Color(0xFF000000); // True OLED Black
-  static const Color surfaceDark = Color(0xFF0D0D0F); // Very dark gray, almost black
-  static const Color surfaceSecondaryDark = Color(0xFF161619);
+  static const Color backgroundDark = Color(0xFF0F1115); // Koyu modda bile dengeli
+  static const Color surfaceDark = Color(0xFF181B20); 
+  static const Color surfaceSecondaryDark = Color(0xFF22262E);
+
+  // ADHD & Dopamin Neon Vurguları
+  static const Color geniusGold = Color(0xFFFFB800); // Dahi Altını
+  static const Color electricAmber = Color(0xFFFF7A00); // Zeka Kıvılcımı
+  static const Color dopaminePurple = Color(0xFF8B5CF6); // Yüksek Dopamin Moru
+  static const Color hyperCyan = Color(0xFF06B6D4); // Hiper Odak Turkuazı
+  static const Color supremeEmerald = Color(0xFF10B981); // Zafer Yeşili
 
   // Neon Accents
   static const Color accentPurple = Color(0xFFB983FF); // Neon Purple

@@ -5,6 +5,8 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:uuid/uuid.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/date_utils.dart';
+import '../../core/services/game_stats_service.dart';
+import '../../core/widgets/genius_win_dialog.dart';
 import '../common/base_game.dart';
 import '../../features/leaderboard/leaderboard_service.dart';
 import '../common/neo_game_layout.dart';
@@ -118,70 +120,23 @@ class _TangoScreenState extends ConsumerState<TangoScreen> {
     );
 
     ref.read(leaderboardServiceProvider).submitScore(result);
+    ref.read(gameStatsServiceProvider.notifier).recordGameResult(
+          gameType: GameType.tango,
+          score: score,
+          durationMs: _elapsedMs,
+          moveCount: _moveCount,
+        );
 
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: Column(
-          children: [
-            const Icon(Icons.wb_sunny_rounded, color: AppColors.tangoGame, size: 64)
-                .animate()
-                .scale(duration: 500.ms, curve: Curves.elasticOut),
-            const SizedBox(height: 12),
-            const Text(
-              'Güneş ve Ay Dengede! ☀️🌙',
-              style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-        content: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: AppColors.background,
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _WinRow(label: 'Çözüm Süresi:', value: GameDateUtils.formatGameTime(_elapsedMs)),
-              const Divider(color: AppColors.border),
-              _WinRow(label: 'Hamle Sayısı:', value: '$_moveCount'),
-              const Divider(color: AppColors.border),
-              _WinRow(
-                label: 'Kazanılan Puan:',
-                value: '$score P',
-                valueColor: AppColors.success,
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              Navigator.pop(context);
-            },
-            child: const Text('Ana Sayfa'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.tangoGame,
-              foregroundColor: Colors.white,
-            ),
-            onPressed: () {
-              Navigator.pop(context);
-              setState(() {
-                _initGame();
-              });
-            },
-            child: const Text('Tekrar Oyna'),
-          ),
-        ],
-      ),
+    GeniusWinDialog.show(
+      context,
+      result: result,
+      gameTitle: 'Güneş & Ay',
+      onRestart: () {
+        Navigator.pop(context);
+        setState(() {
+          _initGame();
+        });
+      },
     );
   }
 
@@ -382,31 +337,3 @@ class _Badge extends StatelessWidget {
   }
 }
 
-class _WinRow extends StatelessWidget {
-  final String label;
-  final String value;
-  final Color valueColor;
-
-  const _WinRow({
-    required this.label,
-    required this.value,
-    this.valueColor = AppColors.textPrimary,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label, style: const TextStyle(color: AppColors.textSecondary)),
-          Text(
-            value,
-            style: TextStyle(fontWeight: FontWeight.bold, color: valueColor, fontSize: 16),
-          ),
-        ],
-      ),
-    );
-  }
-}
