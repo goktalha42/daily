@@ -66,7 +66,7 @@ class ProfileScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'Dahi Profili',
+                      'Profil',
                       style: GoogleFonts.patrickHand(
                         fontSize: 34,
                         fontWeight: FontWeight.w700,

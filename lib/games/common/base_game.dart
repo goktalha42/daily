@@ -88,15 +88,15 @@ extension GameTypeExtension on GameType {
   Color get color {
     switch (this) {
       case GameType.queens:
-        return const Color(0xFFEC4899);
+        return AppColors.queensGame;
       case GameType.pinpoint:
-        return const Color(0xFF00F2FE);
+        return AppColors.pinpointGame;
       case GameType.crossclimb:
-        return const Color(0xFFA855F7);
+        return AppColors.crossclimbGame;
       case GameType.tango:
-        return const Color(0xFFF59E0B);
+        return AppColors.tangoGame;
       case GameType.zipPath:
-        return const Color(0xFF10B981);
+        return AppColors.zipGame;
     }
   }
 

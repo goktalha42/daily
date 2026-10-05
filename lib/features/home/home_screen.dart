@@ -90,7 +90,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ),
                     _NavTabItem(
                       icon: Icons.person_rounded,
-                      label: 'Dahi Profil',
+                      label: 'Profil',
                       isSelected: _bottomNavIndex == 2,
                       onTap: () {
                         HapticFeedback.selectionClick();
@@ -531,7 +531,8 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
             child: LayoutBuilder(
               builder: (context, constraints) {
                 const gap = 16.0;
-                final cardSize = (constraints.maxWidth - gap) / 2;
+                final cardSize =
+                    math.max(0.0, (constraints.maxWidth - gap) / 2);
 
                 Widget buildCard(GameType game) {
                   final perf = statsMap[game] ??

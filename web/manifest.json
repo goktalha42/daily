@@ -1,6 +1,6 @@
-{
-    "name": "daily_games",
-    "short_name": "daily_games",
+﻿{
+    "name": "Zühtü",
+    "short_name": "Zühtü",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
@@ -33,3 +33,4 @@
         }
     ]
 }
+

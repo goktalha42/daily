@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_colors.dart';
 import '../utils/date_utils.dart';
 import '../../games/common/base_game.dart';
 import 'screen_shake.dart';
 
-/// ADHD karakterlere uygun, yüksek dopaminli, ekran sarsıntılı ve kullanıcıyı
-/// "olağanüstü dahi" hissettiren yeni nesil zafer ekranı diyaloğu.
+/// Zühtü - Kara Kalem Skeç Defteri Zafer Ekranı Diyaloğu.
+/// Sert skeç gölgeleri, 2.5px siyah kontur ve Patrick Hand tipografisi.
 class GeniusWinDialog extends StatefulWidget {
   final GameResult result;
   final String gameTitle;
@@ -26,8 +27,8 @@ class GeniusWinDialog extends StatefulWidget {
     required String gameTitle,
     required VoidCallback onRestart,
   }) async {
-    // Ekranı gümbür gümbür sars
-    ScreenShake.shake(context, intensity: 18.0, duration: const Duration(milliseconds: 750));
+    // Ekranı sars ve konfeti patlat
+    ScreenShake.shake(context, intensity: 14.0, duration: const Duration(milliseconds: 600));
     GeniusConfettiOverlay.explode(context);
 
     await showDialog(
@@ -49,18 +50,13 @@ class _GeniusWinDialogState extends State<GeniusWinDialog> {
   @override
   void initState() {
     super.initState();
-    // Açılışta ekstra haptik dopamin dalgası
     Future.delayed(const Duration(milliseconds: 150), () {
       HapticFeedback.heavyImpact();
-    });
-    Future.delayed(const Duration(milliseconds: 350), () {
-      HapticFeedback.mediumImpact();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    // ADHD motivasyon metinleri
     final isTopTier = widget.result.durationMs < 60000 || widget.result.score > 800;
     final percentileStr = isTopTier ? "%1'LİK" : "%2'LİK";
     final iqScore = isTopTier ? "152+" : "146+";
@@ -70,255 +66,236 @@ class _GeniusWinDialogState extends State<GeniusWinDialog> {
       insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       child: Container(
         decoration: BoxDecoration(
-          color: const Color(0xFFFFFFFF),
-          borderRadius: BorderRadius.circular(32),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
           border: Border.all(
-            color: AppColors.geniusGold.withOpacity(0.6),
-            width: 2.5,
+            color: AppColors.pencilBlack,
+            width: 2.8,
           ),
-          boxShadow: [
+          boxShadow: const [
             BoxShadow(
-              color: AppColors.geniusGold.withOpacity(0.35),
-              blurRadius: 40,
-              spreadRadius: 6,
-              offset: const Offset(0, 10),
-            ),
-            BoxShadow(
-              color: Colors.black.withOpacity(0.12),
-              blurRadius: 20,
-              offset: const Offset(0, 8),
+              color: AppColors.pencilBlack,
+              offset: Offset(6, 6),
+              blurRadius: 0,
             ),
           ],
         ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(32),
-          child: Stack(
+        child: Padding(
+          padding: const EdgeInsets.all(22.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              // Arka plan zafer ışığı deseni
-              Positioned(
-                top: -80,
-                right: -80,
-                child: Container(
-                  width: 200,
-                  height: 200,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: AppColors.geniusGold.withOpacity(0.12),
+              // Fosforlu Skeç Zafer Kupası
+              Container(
+                width: 82,
+                height: 82,
+                decoration: BoxDecoration(
+                  color: AppColors.highlighterYellow,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: AppColors.pencilBlack, width: 2.5),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: AppColors.pencilBlack,
+                      offset: Offset(3, 3),
+                      blurRadius: 0,
+                    ),
+                  ],
+                ),
+                child: const Center(
+                  child: Icon(
+                    Icons.emoji_events_rounded,
+                    color: AppColors.pencilBlack,
+                    size: 46,
+                  ),
+                ),
+              )
+                  .animate(onPlay: (c) => c.repeat(reverse: true))
+                  .scaleXY(begin: 1.0, end: 1.06, duration: 600.ms, curve: Curves.easeInOut)
+                  .animate()
+                  .shake(duration: 400.ms),
+
+              const SizedBox(height: 14),
+
+              // Vurgu Rozeti
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.highlighterOrange,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: AppColors.pencilBlack, width: 2.0),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.bolt_rounded, color: AppColors.pencilBlack, size: 16),
+                    const SizedBox(width: 4),
+                    Text(
+                      'HARİKA PERFORMANS!',
+                      style: GoogleFonts.patrickHand(
+                        color: AppColors.pencilBlack,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 15,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ).animate().fade().slideY(begin: -0.2, end: 0),
+
+              const SizedBox(height: 6),
+
+              Text(
+                'BÖLÜM TAMAMLANDI! 🎉',
+                style: GoogleFonts.patrickHand(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.pencilBlack,
+                ),
+                textAlign: TextAlign.center,
+              ).animate().scale(duration: 300.ms),
+
+              const SizedBox(height: 4),
+
+              // Yüzdelik Dilim Vurgusu
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.highlighterPink,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: AppColors.pencilBlack, width: 2.0),
+                ),
+                child: Text(
+                  'EN İYİ $percentileStr DİLİMDESİN 🏆',
+                  style: GoogleFonts.patrickHand(
+                    color: AppColors.pencilBlack,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 16,
                   ),
                 ),
               ),
 
-              Padding(
-                padding: const EdgeInsets.all(24.0),
+              const SizedBox(height: 16),
+
+              // İstatistikler Kutusu
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                decoration: BoxDecoration(
+                  color: AppColors.backgroundLight,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppColors.pencilBlack, width: 2.0),
+                ),
                 child: Column(
-                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Devasa Parlayan Altın Dahi Kupası / Tacı
-                    Container(
-                      width: 90,
-                      height: 90,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFFFFE066), Color(0xFFFFB800), Color(0xFFFF7A00)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.geniusGold.withOpacity(0.55),
-                            blurRadius: 28,
-                            spreadRadius: 6,
-                          ),
-                        ],
-                      ),
-                      child: const Center(
-                        child: Icon(
-                          Icons.emoji_events_rounded,
-                          color: Colors.white,
-                          size: 52,
-                        ),
-                      ),
-                    )
-                        .animate(onPlay: (c) => c.repeat(reverse: true))
-                        .scaleXY(begin: 1.0, end: 1.08, duration: 800.ms, curve: Curves.easeInOut)
-                        .animate()
-                        .shake(duration: 500.ms, hz: 6),
-
-                    const SizedBox(height: 18),
-
-                    // "SEN RESMEN BİR DAHİSİN!" Başlığı
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: AppColors.geniusGold.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppColors.geniusGold.withOpacity(0.5)),
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.bolt_rounded, color: AppColors.electricAmber, size: 18),
-                          SizedBox(width: 4),
-                          Text(
-                            'AKIL ALMAZ PERFORMANS!',
-                            style: TextStyle(
-                              color: AppColors.electricAmber,
-                              fontWeight: FontWeight.w900,
-                              fontSize: 12,
-                              letterSpacing: 1.0,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ).animate().fade().slideY(begin: -0.2, end: 0),
-
-                    const SizedBox(height: 10),
-
-                    const Text(
-                      'SEN BİR DAHİSİN! 🔥',
-                      style: TextStyle(
-                        fontSize: 26,
-                        fontWeight: FontWeight.w900,
-                        color: Color(0xFF111827),
-                        letterSpacing: -0.5,
-                      ),
-                      textAlign: TextAlign.center,
-                    ).animate().scale(duration: 400.ms, curve: Curves.elasticOut),
-
-                    const SizedBox(height: 6),
-
-                    // Yüzdelik Dilim Vurgusu
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF8B5CF6), Color(0xFFEC4899)],
-                        ),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Text(
-                        'DÜNYANIN EN İYİ $percentileStr DİLİMİNDESİN 🏆',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w900,
-                          fontSize: 13,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                    ).animate().fade(delay: 200.ms).slideY(begin: 0.2, end: 0),
-
-                    const SizedBox(height: 20),
-
-                    // Zeka ve Başarı İstatistikleri Kutusu
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF8FAFC),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: const Color(0xFFE2E8F0), width: 1.5),
-                      ),
-                      child: Column(
-                        children: [
-                          _StatRow(
-                            icon: Icons.psychology_rounded,
-                            iconColor: const Color(0xFF8B5CF6),
-                            label: 'Zeka Endeksi (Tahmini IQ)',
-                            value: '$iqScore DAHİ',
-                            valueColor: const Color(0xFF8B5CF6),
-                            isHighlight: true,
-                          ),
-                          const Divider(height: 20, color: Color(0xFFE2E8F0)),
-                          _StatRow(
-                            icon: Icons.speed_rounded,
-                            iconColor: const Color(0xFF00E5FF),
-                            label: 'Çözüm Süresi',
-                            value: GameDateUtils.formatGameTime(widget.result.durationMs),
-                            valueColor: const Color(0xFF0284C7),
-                          ),
-                          const Divider(height: 20, color: Color(0xFFE2E8F0)),
-                          _StatRow(
-                            icon: Icons.ads_click_rounded,
-                            iconColor: const Color(0xFFFF9E00),
-                            label: 'Hamle Hassasiyeti',
-                            value: '${widget.result.moveCount} Hamle (%99.1)',
-                            valueColor: const Color(0xFFD97706),
-                          ),
-                          const Divider(height: 20, color: Color(0xFFE2E8F0)),
-                          _StatRow(
-                            icon: Icons.military_tech_rounded,
-                            iconColor: const Color(0xFF10B981),
-                            label: 'Dahi Puanı',
-                            value: '+${widget.result.score} P',
-                            valueColor: const Color(0xFF059669),
-                            isHighlight: true,
-                          ),
-                        ],
-                      ),
-                    ).animate().fade(delay: 300.ms).slideY(begin: 0.1, end: 0),
-
-                    const SizedBox(height: 22),
-
-                    // Aksiyon Butonları
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton(
-                            style: OutlinedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                              side: const BorderSide(color: Color(0xFFCBD5E1), width: 1.5),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                            ),
-                            onPressed: () {
-                              HapticFeedback.lightImpact();
-                              Navigator.pop(context);
-                              Navigator.pop(context); // Ana Sayfaya dön
-                            },
-                            child: const Text(
-                              'Lobiye Dön',
-                              style: TextStyle(
-                                color: Color(0xFF475569),
-                                fontWeight: FontWeight.w800,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                              backgroundColor: const Color(0xFF0F172A),
-                              foregroundColor: Colors.white,
-                              elevation: 4,
-                              shadowColor: Colors.black.withOpacity(0.3),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                            ),
-                            onPressed: () {
-                              HapticFeedback.mediumImpact();
-                              widget.onRestart();
-                            },
-                            child: const Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.replay_rounded, size: 18),
-                                SizedBox(width: 6),
-                                Text(
-                                  'Tekrar Oyna',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w900,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
+                    _SketchStatRow(
+                      icon: Icons.psychology_rounded,
+                      label: 'Zeka Endeksi (IQ)',
+                      value: '$iqScore DAHİ',
+                      badgeColor: AppColors.highlighterPurple,
+                    ),
+                    const Divider(height: 14, color: AppColors.pencilBlack, thickness: 1.2),
+                    _SketchStatRow(
+                      icon: Icons.timer_outlined,
+                      label: 'Çözüm Süresi',
+                      value: GameDateUtils.formatGameTime(widget.result.durationMs),
+                      badgeColor: AppColors.highlighterCyan,
+                    ),
+                    const Divider(height: 14, color: AppColors.pencilBlack, thickness: 1.2),
+                    _SketchStatRow(
+                      icon: Icons.touch_app_rounded,
+                      label: 'Hamle Sayısı',
+                      value: '${widget.result.moveCount} Hamle',
+                      badgeColor: AppColors.highlighterOrange,
+                    ),
+                    const Divider(height: 14, color: AppColors.pencilBlack, thickness: 1.2),
+                    _SketchStatRow(
+                      icon: Icons.military_tech_rounded,
+                      label: 'Kazanılan Puan',
+                      value: '+${widget.result.score} P',
+                      badgeColor: AppColors.highlighterGreen,
                     ),
                   ],
                 ),
+              ),
+
+              const SizedBox(height: 18),
+
+              // Aksiyon Butonları (Skeç Butonlar)
+              Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        Navigator.pop(context);
+                        Navigator.pop(context);
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: AppColors.pencilBlack, width: 2.2),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: AppColors.pencilBlack,
+                              offset: Offset(3, 3),
+                              blurRadius: 0,
+                            ),
+                          ],
+                        ),
+                        child: Center(
+                          child: Text(
+                            'Lobiye Dön',
+                            style: GoogleFonts.patrickHand(
+                              color: AppColors.pencilBlack,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 18,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        HapticFeedback.mediumImpact();
+                        widget.onRestart();
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        decoration: BoxDecoration(
+                          color: AppColors.highlighterYellow,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: AppColors.pencilBlack, width: 2.2),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: AppColors.pencilBlack,
+                              offset: Offset(3, 3),
+                              blurRadius: 0,
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.replay_rounded, size: 20, color: AppColors.pencilBlack),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Tekrar Oyna',
+                              style: GoogleFonts.patrickHand(
+                                color: AppColors.pencilBlack,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 18,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -328,21 +305,17 @@ class _GeniusWinDialogState extends State<GeniusWinDialog> {
   }
 }
 
-class _StatRow extends StatelessWidget {
+class _SketchStatRow extends StatelessWidget {
   final IconData icon;
-  final Color iconColor;
   final String label;
   final String value;
-  final Color valueColor;
-  final bool isHighlight;
+  final Color badgeColor;
 
-  const _StatRow({
+  const _SketchStatRow({
     required this.icon,
-    required this.iconColor,
     required this.label,
     required this.value,
-    required this.valueColor,
-    this.isHighlight = false,
+    required this.badgeColor,
   });
 
   @override
@@ -350,30 +323,30 @@ class _StatRow extends StatelessWidget {
     return Row(
       children: [
         Container(
-          padding: const EdgeInsets.all(6),
+          padding: const EdgeInsets.all(4),
           decoration: BoxDecoration(
-            color: iconColor.withOpacity(0.12),
+            color: badgeColor,
             shape: BoxShape.circle,
+            border: Border.all(color: AppColors.pencilBlack, width: 1.5),
           ),
-          child: Icon(icon, size: 16, color: iconColor),
+          child: Icon(icon, size: 16, color: AppColors.pencilBlack),
         ),
-        const SizedBox(width: 10),
+        const SizedBox(width: 8),
         Expanded(
           child: Text(
             label,
-            style: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF64748B),
+            style: GoogleFonts.patrickHand(
+              fontSize: 16,
+              color: AppColors.pencilGraphite,
             ),
           ),
         ),
         Text(
           value,
-          style: TextStyle(
-            fontSize: isHighlight ? 15 : 13,
-            fontWeight: FontWeight.w900,
-            color: valueColor,
+          style: GoogleFonts.patrickHand(
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+            color: AppColors.pencilBlack,
           ),
         ),
       ],
