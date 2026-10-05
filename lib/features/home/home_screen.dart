@@ -1,14 +1,16 @@
+import 'dart:math' as math;
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/services/game_stats_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/date_utils.dart';
 import '../../core/widgets/game_card_logos.dart';
 import '../../core/widgets/screen_shake.dart';
+import '../../core/widgets/sketch_decorations.dart';
 import '../../games/common/base_game.dart';
 import '../../games/queens/queens_screen.dart';
 import '../../games/pinpoint/pinpoint_screen.dart';
@@ -31,69 +33,40 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFEDEFF3), // Kullanıcının istediği açık gri zemin
+      backgroundColor: AppColors.backgroundLight,
       extendBody: true,
-      body: Stack(
-        children: [
-          // Arka plan açık gri ve hafif dinamik ışıltı dalgaları
-          Positioned(
-            top: -60,
-            right: -60,
-            child: Container(
-              width: 280,
-              height: 280,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppColors.geniusGold.withOpacity(0.08),
-              ),
-            ).animate(onPlay: (c) => c.repeat(reverse: true)).scaleXY(begin: 1.0, end: 1.3, duration: 4.seconds),
-          ),
-          Positioned(
-            bottom: 80,
-            left: -80,
-            child: Container(
-              width: 320,
-              height: 320,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppColors.hyperCyan.withOpacity(0.06),
-              ),
-            ).animate(onPlay: (c) => c.repeat(reverse: true)).scaleXY(begin: 1.3, end: 1.0, duration: 5.seconds),
-          ),
+      body: SketchPaperBackground(
+        child: Stack(
+          children: [
+            IndexedStack(
+              index: _bottomNavIndex,
+              children: const [
+                _GeniusLobbyTab(),
+                LeaderboardScreen(),
+                ProfileScreen(),
+              ],
+            ),
 
-          IndexedStack(
-            index: _bottomNavIndex,
-            children: const [
-              _GeniusLobbyTab(),
-              LeaderboardScreen(),
-              ProfileScreen(),
-            ],
-          ),
-
-          // Alt Yüzen Navigasyon Çubuğu (Floating Nav Bar)
-          Positioned(
-            bottom: 22,
-            left: 20,
-            right: 20,
-            child: Container(
-              height: 68,
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.94),
-                borderRadius: BorderRadius.circular(34),
-                border: Border.all(
-                  color: const Color(0xFFDDE1E8),
-                  width: 1.5,
+            // Fotoğraftaki Gibi Kara Kalem Skeç Navigasyon Çubuğu (Hand-Drawn Sketch Bar)
+            Positioned(
+              bottom: 22,
+              left: 20,
+              right: 20,
+              child: Container(
+                height: 68,
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppColors.pencilBlack, width: 2.5),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: AppColors.pencilBlack,
+                      offset: Offset(4, 4),
+                      blurRadius: 0, // Sert kara kalem gölgesi
+                    ),
+                  ],
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.08),
-                    blurRadius: 24,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(34),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
@@ -128,8 +101,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -150,36 +123,51 @@ class _NavTabItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final activeColor = const Color(0xFF0F172A);
-    final inactiveColor = const Color(0xFF94A3B8);
-
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 250),
-        curve: Curves.easeOutCubic,
-        padding: EdgeInsets.symmetric(horizontal: isSelected ? 18 : 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF0F172A).withOpacity(0.07) : Colors.transparent,
-          borderRadius: BorderRadius.circular(24),
-        ),
-        child: Row(
-          children: [
-            Icon(icon, color: isSelected ? activeColor : inactiveColor, size: 22),
-            if (isSelected) ...[
-              const SizedBox(width: 8),
-              Text(
-                label,
-                style: const TextStyle(
-                  color: Color(0xFF0F172A),
-                  fontWeight: FontWeight.w900,
-                  fontSize: 14,
-                  letterSpacing: -0.2,
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          margin: const EdgeInsets.symmetric(horizontal: 4),
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          decoration: BoxDecoration(
+            color: isSelected ? AppColors.highlighterYellow : Colors.transparent,
+            borderRadius: BorderRadius.circular(10),
+            border: isSelected
+                ? Border.all(color: AppColors.pencilBlack, width: 2.0)
+                : null,
+            boxShadow: isSelected
+                ? const [
+                    BoxShadow(
+                      color: AppColors.pencilBlack,
+                      offset: Offset(2, 2),
+                      blurRadius: 0,
+                    ),
+                  ]
+                : null,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                color: AppColors.pencilBlack,
+                size: 20,
+              ),
+              if (isSelected) ...[
+                const SizedBox(width: 6),
+                Text(
+                  label,
+                  style: GoogleFonts.patrickHand(
+                    color: AppColors.pencilBlack,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 16,
+                  ),
                 ),
-              ).animate().fade(duration: 180.ms).slideX(begin: -0.15, end: 0),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
@@ -266,10 +254,10 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
     return CustomScrollView(
       physics: const BouncingScrollPhysics(),
       slivers: [
-        // Üst Başlık & Tarih & Canlı Streak
+        // 1. ÜST BAŞLIK & TARİH & YENİ GÜN BUTONU
         SliverToBoxAdapter(
           child: Padding(
-            padding: const EdgeInsets.only(left: 20, right: 20, top: 54, bottom: 16),
+            padding: const EdgeInsets.only(left: 20, right: 20, top: 54, bottom: 12),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -283,143 +271,130 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
                           height: 8,
                           decoration: const BoxDecoration(
                             shape: BoxShape.circle,
-                            color: Color(0xFF10B981),
+                            color: AppColors.highlighterYellow,
+                            border: Border.fromBorderSide(
+                              BorderSide(color: AppColors.pencilBlack, width: 1.5),
+                            ),
                           ),
-                        ).animate(onPlay: (c) => c.repeat(reverse: true)).scale(begin: const Offset(1,1), end: const Offset(1.5,1.5), duration: 1.seconds),
+                        ),
                         const SizedBox(width: 6),
                         Text(
                           formattedDate.toUpperCase(),
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w900,
-                            color: Color(0xFF64748B),
-                            letterSpacing: 1.2,
+                          style: GoogleFonts.patrickHand(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.pencilGraphite,
+                            letterSpacing: 1.0,
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 4),
-                    const Text(
+                    const SizedBox(height: 2),
+                    Text(
                       'Zeka Arenası',
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w900,
-                        color: Color(0xFF0F172A),
-                        letterSpacing: -0.8,
+                      style: GoogleFonts.patrickHand(
+                        fontSize: 34,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.pencilBlack,
+                        letterSpacing: -0.5,
                       ),
                     ),
                   ],
                 ),
-                // Yeni Gün ve Hızlı Tetikleyici
-                Row(
-                  children: [
-                    InkWell(
-                      onTap: _advanceToNextDay,
-                      borderRadius: BorderRadius.circular(16),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF0F172A),
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.12),
-                              blurRadius: 8,
-                              offset: const Offset(0, 3),
-                            ),
-                          ],
+                // Fotoğraftaki Gibi Kara Kalem "Yeni Gün" Butonu
+                GestureDetector(
+                  onTap: _advanceToNextDay,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: AppColors.highlighterYellow,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: AppColors.pencilBlack, width: 2.0),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: AppColors.pencilBlack,
+                          offset: Offset(2.5, 2.5),
+                          blurRadius: 0,
                         ),
-                        child: const Row(
-                          children: [
-                            Icon(Icons.bolt_rounded, size: 16, color: Color(0xFFFFB800)),
-                            SizedBox(width: 4),
-                            Text(
-                              'Yeni Gün',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w900,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                      ],
                     ),
-                  ],
+                    child: Row(
+                      children: [
+                        const Icon(Icons.bolt_rounded, size: 18, color: AppColors.pencilBlack),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Yeni Gün',
+                          style: GoogleFonts.patrickHand(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.pencilBlack,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ],
             ),
           ),
         ),
 
-        // ADHD Dopamin Hero Kartı: Beyin Gücü / IQ / Top %1 Göstergesi
+        // 2. KARA KALEM SKEÇ HERO KARTI: IQ & BEYİN GÜCÜ & SERİ
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
-            child: Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(28),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.18),
-                    blurRadius: 20,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
-              ),
+            child: SketchCard(
+              enableHatching: true,
+              borderWidth: 2.5,
+              borderRadius: 16,
+              shadowOffset: const Offset(4.0, 4.0),
+              padding: const EdgeInsets.all(18),
               child: Column(
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      // Sol: Zeka Durumu Rozeti
+                      // Sol: Sarı Fosforlu Rozet
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFFFB800).withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: const Color(0xFFFFB800).withOpacity(0.6)),
+                          color: AppColors.highlighterYellow,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: AppColors.pencilBlack, width: 1.5),
                         ),
-                        child: const Row(
+                        child: Row(
                           children: [
-                            Icon(Icons.workspace_premium_rounded, color: Color(0xFFFFB800), size: 16),
-                            SizedBox(width: 4),
+                            const SketchDoodleCrown(size: 16, color: AppColors.pencilBlack),
+                            const SizedBox(width: 4),
                             Text(
                               'DÜNYANIN EN İYİ %1\'İ',
-                              style: TextStyle(
-                                fontWeight: FontWeight.w900,
-                                color: Color(0xFFFFB800),
-                                fontSize: 11,
-                                letterSpacing: 0.5,
+                              style: GoogleFonts.patrickHand(
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.pencilBlack,
+                                fontSize: 13,
                               ),
                             ),
                           ],
                         ),
                       ),
-                      // Sağ: Sayaç
+                      // Sağ: Skeç Sayaç
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12),
+                          color: AppColors.surfaceSecondaryLight,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: AppColors.pencilBlack, width: 1.5),
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.timer_outlined, size: 14, color: Colors.white70),
+                            const Icon(Icons.timer_outlined, size: 14, color: AppColors.pencilBlack),
                             const SizedBox(width: 4),
                             Text(
                               GameDateUtils.formatCountdown(_timeRemaining),
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 12,
-                                color: Colors.white,
-                                fontFamily: 'monospace',
+                              style: GoogleFonts.patrickHand(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 13,
+                                color: AppColors.pencilBlack,
                               ),
                             ),
                           ],
@@ -427,7 +402,7 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 14),
                   Row(
                     children: [
                       // IQ Endeksi
@@ -435,82 +410,88 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'GÜNLÜK BEYİN GÜCÜ ENDEKSİ',
-                              style: TextStyle(
-                                color: Color(0xFF94A3B8),
-                                fontSize: 11,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: 0.8,
-                              ),
+                            Row(
+                              children: [
+                                const SketchDoodleBrain(size: 18, color: AppColors.pencilBlack),
+                                const SizedBox(width: 5),
+                                Text(
+                                  'GÜNLÜK BEYİN GÜCÜ ENDEKSİ',
+                                  style: GoogleFonts.patrickHand(
+                                    color: AppColors.pencilGray,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
                             ),
-                            const SizedBox(height: 4),
+                            const SizedBox(height: 2),
                             Row(
                               children: [
                                 Text(
                                   'IQ $userIQ+',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 28,
-                                    fontWeight: FontWeight.w900,
+                                  style: GoogleFonts.patrickHand(
+                                    color: AppColors.pencilBlack,
+                                    fontSize: 32,
+                                    fontWeight: FontWeight.w700,
                                     letterSpacing: -0.5,
                                   ),
                                 ),
                                 const SizedBox(width: 8),
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFF10B981),
-                                    borderRadius: BorderRadius.circular(8),
+                                    color: AppColors.highlighterCyan,
+                                    borderRadius: BorderRadius.circular(6),
+                                    border: Border.all(color: AppColors.pencilBlack, width: 1.5),
                                   ),
-                                  child: const Text(
+                                  child: Text(
                                     'DAHİ SEVİYESİ',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w900,
+                                    style: GoogleFonts.patrickHand(
+                                      color: AppColors.pencilBlack,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
                                     ),
                                   ),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 4),
-                            const Text(
+                            Text(
                               'Mantık reaksiyonun ortalamadan 4.8 kat daha keskin!',
-                              style: TextStyle(
-                                color: Color(0xFFCBD5E1),
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
+                              style: GoogleFonts.patrickHand(
+                                color: AppColors.pencilGraphite,
+                                fontSize: 14,
                               ),
                             ),
                           ],
                         ),
                       ),
-                      // Ateşli Seri
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.08),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
+                      // Ateşli Seri (Fotoğraftaki gibi el çizimi alev doodle'ı)
+                      SketchPlaceholderBox(
+                        width: 72,
+                        height: 76,
+                        fillColor: AppColors.highlighterOrange,
+                        lineColor: AppColors.pencilBlack,
+                        lineWidth: 2.0,
+                        borderRadius: 12,
                         child: Column(
-                          children: const [
-                            Icon(Icons.local_fire_department_rounded, color: Color(0xFFFF7A00), size: 30),
-                            SizedBox(height: 2),
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const SketchDoodleFlame(size: 26, color: AppColors.pencilBlack),
                             Text(
                               '5 GÜN',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w900,
-                                fontSize: 13,
+                              style: GoogleFonts.patrickHand(
+                                color: AppColors.pencilBlack,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 15,
+                                height: 1.0,
                               ),
                             ),
                             Text(
                               'SERİ',
-                              style: TextStyle(
-                                color: Color(0xFF94A3B8),
-                                fontWeight: FontWeight.bold,
-                                fontSize: 9,
+                              style: GoogleFonts.patrickHand(
+                                color: AppColors.pencilBlack,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 11,
                               ),
                             ),
                           ],
@@ -520,22 +501,22 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
                   ),
                 ],
               ),
-            ).animate().fade(duration: 400.ms).slideY(begin: 0.1, end: 0),
+            ),
           ),
         ),
 
-        const SliverToBoxAdapter(
+        SliverToBoxAdapter(
           child: Padding(
-            padding: EdgeInsets.only(left: 22, right: 22, top: 20, bottom: 8),
+            padding: const EdgeInsets.only(left: 22, right: 22, top: 16, bottom: 8),
             child: Row(
               children: [
                 Text(
-                  'GÜNLÜK YARIŞMALAR',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w900,
-                    color: Color(0xFF64748B),
-                    letterSpacing: 1.2,
+                  'GÜNLÜK YARIŞMALAR (5 BÖLÜM)',
+                  style: GoogleFonts.patrickHand(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.pencilGraphite,
+                    letterSpacing: 1.0,
                   ),
                 ),
               ],
@@ -543,39 +524,69 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
           ),
         ),
 
-        // 5 Oyun Butonları Listesi (Kullanıcının tam olarak istediği formatta!)
-        // 1. Butonun arka planı oyunun kendine has özel logosunu içerir
-        // 2. Üst bölümünde SADECE oyunun adı yazar
-        // 3. Alt bölümünde kullanıcının en son girdiği yüzdelik dilim yazar
-        SliverPadding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
-          sliver: SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                final game = GameType.values[index];
-                final perf = statsMap[game] ??
-                    GamePerformanceData(
-                      gameType: game,
-                      bestScore: 0,
-                      bestDurationMs: 0,
-                      totalGamesPlayed: 0,
-                      geniusTitle: 'Saf Dahi',
-                    );
+        // Oyun kutulari: capraz (zigzag) iki sutun, 2. sutun yarim kart asagida baslar
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                const gap = 16.0;
+                final cardSize = (constraints.maxWidth - gap) / 2;
 
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
-                  child: _GeniusGameButton(
-                    game: game,
-                    performance: perf,
-                    onTap: () => _launchGame(game),
-                  ).animate().fade(duration: 350.ms, delay: (index * 80).ms).slideY(begin: 0.08, end: 0),
+                Widget buildCard(GameType game) {
+                  final perf = statsMap[game] ??
+                      GamePerformanceData(
+                        gameType: game,
+                        bestScore: 0,
+                        bestDurationMs: 0,
+                        totalGamesPlayed: 0,
+                        geniusTitle: 'Saf Dahi',
+                      );
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: gap),
+                    child: SizedBox(
+                      width: cardSize,
+                      height: cardSize,
+                      child: _GeniusGameButton(
+                        game: game,
+                        performance: perf,
+                        onTap: () => _launchGame(game),
+                      ),
+                    ),
+                  );
+                }
+
+                final games = GameType.values;
+                final leftGames = [
+                  for (var i = 0; i < games.length; i += 2) games[i]
+                ];
+                final rightGames = [
+                  for (var i = 1; i < games.length; i += 2) games[i]
+                ];
+
+                return Stack(
+                  children: [
+                    Positioned.fill(
+                      child: CustomPaint(
+                        painter: _LadderPathPainter(period: cardSize * 1.7),
+                      ),
+                    ),
+                    Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Column(children: leftGames.map(buildCard).toList()),
+                    const SizedBox(width: gap),
+                    Padding(
+                      padding: EdgeInsets.only(top: cardSize * 0.3),
+                      child: Column(children: rightGames.map(buildCard).toList()),
+                    ),
+                  ],
+                )],
                 );
               },
-              childCount: GameType.values.length,
             ),
           ),
         ),
-
         const SliverToBoxAdapter(
           child: SizedBox(height: 110), // Nav bar için boşluk
         ),
@@ -584,10 +595,11 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
   }
 }
 
-/// Kullanıcının Şart Koştuğu Özel Tasarım Oyun Butonu:
-/// - Arka plan: Oyunun kendisine has olarak geliştirilmiş özel amblem logosu
-/// - Üst bölüm: SADECE oyunun adı
-/// - Alt bölüm: Kullanıcının en son oynadığı oyunda yüzde kaçlık dilime girdiyse o
+/// Kara Kalem & Wireframe Oyun Butonu:
+/// - Referans fotoğraftaki gibi sol tarafta içinde çapraz "X" olan sarı/turkuaz skeç görsel kutusu
+/// - Üst bölüm: SADECE oyunun adı (El yazısıyla büyük ve net)
+/// - Alt bölüm: Kullanıcının en son girdiği yüzdelik dilim (Fosforlu skeç etiketi)
+/// - 2.5px siyah kurşun kalem kenarlık ve sert skeç gölgesi
 class _GeniusGameButton extends StatefulWidget {
   final GameType game;
   final GamePerformanceData performance;
@@ -616,136 +628,76 @@ class _GeniusGameButtonState extends State<_GeniusGameButton> {
       onTapUp: (_) => setState(() => _isPressed = false),
       onTapCancel: () => setState(() => _isPressed = false),
       onTap: widget.onTap,
-      child: AnimatedScale(
-        scale: _isPressed ? 0.97 : 1.0,
-        duration: const Duration(milliseconds: 120),
-        curve: Curves.easeOutQuad,
-        child: Container(
-          height: 140, // Ferah, prestijli yarışma kartı boyu
-          decoration: BoxDecoration(
-            color: Colors.white, // Açık gri zeminde parlayan saf beyaz kart
-            borderRadius: BorderRadius.circular(26),
-            border: Border.all(
-              color: const Color(0xFFE2E8F0),
-              width: 1.8,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.06),
-                blurRadius: 18,
-                offset: const Offset(0, 6),
-              ),
-              BoxShadow(
-                color: game.color.withOpacity(0.08),
-                blurRadius: 24,
-                spreadRadius: 2,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(26),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 100),
+        transform: Matrix4.translationValues(
+          _isPressed ? 2.0 : 0.0,
+          _isPressed ? 2.0 : 0.0,
+          0.0,
+        ),
+        child: SketchCard(
+          backgroundColor: Color.lerp(game.color, Colors.white, 0.55)!,
+          borderColor: AppColors.pencilBlack,
+          borderWidth: 2.5,
+          borderRadius: 16,
+          shadowOffset: _isPressed ? const Offset(1.5, 1.5) : const Offset(4.0, 4.0),
+          padding: EdgeInsets.zero,
+          child: SizedBox.expand(
             child: Stack(
               children: [
-                // 1. ARKA PLAN: Oyunun Kendisine Has Geliştirilmiş Özel Logo!
+                // Arka plan: oyuna ozgu eskiz logo
                 Positioned.fill(
                   child: GameBackgroundLogo(
                     gameType: game,
-                    opacity: 0.92,
+                    opacity: 0.35,
                   ),
                 ),
-
-                // Hafif sol degradeli cam katmanı (yazıların okunurluğu için kristal berraklık)
-                Positioned.fill(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.white.withOpacity(0.96),
-                          Colors.white.withOpacity(0.78),
-                          Colors.white.withOpacity(0.18),
-                        ],
-                        stops: const [0.0, 0.45, 1.0],
-                        begin: Alignment.centerLeft,
-                        end: Alignment.centerRight,
-                      ),
-                    ),
-                  ),
-                ),
-
-                // İçerik: Üstte SADECE oyunun adı, Altta kullanıcının girdiği yüzdelik dilim
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 18),
+                  padding: const EdgeInsets.all(14),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      // ÜST BÖLÜM: SADECE OYUNUN ADI
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            game.title.toUpperCase(),
-                            style: const TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.w900,
-                              color: Color(0xFF0F172A),
-                              letterSpacing: -0.5,
-                            ),
-                          ),
-                          // Sağ üstte oyunun tema renginde mini yarışma oku
-                          Container(
-                            width: 38,
-                            height: 38,
-                            decoration: BoxDecoration(
-                              color: game.color.withOpacity(0.14),
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              Icons.arrow_forward_rounded,
-                              color: game.color,
-                              size: 20,
-                            ),
-                          ),
-                        ],
+                      Text(
+                        game.title.toUpperCase(),
+                        maxLines: 2,
+                        style: GoogleFonts.patrickHand(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.pencilBlack,
+                          letterSpacing: 0.2,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
-
-                      // ALT BÖLÜM: KULLANICININ EN SON OYNADIĞI OYUNDA GİRDİĞİ YÜZDELİK DİLİM
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                         decoration: BoxDecoration(
                           color: perf.hasPlayed
                               ? (perf.percentile! <= 1
-                                  ? const Color(0xFFFFB800).withOpacity(0.18)
-                                  : game.color.withOpacity(0.12))
-                              : const Color(0xFFF1F5F9),
-                          borderRadius: BorderRadius.circular(16),
+                                  ? AppColors.highlighterYellow
+                                  : game.color)
+                              : AppColors.surfaceSecondaryLight,
+                          borderRadius: BorderRadius.circular(8),
                           border: Border.all(
-                            color: perf.hasPlayed
-                                ? (perf.percentile! <= 1
-                                    ? const Color(0xFFFFB800)
-                                    : game.color.withOpacity(0.4))
-                                : const Color(0xFFCBD5E1),
-                            width: 1.2,
+                            color: AppColors.pencilBlack,
+                            width: 1.8,
                           ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              perf.percentileBadgeText,
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w900,
-                                color: perf.hasPlayed
-                                    ? (perf.percentile! <= 1
-                                        ? const Color(0xFFB45309)
-                                        : const Color(0xFF0F172A))
-                                    : const Color(0xFF64748B),
-                                letterSpacing: 0.3,
-                              ),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: AppColors.pencilBlack,
+                              offset: Offset(1.5, 1.5),
+                              blurRadius: 0,
                             ),
                           ],
+                        ),
+                        child: Text(
+                          perf.percentileBadgeText,
+                          style: GoogleFonts.patrickHand(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.pencilBlack,
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ],
@@ -758,4 +710,54 @@ class _GeniusGameButtonState extends State<_GeniusGameButton> {
       ),
     );
   }
+}
+
+
+/// Kartlarin arkasinda asagi dogru kivrilarak inen, icerik uzadikca uzayan
+/// el cizimi merdiven / sarmal yol. Yukseklik icerige gore otomatik olusur.
+class _LadderPathPainter extends CustomPainter {
+  final double period;
+  const _LadderPathPainter({required this.period});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final cx = size.width / 2;
+    final amp = size.width * 0.30;
+    final strand = Paint()
+      ..color = AppColors.pencilGraphite.withValues(alpha: 0.35)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.2
+      ..strokeCap = StrokeCap.round;
+    final rung = Paint()
+      ..color = AppColors.pencilGraphite.withValues(alpha: 0.22)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0
+      ..strokeCap = StrokeCap.round;
+
+    final p1 = Path();
+    final p2 = Path();
+    for (double y = 0; y <= size.height; y += 4) {
+      final s = math.sin(y / period * 2 * math.pi);
+      final x1 = cx + amp * s;
+      final x2 = cx - amp * s;
+      if (y == 0) {
+        p1.moveTo(x1, y);
+        p2.moveTo(x2, y);
+      } else {
+        p1.lineTo(x1, y);
+        p2.lineTo(x2, y);
+      }
+    }
+    final step = period / 10;
+    for (double y = step / 2; y <= size.height; y += step) {
+      final s = math.sin(y / period * 2 * math.pi);
+      canvas.drawLine(
+          Offset(cx + amp * s, y), Offset(cx - amp * s, y), rung);
+    }
+    canvas.drawPath(p1, strand);
+    canvas.drawPath(p2, strand);
+  }
+
+  @override
+  bool shouldRepaint(covariant _LadderPathPainter old) => old.period != period;
 }

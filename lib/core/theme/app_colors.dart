@@ -1,54 +1,79 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  // Ultra Modern Açık Gri Zemin
-  static const Color backgroundLight = Color(0xFFEDEFF3); // Canlı ve temiz açık gri
-  static const Color surfaceLight = Color(0xFFFFFFFF);         
-  static const Color surfaceSecondaryLight = Color(0xFFE4E7ED);
+  // Kara Kalem & Skeç Kağıt Zeminleri
+  static const Color backgroundLight = Color(0xFFFBF9F4); // Doğal eskiz kağıdı dokusu
+  static const Color surfaceLight = Color(0xFFFFFFFF);    // Çizim kağıdı beyazı
+  static const Color surfaceSecondaryLight = Color(0xFFF3EFE6);
   static const Color cardBgLight = Color(0xFFFFFFFF);
 
-  // OLED Neo-Dark
-  static const Color backgroundDark = Color(0xFF0F1115); // Koyu modda bile dengeli
-  static const Color surfaceDark = Color(0xFF181B20); 
-  static const Color surfaceSecondaryDark = Color(0xFF22262E);
+  // Koyu mod için kara tahta / grafit zemin
+  static const Color backgroundDark = Color(0xFF18181B);
+  static const Color surfaceDark = Color(0xFF27272A);
+  static const Color surfaceSecondaryDark = Color(0xFF3F3F46);
 
-  // ADHD & Dopamin Neon Vurguları
-  static const Color geniusGold = Color(0xFFFFB800); // Dahi Altını
-  static const Color electricAmber = Color(0xFFFF7A00); // Zeka Kıvılcımı
-  static const Color dopaminePurple = Color(0xFF8B5CF6); // Yüksek Dopamin Moru
-  static const Color hyperCyan = Color(0xFF06B6D4); // Hiper Odak Turkuazı
-  static const Color supremeEmerald = Color(0xFF10B981); // Zafer Yeşili
+  // Kurşun Kalem & Çini Mürekkebi Çizgileri
+  static const Color pencilBlack = Color(0xFF1C1917); // Net kurşun kalem / keçe uçlu siyah
+  static const Color pencilGraphite = Color(0xFF44403C); // 2B Grafit tonu
+  static const Color pencilGray = Color(0xFF78716C); // Açık karalama tonu
+  static const Color pencilLight = Color(0xFFA8A29E); // Taslak çizgisi
+  static const Color sketchBorder = Color(0xFF1C1917); // 2px standart skeç kenarlığı
 
-  // Neon Accents
-  static const Color accentPurple = Color(0xFFB983FF); // Neon Purple
-  static const Color accentCyan = Color(0xFF00E5FF); // Cyber Cyan
-  static const Color accentOrange = Color(0xFFFF5E00); // Neon Orange
-  static const Color accentGreen = Color(0xFF00FA9A); // Spring Green
+  // Fotoğraftaki İkonik Fosforlu Kalem (Highlighter) Vurguları
+  static const Color highlighterYellow = Color(0xFFFFDE59); // Fotoğraftaki sarı fosfor
+  static const Color highlighterCyan = Color(0xFF70E0D8);   // Fotoğraftaki turkuaz fosfor
+  static const Color highlighterOrange = Color(0xFFFF9F68); // Skeç mercan/turuncu
+  static const Color highlighterPink = Color(0xFFFF85A1);   // Skeç neon pembe
+  static const Color highlighterGreen = Color(0xFF86EFAC);  // Skeç yeşil
+  static const Color highlighterPurple = Color(0xFFC4B5FD); // Skeç lavanta moru
 
-  static const Color primary = Color(0xFF000000); // Dark Charcoal
-  
-  static const Color warning = Color(0xFFFFB300);
-  static const Color success = Color(0xFF00FA9A);
-  static const Color error = Color(0xFFFF3366);
+  // Dopamin & ADHD Eskiz Eşleşmeleri
+  static const Color geniusGold = highlighterYellow;
+  static const Color electricAmber = highlighterOrange;
+  static const Color dopaminePurple = highlighterPurple;
+  static const Color hyperCyan = highlighterCyan;
+  static const Color supremeEmerald = highlighterGreen;
 
-  // Text Colors
-  static const Color textPrimaryLight = Color(0xFF0A0A0C); 
-  static const Color textSecondaryLight = Color(0xFF71717A); 
-  static const Color textMutedLight = Color(0xFFA1A1AA); 
+  static const Color primary = pencilBlack;
+  static const Color warning = highlighterYellow;
+  static const Color success = highlighterGreen;
+  static const Color error = Color(0xFFEF4444);
 
-  static const Color textPrimaryDark = Color(0xFFFAFAFA); 
-  static const Color textSecondaryDark = Color(0xFFA1A1AA); 
-  static const Color textMutedDark = Color(0xFF52525B); 
+  // Metin Renkleri
+  static const Color textPrimaryLight = pencilBlack;
+  static const Color textSecondaryLight = pencilGraphite;
+  static const Color textMutedLight = pencilGray;
 
-  static const Color borderLight = Color(0xFFE4E4E7); 
-  static const Color borderDark = Color(0xFF27272A); 
+  static const Color textPrimaryDark = Color(0xFFFAFAFA);
+  static const Color textSecondaryDark = Color(0xFFA1A1AA);
+  static const Color textMutedDark = Color(0xFF71717A);
 
-  // Game specific signature colors
-  static const Color queensGame = Color(0xFFFF3366);
-  static const Color pinpointGame = Color(0xFF00E5FF);
-  static const Color crossclimbGame = Color(0xFFB983FF);
-  static const Color tangoGame = Color(0xFFFF9E00);
-  static const Color zipGame = Color(0xFF00FA9A);
+  static const Color borderLight = pencilBlack;
+  static const Color borderDark = Color(0xFF52525B);
+
+  // Oyun Özel Skeç Renkleri
+  static const Color queensGame = highlighterPink;
+  static const Color pinpointGame = highlighterCyan;
+  static const Color crossclimbGame = highlighterPurple;
+  static const Color tangoGame = highlighterOrange;
+  static const Color zipGame = highlighterGreen;
+
+  // Legacy Uyumluluğu
+  static const Color background = backgroundLight;
+  static const Color surface = surfaceLight;
+  static const Color primaryLight = pencilGraphite;
+  static const Color secondary = pencilGray;
+  static const Color accentPurple = highlighterPurple;
+  static const Color accentPink = highlighterPink;
+  static const Color accentAmber = highlighterYellow;
+  static const Color accentCyan = highlighterCyan;
+  static const Color accentOrange = highlighterOrange;
+  static const Color accentGreen = highlighterGreen;
+  static const Color primaryGlow = pencilLight;
+  static const Color textPrimary = textPrimaryLight;
+  static const Color textSecondary = textSecondaryLight;
+  static const Color textMuted = textMutedLight;
+  static const Color border = borderLight;
 
   static const LinearGradient glassGradientLight = LinearGradient(
     colors: [Color(0xB3FFFFFF), Color(0x66FFFFFF)],
@@ -62,41 +87,20 @@ class AppColors {
     end: Alignment.bottomRight,
   );
 
-  // Legacy Aliases for backward compatibility
-  static const Color background = backgroundLight;
-  static const Color surface = surfaceLight;
-  static const Color primaryGlow = Color(0xFFE4E4E7);
-  static const Color primaryLight = Color(0xFF3F3F46);
-  static const Color secondary = Color(0xFF71717A);
-  static const Color accentPink = Color(0xFFFF3366);
-  static const Color accentAmber = Color(0xFFFF9E00);
-  static const Color textPrimary = textPrimaryLight;
-  static const Color textSecondary = textSecondaryLight;
-  static const Color textMuted = textMutedLight;
-  static const Color border = borderLight;
-
   static const LinearGradient queensGradient = LinearGradient(
-    colors: [Color(0xFFFF3366), Color(0xFFFF7096)],
-    begin: Alignment.topLeft, end: Alignment.bottomRight,
+    colors: [highlighterPink, Color(0xFFFFB3C6)],
   );
-
   static const LinearGradient pinpointGradient = LinearGradient(
-    colors: [Color(0xFF00E5FF), Color(0xFF00B4D8)],
-    begin: Alignment.topLeft, end: Alignment.bottomRight,
+    colors: [highlighterCyan, Color(0xFFA5F3FC)],
   );
-
   static const LinearGradient crossclimbGradient = LinearGradient(
-    colors: [Color(0xFFB983FF), Color(0xFF90E0EF)],
-    begin: Alignment.topLeft, end: Alignment.bottomRight,
+    colors: [highlighterPurple, Color(0xFFDDD6FE)],
   );
-
   static const LinearGradient tangoGradient = LinearGradient(
-    colors: [Color(0xFFFF9E00), Color(0xFFFFD000)],
-    begin: Alignment.topLeft, end: Alignment.bottomRight,
+    colors: [highlighterOrange, Color(0xFFFED7AA)],
   );
-
   static const LinearGradient zipGradient = LinearGradient(
-    colors: [Color(0xFF00FA9A), Color(0xFF00D2D3)],
-    begin: Alignment.topLeft, end: Alignment.bottomRight,
+    colors: [highlighterGreen, Color(0xFFBBF7D0)],
   );
 }
+
