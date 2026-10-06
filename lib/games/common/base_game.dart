@@ -7,6 +7,7 @@ enum GameType {
   crossclimb,
   tango,
   zipPath,
+  patches,
 }
 
 extension GameTypeExtension on GameType {
@@ -22,6 +23,8 @@ extension GameTypeExtension on GameType {
         return 'tango';
       case GameType.zipPath:
         return 'zipPath';
+      case GameType.patches:
+        return 'patches';
     }
   }
 
@@ -37,6 +40,8 @@ extension GameTypeExtension on GameType {
         return 'Güneş & Ay';
       case GameType.zipPath:
         return 'Sayı Yolu';
+      case GameType.patches:
+        return 'Alan Bölme';
     }
   }
 
@@ -52,6 +57,8 @@ extension GameTypeExtension on GameType {
         return 'Tango';
       case GameType.zipPath:
         return 'Zip Path';
+      case GameType.patches:
+        return 'Patches';
     }
   }
 
@@ -67,6 +74,8 @@ extension GameTypeExtension on GameType {
         return 'Izgarayı Güneş ve Ay ile doldur. Yan yana 3 aynı sembol koyma!';
       case GameType.zipPath:
         return 'Sayıları sırayla kesişmeyen tek bir yol ile birbirine bağla.';
+      case GameType.patches:
+        return 'Izgarayı, her biri tam bir sayı içeren ve alanı o sayıya eşit dikdörtgenlere böl.';
     }
   }
 
@@ -82,6 +91,8 @@ extension GameTypeExtension on GameType {
         return Icons.wb_sunny_rounded;
       case GameType.zipPath:
         return Icons.alt_route_rounded;
+      case GameType.patches:
+        return Icons.dashboard_customize_rounded;
     }
   }
 
@@ -97,6 +108,8 @@ extension GameTypeExtension on GameType {
         return AppColors.tangoGame;
       case GameType.zipPath:
         return AppColors.zipGame;
+      case GameType.patches:
+        return AppColors.patchesGame;
     }
   }
 
@@ -112,6 +125,8 @@ extension GameTypeExtension on GameType {
         return AppColors.tangoGradient;
       case GameType.zipPath:
         return AppColors.zipGradient;
+      case GameType.patches:
+        return AppColors.patchesGradient;
     }
   }
 
@@ -127,6 +142,8 @@ extension GameTypeExtension on GameType {
         return 'İKİLİ MANTIK';
       case GameType.zipPath:
         return 'DESEN BAĞLANTI';
+      case GameType.patches:
+        return 'GEOMETRİ & ALAN';
     }
   }
 }

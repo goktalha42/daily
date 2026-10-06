@@ -194,7 +194,7 @@ class _ConfettiPainter extends CustomPainter {
       final rot = progress * p.rotationSpeed;
 
       final paint = Paint()
-        ..color = p.color.withOpacity(opacity)
+        ..color = p.color.withValues(alpha: opacity)
         ..style = PaintingStyle.fill;
 
       canvas.save();

@@ -189,7 +189,7 @@ class _GeniusWinDialogState extends State<GeniusWinDialog> {
                     _SketchStatRow(
                       icon: Icons.psychology_rounded,
                       label: 'Zeka Endeksi (IQ)',
-                      value: '$iqScore DAHİ',
+                      value: '$iqScore ZÜHTÜ',
                       badgeColor: AppColors.highlighterPurple,
                     ),
                     const Divider(height: 14, color: AppColors.pencilBlack, thickness: 1.2),
@@ -353,3 +353,7 @@ class _SketchStatRow extends StatelessWidget {
     );
   }
 }
+
+/// Zühtü kimliği için modern alias tanımlamaları
+typedef ZuhtuWinDialog = GeniusWinDialog;
+typedef ZuhtuConfettiOverlay = GeniusConfettiOverlay;

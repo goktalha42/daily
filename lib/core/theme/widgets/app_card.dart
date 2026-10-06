@@ -46,36 +46,22 @@ class _AppCardState extends State<AppCard> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
-    final defaultBg = isDark ? AppColors.surfaceDark : AppColors.surfaceLight;
-    final borderColor = isDark ? AppColors.borderDark : AppColors.borderLight;
-
     final cardContent = Container(
       decoration: BoxDecoration(
-        color: widget.withGlassEffect ? null : defaultBg,
-        gradient: widget.withGlassEffect
-            ? (isDark ? AppColors.glassGradientDark : AppColors.glassGradientLight)
-            : null,
-        borderRadius: BorderRadius.circular(AppSpacing.borderRadiusXl),
-        border: Border.all(color: borderColor, width: 1),
-        boxShadow: [
-          if (!isDark)
-            BoxShadow(
-              color: AppColors.primary.withOpacity(0.025),
-              blurRadius: 24,
-              spreadRadius: 2,
-              offset: const Offset(0, 8),
-            ),
+        color: AppColors.surfaceLight,
+        borderRadius: BorderRadius.circular(AppSpacing.borderRadiusLg),
+        border: Border.all(color: AppColors.pencilBlack, width: 2.0),
+        boxShadow: const [
+          BoxShadow(
+            color: AppColors.pencilBlack,
+            blurRadius: 0,
+            offset: Offset(3.5, 3.5),
+          ),
         ],
       ),
-      child: Material(
-        color: Colors.transparent,
-        child: Padding(
-          padding: widget.padding,
-          child: widget.child,
-        ),
+      child: Padding(
+        padding: widget.padding,
+        child: widget.child,
       ),
     );
 
@@ -87,10 +73,8 @@ class _AppCardState extends State<AppCard> {
       onTapDown: _handleTapDown,
       onTapUp: _handleTapUp,
       onTapCancel: _handleTapCancel,
-      child: AnimatedScale(
-        scale: _isPressed ? 0.96 : 1.0,
-        duration: const Duration(milliseconds: 150),
-        curve: Curves.easeOutCubic,
+      child: Transform.translate(
+        offset: _isPressed ? const Offset(1.5, 1.5) : Offset.zero,
         child: cardContent,
       ),
     );

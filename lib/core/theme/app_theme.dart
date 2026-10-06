@@ -59,53 +59,6 @@ class AppTheme {
     );
   }
 
-  static ThemeData get darkTheme {
-    return ThemeData(
-      brightness: Brightness.dark,
-      scaffoldBackgroundColor: AppColors.backgroundDark,
-      colorScheme: const ColorScheme.dark(
-        primary: AppColors.surfaceLight,
-        secondary: AppColors.accentCyan,
-        surface: AppColors.surfaceDark,
-        error: AppColors.error,
-      ),
-      textTheme: TextTheme(
-        displayLarge: AppTextStyles.displayLarge(AppColors.textPrimaryDark),
-        headlineLarge: AppTextStyles.headlineLarge(AppColors.textPrimaryDark),
-        headlineMedium: AppTextStyles.headlineMedium(AppColors.textPrimaryDark),
-        titleLarge: AppTextStyles.titleLarge(AppColors.textPrimaryDark),
-        titleMedium: AppTextStyles.titleMedium(AppColors.textPrimaryDark),
-        bodyLarge: AppTextStyles.bodyLarge(AppColors.textPrimaryDark),
-        bodyMedium: AppTextStyles.bodyMedium(AppColors.textSecondaryDark),
-        labelLarge: AppTextStyles.labelLarge(AppColors.textPrimaryDark),
-      ),
-      cardTheme: CardThemeData(
-        color: AppColors.surfaceDark,
-        elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.borderRadiusLg),
-          side: const BorderSide(color: AppColors.borderDark, width: 1),
-        ),
-      ),
-      appBarTheme: AppBarTheme(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-        iconTheme: const IconThemeData(color: AppColors.textPrimaryDark),
-        titleTextStyle: AppTextStyles.titleLarge(AppColors.textPrimaryDark),
-      ),
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.surfaceLight,
-          foregroundColor: AppColors.primary,
-          elevation: 0,
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppSpacing.borderRadiusMd),
-          ),
-          textStyle: AppTextStyles.labelLarge(AppColors.primary),
-        ),
-      ),
-    );
-  }
+  /// Zühtü kara kalem skeç teması tek ve karakteristiktir; koyu tema modu da bu temayı baz alır.
+  static ThemeData get darkTheme => lightTheme;
 }

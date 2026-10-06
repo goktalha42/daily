@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:uuid/uuid.dart';
 
@@ -11,37 +10,41 @@ import '../../core/utils/date_utils.dart';
 import '../../core/services/game_stats_service.dart';
 import '../../core/widgets/genius_win_dialog.dart';
 import '../../core/widgets/sketch_decorations.dart';
+import '../../core/widgets/screen_shake.dart';
 import '../common/base_game.dart';
 import '../../features/leaderboard/leaderboard_service.dart';
-import 'tango_models.dart';
-import 'tango_logic.dart';
-import 'tango_levels.dart';
+import 'patches_models.dart';
+import 'patches_logic.dart';
+import 'patches_levels.dart';
 
-class _TangoHistoryItem {
-  final int r;
-  final int c;
-  final TangoSymbol oldSymbol;
-
-  const _TangoHistoryItem(this.r, this.c, this.oldSymbol);
-}
-
-class TangoScreen extends ConsumerStatefulWidget {
+class PatchesScreen extends ConsumerStatefulWidget {
   final String levelId;
 
-  const TangoScreen({super.key, required this.levelId});
+  const PatchesScreen({super.key, required this.levelId});
 
   @override
-  ConsumerState<TangoScreen> createState() => _TangoScreenState();
+  ConsumerState<PatchesScreen> createState() => _PatchesScreenState();
 }
 
-class _TangoScreenState extends ConsumerState<TangoScreen> {
-  late TangoLevel _level;
-  late List<List<TangoCell>> _grid;
-  final List<_TangoHistoryItem> _history = [];
-  int _moveCount = 0;
+class _PatchesScreenState extends ConsumerState<PatchesScreen> {
+  late PatchesLevel _level;
+  final List<PatchRect> _userRects = [];
+  PatchPoint? _dragStart;
+  PatchPoint? _dragCurrent;
+
   int _elapsedMs = 0;
   Timer? _timer;
   bool _isSolved = false;
+
+  // Organik fosforlu keçeli kalem renk paleti
+  static const List<Color> _patchColors = [
+    Color(0xFFFFDE59), // Fosforlu Sarı
+    Color(0xFF86EFAC), // Fosforlu Nane Yeşili
+    Color(0xFF70E0D8), // Fosforlu Turkuaz
+    Color(0xFFFF9F68), // Fosforlu Turuncu
+    Color(0xFFC4B5FD), // Fosforlu Lavanta
+    Color(0xFFFF85A1), // Fosforlu Pembe
+  ];
 
   @override
   void initState() {
@@ -50,24 +53,10 @@ class _TangoScreenState extends ConsumerState<TangoScreen> {
   }
 
   void _initGame() {
-    _level = TangoLevelRepository.getLevelForDate(widget.levelId);
-    _grid = List.generate(
-      _level.gridSize,
-      (r) => List.generate(
-        _level.gridSize,
-        (c) {
-          final initSym = _level.initialGrid[r][c];
-          return TangoCell(
-            row: r,
-            col: c,
-            isFixed: initSym != TangoSymbol.empty,
-            symbol: initSym,
-          );
-        },
-      ),
-    );
-    _history.clear();
-    _moveCount = 0;
+    _level = PatchesLevelRepository.getLevelForDate(widget.levelId);
+    _userRects.clear();
+    _dragStart = null;
+    _dragCurrent = null;
     _elapsedMs = 0;
     _isSolved = false;
     _startTimer();
@@ -90,40 +79,82 @@ class _TangoScreenState extends ConsumerState<TangoScreen> {
     super.dispose();
   }
 
-  void _onCellTap(int r, int c) {
-    if (_isSolved || _grid[r][c].isFixed) return;
+  PatchPoint _cellFromOffset(Offset localPos, double boardSize) {
+    final cellSize = boardSize / _level.gridSize;
+    final r = (localPos.dy / cellSize).floor().clamp(0, _level.gridSize - 1);
+    final c = (localPos.dx / cellSize).floor().clamp(0, _level.gridSize - 1);
+    return PatchPoint(r, c);
+  }
 
-    HapticFeedback.selectionClick();
-    final current = _grid[r][c].symbol;
-    _history.add(_TangoHistoryItem(r, c, current));
+  void _onPointerDown(PointerDownEvent event, double boardSize) {
+    if (_isSolved) return;
+    final pt = _cellFromOffset(event.localPosition, boardSize);
+
+    // Eğer tıklanan hücrede zaten bir dikdörtgen varsa ve tek dokunuşsa, o dikdörtgeni sil
+    final existingIdx = _userRects.indexWhere((r) => r.contains(pt.row, pt.col));
+    if (existingIdx != -1) {
+      HapticFeedback.selectionClick();
+      setState(() {
+        _userRects.removeAt(existingIdx);
+        _checkState();
+      });
+      return;
+    }
+
+    HapticFeedback.lightImpact();
+    setState(() {
+      _dragStart = pt;
+      _dragCurrent = pt;
+    });
+  }
+
+  void _onPointerMove(PointerMoveEvent event, double boardSize) {
+    if (_isSolved || _dragStart == null) return;
+    final pt = _cellFromOffset(event.localPosition, boardSize);
+    if (_dragCurrent != pt) {
+      setState(() {
+        _dragCurrent = pt;
+      });
+    }
+  }
+
+  void _onPointerUp(PointerUpEvent event, double boardSize) {
+    if (_isSolved || _dragStart == null || _dragCurrent == null) return;
+
+    final newRect = PatchRect.fromPoints(
+      _dragStart!,
+      _dragCurrent!,
+      colorIndex: _userRects.length % _patchColors.length,
+    );
 
     setState(() {
-      if (current == TangoSymbol.empty) {
-        _grid[r][c].symbol = TangoSymbol.sun;
-      } else if (current == TangoSymbol.sun) {
-        _grid[r][c].symbol = TangoSymbol.moon;
-      } else {
-        _grid[r][c].symbol = TangoSymbol.empty;
+      _dragStart = null;
+      _dragCurrent = null;
+
+      // Çakışma kontrolü: Başka bir dikdörtgenle çakışıyorsa kabul etme
+      if (PatchesLogic.hasOverlap(newRect, _userRects)) {
+        HapticFeedback.vibrate();
+        ScreenShake.shake(context, intensity: 4.0);
+        return;
       }
-      _moveCount++;
+
+      _userRects.add(newRect);
+      HapticFeedback.mediumImpact();
       _checkState();
     });
   }
 
   void _undoMove() {
-    if (_history.isEmpty || _isSolved) return;
+    if (_userRects.isEmpty || _isSolved) return;
     HapticFeedback.lightImpact();
-
     setState(() {
-      final last = _history.removeLast();
-      _grid[last.r][last.c].symbol = last.oldSymbol;
-      _moveCount++;
+      _userRects.removeLast();
       _checkState();
     });
   }
 
   void _resetBoard() {
-    if (_isSolved) return;
+    if (_isSolved || _userRects.isEmpty) return;
 
     showDialog(
       context: context,
@@ -148,7 +179,7 @@ class _TangoScreenState extends ConsumerState<TangoScreen> {
           ],
         ),
         content: Text(
-          'Yerleştirdiğin tüm güneş ve aylar sıfırlanacak. Devam etmek istiyor musun?',
+          'Çizdiğin tüm alanlar ve dikdörtgenler silinecek. Devam etmek istiyor musun?',
           style: GoogleFonts.patrickHand(
             color: AppColors.pencilGraphite,
             fontSize: 18,
@@ -179,16 +210,8 @@ class _TangoScreenState extends ConsumerState<TangoScreen> {
             onPressed: () {
               Navigator.pop(ctx);
               setState(() {
-                for (var r = 0; r < _level.gridSize; r++) {
-                  for (var c = 0; c < _level.gridSize; c++) {
-                    if (!_grid[r][c].isFixed) {
-                      _grid[r][c].symbol = TangoSymbol.empty;
-                    }
-                  }
-                }
-                _history.clear();
-                _moveCount = 0;
-                TangoLogic.validateGrid(_grid, _level.gridSize, _level.constraints);
+                _userRects.clear();
+                _checkState();
               });
             },
             child: Text(
@@ -205,7 +228,7 @@ class _TangoScreenState extends ConsumerState<TangoScreen> {
   }
 
   void _checkState() {
-    final solved = TangoLogic.validateGrid(_grid, _level.gridSize, _level.constraints);
+    final solved = PatchesLogic.validateBoard(_userRects, _level.clues, _level.gridSize);
     if (solved && !_isSolved) {
       _isSolved = true;
       _timer?.cancel();
@@ -214,32 +237,32 @@ class _TangoScreenState extends ConsumerState<TangoScreen> {
   }
 
   void _handleWin() {
-    final score = (2000 - (_elapsedMs ~/ 1000) * 10 - _moveCount * 4).clamp(100, 2000);
+    final score = (2000 - (_elapsedMs ~/ 1000) * 10 - _userRects.length * 5).clamp(100, 2000);
 
     final result = GameResult(
       id: const Uuid().v4(),
-      gameType: GameType.tango,
+      gameType: GameType.patches,
       levelId: widget.levelId,
       userId: 'user_local',
       userName: 'Oyuncu',
       durationMs: _elapsedMs,
-      moveCount: _moveCount,
+      moveCount: _userRects.length,
       score: score,
       completedAt: DateTime.now(),
     );
 
     ref.read(leaderboardServiceProvider).submitScore(result);
     ref.read(gameStatsServiceProvider.notifier).recordGameResult(
-          gameType: GameType.tango,
+          gameType: GameType.patches,
           score: score,
           durationMs: _elapsedMs,
-          moveCount: _moveCount,
+          moveCount: _userRects.length,
         );
 
     GeniusWinDialog.show(
       context,
       result: result,
-      gameTitle: 'Güneş & Ay',
+      gameTitle: 'Alan Bölme',
       onRestart: () {
         Navigator.pop(context);
         setState(() {
@@ -260,10 +283,10 @@ class _TangoScreenState extends ConsumerState<TangoScreen> {
         ),
         title: Row(
           children: [
-            const Icon(Icons.wb_sunny_rounded, color: AppColors.highlighterOrange, size: 28),
+            const Icon(Icons.dashboard_customize_rounded, color: AppColors.highlighterYellow, size: 28),
             const SizedBox(width: 8),
             Text(
-              'Güneş & Ay: Nasıl Oynanır?',
+              'Alan Bölme: Nasıl Oynanır?',
               style: GoogleFonts.patrickHand(
                 color: AppColors.pencilBlack,
                 fontWeight: FontWeight.w700,
@@ -278,20 +301,20 @@ class _TangoScreenState extends ConsumerState<TangoScreen> {
           children: [
             _buildRuleCard(
               '1',
-              'Eşit Denge',
-              'Her satır ve sütunda eşit sayıda ☀️ Güneş ve 🌙 Ay olmalıdır.',
+              'Sayı = Dikdörtgen Alanı',
+              'Izgaradaki her sayı, onu kapsayan dikdörtgenin alanını (kare sayısını) belirtir.',
             ),
             const SizedBox(height: 8),
             _buildRuleCard(
               '2',
-              'Üçleme Yasağı',
-              'Yan yana veya üst üste asla 3 aynı sembol gelemez! En fazla 2 aynı sembol peş peşe gelebilir.',
+              'Tam 1 Sayı İçermeli',
+              'Çizeceğin her dikdörtgenin içinde tam olarak 1 adet sayı bulunmalıdır.',
             ),
             const SizedBox(height: 8),
             _buildRuleCard(
               '3',
-              'İşaretler (= ve ✕)',
-              '= işareti bağlı iki hücrenin aynı sembol olduğunu, ✕ işareti ise zıt semboller olduğunu belirtir.',
+              'Boşluk ve Çakışma Yok',
+              'Tüm ızgara üst üste binmeyen dikdörtgenlerle tamamen kaplanmalıdır.',
             ),
             const SizedBox(height: 12),
             Container(
@@ -307,7 +330,7 @@ class _TangoScreenState extends ConsumerState<TangoScreen> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      '• Hücreye dokun: Boş ➔ ☀️ ➔ 🌙 ➔ Boş\n• Gri zeminli hücreler başlangıçta sabittir!',
+                      '• Parmağını basılı tutup sürükleyerek dikdörtgen çiz!\n• Çizdiğin bir dikdörtgeni silmek için üzerine bir kez dokun.',
                       style: GoogleFonts.patrickHand(
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
@@ -363,7 +386,7 @@ class _TangoScreenState extends ConsumerState<TangoScreen> {
             height: 24,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: AppColors.highlighterOrange,
+              color: AppColors.highlighterYellow,
               shape: BoxShape.circle,
               border: Border.all(color: AppColors.pencilBlack, width: 1.5),
             ),
@@ -407,15 +430,11 @@ class _TangoScreenState extends ConsumerState<TangoScreen> {
 
   @override
   Widget build(BuildContext context) {
-    int sunCount = 0, moonCount = 0;
-    final targetCount = (_level.gridSize * _level.gridSize) ~/ 2;
-
-    for (var r = 0; r < _level.gridSize; r++) {
-      for (var c = 0; c < _level.gridSize; c++) {
-        if (_grid[r][c].symbol == TangoSymbol.sun) sunCount++;
-        if (_grid[r][c].symbol == TangoSymbol.moon) moonCount++;
-      }
+    int coveredArea = 0;
+    for (final rect in _userRects) {
+      coveredArea += rect.area;
     }
+    final totalArea = _level.gridSize * _level.gridSize;
 
     return Scaffold(
       backgroundColor: AppColors.backgroundLight,
@@ -446,13 +465,13 @@ class _TangoScreenState extends ConsumerState<TangoScreen> {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.wb_sunny_rounded, size: 18, color: AppColors.pencilBlack),
+                          const Icon(Icons.dashboard_customize_rounded, size: 18, color: AppColors.pencilBlack),
                           const SizedBox(width: 6),
                           Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
-                                'Güneş & Ay',
+                                'Alan Bölme',
                                 style: GoogleFonts.patrickHand(
                                   fontSize: 17,
                                   fontWeight: FontWeight.w700,
@@ -463,12 +482,12 @@ class _TangoScreenState extends ConsumerState<TangoScreen> {
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
                                 decoration: BoxDecoration(
-                                  color: AppColors.highlighterOrange,
+                                  color: AppColors.highlighterYellow,
                                   borderRadius: BorderRadius.circular(6),
                                   border: Border.all(color: AppColors.pencilBlack, width: 1.2),
                                 ),
                                 child: Text(
-                                  '☀️🌙 Denge & Mantık',
+                                  '📐 Dikdörtgen Alanlar',
                                   style: GoogleFonts.patrickHand(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w700,
@@ -522,7 +541,7 @@ class _TangoScreenState extends ConsumerState<TangoScreen> {
 
               const SizedBox(height: 6),
 
-              // 2. SEMBOL SAYAÇLARI VE DENGE ÇUBUĞU (Organik SketchCard)
+              // 2. İLERLEME VE ALAN ÇUBUĞU (Organik SketchCard)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: SketchCard(
@@ -532,11 +551,11 @@ class _TangoScreenState extends ConsumerState<TangoScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      // Güneş Sayacı
+                      // Kaplanan Alan
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
-                          color: sunCount == targetCount
+                          color: coveredArea == totalArea
                               ? AppColors.highlighterGreen.withValues(alpha: 0.4)
                               : AppColors.highlighterYellow.withValues(alpha: 0.35),
                           borderRadius: BorderRadius.circular(8),
@@ -544,10 +563,10 @@ class _TangoScreenState extends ConsumerState<TangoScreen> {
                         ),
                         child: Row(
                           children: [
-                            const Text('☀️', style: TextStyle(fontSize: 16)),
+                            const Icon(Icons.grid_on_rounded, size: 16, color: AppColors.pencilBlack),
                             const SizedBox(width: 4),
                             Text(
-                              'Güneş: $sunCount / $targetCount',
+                              'Alan: $coveredArea / $totalArea',
                               style: GoogleFonts.patrickHand(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w700,
@@ -558,11 +577,11 @@ class _TangoScreenState extends ConsumerState<TangoScreen> {
                         ),
                       ),
 
-                      // Ay Sayacı
+                      // Blok Sayısı
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
-                          color: moonCount == targetCount
+                          color: _userRects.length == _level.clues.length
                               ? AppColors.highlighterGreen.withValues(alpha: 0.4)
                               : AppColors.highlighterCyan.withValues(alpha: 0.35),
                           borderRadius: BorderRadius.circular(8),
@@ -570,10 +589,10 @@ class _TangoScreenState extends ConsumerState<TangoScreen> {
                         ),
                         child: Row(
                           children: [
-                            const Text('🌙', style: TextStyle(fontSize: 16)),
+                            const Icon(Icons.crop_free_rounded, size: 16, color: AppColors.pencilBlack),
                             const SizedBox(width: 4),
                             Text(
-                              'Ay: $moonCount / $targetCount',
+                              'Blok: ${_userRects.length} / ${_level.clues.length}',
                               style: GoogleFonts.patrickHand(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w700,
@@ -590,7 +609,7 @@ class _TangoScreenState extends ConsumerState<TangoScreen> {
 
               const SizedBox(height: 10),
 
-              // 3. ORGANİK SKEÇ TANGO TAHTASI
+              // 3. ORGANİK SKEÇ ALAN BÖLME TAHTASI
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -602,139 +621,171 @@ class _TangoScreenState extends ConsumerState<TangoScreen> {
                           final boardSize = constraints.maxWidth;
                           final cellSize = boardSize / _level.gridSize;
 
+                          PatchRect? dragPreviewRect;
+                          if (_dragStart != null && _dragCurrent != null) {
+                            dragPreviewRect = PatchRect.fromPoints(
+                              _dragStart!,
+                              _dragCurrent!,
+                              colorIndex: _userRects.length % _patchColors.length,
+                            );
+                          }
+
                           return SketchCard(
                             padding: const EdgeInsets.all(4),
                             borderRadius: 16,
                             shadowOffset: const Offset(4, 4),
                             borderWidth: 2.5,
-                            child: Stack(
-                              children: [
-                                // Izgara Hücreleri
-                                GridView.builder(
-                                  physics: const NeverScrollableScrollPhysics(),
-                                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                                    crossAxisCount: _level.gridSize,
-                                  ),
-                                  itemCount: _level.gridSize * _level.gridSize,
-                                  itemBuilder: (context, index) {
-                                    final r = index ~/ _level.gridSize;
-                                    final c = index % _level.gridSize;
-                                    final cell = _grid[r][c];
-
-                                    Color cellBg;
-                                    if (cell.isConflict) {
-                                      cellBg = const Color(0xFFFEE2E2);
-                                    } else if (cell.isFixed) {
-                                      cellBg = AppColors.surfaceSecondaryLight.withValues(alpha: 0.6);
-                                    } else {
-                                      cellBg = Colors.white;
-                                    }
-
-                                    return GestureDetector(
-                                      onTap: () => _onCellTap(r, c),
-                                      child: AnimatedContainer(
-                                        duration: const Duration(milliseconds: 180),
-                                        margin: const EdgeInsets.all(2.5),
+                            child: Listener(
+                              behavior: HitTestBehavior.opaque,
+                              onPointerDown: (e) => _onPointerDown(e, boardSize),
+                              onPointerMove: (e) => _onPointerMove(e, boardSize),
+                              onPointerUp: (e) => _onPointerUp(e, boardSize),
+                              child: Stack(
+                                children: [
+                                  // 1. Zemin Izgarası
+                                  GridView.builder(
+                                    physics: const NeverScrollableScrollPhysics(),
+                                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                      crossAxisCount: _level.gridSize,
+                                    ),
+                                    itemCount: _level.gridSize * _level.gridSize,
+                                    itemBuilder: (context, index) {
+                                      return Container(
+                                        margin: const EdgeInsets.all(1.5),
                                         decoration: BoxDecoration(
-                                          color: cellBg,
-                                          borderRadius: BorderRadius.circular(10),
+                                          color: Colors.white,
+                                          borderRadius: BorderRadius.circular(6),
                                           border: Border.all(
-                                            color: cell.isConflict
-                                                ? AppColors.error
-                                                : (cell.isFixed ? AppColors.pencilBlack : AppColors.pencilLight),
-                                            width: cell.isConflict ? 2.4 : (cell.isFixed ? 1.8 : 1.2),
+                                            color: AppColors.pencilLight.withValues(alpha: 0.5),
+                                            width: 1.0,
                                           ),
-                                          boxShadow: cell.isConflict
-                                              ? const [
-                                                  BoxShadow(
-                                                    color: AppColors.error,
-                                                    offset: Offset(1.5, 1.5),
-                                                    blurRadius: 0,
-                                                  ),
-                                                ]
-                                              : (cell.symbol != TangoSymbol.empty
-                                                  ? const [
-                                                      BoxShadow(
-                                                        color: AppColors.pencilBlack,
-                                                        offset: Offset(1.5, 1.5),
-                                                        blurRadius: 0,
-                                                      ),
-                                                    ]
-                                                  : null),
                                         ),
-                                        child: Stack(
-                                          alignment: Alignment.center,
-                                          children: [
-                                            if (cell.isFixed)
-                                              Positioned(
-                                                top: 3,
-                                                left: 3,
-                                                child: Container(
-                                                  width: 5,
-                                                  height: 5,
-                                                  decoration: const BoxDecoration(
-                                                    color: AppColors.pencilBlack,
-                                                    shape: BoxShape.circle,
-                                                  ),
-                                                ),
-                                              ),
-                                            _buildSymbol(cell),
+                                      );
+                                    },
+                                  ),
+
+                                  // 2. Kullanıcının Çizdiği Dikdörtgen Bloklar
+                                  ..._userRects.map((rect) {
+                                    final left = rect.leftCol * cellSize;
+                                    final top = rect.topRow * cellSize;
+                                    final width = rect.width * cellSize;
+                                    final height = rect.height * cellSize;
+
+                                    final isValid = PatchesLogic.isValidRect(rect, _level.clues);
+                                    final color = _patchColors[rect.colorIndex % _patchColors.length];
+
+                                    return Positioned(
+                                      left: left + 2,
+                                      top: top + 2,
+                                      width: width - 4,
+                                      height: height - 4,
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          color: color.withValues(alpha: 0.40),
+                                          borderRadius: BorderRadius.circular(8),
+                                          border: Border.all(
+                                            color: isValid ? AppColors.pencilBlack : AppColors.error,
+                                            width: 2.2,
+                                          ),
+                                          boxShadow: const [
+                                            BoxShadow(
+                                              color: AppColors.pencilBlack,
+                                              offset: Offset(2, 2),
+                                              blurRadius: 0,
+                                            ),
                                           ],
                                         ),
                                       ),
                                     );
-                                  },
-                                ),
+                                  }),
 
-                                // Kısıt İşaretleri (Constraint Overlays: = ve ✕)
-                                ..._level.constraints.map((cons) {
-                                  final isHorizontal = cons.r1 == cons.r2;
-                                  final isEqual = cons.type == ConstraintType.equal;
-                                  final markerText = isEqual ? '=' : '✕';
-                                  final markerColor = isEqual ? AppColors.highlighterGreen : AppColors.highlighterOrange;
-
-                                  double left, top;
-                                  if (isHorizontal) {
-                                    left = (cons.c1 + 1) * cellSize - 11;
-                                    top = cons.r1 * cellSize + cellSize / 2 - 11;
-                                  } else {
-                                    left = cons.c1 * cellSize + cellSize / 2 - 11;
-                                    top = (cons.r1 + 1) * cellSize - 11;
-                                  }
-
-                                  return Positioned(
-                                    left: left,
-                                    top: top,
-                                    child: Container(
-                                      width: 22,
-                                      height: 22,
-                                      decoration: BoxDecoration(
-                                        color: markerColor,
-                                        shape: BoxShape.circle,
-                                        border: Border.all(color: AppColors.pencilBlack, width: 1.8),
-                                        boxShadow: const [
-                                          BoxShadow(
+                                  // 3. Canlı Sürükleme Önizlemesi (Drag Preview)
+                                  if (dragPreviewRect != null) ...[
+                                    Positioned(
+                                      left: dragPreviewRect.leftCol * cellSize + 2,
+                                      top: dragPreviewRect.topRow * cellSize + 2,
+                                      width: dragPreviewRect.width * cellSize - 4,
+                                      height: dragPreviewRect.height * cellSize - 4,
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          color: AppColors.highlighterYellow.withValues(alpha: 0.3),
+                                          borderRadius: BorderRadius.circular(8),
+                                          border: Border.all(
                                             color: AppColors.pencilBlack,
-                                            offset: Offset(1.5, 1.5),
-                                            blurRadius: 0,
+                                            width: 2.4,
+                                            strokeAlign: BorderSide.strokeAlignInside,
                                           ),
-                                        ],
-                                      ),
-                                      child: Center(
-                                        child: Text(
-                                          markerText,
-                                          style: GoogleFonts.patrickHand(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w700,
-                                            color: AppColors.pencilBlack,
-                                            height: 1.0,
+                                        ),
+                                        child: Center(
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                            decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              borderRadius: BorderRadius.circular(6),
+                                              border: Border.all(color: AppColors.pencilBlack, width: 1.5),
+                                            ),
+                                            child: Text(
+                                              '${dragPreviewRect.width}×${dragPreviewRect.height} = ${dragPreviewRect.area}',
+                                              style: GoogleFonts.patrickHand(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w700,
+                                                color: AppColors.pencilBlack,
+                                              ),
+                                            ),
                                           ),
                                         ),
                                       ),
                                     ),
-                                  );
-                                }),
-                              ],
+                                  ],
+
+                                  // 4. Sabit Sayı İpuçları (Tüm katmanların üstünde net görünüm)
+                                  ..._level.clues.map((clue) {
+                                    final left = clue.col * cellSize;
+                                    final top = clue.row * cellSize;
+
+                                    // Bu ipucunu içeren bir dikdörtgen var mı?
+                                    final isEnclosed = _userRects.any((r) => r.contains(clue.row, clue.col));
+
+                                    return Positioned(
+                                      left: left,
+                                      top: top,
+                                      width: cellSize,
+                                      height: cellSize,
+                                      child: Center(
+                                        child: Container(
+                                          width: cellSize * 0.65,
+                                          height: cellSize * 0.65,
+                                          decoration: BoxDecoration(
+                                            color: isEnclosed ? Colors.white : Colors.white.withValues(alpha: 0.9),
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                              color: AppColors.pencilBlack,
+                                              width: 1.8,
+                                            ),
+                                            boxShadow: const [
+                                              BoxShadow(
+                                                color: AppColors.pencilBlack,
+                                                offset: Offset(1, 1),
+                                                blurRadius: 0,
+                                              ),
+                                            ],
+                                          ),
+                                          child: Center(
+                                            child: Text(
+                                              '${clue.targetArea}',
+                                              style: GoogleFonts.patrickHand(
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.w700,
+                                                color: AppColors.pencilBlack,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  }),
+                                ],
+                              ),
                             ),
                           );
                         },
@@ -754,17 +805,17 @@ class _TangoScreenState extends ConsumerState<TangoScreen> {
                   children: [
                     // Geri Al Butonu
                     GestureDetector(
-                      onTap: _history.isNotEmpty ? _undoMove : null,
+                      onTap: _userRects.isNotEmpty ? _undoMove : null,
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
                         decoration: BoxDecoration(
-                          color: _history.isNotEmpty ? Colors.white : AppColors.surfaceSecondaryLight,
+                          color: _userRects.isNotEmpty ? Colors.white : AppColors.surfaceSecondaryLight,
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: _history.isNotEmpty ? AppColors.pencilBlack : AppColors.pencilLight,
+                            color: _userRects.isNotEmpty ? AppColors.pencilBlack : AppColors.pencilLight,
                             width: 2.0,
                           ),
-                          boxShadow: _history.isNotEmpty
+                          boxShadow: _userRects.isNotEmpty
                               ? const [
                                   BoxShadow(
                                     color: AppColors.pencilBlack,
@@ -779,7 +830,7 @@ class _TangoScreenState extends ConsumerState<TangoScreen> {
                             Icon(
                               Icons.undo_rounded,
                               size: 18,
-                              color: _history.isNotEmpty ? AppColors.pencilBlack : AppColors.pencilLight,
+                              color: _userRects.isNotEmpty ? AppColors.pencilBlack : AppColors.pencilLight,
                             ),
                             const SizedBox(width: 6),
                             Text(
@@ -787,7 +838,7 @@ class _TangoScreenState extends ConsumerState<TangoScreen> {
                               style: GoogleFonts.patrickHand(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,
-                                color: _history.isNotEmpty ? AppColors.pencilBlack : AppColors.pencilLight,
+                                color: _userRects.isNotEmpty ? AppColors.pencilBlack : AppColors.pencilLight,
                               ),
                             ),
                           ],
@@ -799,31 +850,40 @@ class _TangoScreenState extends ConsumerState<TangoScreen> {
 
                     // Sıfırla Butonu
                     GestureDetector(
-                      onTap: _resetBoard,
+                      onTap: _userRects.isNotEmpty ? _resetBoard : null,
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
                         decoration: BoxDecoration(
-                          color: AppColors.highlighterYellow,
+                          color: _userRects.isNotEmpty ? AppColors.highlighterYellow : AppColors.surfaceSecondaryLight,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: AppColors.pencilBlack, width: 2.0),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: AppColors.pencilBlack,
-                              offset: Offset(2.5, 2.5),
-                              blurRadius: 0,
-                            ),
-                          ],
+                          border: Border.all(
+                            color: _userRects.isNotEmpty ? AppColors.pencilBlack : AppColors.pencilLight,
+                            width: 2.0,
+                          ),
+                          boxShadow: _userRects.isNotEmpty
+                              ? const [
+                                  BoxShadow(
+                                    color: AppColors.pencilBlack,
+                                    offset: Offset(2.5, 2.5),
+                                    blurRadius: 0,
+                                  ),
+                                ]
+                              : null,
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.restart_alt_rounded, size: 18, color: AppColors.pencilBlack),
+                            Icon(
+                              Icons.restart_alt_rounded,
+                              size: 18,
+                              color: _userRects.isNotEmpty ? AppColors.pencilBlack : AppColors.pencilLight,
+                            ),
                             const SizedBox(width: 6),
                             Text(
                               'Sıfırla',
                               style: GoogleFonts.patrickHand(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,
-                                color: AppColors.pencilBlack,
+                                color: _userRects.isNotEmpty ? AppColors.pencilBlack : AppColors.pencilLight,
                               ),
                             ),
                           ],
@@ -840,18 +900,5 @@ class _TangoScreenState extends ConsumerState<TangoScreen> {
         ),
       ),
     );
-  }
-
-  Widget _buildSymbol(TangoCell cell) {
-    if (cell.symbol == TangoSymbol.sun) {
-      return const Text('☀️', style: TextStyle(fontSize: 26))
-          .animate()
-          .scale(duration: 150.ms, curve: Curves.easeOutBack);
-    } else if (cell.symbol == TangoSymbol.moon) {
-      return const Text('🌙', style: TextStyle(fontSize: 26))
-          .animate()
-          .scale(duration: 150.ms, curve: Curves.easeOutBack);
-    }
-    return const SizedBox.shrink();
   }
 }

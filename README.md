@@ -120,9 +120,9 @@ Yeni ekran **önce** bu bileşenlerle denenir; eksikse bileşen buraya eklenir, 
 ### 2.8 Tasarım Uyum Borcu (düzeltilecekler)
 - [x] `GameType.color` artık `AppColors.*Game` (fosfor) tonlarını kullanıyor.
 - [x] `glass_card.dart` silindi. `NeoGameLayout` blur'suz, kalın konturlu skeç iskeletine çevrildi.
-- [ ] `AppColors` içindeki koyu mod ve `glassGradient*` tanımları kullanılmıyorsa silinecek.
-- [ ] Kalan "Dahi" etiketleri (`Saf Dahi`, `Global Dahi`, `Dahi #8492`, `Genius*` sınıf adları) Zühtü diliyle yeniden adlandırılacak.
-- [ ] Oyun ekranlarının içi (Queens, Pinpoint, Crossclimb, Tango, Zip) için dil denetimi yapılacak: `withOpacity`/yumuşak gölge, sabit renk kodları.
+- [x] `AppColors` içindeki koyu mod ve `glassGradient*` tanımları temizlendi.
+- [x] Kalan "Dahi" etiketleri (`Saf Dahi`, `Global Dahi`, `Dahi #8492`, `DAHİ SEVİYESİ`) Zühtü kimliğiyle yeniden adlandırıldı (`ZuhtuWinDialog` aliası bağlandı).
+- [ ] Oyun ekranlarının içi (Pinpoint, Crossclimb, Tango, Zip) için dil denetimi yapılacak: `withOpacity`/yumuşak gölge, sabit renk kodları.
 
 ---
 
@@ -137,7 +137,7 @@ Hedef: aşağıdaki **6 oyunun tamamı** yapılacak.
 | 3 | Zip | Sayı Yolu | Mevcut | Yeşil |
 | 4 | Pinpoint | Kelime İzleri | Mevcut | Turkuaz |
 | 5 | Crossclimb | Kelime Tırmanışı | Mevcut | Mor |
-| 6 | Patches (Shikaku) | Alan Bölme | **Yapılacak** | Sarı |
+| 6 | Patches (Shikaku) | Alan Bölme | Mevcut | Sarı |
 
 Her oyun şu üç parçayı içerir: **`Models`** (tahta durumu), **`Logic`** (hamle işleme, durum), **`Validator`** (çözüm ve kural doğrulama) ve ayrıca **`Generator`** (bkz. Bölüm 4).
 
@@ -193,7 +193,7 @@ Yayın gününden **3 yıl** (hatta 30 yıl) sonra üretilen bölüm, ilk günk�
 6. **Önceden üretim:** Cron her gece, ertesi **N gün** için bulmaca üretip Redis ve MySQL'e yazar (varsayılan 7 gün).
 
 ### 4.3 Mevcut Durum
-Queens artık bu yönteme geçti: [`queens_generator.dart`](lib/games/queens/queens_generator.dart) tohumdan tahta üretir, çözücü tek çözümü doğrular, üretilemezse yeni deneme yapılır; tohum yardımcıları `core/puzzle/puzzle_seed.dart` içindedir. Zorluk takvimi de tohumludur. Tango, Zip, Pinpoint ve Crossclimb'in `*_levels.dart` dosyaları hâlâ sabit havuz içerir. Bu yapı **geçicidir** ve sırayla jeneratörlerle değiştirilecek.
+Queens ve Tango artık bu yönteme geçti: [`queens_generator.dart`](lib/games/queens/queens_generator.dart) ve [`tango_generator.dart`](lib/games/tango/tango_generator.dart) tohumdan tahta üretir, çözücü tek çözümü doğrular, üretilemezse yeni deneme yapılır; tohum yardımcıları `core/puzzle/puzzle_seed.dart` içindedir. Zorluk takvimi de tohumludur (`QueensDifficultyScheduler`, `TangoDifficultyScheduler`). Zip, Pinpoint ve Crossclimb'in `*_levels.dart` dosyaları hâlâ sabit havuz içerir. Bu yapı **geçicidir** ve sırayla jeneratörlerle değiştirilecek.
 
 ---
 
@@ -322,12 +322,13 @@ Durum: ✅ bitti · 🟡 kısmen · ⬜ başlamadı
 
 ### Faz 1 – Oyun Motorları (yerel)
 - ✅ Queens (Vezirler): Tohumlu `QueensGenerator` (tek çözüm garantisi, 3 yıl tekrarsızlık), `LocalQueensPuzzleRepository`, birim testleri, skeç defteri temasına uygun tahta (`QueensBoardPainter`), skeç ekran tasarımı (`QueensScreen`) ve skeç zafer diyaloğu (`GeniusWinDialog`) her şeyiyle tamamlandı.
-- 🟡 Tango, Zip: modeller/mantık var; `Validator` ve `Generator` ayrıştırılacak
+- ✅ Tango (Güneş & Ay): Tohumlu `TangoGenerator` (deterministik, tek çözüm garantisi, insan mantığı ile tahminsiz çözülebilirlik), `TangoDifficultyScheduler`, `LocalTangoPuzzleRepository` ve birim testleri tamamlandı.
+- ✅ Zip (Sayı Yolu): Modeller, duvar desteği (`walls`), tohumlu `ZipGenerator` (ortogonal yürüyüş, tek çözüm garantisi), `ZipDifficultyScheduler`, `LocalZipPuzzleRepository`, skeç ekranına duvar entegrasyonu ve birim testleri tamamlandı.
+- 🟡 Patches (Alan Bölme): model, logic, seviyeler, skeç ekran tasarımı ve ana sayfa entegrasyonu tamamlandı; tohumlu tek çözümlü jeneratör sırada.
 - 🟡 Pinpoint, Crossclimb: ekran ve model var; `Logic`, `Validator`, `Generator` eksik
-- ⬜ Patches: sıfırdan (model, logic, validator, generator, ekran)
-- 🟡 Her oyun için **tek çözüm** çözücüsü ve birim testleri (Queens tamam)
-- 🟡 `PuzzleRepository` arayüzü hazır (`core/puzzle/`); Queens için `Local` sürümü var, diğerleri sırada
-- 🟡 Sabit tohumlu seviye havuzlarının kaldırılması: Queens tamam; Tango, Zip, Pinpoint, Crossclimb kaldı
+- 🟡 Her oyun için **tek çözüm** çözücüsü ve birim testleri (Queens, Tango, Zip tamam)
+- 🟡 `PuzzleRepository` arayüzü hazır (`core/puzzle/`); Queens, Tango ve Zip için `Local` sürümü var, diğerleri sırada
+- 🟡 Sabit tohumlu seviye havuzlarının kaldırılması: Queens, Tango ve Zip tamam; Patches, Pinpoint, Crossclimb kaldı
 
 ### Faz 2 – Zaman ve Oyun Akışı
 - ⬜ `TimeSyncService` (A: cihaz saati / B: sunucu)

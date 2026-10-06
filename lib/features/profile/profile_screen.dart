@@ -149,7 +149,7 @@ class ProfileScreen extends ConsumerWidget {
                             Row(
                               children: [
                                 Text(
-                                  'Dahi #8492',
+                                  'Zühtü #8492',
                                   style: GoogleFonts.patrickHand(
                                     color: AppColors.pencilBlack,
                                     fontSize: 22,
@@ -368,7 +368,7 @@ class ProfileScreen extends ConsumerWidget {
                       bestScore: 0,
                       bestDurationMs: 0,
                       totalGamesPlayed: 0,
-                      geniusTitle: 'Saf Dahi',
+                      geniusTitle: 'Zühtü Ustası',
                     );
 
                 return Padding(
@@ -506,7 +506,7 @@ class ProfileScreen extends ConsumerWidget {
                 _SketchBadgeCard(
                   icon: Icons.workspace_premium_rounded,
                   title: 'Zirve %1',
-                  desc: 'Global Dahi',
+                  desc: 'Global Zühtü',
                   fillColor: AppColors.highlighterGreen,
                   isUnlocked: true,
                 ),

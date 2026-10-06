@@ -17,6 +17,7 @@ import '../../games/pinpoint/pinpoint_screen.dart';
 import '../../games/crossclimb/crossclimb_screen.dart';
 import '../../games/tango/tango_screen.dart';
 import '../../games/zip_path/zip_screen.dart';
+import '../../games/patches/patches_screen.dart';
 import '../leaderboard/leaderboard_screen.dart';
 import '../profile/profile_screen.dart';
 
@@ -239,6 +240,9 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
       case GameType.zipPath:
         screen = ZipScreen(levelId: _todayLevelId);
         break;
+      case GameType.patches:
+        screen = PatchesScreen(levelId: _todayLevelId);
+        break;
     }
     Navigator.push(context, MaterialPageRoute(builder: (_) => screen));
   }
@@ -445,7 +449,7 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
                                     border: Border.all(color: AppColors.pencilBlack, width: 1.5),
                                   ),
                                   child: Text(
-                                    'DAHİ SEVİYESİ',
+                                    'ZÜHTÜ SEVİYESİ',
                                     style: GoogleFonts.patrickHand(
                                       color: AppColors.pencilBlack,
                                       fontSize: 12,
@@ -511,7 +515,7 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
             child: Row(
               children: [
                 Text(
-                  'GÜNLÜK YARIŞMALAR (5 BÖLÜM)',
+                  'GÜNLÜK YARIŞMALAR (6 BÖLÜM)',
                   style: GoogleFonts.patrickHand(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
@@ -541,7 +545,7 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
                         bestScore: 0,
                         bestDurationMs: 0,
                         totalGamesPlayed: 0,
-                        geniusTitle: 'Saf Dahi',
+                        geniusTitle: 'Zühtü Ustası',
                       );
                   return Padding(
                     padding: const EdgeInsets.only(bottom: gap),

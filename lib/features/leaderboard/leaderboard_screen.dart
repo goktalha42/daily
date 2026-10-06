@@ -459,7 +459,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                         decoration: BoxDecoration(
                           color: isMe
-                              ? AppColors.highlighterYellow.withOpacity(0.4)
+                              ? AppColors.highlighterYellow.withValues(alpha: 0.4)
                               : Colors.white,
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(

@@ -29,7 +29,7 @@ class GamePerformanceData {
       return '🚀 HENÜZ OYNANMADI • HEDEF: %1';
     }
     if (percentile! <= 1) {
-      return '🏆 ZİRVE %1\'LİK DİLİM (DAHİ)';
+      return '🏆 ZİRVE %1\'LİK DİLİM (ZÜHTÜ)';
     } else if (percentile! <= 3) {
       return '⚡ İLK %$percentile\'LİK DİLİM (ÜSTÜN ZEKÂ)';
     } else {
@@ -85,7 +85,7 @@ class GameStatsNotifier extends StateNotifier<Map<GameType, GamePerformanceData>
           lastPlayedAt: (type == GameType.queens || type == GameType.pinpoint)
               ? DateTime.now().subtract(const Duration(hours: 3))
               : null,
-          geniusTitle: 'Saf Dahi',
+          geniusTitle: 'Zühtü Ustası',
         ),
     };
   }
@@ -123,10 +123,10 @@ class GameStatsNotifier extends StateNotifier<Map<GameType, GamePerformanceData>
 
     if (durationMs < 45000 || score >= 900) {
       calculatedPercentile = 1; // Zirve %1
-      calculatedTitle = 'Süper İnsan Dahi (IQ 150+)';
+      calculatedTitle = 'Süper İnsan Zühtü (IQ 150+)';
     } else if (durationMs < 80000 || score >= 650) {
       calculatedPercentile = 2; // İlk %2
-      calculatedTitle = 'Üstün Mantık Dehası';
+      calculatedTitle = 'Üstün Mantık Zühtüsü';
     } else if (durationMs < 120000) {
       calculatedPercentile = 3; // İlk %3
       calculatedTitle = 'Işık Hızında Zihin';

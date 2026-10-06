@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_animate/flutter_animate.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../app_colors.dart';
 import '../app_spacing.dart';
 
-class AppButton extends StatelessWidget {
+class AppButton extends StatefulWidget {
   final String text;
   final VoidCallback onPressed;
   final bool isPrimary;
@@ -21,46 +21,47 @@ class AppButton extends StatelessWidget {
   });
 
   @override
+  State<AppButton> createState() => _AppButtonState();
+}
+
+class _AppButtonState extends State<AppButton> {
+  bool _isPressed = false;
+
+  @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
-    final bgColor = isPrimary
-        ? (isDark ? AppColors.accentCyan : AppColors.primary)
-        : (isDark ? AppColors.surfaceSecondaryDark : AppColors.surfaceSecondaryLight);
-
-    final textColor = isPrimary
-        ? (isDark ? AppColors.primary : AppColors.surfaceLight)
-        : (isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight);
+    final bgColor = widget.isPrimary ? AppColors.highlighterYellow : Colors.white;
 
     Widget buttonChild = Row(
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        if (icon != null) ...[
-          Icon(icon, size: 20, color: textColor),
+        if (widget.icon != null) ...[
+          Icon(widget.icon, size: 20, color: AppColors.pencilBlack),
           const SizedBox(width: AppSpacing.sm),
         ],
         Text(
-          text,
-          style: theme.textTheme.labelLarge?.copyWith(
-            color: textColor,
+          widget.text,
+          style: GoogleFonts.patrickHand(
+            color: AppColors.pencilBlack,
+            fontSize: 18,
             fontWeight: FontWeight.w700,
           ),
         ),
       ],
     );
 
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () {
-          HapticFeedback.lightImpact();
-          onPressed();
-        },
-        borderRadius: BorderRadius.circular(AppSpacing.borderRadiusMd),
-        child: Ink(
-          width: isFullWidth ? double.infinity : null,
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _isPressed = true),
+      onTapUp: (_) {
+        setState(() => _isPressed = false);
+        HapticFeedback.lightImpact();
+        widget.onPressed();
+      },
+      onTapCancel: () => setState(() => _isPressed = false),
+      child: Transform.translate(
+        offset: _isPressed ? const Offset(1.5, 1.5) : Offset.zero,
+        child: Container(
+          width: widget.isFullWidth ? double.infinity : null,
           padding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.lg,
             vertical: AppSpacing.md,
@@ -68,27 +69,21 @@ class AppButton extends StatelessWidget {
           decoration: BoxDecoration(
             color: bgColor,
             borderRadius: BorderRadius.circular(AppSpacing.borderRadiusMd),
-            boxShadow: isPrimary
-                ? [
-                    BoxShadow(
-                      color: bgColor.withOpacity(0.3),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    )
-                  ]
-                : null,
+            border: Border.all(color: AppColors.pencilBlack, width: 2.2),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.pencilBlack,
+                blurRadius: 0,
+                offset: _isPressed ? const Offset(1.5, 1.5) : const Offset(3.0, 3.0),
+              ),
+            ],
           ),
           child: Center(
-            widthFactor: isFullWidth ? null : 1.0,
+            widthFactor: widget.isFullWidth ? null : 1.0,
             child: buttonChild,
           ),
         ),
       ),
-    ).animate().scale(
-      duration: 150.ms,
-      curve: Curves.easeOut,
-      begin: const Offset(0.95, 0.95),
-      end: const Offset(1.0, 1.0),
     );
   }
 }

@@ -43,6 +43,8 @@ class GameBackgroundLogo extends StatelessWidget {
         return OrganicTangoLogoPainter();
       case GameType.zipPath:
         return OrganicZipPathLogoPainter();
+      case GameType.patches:
+        return OrganicPatchesLogoPainter();
     }
   }
 }
@@ -575,6 +577,119 @@ class OrganicZipPathLogoPainter extends CustomPainter {
     flag.close();
     canvas.drawPath(flag, Paint()..color = const Color(0xFFFF3366)..style = PaintingStyle.fill);
     canvas.drawPath(flag, pencil);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+/// 6. ALAN BÖLME (PATCHES / SHIKAKU): Organik El Çizimi Dikdörtgen Bloklar & Alan Sayıları
+class OrganicPatchesLogoPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
+    final center = Offset(w * 0.70, h * 0.50);
+
+    final pencil = Paint()
+      ..color = AppColors.pencilBlack
+      ..strokeWidth = 2.0
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    final softPencil = Paint()
+      ..color = AppColors.pencilBlack.withValues(alpha: 0.35)
+      ..strokeWidth = 1.2
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+
+    // 1. Ana Dikdörtgen Blok 1 (Sarı Fosforlu 2x2 alan)
+    final r1 = Rect.fromCenter(center: Offset(center.dx - 12, center.dy - 12), width: 44, height: 44);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(r1, const Radius.circular(6)),
+      Paint()..color = AppColors.highlighterYellow.withValues(alpha: 0.35)..style = PaintingStyle.fill,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(r1, const Radius.circular(6)),
+      pencil,
+    );
+
+    // İçine 4 sayısı
+    final tp1 = TextPainter(
+      text: const TextSpan(
+        text: '4',
+        style: TextStyle(
+          color: AppColors.pencilBlack,
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+          fontFamily: 'PatrickHand',
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    tp1.paint(canvas, Offset(r1.center.dx - tp1.width / 2, r1.center.dy - tp1.height / 2));
+
+    // 2. İkinci Dikdörtgen Blok (Yatay 1x2 alan, açık turkuaz/yeşil)
+    final r2 = Rect.fromCenter(center: Offset(center.dx + 22, center.dy - 12), width: 22, height: 44);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(r2, const Radius.circular(5)),
+      Paint()..color = AppColors.highlighterGreen.withValues(alpha: 0.25)..style = PaintingStyle.fill,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(r2, const Radius.circular(5)),
+      pencil,
+    );
+
+    // İçine 2 sayısı
+    final tp2 = TextPainter(
+      text: const TextSpan(
+        text: '2',
+        style: TextStyle(
+          color: AppColors.pencilBlack,
+          fontSize: 14,
+          fontWeight: FontWeight.bold,
+          fontFamily: 'PatrickHand',
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    tp2.paint(canvas, Offset(r2.center.dx - tp2.width / 2, r2.center.dy - tp2.height / 2));
+
+    // 3. Üçüncü Dikdörtgen Blok (Yatay 3x1 alan, alt kısım)
+    final r3 = Rect.fromCenter(center: Offset(center.dx, center.dy + 24), width: 66, height: 26);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(r3, const Radius.circular(6)),
+      Paint()..color = AppColors.highlighterOrange.withValues(alpha: 0.25)..style = PaintingStyle.fill,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(r3, const Radius.circular(6)),
+      pencil,
+    );
+
+    // İçine 3 sayısı
+    final tp3 = TextPainter(
+      text: const TextSpan(
+        text: '3',
+        style: TextStyle(
+          color: AppColors.pencilBlack,
+          fontSize: 15,
+          fontWeight: FontWeight.bold,
+          fontFamily: 'PatrickHand',
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    tp3.paint(canvas, Offset(r3.center.dx - tp3.width / 2, r3.center.dy - tp3.height / 2));
+
+    // Kenar karalamaları ve tarama gölgeleri
+    for (double i = -20; i <= 20; i += 8) {
+      canvas.drawLine(
+        Offset(center.dx + i, center.dy + 38),
+        Offset(center.dx + i + 4, center.dy + 44),
+        softPencil,
+      );
+    }
   }
 
   @override
