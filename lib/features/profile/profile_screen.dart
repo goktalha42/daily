@@ -460,7 +460,7 @@ class ProfileScreen extends ConsumerWidget {
           ),
         ),
 
-        // 6. DAHİ ROZETLERİ (BAŞARIMLAR)
+        // 6. ZÜHTÜ ROZETLERİ (BAŞARIMLAR)
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.only(left: 24, right: 24, top: 12, bottom: 8),

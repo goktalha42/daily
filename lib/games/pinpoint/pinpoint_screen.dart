@@ -9,13 +9,16 @@ import 'package:uuid/uuid.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/date_utils.dart';
 import '../../core/services/game_stats_service.dart';
+import '../../core/services/daily_play_service.dart';
 import '../../core/widgets/genius_win_dialog.dart';
 import '../../core/widgets/sketch_decorations.dart';
 import '../../core/widgets/screen_shake.dart';
 import '../common/base_game.dart';
 import '../../features/leaderboard/leaderboard_service.dart';
 import 'pinpoint_models.dart';
+import 'pinpoint_logic.dart';
 import 'pinpoint_levels.dart';
+
 
 class PinpointScreen extends ConsumerStatefulWidget {
   final String levelId;
@@ -45,7 +48,7 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> {
     _initGame();
     _guessController.addListener(() {
       setState(() {
-        _currentInputText = _guessController.text.trim().toUpperCase();
+        _currentInputText = PinpointLogic.normalize(_guessController.text);
         if (_errorMessage != null) {
           _errorMessage = null;
         }
@@ -84,28 +87,19 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> {
     super.dispose();
   }
 
-  String _normalizeTurkish(String text) {
-    return text
-        .trim()
-        .replaceAll('i', 'İ')
-        .replaceAll('ı', 'I')
-        .replaceAll('ç', 'Ç')
-        .replaceAll('ş', 'Ş')
-        .replaceAll('ğ', 'Ğ')
-        .replaceAll('ö', 'Ö')
-        .replaceAll('ü', 'Ü')
-        .toUpperCase();
-  }
-
   void _submitGuess() {
     if (_isSolved) return;
     final rawInput = _guessController.text.trim();
     if (rawInput.isEmpty) return;
 
-    final input = _normalizeTurkish(rawInput);
-    final target = _normalizeTurkish(_level.targetWord);
+    final input = PinpointLogic.normalize(rawInput);
+    final isCorrect = PinpointLogic.isCorrectGuess(
+      input,
+      _level.targetWord,
+      alternativeAnswers: _level.alternativeAnswers,
+    );
 
-    if (input == target) {
+    if (isCorrect) {
       _focusNode.unfocus();
       setState(() {
         _isSolved = true;
@@ -143,9 +137,12 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> {
   }
 
   void _handleWin() {
-    // Skor formülü: Daha az açılan ipucu ve daha hızlı süre yüksek puan verir
-    final clueBonus = (6 - _revealedClues) * 300;
-    final score = (1000 + clueBonus - (_elapsedMs ~/ 1000) * 5).clamp(100, 2500);
+    final score = PinpointLogic.calculateScore(
+      durationMs: _elapsedMs,
+      revealedClues: _revealedClues,
+      wrongGuessesCount: _wrongGuesses.length,
+    );
+
 
     final result = GameResult(
       id: const Uuid().v4(),
@@ -165,6 +162,12 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> {
           score: score,
           durationMs: _elapsedMs,
           moveCount: _wrongGuesses.length + 1,
+        );
+    ref.read(dailyPlayServiceProvider.notifier).recordCompletion(
+          game: GameType.pinpoint,
+          dateId: widget.levelId,
+          score: score,
+          durationMs: _elapsedMs,
         );
 
     GeniusWinDialog.show(
@@ -584,7 +587,7 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> {
                                   style: GoogleFonts.patrickHand(
                                     fontSize: 15,
                                     fontWeight: FontWeight.w700,
-                                    color: _isSolved ? const Color(0xFF16A34A) : AppColors.pencilGray,
+                                    color: _isSolved ? AppColors.successDark : AppColors.pencilGray,
                                   ),
                                 ),
                                 if (!_isSolved)
@@ -749,7 +752,7 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFFEE2E2),
+                            color: AppColors.errorBgLight,
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(color: AppColors.error, width: 1.5),
                           ),
@@ -894,7 +897,7 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> {
             const Icon(
               Icons.check_rounded,
               size: 20,
-              color: Color(0xFF16A34A),
+              color: AppColors.successDark,
             ),
         ],
       ),

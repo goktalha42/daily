@@ -6,6 +6,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/services/game_stats_service.dart';
+import '../../core/services/time_sync_service.dart';
+import '../../core/services/daily_play_service.dart';
+import '../../core/widgets/sketch_countdown_timer.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/date_utils.dart';
 import '../../core/widgets/game_card_logos.dart';
@@ -205,6 +208,7 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
   void _advanceToNextDay() {
     setState(() {
       GameDateUtils.advanceToNextDay();
+      ref.read(timeSyncServiceProvider).advanceDay();
     });
     // Ekran sarsıntısı ve dopamin kutlaması
     ScreenShake.shake(context, intensity: 12.0);
@@ -221,8 +225,119 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
     );
   }
 
+  void _showCompletedDialog(GameType game, DailyPlayRecord record) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+          side: const BorderSide(color: AppColors.pencilBlack, width: 2.5),
+        ),
+        title: Row(
+          children: [
+            const Icon(Icons.check_circle_rounded, color: AppColors.highlighterGreen, size: 28),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                '${game.title} Tamamlandı!',
+                style: GoogleFonts.patrickHand(
+                  color: AppColors.pencilBlack,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 22,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Bugünkü bulmacayı zaten başarıyla çözdün! Günlük tek oynama kuralı gereği skorun kaydedildi.',
+              style: GoogleFonts.patrickHand(
+                color: AppColors.pencilGraphite,
+                fontSize: 16,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceSecondaryLight,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.pencilBlack, width: 1.8),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  Column(
+                    children: [
+                      Text('SKOR', style: GoogleFonts.patrickHand(fontSize: 13, color: AppColors.pencilGray, fontWeight: FontWeight.w700)),
+                      Text('${record.score}', style: GoogleFonts.patrickHand(fontSize: 22, color: AppColors.pencilBlack, fontWeight: FontWeight.w700)),
+                    ],
+                  ),
+                  Column(
+                    children: [
+                      Text('SÜRE', style: GoogleFonts.patrickHand(fontSize: 13, color: AppColors.pencilGray, fontWeight: FontWeight.w700)),
+                      Text(GameDateUtils.formatGameTime(record.durationMs), style: GoogleFonts.patrickHand(fontSize: 22, color: AppColors.pencilBlack, fontWeight: FontWeight.w700)),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                const Icon(Icons.lock_clock_rounded, size: 16, color: AppColors.pencilBlack),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    'Yeni bulmaca yarın saat 00:00 (UTC) sıfırlanmasında açılacak.',
+                    style: GoogleFonts.patrickHand(
+                      fontSize: 13,
+                      color: AppColors.pencilBlack,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        actions: [
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.highlighterYellow,
+              foregroundColor: AppColors.pencilBlack,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: const BorderSide(color: AppColors.pencilBlack, width: 2.0),
+              ),
+            ),
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(
+              'Tamam',
+              style: GoogleFonts.patrickHand(fontSize: 18, fontWeight: FontWeight.w700),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _launchGame(GameType game) {
     HapticFeedback.mediumImpact();
+
+    // Günlük tek oynama kuralı: tamamlandıysa kilitli diyalog aç
+    final dailyPlay = ref.read(dailyPlayServiceProvider);
+    if (dailyPlay.isCompleted(game, _todayLevelId)) {
+      final record = dailyPlay.getRecord(game, _todayLevelId)!;
+      _showCompletedDialog(game, record);
+      return;
+    }
     Widget screen;
     switch (game) {
       case GameType.queens:
@@ -382,28 +497,7 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
                         ),
                       ),
                       // Sağ: Skeç Sayaç
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: AppColors.surfaceSecondaryLight,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: AppColors.pencilBlack, width: 1.5),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.timer_outlined, size: 14, color: AppColors.pencilBlack),
-                            const SizedBox(width: 4),
-                            Text(
-                              GameDateUtils.formatCountdown(_timeRemaining),
-                              style: GoogleFonts.patrickHand(
-                                fontWeight: FontWeight.w700,
-                                fontSize: 13,
-                                color: AppColors.pencilBlack,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                      const SketchCountdownTimer(fontSize: 13),
                     ],
                   ),
                   const SizedBox(height: 14),
@@ -547,6 +641,10 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
                         totalGamesPlayed: 0,
                         geniusTitle: 'Zühtü Ustası',
                       );
+                  final dailyPlay = ref.watch(dailyPlayServiceProvider);
+                  final isCompleted = dailyPlay.isCompleted(game, _todayLevelId);
+                  final record = dailyPlay.getRecord(game, _todayLevelId);
+
                   return Padding(
                     padding: const EdgeInsets.only(bottom: gap),
                     child: SizedBox(
@@ -555,6 +653,8 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
                       child: _GeniusGameButton(
                         game: game,
                         performance: perf,
+                        isCompleted: isCompleted,
+                        record: record,
                         onTap: () => _launchGame(game),
                       ),
                     ),
@@ -608,11 +708,15 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
 class _GeniusGameButton extends StatefulWidget {
   final GameType game;
   final GamePerformanceData performance;
+  final bool isCompleted;
+  final DailyPlayRecord? record;
   final VoidCallback onTap;
 
   const _GeniusGameButton({
     required this.game,
     required this.performance,
+    this.isCompleted = false,
+    this.record,
     required this.onTap,
   });
 
@@ -657,6 +761,33 @@ class _GeniusGameButtonState extends State<_GeniusGameButton> {
                     opacity: 0.35,
                   ),
                 ),
+                if (widget.isCompleted)
+                  Positioned(
+                    top: 10,
+                    right: 10,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: const BoxDecoration(
+                        color: AppColors.highlighterGreen,
+                        shape: BoxShape.circle,
+                        border: Border.fromBorderSide(
+                          BorderSide(color: AppColors.pencilBlack, width: 2.0),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.pencilBlack,
+                            offset: Offset(1.5, 1.5),
+                            blurRadius: 0,
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.check,
+                        size: 14,
+                        color: AppColors.pencilBlack,
+                      ),
+                    ),
+                  ),
                 Padding(
                   padding: const EdgeInsets.all(14),
                   child: Column(
@@ -677,11 +808,13 @@ class _GeniusGameButtonState extends State<_GeniusGameButton> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                         decoration: BoxDecoration(
-                          color: perf.hasPlayed
-                              ? (perf.percentile! <= 1
-                                  ? AppColors.highlighterYellow
-                                  : game.color)
-                              : AppColors.surfaceSecondaryLight,
+                          color: widget.isCompleted
+                              ? AppColors.highlighterGreen
+                              : (perf.hasPlayed
+                                  ? (perf.percentile! <= 1
+                                      ? AppColors.highlighterYellow
+                                      : game.color)
+                                  : AppColors.surfaceSecondaryLight),
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
                             color: AppColors.pencilBlack,
@@ -696,7 +829,9 @@ class _GeniusGameButtonState extends State<_GeniusGameButton> {
                           ],
                         ),
                         child: Text(
-                          perf.percentileBadgeText,
+                          widget.isCompleted
+                              ? 'BİTTİ • ${widget.record?.score ?? 0}P'
+                              : perf.percentileBadgeText,
                           style: GoogleFonts.patrickHand(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,

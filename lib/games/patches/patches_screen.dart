@@ -8,6 +8,7 @@ import 'package:uuid/uuid.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/date_utils.dart';
 import '../../core/services/game_stats_service.dart';
+import '../../core/services/daily_play_service.dart';
 import '../../core/widgets/genius_win_dialog.dart';
 import '../../core/widgets/sketch_decorations.dart';
 import '../../core/widgets/screen_shake.dart';
@@ -36,14 +37,13 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> {
   Timer? _timer;
   bool _isSolved = false;
 
-  // Organik fosforlu keçeli kalem renk paleti
   static const List<Color> _patchColors = [
-    Color(0xFFFFDE59), // Fosforlu Sarı
-    Color(0xFF86EFAC), // Fosforlu Nane Yeşili
-    Color(0xFF70E0D8), // Fosforlu Turkuaz
-    Color(0xFFFF9F68), // Fosforlu Turuncu
-    Color(0xFFC4B5FD), // Fosforlu Lavanta
-    Color(0xFFFF85A1), // Fosforlu Pembe
+    AppColors.highlighterYellow,
+    AppColors.highlighterGreen,
+    AppColors.highlighterCyan,
+    AppColors.highlighterOrange,
+    AppColors.highlighterPurple,
+    AppColors.highlighterPink,
   ];
 
   @override
@@ -257,6 +257,12 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> {
           score: score,
           durationMs: _elapsedMs,
           moveCount: _userRects.length,
+        );
+    ref.read(dailyPlayServiceProvider.notifier).recordCompletion(
+          game: GameType.patches,
+          dateId: widget.levelId,
+          score: score,
+          durationMs: _elapsedMs,
         );
 
     GeniusWinDialog.show(
@@ -487,7 +493,7 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> {
                                   border: Border.all(color: AppColors.pencilBlack, width: 1.2),
                                 ),
                                 child: Text(
-                                  '📐 Dikdörtgen Alanlar',
+                                  '📐 ${_level.difficulty.label} • ${_level.gridSize}×${_level.gridSize}',
                                   style: GoogleFonts.patrickHand(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w700,

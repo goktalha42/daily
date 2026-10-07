@@ -93,16 +93,30 @@ class PatchesClue {
   });
 }
 
+enum PatchesDifficulty {
+  kolay(4, 'Kolay'),
+  orta(5, 'Orta'),
+  zor(6, 'Zor');
+
+  final int gridSize;
+  final String label;
+
+  const PatchesDifficulty(this.gridSize, this.label);
+}
+
 class PatchesLevel {
   final String id;
   final int gridSize;
   final List<PatchesClue> clues;
   final List<PatchRect>? solution;
+  final PatchesDifficulty difficulty;
 
   const PatchesLevel({
     required this.id,
     required this.gridSize,
     required this.clues,
     this.solution,
+    this.difficulty = PatchesDifficulty.orta,
   });
 }
+

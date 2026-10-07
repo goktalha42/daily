@@ -26,7 +26,9 @@ class AppColors {
   static const Color primary = pencilBlack;
   static const Color warning = highlighterYellow;
   static const Color success = highlighterGreen;
+  static const Color successDark = Color(0xFF16A34A);
   static const Color error = Color(0xFFEF4444);
+  static const Color errorBgLight = Color(0xFFFEE2E2);
 
   // Metin Renkleri
   static const Color textPrimaryLight = pencilBlack;

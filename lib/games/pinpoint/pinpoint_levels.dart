@@ -1,3 +1,5 @@
+import '../../core/puzzle/puzzle_repository.dart';
+import 'pinpoint_generator.dart';
 import 'pinpoint_models.dart';
 
 class PinpointLevelRepository {
@@ -144,16 +146,39 @@ class PinpointLevelRepository {
     ),
   ];
 
-  static PinpointLevel getLevelForDate(String levelId) {
-    final hash = levelId.hashCode.abs();
-    final index = hash % _presetLevels.length;
-    final preset = _presetLevels[index];
+  static final Map<String, PinpointLevel> _cache = {};
 
-    return PinpointLevel(
-      id: levelId,
-      categoryHint: preset.categoryHint,
-      targetWord: preset.targetWord.toUpperCase(),
-      clues: preset.clues,
-    );
+  /// Belirli bir tarih için tohumdan üretilmiş seviyeyi döner.
+  static PinpointLevel getLevelForDate(String levelId) {
+    return _cache.putIfAbsent(levelId, () {
+      try {
+        return PinpointGenerator.generate(levelId: levelId);
+      } catch (_) {
+        final hash = levelId.hashCode.abs();
+        final index = hash % _presetLevels.length;
+        final preset = _presetLevels[index];
+        return PinpointLevel(
+          id: levelId,
+          categoryHint: preset.categoryHint,
+          targetWord: preset.targetWord.toUpperCase(),
+          clues: preset.clues,
+          alternativeAnswers: preset.alternativeAnswers,
+        );
+      }
+    });
+  }
+
+  static List<PinpointLevel> get presets => _presetLevels;
+}
+
+/// Aşama A (yerel geliştirme): bulmaca cihazdaki tohumlu jeneratörden gelir.
+/// Aşama B'de `RemotePinpointPuzzleRepository` ile değiştirilecek.
+class LocalPinpointPuzzleRepository implements PuzzleRepository<PinpointLevel> {
+  const LocalPinpointPuzzleRepository();
+
+  @override
+  Future<PinpointLevel> getDaily(String dateId) async {
+    return PinpointLevelRepository.getLevelForDate(dateId);
   }
 }
+

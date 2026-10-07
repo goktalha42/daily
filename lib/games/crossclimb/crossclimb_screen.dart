@@ -9,13 +9,16 @@ import 'package:uuid/uuid.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/date_utils.dart';
 import '../../core/services/game_stats_service.dart';
+import '../../core/services/daily_play_service.dart';
 import '../../core/widgets/genius_win_dialog.dart';
 import '../../core/widgets/sketch_decorations.dart';
 import '../../core/widgets/screen_shake.dart';
 import '../common/base_game.dart';
 import '../../features/leaderboard/leaderboard_service.dart';
 import 'crossclimb_models.dart';
+import 'crossclimb_logic.dart';
 import 'crossclimb_levels.dart';
+
 
 class CrossclimbScreen extends ConsumerStatefulWidget {
   final String levelId;
@@ -45,7 +48,7 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> {
     _initGame();
     _inputController.addListener(() {
       setState(() {
-        _currentInputText = _inputController.text.trim().toUpperCase();
+        _currentInputText = CrossclimbLogic.normalize(_inputController.text);
         if (_errorMsg != null) {
           _errorMsg = null;
         }
@@ -84,28 +87,15 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> {
     super.dispose();
   }
 
-  String _normalizeTurkish(String text) {
-    return text
-        .trim()
-        .replaceAll('i', 'İ')
-        .replaceAll('ı', 'I')
-        .replaceAll('ç', 'Ç')
-        .replaceAll('ş', 'Ş')
-        .replaceAll('ğ', 'Ğ')
-        .replaceAll('ö', 'Ö')
-        .replaceAll('ü', 'Ü')
-        .toUpperCase();
-  }
-
   void _submitStepWord() {
     if (_isSolved) return;
     final rawInput = _inputController.text.trim();
     if (rawInput.isEmpty) return;
 
-    final input = _normalizeTurkish(rawInput);
-    final target = _normalizeTurkish(_level.steps[_currentStepIndex].targetWord);
+    final input = CrossclimbLogic.normalize(rawInput);
+    final target = _level.steps[_currentStepIndex].targetWord;
 
-    if (input == target) {
+    if (CrossclimbLogic.isStepValid(input, target)) {
       HapticFeedback.mediumImpact();
       setState(() {
         _userWords[_currentStepIndex] = _level.steps[_currentStepIndex].targetWord;
@@ -132,7 +122,11 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> {
   }
 
   void _handleWin() {
-    final score = (1800 - (_elapsedMs ~/ 1000) * 8).clamp(100, 2000);
+    final score = CrossclimbLogic.calculateScore(
+      durationMs: _elapsedMs,
+      stepCount: _level.steps.length,
+    );
+
 
     final result = GameResult(
       id: const Uuid().v4(),
@@ -152,6 +146,12 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> {
           score: score,
           durationMs: _elapsedMs,
           moveCount: _level.steps.length,
+        );
+    ref.read(dailyPlayServiceProvider.notifier).recordCompletion(
+          game: GameType.crossclimb,
+          dateId: widget.levelId,
+          score: score,
+          durationMs: _elapsedMs,
         );
 
     GeniusWinDialog.show(
@@ -757,7 +757,7 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFFEE2E2),
+                              color: AppColors.errorBgLight,
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(color: AppColors.error, width: 1.5),
                             ),
@@ -896,7 +896,7 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> {
           Row(
             children: [
               if (isCompleted && !isStartWord) ...[
-                const Icon(Icons.check_circle_rounded, size: 18, color: Color(0xFF16A34A)),
+                const Icon(Icons.check_circle_rounded, size: 18, color: AppColors.successDark),
                 const SizedBox(width: 6),
               ] else if (isCurrent) ...[
                 const Icon(Icons.play_arrow_rounded, size: 18, color: AppColors.pencilBlack),

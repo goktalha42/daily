@@ -9,6 +9,7 @@ import 'package:uuid/uuid.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/date_utils.dart';
 import '../../core/services/game_stats_service.dart';
+import '../../core/services/daily_play_service.dart';
 import '../../core/widgets/genius_win_dialog.dart';
 import '../../core/widgets/sketch_decorations.dart';
 import '../common/base_game.dart';
@@ -234,6 +235,12 @@ class _TangoScreenState extends ConsumerState<TangoScreen> {
           score: score,
           durationMs: _elapsedMs,
           moveCount: _moveCount,
+        );
+    ref.read(dailyPlayServiceProvider.notifier).recordCompletion(
+          game: GameType.tango,
+          dateId: widget.levelId,
+          score: score,
+          durationMs: _elapsedMs,
         );
 
     GeniusWinDialog.show(
@@ -623,7 +630,7 @@ class _TangoScreenState extends ConsumerState<TangoScreen> {
 
                                     Color cellBg;
                                     if (cell.isConflict) {
-                                      cellBg = const Color(0xFFFEE2E2);
+                                      cellBg = AppColors.errorBgLight;
                                     } else if (cell.isFixed) {
                                       cellBg = AppColors.surfaceSecondaryLight.withValues(alpha: 0.6);
                                     } else {

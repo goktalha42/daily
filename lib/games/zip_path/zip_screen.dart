@@ -8,6 +8,7 @@ import 'package:uuid/uuid.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/date_utils.dart';
 import '../../core/services/game_stats_service.dart';
+import '../../core/services/daily_play_service.dart';
 import '../../core/widgets/genius_win_dialog.dart';
 import '../../core/widgets/sketch_decorations.dart';
 import '../common/base_game.dart';
@@ -194,6 +195,12 @@ class _ZipScreenState extends ConsumerState<ZipScreen> {
           score: score,
           durationMs: _elapsedMs,
           moveCount: _path.length,
+        );
+    ref.read(dailyPlayServiceProvider.notifier).recordCompletion(
+          game: GameType.zipPath,
+          dateId: widget.levelId,
+          score: score,
+          durationMs: _elapsedMs,
         );
 
     GeniusWinDialog.show(

@@ -9,6 +9,7 @@ import 'package:uuid/uuid.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/date_utils.dart';
 import '../../core/services/game_stats_service.dart';
+import '../../core/services/daily_play_service.dart';
 import '../../core/widgets/genius_win_dialog.dart';
 import '../../core/widgets/sketch_decorations.dart';
 import '../common/base_game.dart';
@@ -81,14 +82,13 @@ class _QueensScreenState extends ConsumerState<QueensScreen> with SingleTickerPr
   DateTime? _lastTapTime;
   math.Point<int>? _lastTapCell;
 
-  // Organik Keçeli Kalem (Fosforlu) Renk Paleti
   static const List<Color> _sketchRegionColors = [
-    Color(0xFFFFDE59), // Fosforlu Sarı
-    Color(0xFF70E0D8), // Fosforlu Turkuaz
-    Color(0xFFFF9F68), // Fosforlu Turuncu
-    Color(0xFFFF85A1), // Fosforlu Pembe
-    Color(0xFF86EFAC), // Fosforlu Nane Yeşili
-    Color(0xFFC4B5FD), // Fosforlu Lavanta
+    AppColors.highlighterYellow,
+    AppColors.highlighterCyan,
+    AppColors.highlighterOrange,
+    AppColors.highlighterPink,
+    AppColors.highlighterGreen,
+    AppColors.highlighterPurple,
     Color(0xFFBAE6FD), // Açık Gökyüzü
     Color(0xFFFED7AA), // Pastel Kayısı
     Color(0xFFDDD6FE), // Yumuşak Lila
@@ -744,6 +744,12 @@ class _QueensScreenState extends ConsumerState<QueensScreen> with SingleTickerPr
           durationMs: _elapsedMs,
           moveCount: _moveCount,
         );
+    ref.read(dailyPlayServiceProvider.notifier).recordCompletion(
+          game: GameType.queens,
+          dateId: widget.levelId,
+          score: score,
+          durationMs: _elapsedMs,
+        );
 
     GeniusWinDialog.show(
       context,
@@ -1013,7 +1019,7 @@ class _QueensScreenState extends ConsumerState<QueensScreen> with SingleTickerPr
                                                           BoxShadow(
                                                             color: AppColors.pencilBlack.withValues(alpha: 0.35 * elevationFactor),
                                                             offset: Offset(2.0, 2.0 + lift * 0.65),
-                                                            blurRadius: 3.0 * elevationFactor,
+                                                            blurRadius: 0,
                                                           ),
                                                         ],
                                                       )

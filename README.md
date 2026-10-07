@@ -122,7 +122,7 @@ Yeni ekran **önce** bu bileşenlerle denenir; eksikse bileşen buraya eklenir, 
 - [x] `glass_card.dart` silindi. `NeoGameLayout` blur'suz, kalın konturlu skeç iskeletine çevrildi.
 - [x] `AppColors` içindeki koyu mod ve `glassGradient*` tanımları temizlendi.
 - [x] Kalan "Dahi" etiketleri (`Saf Dahi`, `Global Dahi`, `Dahi #8492`, `DAHİ SEVİYESİ`) Zühtü kimliğiyle yeniden adlandırıldı (`ZuhtuWinDialog` aliası bağlandı).
-- [ ] Oyun ekranlarının içi (Pinpoint, Crossclimb, Tango, Zip) için dil denetimi yapılacak: `withOpacity`/yumuşak gölge, sabit renk kodları.
+- [x] Oyun ekranlarının içi (Pinpoint, Crossclimb, Tango, Zip, Patches, Queens) için dil denetimi tamamlandı: yumuşak gölgeler kaldırıldı (blur: 0), sabit renk kodları `AppColors` standartlarına (`errorBgLight`, `successDark`, `highlighter*`) bağlandı.
 
 ---
 
@@ -193,7 +193,9 @@ Yayın gününden **3 yıl** (hatta 30 yıl) sonra üretilen bölüm, ilk günk�
 6. **Önceden üretim:** Cron her gece, ertesi **N gün** için bulmaca üretip Redis ve MySQL'e yazar (varsayılan 7 gün).
 
 ### 4.3 Mevcut Durum
-Queens ve Tango artık bu yönteme geçti: [`queens_generator.dart`](lib/games/queens/queens_generator.dart) ve [`tango_generator.dart`](lib/games/tango/tango_generator.dart) tohumdan tahta üretir, çözücü tek çözümü doğrular, üretilemezse yeni deneme yapılır; tohum yardımcıları `core/puzzle/puzzle_seed.dart` içindedir. Zorluk takvimi de tohumludur (`QueensDifficultyScheduler`, `TangoDifficultyScheduler`). Zip, Pinpoint ve Crossclimb'in `*_levels.dart` dosyaları hâlâ sabit havuz içerir. Bu yapı **geçicidir** ve sırayla jeneratörlerle değiştirilecek.
+Tüm 6 oyun (Queens, Tango, Zip, Patches, Pinpoint, Crossclimb) artık bu yönteme geçti: [`queens_generator.dart`](lib/games/queens/queens_generator.dart), [`tango_generator.dart`](lib/games/tango/tango_generator.dart), [`zip_generator.dart`](lib/games/zip_path/zip_generator.dart), [`patches_generator.dart`](lib/games/patches/patches_generator.dart), [`pinpoint_generator.dart`](lib/games/pinpoint/pinpoint_generator.dart) ve [`crossclimb_generator.dart`](lib/games/crossclimb/crossclimb_generator.dart) tohumdan tahta/seviye üretir veya seçer; tohum yardımcıları `core/puzzle/puzzle_seed.dart` içindedir. Zorluk takvimleri ve depolar da tohumludur (`*DifficultyScheduler`, `Local*PuzzleRepository`). Faz 1 böylece tüm oyunlarıyla tamamlanmıştır.
+
+
 
 ---
 
@@ -324,16 +326,20 @@ Durum: ✅ bitti · 🟡 kısmen · ⬜ başlamadı
 - ✅ Queens (Vezirler): Tohumlu `QueensGenerator` (tek çözüm garantisi, 3 yıl tekrarsızlık), `LocalQueensPuzzleRepository`, birim testleri, skeç defteri temasına uygun tahta (`QueensBoardPainter`), skeç ekran tasarımı (`QueensScreen`) ve skeç zafer diyaloğu (`GeniusWinDialog`) her şeyiyle tamamlandı.
 - ✅ Tango (Güneş & Ay): Tohumlu `TangoGenerator` (deterministik, tek çözüm garantisi, insan mantığı ile tahminsiz çözülebilirlik), `TangoDifficultyScheduler`, `LocalTangoPuzzleRepository` ve birim testleri tamamlandı.
 - ✅ Zip (Sayı Yolu): Modeller, duvar desteği (`walls`), tohumlu `ZipGenerator` (ortogonal yürüyüş, tek çözüm garantisi), `ZipDifficultyScheduler`, `LocalZipPuzzleRepository`, skeç ekranına duvar entegrasyonu ve birim testleri tamamlandı.
-- 🟡 Patches (Alan Bölme): model, logic, seviyeler, skeç ekran tasarımı ve ana sayfa entegrasyonu tamamlandı; tohumlu tek çözümlü jeneratör sırada.
-- 🟡 Pinpoint, Crossclimb: ekran ve model var; `Logic`, `Validator`, `Generator` eksik
-- 🟡 Her oyun için **tek çözüm** çözücüsü ve birim testleri (Queens, Tango, Zip tamam)
-- 🟡 `PuzzleRepository` arayüzü hazır (`core/puzzle/`); Queens, Tango ve Zip için `Local` sürümü var, diğerleri sırada
-- 🟡 Sabit tohumlu seviye havuzlarının kaldırılması: Queens, Tango ve Zip tamam; Patches, Pinpoint, Crossclimb kaldı
+- ✅ Patches (Alan Bölme / Shikaku): Model, logic, tohumlu `PatchesGenerator` (rastgele dikdörtgen bölme, tek çözüm garantisi), `PatchesDifficultyScheduler`, `LocalPatchesPuzzleRepository`, skeç ekranı entegrasyonu ve birim testleri tamamlandı.
+- ✅ Pinpoint (Kelime İzleri): Model, `PinpointLogic` (normalizasyon, alternatif cevaplar, puanlama formülü), tohumlu `PinpointGenerator`, `LocalPinpointPuzzleRepository` ve birim testleri tamamlandı.
+- ✅ Crossclimb (Kelime Tırmanışı): Model, `CrossclimbLogic` (Hamming mesafesi = 1, zincir doğrulama, puanlama), tohumlu `CrossclimbGenerator`, `LocalCrossclimbPuzzleRepository` ve birim testleri tamamlandı.
+- ✅ Her oyun için **tek çözüm / kural doğrulayıcısı** ve birim testleri (6 oyunun tamamı)
+- ✅ `PuzzleRepository` arayüzü hazır (`core/puzzle/`); 6 oyunun tamamı için `Local*PuzzleRepository` bağlandı
+- ✅ Sabit tohumlu seviye havuzları kaldırıldı ve tohumlu jeneratör mimarisine bağlandı (6 oyunun tamamı)
+
+
 
 ### Faz 2 – Zaman ve Oyun Akışı
-- ⬜ `TimeSyncService` (A: cihaz saati / B: sunucu)
-- ⬜ Kalan süre sayacı UI'ı
-- ⬜ Günlük bir kez oynama kuralı
+- ✅ `TimeSyncService`: UTC pivot (00:00:00 UTC), clock drift önlemi, yerel simülasyon ve güvenilir zaman sağlayıcısı tamamlandı.
+- ✅ Kalan süre sayacı UI'ı: `SketchCountdownTimer` (reaktif stream provider, fosforlu kara kalem defter stili) ve ana sayfa Hero kartı entegrasyonu tamamlandı.
+- ✅ Günlük bir kez oynama kuralı: `DailyPlayService`, `DailyPlayNotifier`, SharedPreferences kalıcılığı, 6 oyun ekranında zafer anında kayıt, ana sayfada tamamlanan oyunlar için kilitli modal (`_showCompletedDialog`) ve yeşil `BİTTİ • [Skor]P` rozetleri tamamlandı.
+- ✅ Birim testleri: `test/time_sync_test.dart` (7 test) ve `test/daily_play_test.dart` (5 test) ile doğrulandı (toplam 64/64 test geçiyor).
 
 ### Faz 3 – Backend (VDS)
 - ⬜ Laravel iskeleti, MySQL şeması, Redis kurulumu
