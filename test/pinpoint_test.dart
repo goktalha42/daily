@@ -1,5 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:daily_games/games/pinpoint/pinpoint_models.dart';
 import 'package:daily_games/games/pinpoint/pinpoint_logic.dart';
 import 'package:daily_games/games/pinpoint/pinpoint_generator.dart';
 import 'package:daily_games/games/pinpoint/pinpoint_levels.dart';

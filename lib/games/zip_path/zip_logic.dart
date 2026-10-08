@@ -12,17 +12,8 @@ class ZipLogic {
     // Kendini kesme kontrolü
     if (path.toSet().length != path.length) return false;
 
-    // Duvara basma kontrolü
-    for (final pt in path) {
-      if (walls.contains(pt)) return false;
-    }
-
-    // Kural: Tüm erişilebilir boş kareleri tam bir kez geçer (README Bölüm 3.3)
-    // Eğer seviyede duvar tanımlanmışsa açık kare sayısı, tanımlanmamışsa en azından sayılar
-    if (walls.isNotEmpty) {
-      final accessibleCells = (gridSize * gridSize) - walls.length;
-      if (path.length != accessibleCells) return false;
-    }
+    // Kural: LinkedIn mantığı - Tahtadaki TÜM kareler eksiksiz gezilmelidir
+    if (path.length != gridSize * gridSize) return false;
 
     final maxNumber = numberPoints.values.reduce((a, b) => a > b ? a : b);
 
@@ -94,8 +85,7 @@ class ZipLogic {
     bool backtrack(Point current, int target) {
       if (numberPoints[current] == maxNumber) {
         if (target > maxNumber) {
-          // Eğer duvar varsa tüm açık kareler gezilmiş olmalı; duvar yoksa yol tamamlanmış olmalı
-          if (walls.isEmpty || visited.length == targetTotal) {
+          if (visited.length == targetTotal) {
             solutions++;
           }
         }

@@ -443,9 +443,8 @@ class OrganicTangoLogoPainter extends CustomPainter {
     // Ay içi krater karalaması
     canvas.drawCircle(Offset(moonCenter.dx + 16, moonCenter.dy + 16), 3.0, softPencil);
 
-    // 4. Etrafta süzülen el çizimi minik bulut pufu ve yıldızlar
+    // 4. Etrafta süzülen el çizimi minik bulut pufu (Sağdaki artı işareti kaldırıldı)
     _drawDoodlePuffCloud(canvas, Offset(center.dx - 48, center.dy + 26), pencil);
-    _drawFreehandLittleStar(canvas, Offset(center.dx + 36, center.dy - 36), pencil);
   }
 
   void _drawDoodlePuffCloud(Canvas canvas, Offset c, Paint p) {
@@ -459,11 +458,6 @@ class OrganicTangoLogoPainter extends CustomPainter {
 
     canvas.drawPath(cloud, Paint()..color = Colors.white..style = PaintingStyle.fill);
     canvas.drawPath(cloud, p..strokeWidth = 1.6);
-  }
-
-  void _drawFreehandLittleStar(Canvas canvas, Offset c, Paint p) {
-    canvas.drawLine(Offset(c.dx - 5, c.dy), Offset(c.dx + 5, c.dy), p..strokeWidth = 1.6);
-    canvas.drawLine(Offset(c.dx, c.dy - 5), Offset(c.dx, c.dy + 5), p);
   }
 
   @override
@@ -604,86 +598,68 @@ class OrganicPatchesLogoPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
 
-    // 1. Ana Dikdörtgen Blok 1 (Sarı Fosforlu 2x2 alan)
-    final r1 = Rect.fromCenter(center: Offset(center.dx - 12, center.dy - 12), width: 44, height: 44);
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(r1, const Radius.circular(6)),
-      Paint()..color = AppColors.highlighterYellow.withValues(alpha: 0.35)..style = PaintingStyle.fill,
-    );
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(r1, const Radius.circular(6)),
-      pencil,
-    );
+    // Yardımcı: El Çizimi Dalgalı Yamuk Dikdörtgen Çizici (Freehand Wobbly Sketch Box)
+    void drawWobblyPatch(Rect r, Color fillColor, String number) {
+      final patch = Path();
+      // Üst kenar (hafif dalgalı)
+      patch.moveTo(r.left + 4, r.top + 2);
+      patch.quadraticBezierTo(r.center.dx, r.top - 2, r.right - 4, r.top + 1);
+      // Sağ kenar
+      patch.quadraticBezierTo(r.right + 2, r.center.dy, r.right - 2, r.bottom - 4);
+      // Alt kenar
+      patch.quadraticBezierTo(r.center.dx, r.bottom + 2, r.left + 4, r.bottom - 1);
+      // Sol kenar
+      patch.quadraticBezierTo(r.left - 2, r.center.dy, r.left + 4, r.top + 2);
+      patch.close();
 
-    // İçine 4 sayısı
-    final tp1 = TextPainter(
-      text: const TextSpan(
-        text: '4',
-        style: TextStyle(
-          color: AppColors.pencilBlack,
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-          fontFamily: 'PatrickHand',
+      // Renk dolgusu
+      canvas.drawPath(patch, Paint()..color = fillColor..style = PaintingStyle.fill);
+      // Ana kurşun kalem konturu
+      canvas.drawPath(patch, pencil);
+
+      // İkinci serbest el kalem geçişi (taslak hissi)
+      final dub = Path()
+        ..moveTo(r.left + 6, r.top + 4)
+        ..lineTo(r.right - 6, r.top + 3)
+        ..lineTo(r.right - 4, r.bottom - 6);
+      canvas.drawPath(dub, softPencil);
+
+      // El Çizimi Sayı Boncuğu (Çember)
+      final circleCenter = Offset(r.center.dx, r.center.dy);
+      final circle = Path()..addOval(Rect.fromCircle(center: circleCenter, radius: 10));
+      canvas.drawPath(circle, Paint()..color = Colors.white..style = PaintingStyle.fill);
+      canvas.drawPath(circle, pencil..strokeWidth = 1.6);
+
+      // Sayı metni
+      final tp = TextPainter(
+        text: TextSpan(
+          text: number,
+          style: const TextStyle(
+            color: AppColors.pencilBlack,
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            fontFamily: 'PatrickHand',
+          ),
         ),
-      ),
-      textDirection: TextDirection.ltr,
-    )..layout();
-    tp1.paint(canvas, Offset(r1.center.dx - tp1.width / 2, r1.center.dy - tp1.height / 2));
+        textDirection: TextDirection.ltr,
+      )..layout();
+      tp.paint(canvas, Offset(circleCenter.dx - tp.width / 2, circleCenter.dy - tp.height / 2));
+    }
 
-    // 2. İkinci Dikdörtgen Blok (Yatay 1x2 alan, açık turkuaz/yeşil)
-    final r2 = Rect.fromCenter(center: Offset(center.dx + 22, center.dy - 12), width: 22, height: 44);
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(r2, const Radius.circular(5)),
-      Paint()..color = AppColors.highlighterGreen.withValues(alpha: 0.25)..style = PaintingStyle.fill,
-    );
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(r2, const Radius.circular(5)),
-      pencil,
-    );
+    // 1. Ana Dalgalı Yama 1 (Lavanta tonu 2x2 alan)
+    final r1 = Rect.fromCenter(center: Offset(center.dx - 14, center.dy - 14), width: 44, height: 44);
+    drawWobblyPatch(r1, const Color(0xFFA78BFA).withValues(alpha: 0.35), '4');
 
-    // İçine 2 sayısı
-    final tp2 = TextPainter(
-      text: const TextSpan(
-        text: '2',
-        style: TextStyle(
-          color: AppColors.pencilBlack,
-          fontSize: 14,
-          fontWeight: FontWeight.bold,
-          fontFamily: 'PatrickHand',
-        ),
-      ),
-      textDirection: TextDirection.ltr,
-    )..layout();
-    tp2.paint(canvas, Offset(r2.center.dx - tp2.width / 2, r2.center.dy - tp2.height / 2));
+    // 2. İkinci Dalgalı Yama 2 (Gök mavisi 1x2 alan)
+    final r2 = Rect.fromCenter(center: Offset(center.dx + 20, center.dy - 14), width: 22, height: 44);
+    drawWobblyPatch(r2, AppColors.skyBlue.withValues(alpha: 0.30), '2');
 
-    // 3. Üçüncü Dikdörtgen Blok (Yatay 3x1 alan, alt kısım)
-    final r3 = Rect.fromCenter(center: Offset(center.dx, center.dy + 24), width: 66, height: 26);
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(r3, const Radius.circular(6)),
-      Paint()..color = AppColors.highlighterOrange.withValues(alpha: 0.25)..style = PaintingStyle.fill,
-    );
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(r3, const Radius.circular(6)),
-      pencil,
-    );
-
-    // İçine 3 sayısı
-    final tp3 = TextPainter(
-      text: const TextSpan(
-        text: '3',
-        style: TextStyle(
-          color: AppColors.pencilBlack,
-          fontSize: 15,
-          fontWeight: FontWeight.bold,
-          fontFamily: 'PatrickHand',
-        ),
-      ),
-      textDirection: TextDirection.ltr,
-    )..layout();
-    tp3.paint(canvas, Offset(r3.center.dx - tp3.width / 2, r3.center.dy - tp3.height / 2));
+    // 3. Üçüncü Dalgalı Yama 3 (Mercan/turuncu yatay 3x1 alan)
+    final r3 = Rect.fromCenter(center: Offset(center.dx - 2, center.dy + 22), width: 66, height: 26);
+    drawWobblyPatch(r3, AppColors.highlighterOrange.withValues(alpha: 0.35), '3');
 
     // Kenar karalamaları ve tarama gölgeleri
-    for (double i = -20; i <= 20; i += 8) {
+    for (double i = -24; i <= 24; i += 7) {
       canvas.drawLine(
         Offset(center.dx + i, center.dy + 38),
         Offset(center.dx + i + 4, center.dy + 44),

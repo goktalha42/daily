@@ -14,19 +14,21 @@ class AppColors {
   static const Color pencilLight = Color(0xFFA8A29E); // Taslak çizgisi
   static const Color sketchBorder = Color(0xFF1C1917); // 2px standart skeç kenarlığı
 
-  // Fotoğraftaki İkonik Fosforlu Kalem (Highlighter) Vurguları
-  static const Color highlighterYellow = Color(0xFFFFDE59); // Sarı fosfor
-  static const Color highlighterCyan = Color(0xFF70E0D8);   // Turkuaz fosfor
-  static const Color highlighterOrange = Color(0xFFFF9F68); // Mercan/turuncu fosfor
-  static const Color highlighterPink = Color(0xFFFF85A1);   // Neon pembe fosfor
-  static const Color highlighterGreen = Color(0xFF86EFAC);  // Yeşil fosfor
-  static const Color highlighterPurple = Color(0xFFC4B5FD); // Lavanta moru fosfor
+  // İkonik Kalem & Sanatçı Eskiz Vurguları (Altın Kural gereği çiğ neon sarı ve çiğ neon yeşil tamamen yasaklandı)
+  static const Color sunYellow = Color(0xFFF59E0B);        // Güzel, sıcak altın sarısı
+  static const Color skyBlue = Color(0xFF38BDF8);          // Temiz gök mavisi (Ay için)
+  static const Color highlighterYellow = Color(0xFFF59E0B); // Çiğ sarı yerine sıcak altın kehribar
+  static const Color highlighterCyan = Color(0xFF70E0D8);   // Turkuaz
+  static const Color highlighterOrange = Color(0xFFFF9F68); // Mercan/turuncu
+  static const Color highlighterPink = Color(0xFFFF85A1);   // Pembe
+  static const Color highlighterGreen = Color(0xFF34D399);  // Çiğ neon yeşil yerine ferah pastel nane
+  static const Color highlighterPurple = Color(0xFFC4B5FD); // Lavanta moru
 
   // Zühtü Renk Eşleşmeleri
   static const Color primary = pencilBlack;
-  static const Color warning = highlighterYellow;
-  static const Color success = highlighterGreen;
-  static const Color successDark = Color(0xFF16A34A);
+  static const Color warning = sunYellow;
+  static const Color success = Color(0xFF10B981);
+  static const Color successDark = Color(0xFF047857);
   static const Color error = Color(0xFFEF4444);
   static const Color errorBgLight = Color(0xFFFEE2E2);
 
@@ -42,8 +44,8 @@ class AppColors {
   static const Color pinpointGame = highlighterCyan;
   static const Color crossclimbGame = highlighterPurple;
   static const Color tangoGame = highlighterOrange;
-  static const Color zipGame = highlighterGreen;
-  static const Color patchesGame = highlighterYellow;
+  static const Color zipGame = skyBlue;                  // Sayı yolu artık ferah gök mavisi
+  static const Color patchesGame = Color(0xFFA78BFA);     // Alan bölme şık mor/lavanta
 
   // Temel Uyumluluk
   static const Color background = backgroundLight;
@@ -52,10 +54,10 @@ class AppColors {
   static const Color secondary = pencilGray;
   static const Color accentPurple = highlighterPurple;
   static const Color accentPink = highlighterPink;
-  static const Color accentAmber = highlighterYellow;
+  static const Color accentAmber = sunYellow;
   static const Color accentCyan = highlighterCyan;
   static const Color accentOrange = highlighterOrange;
-  static const Color accentGreen = highlighterGreen;
+  static const Color accentGreen = Color(0xFF34D399);
   static const Color primaryGlow = pencilLight;
   static const Color textPrimary = textPrimaryLight;
   static const Color textSecondary = textSecondaryLight;
@@ -76,9 +78,9 @@ class AppColors {
     colors: [highlighterOrange, Color(0xFFFED7AA)],
   );
   static const LinearGradient zipGradient = LinearGradient(
-    colors: [highlighterGreen, Color(0xFFBBF7D0)],
+    colors: [skyBlue, Color(0xFFBAE6FD)],
   );
   static const LinearGradient patchesGradient = LinearGradient(
-    colors: [highlighterYellow, Color(0xFFFEF08A)],
+    colors: [Color(0xFFA78BFA), Color(0xFFDDD6FE)],
   );
 }

@@ -53,8 +53,13 @@ class _DifficultyState {
 
 class QueensScreen extends ConsumerStatefulWidget {
   final String levelId;
+  final QueensDifficulty? initialDifficulty;
 
-  const QueensScreen({super.key, required this.levelId});
+  const QueensScreen({
+    super.key,
+    required this.levelId,
+    this.initialDifficulty,
+  });
 
   @override
   ConsumerState<QueensScreen> createState() => _QueensScreenState();
@@ -65,11 +70,16 @@ class _QueensScreenState extends ConsumerState<QueensScreen> with SingleTickerPr
   final Map<QueensDifficulty, _DifficultyState> _difficultyStates = {};
   Timer? _timer;
 
+  // İpucu Açıklama Kartı ve Hücre Aydınlatma Durumu
+  String? _activeHintTitle;
+  String? _activeHintMessage;
+  bool _activeHintIsWarning = false;
+  Timer? _highlightTimer;
+
   // Taç Konulduğunda Hücreleri Sırayla Havaya Kaldıran 3D Dalga (Şimdilik Pasif)
   static const bool _enable3dEffect = false;
   late AnimationController _rippleController;
   late Animation<double> _rippleAnimation;
-  math.Point<int>? _rippleCenterCell;
 
   // Sürükleme (Drag-to-Paint & Drag-to-Erase) ve Anlık Dokunma Durumu
   _DragMode? _currentDragMode;
@@ -108,10 +118,22 @@ class _QueensScreenState extends ConsumerState<QueensScreen> with SingleTickerPr
   DateTime? get _lastHintTime => _currentState.lastHintTime;
   set _lastHintTime(DateTime? v) => _currentState.lastHintTime = v;
 
+  int get _placedQueenCount {
+    int count = 0;
+    for (var row in _grid) {
+      for (var cell in row) {
+        if (cell.content == CellContent.queen) count++;
+      }
+    }
+    return count;
+  }
+
+  int get _remainingQueenCount => math.max(0, _level.gridSize - _placedQueenCount);
+
   @override
   void initState() {
     super.initState();
-    _currentDifficulty = QueensDifficultyScheduler.getDifficultyForDate(widget.levelId);
+    _currentDifficulty = widget.initialDifficulty ?? QueensDifficultyScheduler.getDifficultyForDate(widget.levelId);
 
     _rippleController = AnimationController(
       vsync: this,
@@ -161,7 +183,6 @@ class _QueensScreenState extends ConsumerState<QueensScreen> with SingleTickerPr
     _currentDragMode = null;
     _dragStartCell = null;
     _hasDragged = false;
-    _rippleCenterCell = null;
     _rippleController.stop();
   }
 
@@ -179,30 +200,14 @@ class _QueensScreenState extends ConsumerState<QueensScreen> with SingleTickerPr
   @override
   void dispose() {
     _timer?.cancel();
+    _highlightTimer?.cancel();
     _rippleController.dispose();
     super.dispose();
-  }
-
-  void _switchDifficulty(QueensDifficulty newDifficulty) {
-    if (_currentDifficulty == newDifficulty) return;
-    HapticFeedback.selectionClick();
-    setState(() {
-      _currentDifficulty = newDifficulty;
-      _getOrCreateState(newDifficulty);
-      _currentDragMode = null;
-      _dragStartCell = null;
-      _hasDragged = false;
-      _rippleCenterCell = null;
-      _rippleController.stop();
-    });
   }
 
   // Taç Konulduğunda Kutuları Sırayla Yükseltip Alçaltan 3D Dalgayı Başlat
   void _triggerBoardRipple(int r, int c) {
     if (!_enable3dEffect) return;
-    setState(() {
-      _rippleCenterCell = math.Point(r, c);
-    });
     _rippleController.forward(from: 0.0);
   }
 
@@ -347,6 +352,10 @@ class _QueensScreenState extends ConsumerState<QueensScreen> with SingleTickerPr
 
     if (current == CellContent.queen) return;
 
+    if (_activeHintMessage != null) {
+      setState(() => _activeHintMessage = null);
+    }
+
     final CellContent next = (current == CellContent.empty) ? CellContent.cross : CellContent.empty;
 
     _history.add(_QueensHistoryItem(
@@ -364,10 +373,13 @@ class _QueensScreenState extends ConsumerState<QueensScreen> with SingleTickerPr
   /// Çift Dokunma (Double Tap):
   /// - Taca çift dokunulursa taç yok olur!
   /// - Boş veya ✖ olan hücreye çift dokunulursa TAÇ (👑) yerleşir.
-  /// - TAÇ YERLEŞTİĞİ AN: Tablo kutuları 3D dalgayla sırayla yükselip alçalır!
+  /// - Vezir sayısı tahta boyutunu aşamaz (asla negatif kalan vezir olmaz).
   void _handleDoubleTapCell(int r, int c) {
     if (_isSolved) return;
-    HapticFeedback.mediumImpact();
+
+    if (_activeHintMessage != null) {
+      setState(() => _activeHintMessage = null);
+    }
 
     final current = _grid[r][c].content;
     final CellContent next;
@@ -375,9 +387,20 @@ class _QueensScreenState extends ConsumerState<QueensScreen> with SingleTickerPr
     if (current == CellContent.queen) {
       // Taca çift dokunuldu -> Taç yok olur!
       next = CellContent.empty;
+      HapticFeedback.lightImpact();
     } else {
-      // Taç yerleştirilir
+      // Taç yerleştirilirken sınır kontrolü:
+      if (_placedQueenCount >= _level.gridSize) {
+        HapticFeedback.heavyImpact();
+        _showHintBanner(
+          'Maksimum vezir sınırına (${_level.gridSize}/${_level.gridSize}) ulaşıldı! Yeni vezir eklemek için önce mevcut vezirlerden birini kaldırın.',
+          title: '⚠️ Vezir Sınırı',
+          isWarning: true,
+        );
+        return;
+      }
       next = CellContent.queen;
+      HapticFeedback.mediumImpact();
       // Tablo kutularına 3D dalga efektini tetikle
       _triggerBoardRipple(r, c);
     }
@@ -522,13 +545,12 @@ class _QueensScreenState extends ConsumerState<QueensScreen> with SingleTickerPr
             const SizedBox(height: 8),
             _buildRuleCard('3', 'Temas Yasağı (8-Yönlü)', 'Hiçbir vezir birbirine çapraz, yatay veya dikey temas edemez.'),
             const SizedBox(height: 12),
-            Container(
+            SketchCard(
               padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: AppColors.highlighterYellow.withValues(alpha: 0.3),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.pencilBlack, width: 2.0),
-              ),
+              backgroundColor: AppColors.highlighterGreen.withValues(alpha: 0.3),
+              borderRadius: 12,
+              borderWidth: 1.8,
+              shadowOffset: const Offset(2, 2),
               child: Row(
                 children: [
                   const Icon(Icons.touch_app_rounded, size: 20, color: AppColors.pencilBlack),
@@ -576,31 +598,33 @@ class _QueensScreenState extends ConsumerState<QueensScreen> with SingleTickerPr
   }
 
   Widget _buildRuleCard(String number, String title, String desc) {
-    return Container(
+    return SketchCard(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      decoration: BoxDecoration(
-        color: AppColors.backgroundLight,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.pencilBlack, width: 1.8),
-      ),
+      backgroundColor: AppColors.backgroundLight,
+      borderRadius: 12,
+      borderWidth: 1.8,
+      shadowOffset: const Offset(2, 2),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 24,
-            height: 24,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: AppColors.highlighterPink,
-              shape: BoxShape.circle,
-              border: Border.all(color: AppColors.pencilBlack, width: 1.5),
-            ),
-            child: Text(
-              number,
-              style: GoogleFonts.patrickHand(
-                fontWeight: FontWeight.w700,
-                fontSize: 15,
-                color: AppColors.pencilBlack,
+          SketchCard(
+            padding: EdgeInsets.zero,
+            borderRadius: 6,
+            borderWidth: 1.4,
+            shadowOffset: const Offset(1, 1),
+            backgroundColor: AppColors.highlighterPink,
+            child: SizedBox(
+              width: 24,
+              height: 24,
+              child: Center(
+                child: Text(
+                  number,
+                  style: GoogleFonts.patrickHand(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 15,
+                    color: AppColors.pencilBlack,
+                  ),
+                ),
               ),
             ),
           ),
@@ -646,34 +670,64 @@ class _QueensScreenState extends ConsumerState<QueensScreen> with SingleTickerPr
   int _getHintCooldown() {
     if (_lastHintTime == null) return 0;
     final diff = DateTime.now().difference(_lastHintTime!).inSeconds;
-    return (15 - diff).clamp(0, 15);
+    return (8 - diff).clamp(0, 8);
+  }
+
+  void _clearHighlights() {
+    _highlightTimer?.cancel();
+    if (mounted) {
+      setState(() {
+        for (var row in _grid) {
+          for (var cell in row) {
+            cell.isHighlighted = false;
+          }
+        }
+      });
+    }
+  }
+
+  void _highlightCells(Set<math.Point<int>> points) {
+    _clearHighlights();
+    setState(() {
+      for (final pt in points) {
+        if (pt.x >= 0 && pt.x < _level.gridSize && pt.y >= 0 && pt.y < _level.gridSize) {
+          _grid[pt.x][pt.y].isHighlighted = true;
+        }
+      }
+    });
+
+    _highlightTimer = Timer(const Duration(seconds: 4), () {
+      _clearHighlights();
+    });
+  }
+
+  void _showHintBanner(String message, {String? title, bool isWarning = false}) {
+    setState(() {
+      _activeHintTitle = title ?? (isWarning ? 'Dikkat' : '💡 İpucu Rehberi');
+      _activeHintMessage = message;
+      _activeHintIsWarning = isWarning;
+    });
   }
 
   void _useHint() {
     if (_isSolved) return;
 
     final now = DateTime.now();
-    if (_lastHintTime != null && now.difference(_lastHintTime!).inSeconds < 15) {
-      final remaining = 15 - now.difference(_lastHintTime!).inSeconds;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Yeni ipucu için $remaining saniye beklemelisin.', style: GoogleFonts.patrickHand(fontSize: 16)),
-          duration: const Duration(seconds: 2),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+    if (_lastHintTime != null && now.difference(_lastHintTime!).inSeconds < 8) {
+      final remaining = 8 - now.difference(_lastHintTime!).inSeconds;
+      _showHintBanner('Yeni ipucu için $remaining saniye beklemelisin.', isWarning: true);
       return;
     }
 
     _lastHintTime = now;
     HapticFeedback.mediumImpact();
 
-    // 1. Yanlış yerleştirilmiş vezir varsa kaldır
+    // 1. Yanlış yerleştirilmiş veya çakışan vezir varsa kaldır, ✖ koy ve açıkla
     for (var r = 0; r < _level.gridSize; r++) {
       for (var c = 0; c < _level.gridSize; c++) {
         if (_grid[r][c].content == CellContent.queen) {
           final isTrueQueen = _level.solution.any((pt) => pt[0] == r && pt[1] == c);
-          if (!isTrueQueen) {
+          if (!isTrueQueen || _grid[r][c].isConflict) {
             _history.add(_QueensHistoryItem(
               changes: {math.Point(r, c): CellContent.queen},
             ));
@@ -681,11 +735,10 @@ class _QueensScreenState extends ConsumerState<QueensScreen> with SingleTickerPr
               _grid[r][c].content = CellContent.cross;
               _checkState();
             });
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('💡 İpucu: Yanlış konulan vezir silindi ve ✖ ile elendi.', style: GoogleFonts.patrickHand(fontSize: 16)),
-                behavior: SnackBarBehavior.floating,
-              ),
+            _highlightCells({math.Point(r, c)});
+            _showHintBanner(
+              '${r + 1}. Satır, ${c + 1}. Sütun\'daki vezir yanlış yerleştirilmişti ve kuralları ihlal ediyordu. Vezir silindi ve bu kareye ✖ konuldu.',
+              title: '🚨 Çakışan Vezir Düzeltildi',
             );
             return;
           }
@@ -693,25 +746,157 @@ class _QueensScreenState extends ConsumerState<QueensScreen> with SingleTickerPr
       }
     }
 
-    // 2. Doğru vezirlerden henüz konulmamış birini yerleştir + 3D Ripple
+    // 2. Tahtadaki DOĞRU bir vezirin etki alanını (satır, sütun, bölge, komşu) ✖ ile eleme
+    for (var r = 0; r < _level.gridSize; r++) {
+      for (var c = 0; c < _level.gridSize; c++) {
+        if (_grid[r][c].content == CellContent.queen) {
+          final isTrueQueen = _level.solution.any((pt) => pt[0] == r && pt[1] == c);
+          if (isTrueQueen) {
+            final emptyNeighbors = <math.Point<int>>[];
+            final myRegion = _level.regionMap[r][c];
+
+            // Satır ve sütun boşlukları
+            for (var i = 0; i < _level.gridSize; i++) {
+              if (i != c && _grid[r][i].content == CellContent.empty) {
+                emptyNeighbors.add(math.Point(r, i));
+              }
+              if (i != r && _grid[i][c].content == CellContent.empty) {
+                emptyNeighbors.add(math.Point(i, c));
+              }
+            }
+
+            // Aynı bölgedeki boşluklar
+            for (var ro = 0; ro < _level.gridSize; ro++) {
+              for (var co = 0; co < _level.gridSize; co++) {
+                if (_level.regionMap[ro][co] == myRegion && !(ro == r && co == c)) {
+                  if (_grid[ro][co].content == CellContent.empty) {
+                    emptyNeighbors.add(math.Point(ro, co));
+                  }
+                }
+              }
+            }
+
+            // 8 yöndeki komşular (çapraz temas dahil)
+            for (var dr = -1; dr <= 1; dr++) {
+              for (var dc = -1; dc <= 1; dc++) {
+                final nr = r + dr;
+                final nc = c + dc;
+                if (nr >= 0 && nr < _level.gridSize && nc >= 0 && nc < _level.gridSize) {
+                  if (!(nr == r && nc == c) && _grid[nr][nc].content == CellContent.empty) {
+                    emptyNeighbors.add(math.Point(nr, nc));
+                  }
+                }
+              }
+            }
+
+            if (emptyNeighbors.isNotEmpty) {
+              final uniquePoints = emptyNeighbors.toSet();
+              final changes = <math.Point<int>, CellContent>{};
+              for (var pt in uniquePoints) {
+                changes[pt] = _grid[pt.x][pt.y].content;
+              }
+              _history.add(_QueensHistoryItem(changes: changes));
+
+              setState(() {
+                for (var pt in uniquePoints) {
+                  _grid[pt.x][pt.y].content = CellContent.cross;
+                }
+                _moveCount++;
+                _checkState();
+              });
+
+              _highlightCells(uniquePoints);
+              _showHintBanner(
+                '${r + 1}. Satır, ${c + 1}. Sütun\'daki vezirin etki alanındaki (satır, sütun, bölge ve çapraz komşu) ${uniquePoints.length} adet boş kareye ✖ yerleştirildi.',
+                title: '✏️ Vezir Etki Alanı Temizlendi',
+              );
+              return;
+            }
+          }
+        }
+      }
+    }
+
+    // 3. Bir bölgede veya satırda tek bir aday kare kalmışsa vezir yerleştir
+    for (var reg = 0; reg < _level.gridSize; reg++) {
+      bool hasQueenInReg = false;
+      final candidates = <math.Point<int>>[];
+      for (var r = 0; r < _level.gridSize; r++) {
+        for (var c = 0; c < _level.gridSize; c++) {
+          if (_level.regionMap[r][c] == reg) {
+            if (_grid[r][c].content == CellContent.queen) {
+              hasQueenInReg = true;
+              break;
+            }
+            if (_grid[r][c].content != CellContent.cross) {
+              candidates.add(math.Point(r, c));
+            }
+          }
+        }
+        if (hasQueenInReg) break;
+      }
+
+      if (!hasQueenInReg && candidates.length == 1) {
+        final pt = candidates.first;
+        final prev = _grid[pt.x][pt.y].content;
+        _history.add(_QueensHistoryItem(changes: {pt: prev}));
+        _triggerBoardRipple(pt.x, pt.y);
+
+        setState(() {
+          _grid[pt.x][pt.y].content = CellContent.queen;
+          _moveCount++;
+          _checkState();
+        });
+
+        _highlightCells({pt});
+        _showHintBanner(
+          'Bu bölgede vezir konulabilecek sadece tek bir geçerli kare kalmıştı (${pt.x + 1}. Satır, ${pt.y + 1}. Sütun). Buraya vezir yerleştirildi!',
+          title: '👑 Tek Kalan Seçenek Kuralı',
+        );
+        return;
+      }
+    }
+
+    // 4. Çözümde vezir olmayan bir boş hücreyi ✖ ile eleme
+    for (var r = 0; r < _level.gridSize; r++) {
+      for (var c = 0; c < _level.gridSize; c++) {
+        if (_grid[r][c].content == CellContent.empty) {
+          final isTrueQueen = _level.solution.any((pt) => pt[0] == r && pt[1] == c);
+          if (!isTrueQueen) {
+            _history.add(_QueensHistoryItem(changes: {math.Point(r, c): CellContent.empty}));
+            setState(() {
+              _grid[r][c].content = CellContent.cross;
+              _moveCount++;
+              _checkState();
+            });
+            _highlightCells({math.Point(r, c)});
+            _showHintBanner(
+              '${r + 1}. Satır, ${c + 1}. Sütun karesine vezir gelemez. İhtimalleri elemek için buraya ✖ konuldu.',
+              title: '✖️ Mantıksal Eleme Yapıldı',
+            );
+            return;
+          }
+        }
+      }
+    }
+
+    // 5. Çözümdeki sıradaki doğru veziri yerleştir
     for (final pt in _level.solution) {
       final r = pt[0];
       final c = pt[1];
       if (_grid[r][c].content != CellContent.queen) {
         final prev = _grid[r][c].content;
-        _history.add(_QueensHistoryItem(
-          changes: {math.Point(r, c): prev},
-        ));
+        _history.add(_QueensHistoryItem(changes: {math.Point(r, c): prev}));
         _triggerBoardRipple(r, c);
         setState(() {
           _grid[r][c].content = CellContent.queen;
+          _moveCount++;
           _checkState();
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('💡 İpucu: Doğru bir vezir tahtaya yerleştirildi!', style: GoogleFonts.patrickHand(fontSize: 16)),
-            behavior: SnackBarBehavior.floating,
-          ),
+        _highlightCells({math.Point(r, c)});
+        _showHintBanner(
+          '${r + 1}. Satır, ${c + 1}. Sütun karesine doğru vezir yerleştirildi!',
+          title: '💡 Stratejik Vezir Konumu',
         );
         return;
       }
@@ -735,6 +920,7 @@ class _QueensScreenState extends ConsumerState<QueensScreen> with SingleTickerPr
       moveCount: _moveCount,
       score: score,
       completedAt: DateTime.now(),
+      difficulty: _currentDifficulty.name,
     );
 
     ref.read(leaderboardServiceProvider).submitScore(result);
@@ -766,13 +952,6 @@ class _QueensScreenState extends ConsumerState<QueensScreen> with SingleTickerPr
 
   @override
   Widget build(BuildContext context) {
-    int queenCount = 0;
-    for (var row in _grid) {
-      for (var cell in row) {
-        if (cell.content == CellContent.queen) queenCount++;
-      }
-    }
-
     final cooldown = _getHintCooldown();
     final isHintReady = cooldown == 0;
 
@@ -780,311 +959,315 @@ class _QueensScreenState extends ConsumerState<QueensScreen> with SingleTickerPr
       backgroundColor: AppColors.backgroundLight,
       body: SketchPaperBackground(
         child: SafeArea(
-          child: Column(
+          child: Stack(
             children: [
-              // 1. ÜST KONTROL & BAŞLIK ÇUBUĞU (Organik El Çizimi Skeç Kartları)
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 10, 16, 6),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    // Geri Butonu (Organik SketchCard)
-                    SketchCard(
-                      padding: const EdgeInsets.all(8),
-                      borderRadius: 10,
-                      shadowOffset: const Offset(2.5, 2.5),
-                      onTap: () => Navigator.pop(context),
-                      child: const Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: AppColors.pencilBlack),
-                    ),
-
-                    // Zorluk Seçici (Organik Çizgili Skeç Kutusu)
-                    SketchCard(
-                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
-                      borderRadius: 12,
-                      shadowOffset: const Offset(2.5, 2.5),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: QueensDifficulty.values.map((diff) {
-                          final isSelected = diff == _currentDifficulty;
-                          return GestureDetector(
-                            onTap: () => _switchDifficulty(diff),
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 160),
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: isSelected ? AppColors.highlighterPink : Colors.transparent,
-                                borderRadius: BorderRadius.circular(8),
-                                border: isSelected ? Border.all(color: AppColors.pencilBlack, width: 1.8) : null,
-                              ),
-                              child: Text(
-                                diff.label,
-                                style: GoogleFonts.patrickHand(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.pencilBlack,
-                                ),
-                              ),
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                    ),
-
-                    // Süre & Yardım
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
+              // 1. Sabit Oyun Düzeni (Tahta Asla Yukarı/Aşağı Kaymaz!)
+              Column(
+                children: [
+                  // 1. ÜST KONTROL & BAŞLIK ÇUBUĞU (Organik El Çizimi Skeç Kartları)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 10, 16, 6),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
+                        // Geri Butonu (Organik SketchCard)
                         SketchCard(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                          padding: const EdgeInsets.all(8),
                           borderRadius: 10,
-                          shadowOffset: const Offset(2, 2),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.timer_outlined, size: 15, color: AppColors.pencilBlack),
-                              const SizedBox(width: 4),
-                              Text(
-                                GameDateUtils.formatGameTime(_elapsedMs),
-                                style: GoogleFonts.patrickHand(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.pencilBlack,
-                                ),
-                              ),
-                            ],
-                          ),
+                          shadowOffset: const Offset(2.5, 2.5),
+                          onTap: () => Navigator.pop(context),
+                          child: const Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: AppColors.pencilBlack),
                         ),
-                        const SizedBox(width: 6),
-                        SketchCard(
-                          backgroundColor: AppColors.highlighterYellow,
-                          padding: const EdgeInsets.all(7),
-                          borderRadius: 10,
-                          shadowOffset: const Offset(2, 2),
-                          onTap: _showHelpDialog,
-                          child: const Icon(Icons.question_mark_rounded, size: 16, color: AppColors.pencilBlack),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
 
-              const SizedBox(height: 4),
-
-              // 2. KALAN VEZİR TEPSİSİ (Organik SketchCard)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: SketchCard(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                  borderRadius: 12,
-                  shadowOffset: const Offset(3, 3),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Kalan Vezir: ${_level.gridSize - queenCount}',
-                        style: GoogleFonts.patrickHand(
-                          fontSize: 19,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.pencilBlack,
-                        ),
-                      ),
-                      Row(
-                        children: List.generate(_level.gridSize, (idx) {
-                          final isPlaced = idx < queenCount;
-                          return AnimatedContainer(
-                            duration: const Duration(milliseconds: 200),
-                            margin: const EdgeInsets.symmetric(horizontal: 2.5),
-                            width: 22,
-                            height: 22,
-                            decoration: BoxDecoration(
-                              color: isPlaced ? AppColors.highlighterYellow : AppColors.surfaceSecondaryLight,
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: AppColors.pencilBlack,
-                                width: isPlaced ? 2.0 : 1.2,
-                              ),
-                            ),
-                            child: Center(
-                              child: Icon(
-                                Icons.castle_rounded,
-                                size: 12,
-                                color: isPlaced ? AppColors.pencilBlack : AppColors.pencilLight,
-                              ),
-                            ),
-                          ).animate(target: isPlaced ? 1 : 0).scale(duration: 180.ms);
-                        }),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 10),
-
-              // 3. TAMAMEN ELLE ÇİZİLMİŞ VEZİRLER TAHTASI + RIPPLE EFFECT
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Center(
-                    child: AspectRatio(
-                      aspectRatio: 1.0,
-                      child: LayoutBuilder(
-                        builder: (context, constraints) {
-                          final boardSize = constraints.maxWidth;
-
-                          return Listener(
-                            behavior: HitTestBehavior.opaque,
-                            onPointerDown: (event) => _onPointerDown(event, boardSize),
-                            onPointerMove: (event) => _onPointerMove(event, boardSize),
-                            onPointerUp: _onPointerUp,
-                            onPointerCancel: _onPointerCancel,
-                            child: AnimatedBuilder(
-                              animation: _rippleAnimation,
-                              builder: (context, child) {
-                                return Stack(
-                                  children: [
-                                    // 1. Zemin: Organik Bölge Hatları ve Keçeli Boyama
-                                    Positioned.fill(
-                                      child: CustomPaint(
-                                        painter: QueensBoardPainter(
-                                          gridSize: _level.gridSize,
-                                          regionMap: _level.regionMap,
-                                          grid: _grid,
-                                          palette: _sketchRegionColors,
-                                          isDark: false,
+                        // Süre & Yardım
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            SketchCard(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                              borderRadius: 10,
+                              shadowOffset: const Offset(2, 2),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.timer_outlined, size: 15, color: AppColors.pencilBlack),
+                                  const SizedBox(width: 4),
+                                  SizedBox(
+                                    width: 50,
+                                    child: Center(
+                                      child: Text(
+                                        GameDateUtils.formatGameTime(_elapsedMs),
+                                        style: GoogleFonts.patrickHand(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w700,
+                                          color: AppColors.pencilBlack,
                                         ),
                                       ),
                                     ),
-                                    // 2. Tablo Kutuları: Taç Koyulduğunda Sırayla Yükselip Alçalan 3D Dalga
-                                    GridView.builder(
-                                      physics: const NeverScrollableScrollPhysics(),
-                                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                                        crossAxisCount: _level.gridSize,
-                                      ),
-                                      itemCount: _level.gridSize * _level.gridSize,
-                                      itemBuilder: (context, index) {
-                                        final r = index ~/ _level.gridSize;
-                                        final c = index % _level.gridSize;
-                                        final cell = _grid[r][c];
-
-                                        if (!_enable3dEffect) {
-                                          return Center(
-                                            child: _buildCellContent(cell),
-                                          );
-                                        }
-
-                                        double lift = 0.0;
-                                        double popScale = 1.0;
-                                        double elevationFactor = 0.0;
-
-                                        if (_rippleCenterCell != null && _rippleAnimation.value > 0.0) {
-                                          final dist = math.sqrt(
-                                            math.pow(r - _rippleCenterCell!.x, 2) +
-                                            math.pow(c - _rippleCenterCell!.y, 2),
-                                          );
-                                          final maxDist = math.sqrt(2 * math.pow(_level.gridSize.toDouble(), 2));
-                                          final normDist = dist / maxDist;
-                                          final waveFront = _rippleAnimation.value * 1.35 - 0.15;
-                                          final delta = (normDist - waveFront).abs();
-                                          const waveWidth = 0.20;
-
-                                          if (delta < waveWidth) {
-                                            final bell = math.cos((delta / waveWidth) * (math.pi / 2));
-                                            final damping = 1.0 - (normDist * 0.30);
-                                            elevationFactor = (bell * damping).clamp(0.0, 1.0);
-                                            lift = elevationFactor * 14.0;
-                                            popScale = 1.0 + (elevationFactor * 0.18);
-                                          }
-                                        }
-
-                                        final isElevated = elevationFactor > 0.02;
-                                        final regionColor = _sketchRegionColors[_level.regionMap[r][c] % _sketchRegionColors.length];
-
-                                        return Center(
-                                          child: Transform.translate(
-                                            offset: Offset(0, -lift),
-                                            child: Transform.scale(
-                                              scale: popScale,
-                                              child: Container(
-                                                margin: EdgeInsets.all(isElevated ? 2.0 : 0.0),
-                                                decoration: isElevated
-                                                    ? BoxDecoration(
-                                                        color: regionColor,
-                                                        borderRadius: BorderRadius.circular(8),
-                                                        border: Border.all(
-                                                          color: AppColors.pencilBlack,
-                                                          width: 2.0,
-                                                        ),
-                                                        boxShadow: [
-                                                          BoxShadow(
-                                                            color: AppColors.pencilBlack.withValues(alpha: 0.35 * elevationFactor),
-                                                            offset: Offset(2.0, 2.0 + lift * 0.65),
-                                                            blurRadius: 0,
-                                                          ),
-                                                        ],
-                                                      )
-                                                    : null,
-                                                child: Center(
-                                                  child: _buildCellContent(cell),
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  ],
-                                );
-                              },
+                                  ),
+                                ],
+                              ),
                             ),
-                          );
-                        },
+                            const SizedBox(width: 6),
+                            SketchCard(
+                              backgroundColor: AppColors.sunYellow,
+                              padding: const EdgeInsets.all(7),
+                              borderRadius: 10,
+                              shadowOffset: const Offset(2, 2),
+                              onTap: _showHelpDialog,
+                              child: const Icon(Icons.question_mark_rounded, size: 16, color: AppColors.pencilBlack),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 4),
+
+                  // 2. KALAN VEZİR TEPSİSİ (Organik SketchCard)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: SketchCard(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      borderRadius: 12,
+                      shadowOffset: const Offset(3, 3),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Kalan Vezir: $_remainingQueenCount',
+                            style: GoogleFonts.patrickHand(
+                              fontSize: 19,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.pencilBlack,
+                            ),
+                          ),
+                          Row(
+                            children: List.generate(_level.gridSize, (idx) {
+                              final isPlaced = idx < _placedQueenCount;
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 2.5),
+                                child: SketchCard(
+                                  padding: EdgeInsets.zero,
+                                  borderRadius: 6,
+                                  borderWidth: isPlaced ? 1.8 : 1.2,
+                                  shadowOffset: isPlaced ? const Offset(1.5, 1.5) : const Offset(1.0, 1.0),
+                                  backgroundColor: isPlaced ? AppColors.highlighterYellow : AppColors.surfaceSecondaryLight,
+                                  child: SizedBox(
+                                    width: 22,
+                                    height: 22,
+                                    child: Center(
+                                      child: Icon(
+                                        Icons.castle_rounded,
+                                        size: 13,
+                                        color: isPlaced ? AppColors.pencilBlack : AppColors.pencilLight,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ).animate(target: isPlaced ? 1 : 0).scale(duration: 180.ms);
+                            }),
+                          ),
+                        ],
                       ),
                     ),
                   ),
-                ),
-              ),
 
-              const SizedBox(height: 10),
+                  const SizedBox(height: 10),
 
-              // 4. ALT İŞLEM BUTONLARI (Geri Al, Sıfırla, İpucu)
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
-                child: SketchCard(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                  borderRadius: 14,
-                  shadowOffset: const Offset(3.5, 3.5),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      _OrganicSketchActionButton(
-                        icon: Icons.undo_rounded,
-                        label: 'Geri Al',
-                        onTap: _history.isNotEmpty && !_isSolved ? _undoMove : null,
+                  // 3. TAMAMEN ELLE ÇİZİLMİŞ VEZİRLER TAHTASI + RIPPLE EFFECT
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: Center(
+                        child: AspectRatio(
+                          aspectRatio: 1.0,
+                          child: LayoutBuilder(
+                            builder: (context, constraints) {
+                              final boardSize = constraints.maxWidth;
+
+                              return Listener(
+                                behavior: HitTestBehavior.opaque,
+                                onPointerDown: (event) => _onPointerDown(event, boardSize),
+                                onPointerMove: (event) => _onPointerMove(event, boardSize),
+                                onPointerUp: _onPointerUp,
+                                onPointerCancel: _onPointerCancel,
+                                child: AnimatedBuilder(
+                                  animation: _rippleAnimation,
+                                  builder: (context, child) {
+                                    return Stack(
+                                      children: [
+                                        // 1. Zemin: Organik Bölge Hatları ve Keçeli Boyama
+                                        Positioned.fill(
+                                          child: CustomPaint(
+                                            painter: QueensBoardPainter(
+                                              gridSize: _level.gridSize,
+                                              regionMap: _level.regionMap,
+                                              grid: _grid,
+                                              palette: _sketchRegionColors,
+                                              isDark: false,
+                                            ),
+                                          ),
+                                        ),
+                                        // 2. Tablo Kutuları
+                                        GridView.builder(
+                                          physics: const NeverScrollableScrollPhysics(),
+                                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                            crossAxisCount: _level.gridSize,
+                                          ),
+                                          itemCount: _level.gridSize * _level.gridSize,
+                                          itemBuilder: (context, index) {
+                                            final r = index ~/ _level.gridSize;
+                                            final c = index % _level.gridSize;
+                                            final cell = _grid[r][c];
+
+                                            return Center(
+                                              child: _buildCellContent(cell),
+                                            );
+                                          },
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                ),
+                              );
+                            },
+                          ),
+                        ),
                       ),
-                      Container(width: 2, height: 26, color: AppColors.pencilBlack.withValues(alpha: 0.2)),
-                      _OrganicSketchActionButton(
-                        icon: Icons.refresh_rounded,
-                        label: 'Sıfırla',
-                        onTap: !_isSolved ? _clearBoard : null,
-                      ),
-                      Container(width: 2, height: 26, color: AppColors.pencilBlack.withValues(alpha: 0.2)),
-                      _OrganicSketchActionButton(
-                        icon: isHintReady ? Icons.lightbulb_rounded : Icons.hourglass_bottom_rounded,
-                        label: isHintReady ? 'İpucu' : '$cooldown s',
-                        isActive: isHintReady,
-                        activeColor: AppColors.highlighterYellow,
-                        onTap: !_isSolved ? _useHint : null,
-                      ),
-                    ],
+                    ),
                   ),
-                ),
+
+                  const SizedBox(height: 8),
+
+                  // 4. ALT İŞLEM BUTONLARI (Geri Al, Sıfırla, İpucu)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+                    child: SketchCard(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      borderRadius: 14,
+                      shadowOffset: const Offset(3.5, 3.5),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          _OrganicSketchActionButton(
+                            icon: Icons.undo_rounded,
+                            label: 'Geri Al',
+                            onTap: _history.isNotEmpty && !_isSolved ? _undoMove : null,
+                          ),
+                          Container(width: 2, height: 26, color: AppColors.pencilBlack.withValues(alpha: 0.2)),
+                          _OrganicSketchActionButton(
+                            icon: Icons.refresh_rounded,
+                            label: 'Sıfırla',
+                            onTap: !_isSolved ? _clearBoard : null,
+                          ),
+                          Container(width: 2, height: 26, color: AppColors.pencilBlack.withValues(alpha: 0.2)),
+                          _OrganicSketchActionButton(
+                            icon: isHintReady ? Icons.lightbulb_rounded : Icons.hourglass_bottom_rounded,
+                            label: isHintReady ? 'İpucu' : '$cooldown s',
+                            isActive: isHintReady,
+                            activeColor: AppColors.highlighterYellow,
+                            onTap: !_isSolved ? _useHint : null,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
+
+              // 2. YÜZEN İPUCU & UYARI KARTI (Tahtanın Boyutunu ve Yerini Kesinlikle Değiştirmez!)
+              if (_activeHintMessage != null)
+                Positioned(
+                  left: 16,
+                  right: 16,
+                  bottom: 74,
+                  child: _buildHintInfoCard(),
+                ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  Widget _buildHintInfoCard() {
+    if (_activeHintMessage == null) return const SizedBox.shrink();
+
+    final isWarning = _activeHintIsWarning;
+
+    return SketchCard(
+      padding: const EdgeInsets.all(12),
+      borderRadius: 14,
+      borderWidth: 2.2,
+      shadowOffset: const Offset(3.5, 3.5),
+      backgroundColor: isWarning ? AppColors.errorBgLight : AppColors.surfaceLight,
+      borderColor: isWarning ? AppColors.error : AppColors.pencilBlack,
+      enableHatching: true,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Organik İkon Kutusu
+          SketchCard(
+            padding: const EdgeInsets.all(6),
+            borderRadius: 8,
+            borderWidth: 1.6,
+            shadowOffset: const Offset(1.5, 1.5),
+            backgroundColor: isWarning
+                ? AppColors.highlighterPink.withValues(alpha: 0.4)
+                : AppColors.highlighterYellow,
+            borderColor: isWarning ? AppColors.error : AppColors.pencilBlack,
+            child: Icon(
+              isWarning ? Icons.warning_amber_rounded : Icons.lightbulb_rounded,
+              size: 20,
+              color: isWarning ? AppColors.error : AppColors.pencilBlack,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (_activeHintTitle != null)
+                  Text(
+                    _activeHintTitle!,
+                    style: GoogleFonts.patrickHand(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: isWarning ? AppColors.error : AppColors.pencilBlack,
+                    ),
+                  ),
+                Text(
+                  _activeHintMessage!,
+                  style: GoogleFonts.patrickHand(
+                    fontSize: 14,
+                    color: AppColors.pencilBlack,
+                    height: 1.2,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 6),
+          // Organik Kapatma Butonu
+          SketchCard(
+            padding: const EdgeInsets.all(4),
+            borderRadius: 8,
+            borderWidth: 1.4,
+            shadowOffset: const Offset(1.5, 1.5),
+            backgroundColor: AppColors.surfaceSecondaryLight,
+            onTap: () {
+              setState(() {
+                _activeHintMessage = null;
+                _clearHighlights();
+              });
+            },
+            child: const Icon(Icons.close_rounded, size: 16, color: AppColors.pencilBlack),
+          ),
+        ],
+      ),
+    ).animate().slideY(begin: 0.15, end: 0, duration: 180.ms, curve: Curves.easeOutBack).fadeIn(duration: 120.ms);
   }
 
   Widget _buildCellContent(QueensCell cell) {
@@ -1109,6 +1292,7 @@ class _QueensScreenState extends ConsumerState<QueensScreen> with SingleTickerPr
 }
 
 /// Tamamen Serbest El Çizimi Taç (Organik Eğrili Kurşun Kalem Karalaması)
+/// Çatışma / Hata anında: Kırmızı Çatlamış Taç (Cracked Crown)
 class _OrganicDrawnCrownPainter extends CustomPainter {
   final bool isConflict;
 
@@ -1173,6 +1357,53 @@ class _OrganicDrawnCrownPainter extends CustomPainter {
     canvas.drawCircle(Offset(w * 0.08, h * 0.32), 2.2, dotPaint);
     canvas.drawCircle(Offset(w * 0.50, h * 0.18), 2.8, dotPaint);
     canvas.drawCircle(Offset(w * 0.92, h * 0.32), 2.2, dotPaint);
+
+    // KURAL İHLALİ / HATA: KIRMIZI ÇATLAYAN TAÇ ÇİZGİLERİ (CRACKED CROWN)
+    if (isConflict) {
+      final crackPaint = Paint()
+        ..color = AppColors.pencilBlack
+        ..strokeWidth = 2.4
+        ..strokeJoin = StrokeJoin.round
+        ..strokeCap = StrokeCap.round
+        ..style = PaintingStyle.stroke;
+
+      // 1. Ana Zikzak Çatlak Hattı (Tepe noktasından aşağıya doğru inen derin yarık)
+      final mainCrack = Path();
+      mainCrack.moveTo(w * 0.50, h * 0.18);
+      mainCrack.lineTo(w * 0.44, h * 0.34);
+      mainCrack.lineTo(w * 0.55, h * 0.48);
+      mainCrack.lineTo(w * 0.41, h * 0.64);
+      mainCrack.lineTo(w * 0.52, h * 0.74);
+      mainCrack.lineTo(w * 0.48, h * 0.83);
+      canvas.drawPath(mainCrack, crackPaint);
+
+      // 2. Yan Çatlak Dalları
+      final branch1 = Path();
+      branch1.moveTo(w * 0.44, h * 0.34);
+      branch1.lineTo(w * 0.28, h * 0.42);
+      canvas.drawPath(branch1, crackPaint..strokeWidth = 1.8);
+
+      final branch2 = Path();
+      branch2.moveTo(w * 0.55, h * 0.48);
+      branch2.lineTo(w * 0.72, h * 0.58);
+      canvas.drawPath(branch2, crackPaint..strokeWidth = 1.8);
+
+      // 3. Çatlamış Bilye
+      canvas.drawLine(
+        Offset(w * 0.46, h * 0.14),
+        Offset(w * 0.54, h * 0.22),
+        crackPaint..strokeWidth = 2.0,
+      );
+
+      // 4. Kırık / Kıymık Eskiz Çizgileri (Havada uçuşan minik taç parçacıkları)
+      final splinterPaint = Paint()
+        ..color = AppColors.pencilBlack
+        ..strokeWidth = 1.5
+        ..strokeCap = StrokeCap.round;
+      canvas.drawLine(Offset(w * 0.36, h * 0.22), Offset(w * 0.32, h * 0.26), splinterPaint);
+      canvas.drawLine(Offset(w * 0.62, h * 0.20), Offset(w * 0.66, h * 0.24), splinterPaint);
+      canvas.drawLine(Offset(w * 0.58, h * 0.68), Offset(w * 0.64, h * 0.71), splinterPaint);
+    }
   }
 
   @override
@@ -1236,17 +1467,37 @@ class _OrganicSketchActionButton extends StatelessWidget {
     final isEnabled = onTap != null;
     final color = isEnabled ? AppColors.pencilBlack : AppColors.pencilLight;
 
+    if (isActive) {
+      return SketchCard(
+        onTap: onTap,
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        borderRadius: 8,
+        borderWidth: 1.8,
+        shadowOffset: const Offset(1.5, 1.5),
+        backgroundColor: activeColor,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 18, color: color),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: GoogleFonts.patrickHand(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: color,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 160),
+      child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-        decoration: BoxDecoration(
-          color: isActive ? activeColor : Colors.transparent,
-          borderRadius: BorderRadius.circular(8),
-          border: isActive ? Border.all(color: AppColors.pencilBlack, width: 1.8) : null,
-        ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [

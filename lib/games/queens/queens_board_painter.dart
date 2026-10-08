@@ -46,28 +46,17 @@ class QueensBoardPainter extends CustomPainter {
           ..style = PaintingStyle.fill;
         canvas.drawRect(rect, bgPaint);
 
-        // Kural İhlali / Çakışma Arka Plan Karalaması
-        if (cell.isConflict) {
-          final conflictPaint = Paint()
-            ..color = AppColors.error.withValues(alpha: 0.40)
-            ..style = PaintingStyle.fill;
-          canvas.drawRect(rect, conflictPaint);
-
-          // Çakışan hücreye kırmızı çapraz skeç taraması
-          final hatchPaint = Paint()
-            ..color = AppColors.error.withValues(alpha: 0.5)
-            ..strokeWidth = 1.4;
-          for (double x = -cellSize; x < cellSize * 2; x += 8) {
-            canvas.drawLine(
-              Offset(rect.left + x, rect.top),
-              Offset(rect.left + x + cellSize, rect.bottom),
-              hatchPaint,
-            );
-          }
-        } else if (cell.isHighlighted) {
+        // İpucu için parlatılmış hücre (Organik fosforlu sarı vurgu)
+        if (cell.isHighlighted) {
           final highlightPaint = Paint()
-            ..color = AppColors.highlighterYellow.withValues(alpha: 0.45);
+            ..color = AppColors.highlighterYellow.withValues(alpha: 0.55);
           canvas.drawRect(rect, highlightPaint);
+
+          final highlightBorder = Paint()
+            ..color = AppColors.pencilBlack
+            ..strokeWidth = 2.0
+            ..style = PaintingStyle.stroke;
+          canvas.drawRect(rect.deflate(2), highlightBorder);
         }
       }
     }

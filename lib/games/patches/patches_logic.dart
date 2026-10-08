@@ -4,18 +4,32 @@ class PatchesLogic {
   /// Tek bir dikdörtgenin kurallara uygunluğunu kontrol eder:
   /// - İçinde tam olarak 1 adet sayı ipucu bulunmalı.
   /// - Dikdörtgenin alanı o sayıya eşit olmalıdır.
+  /// - image.png standardı: Şekil türü (kare, uzun, geniş, herhangi biri) kuralına uymalıdır.
   static bool isValidRect(PatchRect rect, List<PatchesClue> clues) {
+    PatchesClue? containedClue;
     int clueCount = 0;
-    int targetArea = 0;
 
     for (final clue in clues) {
       if (rect.contains(clue.row, clue.col)) {
         clueCount++;
-        targetArea = clue.targetArea;
+        containedClue = clue;
       }
     }
 
-    return clueCount == 1 && rect.area == targetArea;
+    if (clueCount != 1 || containedClue == null) return false;
+    if (rect.area != containedClue.targetArea) return false;
+
+    // Şekil Türü Kısıtı (image.png standardı)
+    switch (containedClue.shapeType) {
+      case PatchShapeType.square:
+        return rect.width == rect.height;
+      case PatchShapeType.tall:
+        return rect.height > rect.width;
+      case PatchShapeType.wide:
+        return rect.width > rect.height;
+      case PatchShapeType.any:
+        return true;
+    }
   }
 
   /// Dikdörtgenin içindeki ipucu sayısını döner.
@@ -56,26 +70,19 @@ class PatchesLogic {
       }
     }
 
-    // 2. Her dikdörtgenin kendi geçerliliği
+    // 2. Her dikdörtgenin kendi geçerliliği ve şekil kısıtı
     final visitedClues = <PatchesClue>{};
     for (final rect in userRects) {
-      PatchesClue? containedClue;
-      for (final clue in clues) {
-        if (rect.contains(clue.row, clue.col)) {
-          if (containedClue != null) {
-            // Birden fazla ipucu içeriyor
-            return false;
-          }
-          containedClue = clue;
-        }
-      }
-
-      if (containedClue == null || rect.area != containedClue.targetArea) {
-        // İpucu içermiyor veya alanı uyuşmuyor
+      if (!isValidRect(rect, clues)) {
         return false;
       }
 
-      visitedClues.add(containedClue);
+      for (final clue in clues) {
+        if (rect.contains(clue.row, clue.col)) {
+          visitedClues.add(clue);
+          break;
+        }
+      }
     }
 
     // 3. Tüm ipuçları kullanılmış olmalı
@@ -196,6 +203,11 @@ class PatchesLogic {
       if (area % h != 0) continue;
       final w = area ~/ h;
       if (w > gridSize) continue;
+
+      // Şekil türü kısıtı filtresi (image.png standardı)
+      if (clue.shapeType == PatchShapeType.square && w != h) continue;
+      if (clue.shapeType == PatchShapeType.tall && h <= w) continue;
+      if (clue.shapeType == PatchShapeType.wide && w <= h) continue;
 
       final minTop = (clue.row - h + 1).clamp(0, gridSize - 1);
       final maxTop = clue.row.clamp(0, gridSize - h);

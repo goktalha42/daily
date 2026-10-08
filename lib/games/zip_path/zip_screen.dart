@@ -83,11 +83,7 @@ class _ZipScreenState extends ConsumerState<ZipScreen> {
 
     final targetPoint = Point(r, c);
 
-    // Duvar hücresine basılamaz veya geçilemez
-    if (_level.walls.contains(targetPoint)) return;
-
     if (_path.contains(targetPoint)) {
-      // Yoldaki bir noktaya basılırsa o noktadan sonrasını kes
       final idx = _path.indexOf(targetPoint);
       if (idx < _path.length - 1) {
         HapticFeedback.selectionClick();
@@ -100,7 +96,6 @@ class _ZipScreenState extends ConsumerState<ZipScreen> {
     }
 
     if (_path.isEmpty) {
-      // Yol sadece 1 numaradan başlayabilir
       if (_level.numberPoints[targetPoint] == 1) {
         HapticFeedback.lightImpact();
         setState(() {
@@ -113,14 +108,11 @@ class _ZipScreenState extends ConsumerState<ZipScreen> {
       final dr = (last.row - r).abs();
       final dc = (last.col - c).abs();
 
-      // Yalnızca komşu kareler (yatay veya dikey)
       if (dr + dc == 1) {
-        // Eğer hedef hücre bir numara içeriyorsa, sıradaki numara olmalı
         final nextTarget = _getNextTargetNumber();
         final cellNum = _level.numberPoints[targetPoint];
 
         if (cellNum != null && cellNum > nextTarget) {
-          // Sırası gelmeyen bir numaraya atlanamaz
           HapticFeedback.vibrate();
           return;
         }
@@ -227,7 +219,7 @@ class _ZipScreenState extends ConsumerState<ZipScreen> {
         ),
         title: Row(
           children: [
-            const Icon(Icons.alt_route_rounded, color: AppColors.highlighterGreen, size: 28),
+            const Icon(Icons.alt_route_rounded, color: AppColors.sunYellow, size: 28),
             const SizedBox(width: 8),
             Text(
               'Sayı Yolu: Nasıl Oynanır?',
@@ -245,59 +237,33 @@ class _ZipScreenState extends ConsumerState<ZipScreen> {
           children: [
             _buildRuleCard(
               '1',
-              '1\'den Başla',
-              'Çizeceğin yol her zaman 1 numaralı daireden başlamalıdır.',
+              '1 Numaradan Başla',
+              'Yol 1 numaralı başlangıç rozetinden başlamalıdır.',
             ),
             const SizedBox(height: 8),
             _buildRuleCard(
               '2',
               'Sayıları Sırayla Bağla',
-              '1 ➔ 2 ➔ 3... şeklinde tüm sayıları sırasını atlamadan birbirine bağla.',
+              '1 ➔ 2 ➔ 3... şeklinde sırayı atlamadan Bitiş Bayrağına kadar bağla.',
             ),
             const SizedBox(height: 8),
             _buildRuleCard(
               '3',
               'Komşu Adımlar',
-              'Yol yalnızca yatay ve dikey komşu kareler üzerinden ilerleyebilir, çapraz atlayamaz.',
+              'Yol yalnızca yatay ve dikey komşu kareler üzerinden ilerleyebilir.',
             ),
             const SizedBox(height: 8),
             _buildRuleCard(
               '4',
-              'Engeller & Tüm Kareler',
-              'Taranmış gri kareler duvardır, geçilemez. Diğer tüm boş kareler tam bir kez ziyaret edilmelidir.',
-            ),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: AppColors.highlighterYellow.withValues(alpha: 0.3),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.pencilBlack, width: 2.0),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.touch_app_rounded, size: 20, color: AppColors.pencilBlack),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      '• Parmağını sürükle veya karelere dokunarak yolu çiz!\n• Yoldaki bir kareye tekrar dokunursan oradan sonrasını geri alır.',
-                      style: GoogleFonts.patrickHand(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.pencilBlack,
-                        height: 1.25,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+              'Tüm Kareleri Gez',
+              'Tahtadaki istisnasız tüm kareler tek bir zincirle tam bir kez gezilmelidir.',
             ),
           ],
         ),
         actions: [
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.highlighterYellow,
+              backgroundColor: AppColors.sunYellow,
               foregroundColor: AppColors.pencilBlack,
               elevation: 0,
               shape: RoundedRectangleBorder(
@@ -336,7 +302,7 @@ class _ZipScreenState extends ConsumerState<ZipScreen> {
             height: 24,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: AppColors.highlighterGreen,
+              color: AppColors.skyBlue,
               shape: BoxShape.circle,
               border: Border.all(color: AppColors.pencilBlack, width: 1.5),
             ),
@@ -382,6 +348,7 @@ class _ZipScreenState extends ConsumerState<ZipScreen> {
   Widget build(BuildContext context) {
     final nextTarget = _getNextTargetNumber();
     final maxNumber = _level.numberPoints.values.reduce((a, b) => a > b ? a : b);
+    final totalCells = _level.gridSize * _level.gridSize;
 
     return Scaffold(
       backgroundColor: AppColors.backgroundLight,
@@ -389,13 +356,12 @@ class _ZipScreenState extends ConsumerState<ZipScreen> {
         child: SafeArea(
           child: Column(
             children: [
-              // 1. ÜST KONTROL & BAŞLIK ÇUBUĞU (Organik Kara Kalem Skeç Kartları)
+              // 1. ÜST KONTROL & BAŞLIK ÇUBUĞU
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 10, 16, 6),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // Geri Butonu
                     SketchCard(
                       padding: const EdgeInsets.all(8),
                       borderRadius: 10,
@@ -404,7 +370,6 @@ class _ZipScreenState extends ConsumerState<ZipScreen> {
                       child: const Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: AppColors.pencilBlack),
                     ),
 
-                    // Oyun Başlığı ve Rozet
                     SketchCard(
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
                       borderRadius: 12,
@@ -429,12 +394,12 @@ class _ZipScreenState extends ConsumerState<ZipScreen> {
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
                                 decoration: BoxDecoration(
-                                  color: AppColors.highlighterGreen,
+                                  color: AppColors.skyBlue.withValues(alpha: 0.35),
                                   borderRadius: BorderRadius.circular(6),
                                   border: Border.all(color: AppColors.pencilBlack, width: 1.2),
                                 ),
                                 child: Text(
-                                  '⚡ 1\'den Zirveye Patika',
+                                  '⚡ Tüm Kareleri Dolaş',
                                   style: GoogleFonts.patrickHand(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w700,
@@ -448,7 +413,7 @@ class _ZipScreenState extends ConsumerState<ZipScreen> {
                       ),
                     ),
 
-                    // Sayaç & Yardım Butonları
+                    // Kronometre (Titreme yapmayan sabit genişlikli kutu)
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -460,12 +425,17 @@ class _ZipScreenState extends ConsumerState<ZipScreen> {
                             children: [
                               const Icon(Icons.timer_outlined, size: 15, color: AppColors.pencilBlack),
                               const SizedBox(width: 4),
-                              Text(
-                                GameDateUtils.formatGameTime(_elapsedMs),
-                                style: GoogleFonts.patrickHand(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.pencilBlack,
+                              SizedBox(
+                                width: 50,
+                                child: Center(
+                                  child: Text(
+                                    GameDateUtils.formatGameTime(_elapsedMs),
+                                    style: GoogleFonts.patrickHand(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.pencilBlack,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ],
@@ -473,7 +443,7 @@ class _ZipScreenState extends ConsumerState<ZipScreen> {
                         ),
                         const SizedBox(width: 6),
                         SketchCard(
-                          backgroundColor: AppColors.highlighterYellow,
+                          backgroundColor: AppColors.sunYellow,
                           padding: const EdgeInsets.all(7),
                           borderRadius: 10,
                           shadowOffset: const Offset(2, 2),
@@ -488,7 +458,7 @@ class _ZipScreenState extends ConsumerState<ZipScreen> {
 
               const SizedBox(height: 6),
 
-              // 2. İLERLEME VE HEDEF ÇUBUĞU (Organik SketchCard)
+              // 2. İLERLEME VE HEDEF ÇUBUĞU
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: SketchCard(
@@ -498,11 +468,10 @@ class _ZipScreenState extends ConsumerState<ZipScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      // Adım Sayısı
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
-                          color: AppColors.highlighterGreen.withValues(alpha: 0.35),
+                          color: AppColors.skyBlue.withValues(alpha: 0.25),
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(color: AppColors.pencilBlack, width: 1.5),
                         ),
@@ -511,7 +480,7 @@ class _ZipScreenState extends ConsumerState<ZipScreen> {
                             const Icon(Icons.directions_walk_rounded, size: 16, color: AppColors.pencilBlack),
                             const SizedBox(width: 4),
                             Text(
-                              'Adım: ${_path.length}',
+                              'Kare: ${_path.length} / $totalCells',
                               style: GoogleFonts.patrickHand(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w700,
@@ -522,13 +491,12 @@ class _ZipScreenState extends ConsumerState<ZipScreen> {
                         ),
                       ),
 
-                      // Sıradaki Hedef
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
-                          color: nextTarget > maxNumber
-                              ? AppColors.highlighterGreen
-                              : AppColors.highlighterYellow,
+                          color: (nextTarget > maxNumber && _path.length == totalCells)
+                              ? const Color(0xFF34D399)
+                              : AppColors.sunYellow,
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(color: AppColors.pencilBlack, width: 1.5),
                         ),
@@ -537,7 +505,7 @@ class _ZipScreenState extends ConsumerState<ZipScreen> {
                             const Icon(Icons.flag_rounded, size: 16, color: AppColors.pencilBlack),
                             const SizedBox(width: 4),
                             Text(
-                              nextTarget > maxNumber
+                              (nextTarget > maxNumber && _path.length == totalCells)
                                   ? 'Tamamlandı! 🏁'
                                   : 'Sıradaki: $nextTarget / $maxNumber',
                               style: GoogleFonts.patrickHand(
@@ -569,7 +537,7 @@ class _ZipScreenState extends ConsumerState<ZipScreen> {
                           final cellSize = boardSize / _level.gridSize;
 
                           return SketchCard(
-                            padding: const EdgeInsets.all(4),
+                            padding: const EdgeInsets.all(6),
                             borderRadius: 16,
                             shadowOffset: const Offset(4, 4),
                             borderWidth: 2.5,
@@ -594,98 +562,67 @@ class _ZipScreenState extends ConsumerState<ZipScreen> {
                                       final inPath = _path.contains(p);
                                       final isHead = _path.isNotEmpty && _path.last == p;
                                       final numVal = _level.numberPoints[p];
-                                      final isWall = _level.walls.contains(p);
-
-                                      if (isWall) {
-                                        return Container(
-                                          margin: const EdgeInsets.all(2.5),
-                                          decoration: BoxDecoration(
-                                            color: AppColors.surfaceSecondaryLight.withValues(alpha: 0.7),
-                                            borderRadius: BorderRadius.circular(10),
-                                            border: Border.all(
-                                              color: AppColors.pencilLight,
-                                              width: 1.5,
-                                            ),
-                                          ),
-                                          child: Center(
-                                            child: Icon(
-                                              Icons.texture_rounded,
-                                              size: cellSize * 0.45,
-                                              color: AppColors.pencilGraphite.withValues(alpha: 0.4),
-                                            ),
-                                          ),
-                                        );
-                                      }
 
                                       Color cellBg;
                                       if (inPath) {
-                                        cellBg = AppColors.highlighterGreen.withValues(alpha: 0.35);
+                                        cellBg = AppColors.skyBlue.withValues(alpha: 0.22);
                                       } else {
                                         cellBg = Colors.white;
                                       }
 
-                                      return AnimatedContainer(
-                                        duration: const Duration(milliseconds: 150),
-                                        margin: const EdgeInsets.all(2.5),
-                                        decoration: BoxDecoration(
-                                          color: cellBg,
-                                          borderRadius: BorderRadius.circular(10),
-                                          border: Border.all(
-                                            color: inPath ? AppColors.pencilBlack : AppColors.pencilLight,
-                                            width: isHead ? 2.4 : (inPath ? 1.8 : 1.2),
+                                      return Padding(
+                                        padding: const EdgeInsets.all(2.5),
+                                        child: SketchCard(
+                                          padding: EdgeInsets.zero,
+                                          borderRadius: 10,
+                                          borderWidth: isHead ? 2.6 : (inPath ? 2.0 : 1.3),
+                                          shadowOffset: inPath ? const Offset(1.8, 1.8) : const Offset(1.0, 1.0),
+                                          backgroundColor: cellBg,
+                                          child: Center(
+                                            child: numVal != null
+                                                ? SizedBox(
+                                                    width: cellSize * 0.76,
+                                                    height: cellSize * 0.76,
+                                                    child: CustomPaint(
+                                                      painter: _OrganicZipNodePainter(
+                                                        number: numVal,
+                                                        maxNumber: maxNumber,
+                                                        inPath: inPath,
+                                                      ),
+                                                      child: Center(
+                                                        child: Padding(
+                                                          padding: EdgeInsets.only(
+                                                            top: numVal == 1 ? 2 : (numVal == maxNumber ? 4 : 0),
+                                                          ),
+                                                          child: Text(
+                                                            '$numVal',
+                                                            style: GoogleFonts.patrickHand(
+                                                              fontSize: numVal == maxNumber ? 20 : 23,
+                                                              fontWeight: FontWeight.w700,
+                                                              color: AppColors.pencilBlack,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  )
+                                                : (inPath
+                                                    ? Container(
+                                                        width: 7,
+                                                        height: 7,
+                                                        decoration: const BoxDecoration(
+                                                          color: AppColors.pencilBlack,
+                                                          shape: BoxShape.circle,
+                                                        ),
+                                                      )
+                                                    : const SizedBox.shrink()),
                                           ),
-                                          boxShadow: inPath
-                                              ? const [
-                                                  BoxShadow(
-                                                    color: AppColors.pencilBlack,
-                                                    offset: Offset(1.5, 1.5),
-                                                    blurRadius: 0,
-                                                  ),
-                                                ]
-                                              : null,
-                                        ),
-                                        child: Center(
-                                          child: numVal != null
-                                              ? Container(
-                                                  width: cellSize * 0.65,
-                                                  height: cellSize * 0.65,
-                                                  decoration: BoxDecoration(
-                                                    color: inPath
-                                                        ? AppColors.highlighterGreen
-                                                        : AppColors.surfaceSecondaryLight,
-                                                    shape: BoxShape.circle,
-                                                    border: Border.all(
-                                                      color: AppColors.pencilBlack,
-                                                      width: 2.0,
-                                                    ),
-                                                  ),
-                                                  child: Center(
-                                                    child: Text(
-                                                      '$numVal',
-                                                      style: GoogleFonts.patrickHand(
-                                                        fontSize: 22,
-                                                        fontWeight: FontWeight.w700,
-                                                        color: AppColors.pencilBlack,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                )
-                                              : (inPath
-                                                  ? Container(
-                                                      width: 8,
-                                                      height: 8,
-                                                      decoration: const BoxDecoration(
-                                                        color: AppColors.pencilBlack,
-                                                        shape: BoxShape.circle,
-                                                      ),
-                                                    )
-                                                  : const SizedBox.shrink()),
                                         ),
                                       );
                                     },
                                   ),
 
-                                  // 2. Yol Bağlantı Çizgisi (Path Line Painter)
+                                  // 2. Yol Bağlantı Çizgisi
                                   Positioned.fill(
                                     child: IgnorePointer(
                                       child: CustomPaint(
@@ -710,97 +647,65 @@ class _ZipScreenState extends ConsumerState<ZipScreen> {
 
               const SizedBox(height: 12),
 
-              // 4. ALT KONTROLLER (Geri Al & Yolu Sıfırla)
+              // 4. ALT KONTROLLER (SketchCard)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Geri Al Butonu
-                    GestureDetector(
+                    SketchCard(
+                      backgroundColor: _path.isNotEmpty ? Colors.white : AppColors.surfaceSecondaryLight,
+                      borderRadius: 12,
+                      shadowOffset: _path.isNotEmpty ? const Offset(2.5, 2.5) : Offset.zero,
+                      borderWidth: 2.0,
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                       onTap: _path.isNotEmpty ? _undoMove : null,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-                        decoration: BoxDecoration(
-                          color: _path.isNotEmpty ? Colors.white : AppColors.surfaceSecondaryLight,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.undo_rounded,
+                            size: 18,
                             color: _path.isNotEmpty ? AppColors.pencilBlack : AppColors.pencilLight,
-                            width: 2.0,
                           ),
-                          boxShadow: _path.isNotEmpty
-                              ? const [
-                                  BoxShadow(
-                                    color: AppColors.pencilBlack,
-                                    offset: Offset(2.5, 2.5),
-                                    blurRadius: 0,
-                                  ),
-                                ]
-                              : null,
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.undo_rounded,
-                              size: 18,
+                          const SizedBox(width: 6),
+                          Text(
+                            'Geri Al',
+                            style: GoogleFonts.patrickHand(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
                               color: _path.isNotEmpty ? AppColors.pencilBlack : AppColors.pencilLight,
                             ),
-                            const SizedBox(width: 6),
-                            Text(
-                              'Geri Al',
-                              style: GoogleFonts.patrickHand(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                                color: _path.isNotEmpty ? AppColors.pencilBlack : AppColors.pencilLight,
-                              ),
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
 
                     const SizedBox(width: 16),
 
-                    // Sıfırla Butonu
-                    GestureDetector(
+                    SketchCard(
+                      backgroundColor: _path.isNotEmpty ? AppColors.sunYellow : AppColors.surfaceSecondaryLight,
+                      borderRadius: 12,
+                      shadowOffset: _path.isNotEmpty ? const Offset(2.5, 2.5) : Offset.zero,
+                      borderWidth: 2.0,
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                       onTap: _path.isNotEmpty ? _resetPath : null,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-                        decoration: BoxDecoration(
-                          color: _path.isNotEmpty ? AppColors.highlighterYellow : AppColors.surfaceSecondaryLight,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.restart_alt_rounded,
+                            size: 18,
                             color: _path.isNotEmpty ? AppColors.pencilBlack : AppColors.pencilLight,
-                            width: 2.0,
                           ),
-                          boxShadow: _path.isNotEmpty
-                              ? const [
-                                  BoxShadow(
-                                    color: AppColors.pencilBlack,
-                                    offset: Offset(2.5, 2.5),
-                                    blurRadius: 0,
-                                  ),
-                                ]
-                              : null,
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.restart_alt_rounded,
-                              size: 18,
+                          const SizedBox(width: 6),
+                          Text(
+                            'Yolu Sıfırla',
+                            style: GoogleFonts.patrickHand(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
                               color: _path.isNotEmpty ? AppColors.pencilBlack : AppColors.pencilLight,
                             ),
-                            const SizedBox(width: 6),
-                            Text(
-                              'Yolu Sıfırla',
-                              style: GoogleFonts.patrickHand(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                                color: _path.isNotEmpty ? AppColors.pencilBlack : AppColors.pencilLight,
-                              ),
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -813,6 +718,108 @@ class _ZipScreenState extends ConsumerState<ZipScreen> {
         ),
       ),
     );
+  }
+}
+
+/// Vezirler Tacı Tasarım Dilinde El Çizimi Başlangıç / Ara Düğüm / Bitiş Bayrağı Düğümü
+class _OrganicZipNodePainter extends CustomPainter {
+  final int number;
+  final int maxNumber;
+  final bool inPath;
+
+  _OrganicZipNodePainter({
+    required this.number,
+    required this.maxNumber,
+    required this.inPath,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
+    final center = Offset(w / 2, h / 2);
+    final r = w * 0.40;
+
+    final pen = Paint()
+      ..color = AppColors.pencilBlack
+      ..strokeWidth = 2.2
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    final draft = Paint()
+      ..color = AppColors.pencilBlack.withValues(alpha: 0.35)
+      ..strokeWidth = 1.3
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+
+    // Renk Belirleme
+    Color fillColor;
+    if (number == 1) {
+      fillColor = inPath ? const Color(0xFF34D399) : const Color(0xFFA7F3D0); // Başlangıç yeşili
+    } else if (number == maxNumber) {
+      fillColor = inPath ? const Color(0xFFFB7185) : const Color(0xFFFECDD3); // Bitiş mercan kırmızısı
+    } else {
+      fillColor = inPath ? AppColors.sunYellow : AppColors.surfaceSecondaryLight;
+    }
+
+    final fillPaint = Paint()..color = fillColor..style = PaintingStyle.fill;
+
+    // 1. Organik Çift Hatlı Dalgalı Çember (Vezirler tacındaki gibi organik dalgalı eğriler)
+    final path = Path();
+    path.moveTo(center.dx + r * 0.98, center.dy);
+    path.cubicTo(center.dx + r * 0.98, center.dy + r * 0.58, center.dx + r * 0.56, center.dy + r * 0.98, center.dx, center.dy + r * 0.98);
+    path.cubicTo(center.dx - r * 0.54, center.dy + r * 0.96, center.dx - r * 0.96, center.dy + r * 0.52, center.dx - r * 0.98, center.dy);
+    path.cubicTo(center.dx - r * 0.96, center.dy - r * 0.55, center.dx - r * 0.52, center.dy - r * 0.98, center.dx, center.dy - r * 0.98);
+    path.cubicTo(center.dx + r * 0.55, center.dy - r * 0.96, center.dx + r * 0.96, center.dy - r * 0.52, center.dx + r * 0.98, center.dy);
+    path.close();
+
+    canvas.drawPath(path, fillPaint);
+    canvas.drawPath(path, pen);
+
+    // Çift hatlı taslak çizgi
+    final draftPath = Path();
+    final dr = r * 0.90;
+    draftPath.moveTo(center.dx + dr, center.dy);
+    draftPath.cubicTo(center.dx + dr, center.dy + dr * 0.55, center.dx + dr * 0.55, center.dy + dr, center.dx, center.dy + dr);
+    draftPath.cubicTo(center.dx - dr * 0.55, center.dy + dr, center.dx - dr, center.dy + dr * 0.55, center.dx - dr, center.dy);
+    draftPath.cubicTo(center.dx - dr, center.dy - dr * 0.55, center.dx - dr * 0.55, center.dy - dr, center.dx, center.dy - dr);
+    draftPath.cubicTo(center.dx + dr * 0.55, center.dy - dr, center.dx + dr, center.dy - dr * 0.55, center.dx + dr, center.dy);
+    draftPath.close();
+    canvas.drawPath(draftPath, draft);
+
+    // 2. Özel Durumlar:
+    if (number == 1) {
+      // Başlangıç: Tepesinde minik organik el çizimi pin / bayrak flama
+      final flagPath = Path();
+      flagPath.moveTo(center.dx - r * 0.40, center.dy - r * 0.95);
+      flagPath.lineTo(center.dx - r * 0.40, center.dy - r * 1.35);
+      flagPath.lineTo(center.dx + r * 0.10, center.dy - r * 1.15);
+      flagPath.lineTo(center.dx - r * 0.40, center.dy - r * 0.95);
+      canvas.drawPath(flagPath, Paint()..color = const Color(0xFF059669)..style = PaintingStyle.fill);
+      canvas.drawPath(flagPath, pen..strokeWidth = 1.6);
+      canvas.drawLine(Offset(center.dx - r * 0.40, center.dy - r * 0.70), Offset(center.dx - r * 0.40, center.dy - r * 1.38), pen..strokeWidth = 1.8);
+    } else if (number == maxNumber) {
+      // Bitiş: Tepesinde minik el çizimi damalı bitiş bayrağı (🏁)
+      final flagPole = Path();
+      flagPole.moveTo(center.dx + r * 0.20, center.dy - r * 0.75);
+      flagPole.lineTo(center.dx + r * 0.20, center.dy - r * 1.40);
+      canvas.drawPath(flagPole, pen..strokeWidth = 1.8);
+
+      final flagBanner = Path();
+      flagBanner.moveTo(center.dx + r * 0.20, center.dy - r * 1.40);
+      flagBanner.lineTo(center.dx + r * 0.75, center.dy - r * 1.25);
+      flagBanner.lineTo(center.dx + r * 0.20, center.dy - r * 1.05);
+      flagBanner.close();
+      canvas.drawPath(flagBanner, Paint()..color = AppColors.pencilBlack..style = PaintingStyle.fill);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _OrganicZipNodePainter oldDelegate) {
+    return oldDelegate.number != number ||
+        oldDelegate.maxNumber != maxNumber ||
+        oldDelegate.inPath != inPath;
   }
 }
 
@@ -832,7 +839,7 @@ class _ZipPathOverlayPainter extends CustomPainter {
     if (path.length < 2) return;
 
     final linePaint = Paint()
-      ..color = AppColors.pencilBlack.withValues(alpha: 0.65)
+      ..color = AppColors.pencilBlack.withValues(alpha: 0.75)
       ..strokeWidth = 4.5
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round

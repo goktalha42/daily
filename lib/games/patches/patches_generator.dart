@@ -38,12 +38,27 @@ class PatchesGenerator {
       final rectangles = _generateTiling(n, maxArea, rng);
       if (rectangles == null) continue;
 
-      // 2. Her dikdörtgenin içine rastgele bir hücreye ipucu yerleştir
+      // 2. Her dikdörtgenin içine rastgele bir hücreye ipucu yerleştir (image.png standardı şekil kısıtı ile)
       final clues = <PatchesClue>[];
       for (final rect in rectangles) {
         final r = rect.topRow + rng.nextInt(rect.height);
         final c = rect.leftCol + rng.nextInt(rect.width);
-        clues.add(PatchesClue(row: r, col: c, targetArea: rect.area));
+
+        PatchShapeType shape;
+        if (rect.width == rect.height) {
+          shape = PatchShapeType.square;
+        } else if (rect.height > rect.width) {
+          shape = rng.nextDouble() < 0.7 ? PatchShapeType.tall : PatchShapeType.any;
+        } else {
+          shape = rng.nextDouble() < 0.7 ? PatchShapeType.wide : PatchShapeType.any;
+        }
+
+        clues.add(PatchesClue(
+          row: r,
+          col: c,
+          targetArea: rect.area,
+          shapeType: shape,
+        ));
       }
 
       // 3. Tek çözüm garantisi doğrula

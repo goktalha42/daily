@@ -20,8 +20,8 @@ enum ZipDifficulty {
 
   int get gridSize => switch (this) {
         ZipDifficulty.kolay => 4,
-        ZipDifficulty.orta => 5,
-        ZipDifficulty.zor => 6,
+        ZipDifficulty.orta => 4,
+        ZipDifficulty.zor => 5,
       };
 }
 

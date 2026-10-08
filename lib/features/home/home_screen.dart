@@ -1,5 +1,4 @@
 import 'dart:math' as math;
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -15,7 +14,7 @@ import '../../core/widgets/game_card_logos.dart';
 import '../../core/widgets/screen_shake.dart';
 import '../../core/widgets/sketch_decorations.dart';
 import '../../games/common/base_game.dart';
-import '../../games/queens/queens_screen.dart';
+import '../../games/queens/queens_lobby_screen.dart';
 import '../../games/pinpoint/pinpoint_screen.dart';
 import '../../games/crossclimb/crossclimb_screen.dart';
 import '../../games/tango/tango_screen.dart';
@@ -56,21 +55,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               bottom: 22,
               left: 20,
               right: 20,
-              child: Container(
-                height: 68,
+              child: SketchCard(
+                borderRadius: 18,
+                borderWidth: 2.5,
+                shadowOffset: const Offset(4, 4),
+                backgroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppColors.pencilBlack, width: 2.5),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: AppColors.pencilBlack,
-                      offset: Offset(4, 4),
-                      blurRadius: 0, // Sert kara kalem gölgesi
-                    ),
-                  ],
-                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
@@ -127,50 +117,46 @@ class _NavTabItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (isSelected) {
+      return Expanded(
+        child: SketchCard(
+          onTap: onTap,
+          borderRadius: 10,
+          borderWidth: 2.0,
+          shadowOffset: const Offset(2.0, 2.0),
+          backgroundColor: AppColors.surfaceSecondaryLight,
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: AppColors.pencilBlack, size: 20),
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: GoogleFonts.patrickHand(
+                  color: AppColors.pencilBlack,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 16,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Expanded(
       child: GestureDetector(
         onTap: onTap,
         behavior: HitTestBehavior.opaque,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
-          margin: const EdgeInsets.symmetric(horizontal: 4),
+        child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 6),
-          decoration: BoxDecoration(
-            color: isSelected ? AppColors.highlighterYellow : Colors.transparent,
-            borderRadius: BorderRadius.circular(10),
-            border: isSelected
-                ? Border.all(color: AppColors.pencilBlack, width: 2.0)
-                : null,
-            boxShadow: isSelected
-                ? const [
-                    BoxShadow(
-                      color: AppColors.pencilBlack,
-                      offset: Offset(2, 2),
-                      blurRadius: 0,
-                    ),
-                  ]
-                : null,
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                icon,
-                color: AppColors.pencilBlack,
-                size: 20,
-              ),
-              if (isSelected) ...[
-                const SizedBox(width: 6),
-                Text(
-                  label,
-                  style: GoogleFonts.patrickHand(
-                    color: AppColors.pencilBlack,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 16,
-                  ),
-                ),
-              ],
-            ],
+          child: Center(
+            child: Icon(
+              icon,
+              color: AppColors.pencilGraphite,
+              size: 22,
+            ),
           ),
         ),
       ),
@@ -187,23 +173,7 @@ class _GeniusLobbyTab extends ConsumerStatefulWidget {
 }
 
 class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
-  late Timer _countdownTimer;
-  Duration _timeRemaining = GameDateUtils.getTimeUntilMidnight();
   String get _todayLevelId => GameDateUtils.getTodayLevelId();
-
-  @override
-  void initState() {
-    super.initState();
-    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (mounted) setState(() => _timeRemaining = GameDateUtils.getTimeUntilMidnight());
-    });
-  }
-
-  @override
-  void dispose() {
-    _countdownTimer.cancel();
-    super.dispose();
-  }
 
   void _advanceToNextDay() {
     setState(() {
@@ -262,13 +232,12 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
               ),
             ),
             const SizedBox(height: 12),
-            Container(
+            SketchCard(
               padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppColors.surfaceSecondaryLight,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.pencilBlack, width: 1.8),
-              ),
+              borderRadius: 12,
+              borderWidth: 1.8,
+              shadowOffset: const Offset(2, 2),
+              backgroundColor: AppColors.surfaceSecondaryLight,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
@@ -307,20 +276,16 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
           ],
         ),
         actions: [
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.highlighterYellow,
-              foregroundColor: AppColors.pencilBlack,
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-                side: const BorderSide(color: AppColors.pencilBlack, width: 2.0),
-              ),
-            ),
-            onPressed: () => Navigator.pop(ctx),
+          SketchCard(
+            onTap: () => Navigator.pop(ctx),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+            backgroundColor: AppColors.surfaceSecondaryLight,
+            borderRadius: 12,
+            borderWidth: 2.0,
+            shadowOffset: const Offset(2, 2),
             child: Text(
               'Tamam',
-              style: GoogleFonts.patrickHand(fontSize: 18, fontWeight: FontWeight.w700),
+              style: GoogleFonts.patrickHand(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.pencilBlack),
             ),
           ),
         ],
@@ -330,6 +295,14 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
 
   void _launchGame(GameType game) {
     HapticFeedback.mediumImpact();
+
+    if (game == GameType.queens) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => QueensLobbyScreen(levelId: _todayLevelId)),
+      );
+      return;
+    }
 
     // Günlük tek oynama kuralı: tamamlandıysa kilitli diyalog aç
     final dailyPlay = ref.read(dailyPlayServiceProvider);
@@ -341,7 +314,7 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
     Widget screen;
     switch (game) {
       case GameType.queens:
-        screen = QueensScreen(levelId: _todayLevelId);
+        screen = QueensLobbyScreen(levelId: _todayLevelId);
         break;
       case GameType.pinpoint:
         screen = PinpointScreen(levelId: _todayLevelId);
@@ -421,36 +394,26 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
                   ],
                 ),
                 // Fotoğraftaki Gibi Kara Kalem "Yeni Gün" Butonu
-                GestureDetector(
+                SketchCard(
                   onTap: _advanceToNextDay,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: AppColors.highlighterYellow,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: AppColors.pencilBlack, width: 2.0),
-                      boxShadow: const [
-                        BoxShadow(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  backgroundColor: AppColors.surfaceSecondaryLight,
+                  borderRadius: 10,
+                  borderWidth: 2.0,
+                  shadowOffset: const Offset(2.5, 2.5),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.bolt_rounded, size: 18, color: AppColors.pencilBlack),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Yeni Gün',
+                        style: GoogleFonts.patrickHand(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
                           color: AppColors.pencilBlack,
-                          offset: Offset(2.5, 2.5),
-                          blurRadius: 0,
                         ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.bolt_rounded, size: 18, color: AppColors.pencilBlack),
-                        const SizedBox(width: 4),
-                        Text(
-                          'Yeni Gün',
-                          style: GoogleFonts.patrickHand(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.pencilBlack,
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               ],

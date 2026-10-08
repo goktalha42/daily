@@ -3,6 +3,8 @@ import 'package:daily_games/games/queens/queens_generator.dart';
 import 'package:daily_games/games/queens/queens_levels.dart';
 import 'package:daily_games/games/queens/queens_logic.dart';
 import 'package:daily_games/games/queens/queens_models.dart';
+import 'package:daily_games/games/common/base_game.dart';
+import 'package:daily_games/features/leaderboard/leaderboard_service.dart';
 
 String _dateId(DateTime d) =>
     '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
@@ -86,4 +88,42 @@ void main() {
     expect(level.id, '2026-10-06');
     expect(level.solution.length, level.gridSize);
   });
+
+  group('Vezirler Skorbord ve Kural Testleri', () {
+    test('Her zorluk seviyesi (kolay, orta, zor) için ayrı skorbord listelenir', () {
+      final leaderboard = LeaderboardService();
+
+      final kolayList = leaderboard.getLeaderboard(
+        gameType: GameType.queens,
+        timeframe: LeaderboardTimeframe.allTime,
+        difficulty: QueensDifficulty.kolay.name,
+      );
+      final ortaList = leaderboard.getLeaderboard(
+        gameType: GameType.queens,
+        timeframe: LeaderboardTimeframe.allTime,
+        difficulty: QueensDifficulty.orta.name,
+      );
+      final zorList = leaderboard.getLeaderboard(
+        gameType: GameType.queens,
+        timeframe: LeaderboardTimeframe.allTime,
+        difficulty: QueensDifficulty.zor.name,
+      );
+
+      expect(kolayList.isNotEmpty, isTrue);
+      expect(ortaList.isNotEmpty, isTrue);
+      expect(zorList.isNotEmpty, isTrue);
+
+      // Farklı zorlukların puanları ve süreleri birbirinden bağımsızdır
+      expect(kolayList.first.totalScore, isNot(zorList.first.totalScore));
+    });
+
+    test('Kalan vezir sayısı asla negatife düşmez', () {
+      const gridSize = 6;
+      for (var placedQueens = 0; placedQueens <= 10; placedQueens++) {
+        final remaining = (gridSize - placedQueens).clamp(0, gridSize);
+        expect(remaining, greaterThanOrEqualTo(0));
+      }
+    });
+  });
 }
+

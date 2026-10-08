@@ -63,34 +63,37 @@ void main() {
   });
 
   group('Zip Path Logic Tests', () {
-    test('Validates continuous path starting from 1', () {
+    test('Validates continuous path starting from 1 with full grid traversal', () {
       final points = {
         const Point(0, 0): 1,
-        const Point(0, 2): 2,
+        const Point(1, 0): 2,
       };
 
       final validPath = [
         const Point(0, 0),
         const Point(0, 1),
-        const Point(0, 2),
+        const Point(1, 1),
+        const Point(1, 0),
       ];
 
-      final isSolved = ZipLogic.validatePath(validPath, points, 3);
+      final isSolved = ZipLogic.validatePath(validPath, points, 2);
       expect(isSolved, isTrue);
     });
 
     test('Fails when path skips or starts at wrong number', () {
       final points = {
         const Point(0, 0): 1,
-        const Point(0, 2): 2,
+        const Point(1, 0): 2,
       };
 
       final invalidPath = [
         const Point(0, 1), // Did not start at 1
-        const Point(0, 2),
+        const Point(1, 1),
+        const Point(1, 0),
+        const Point(0, 0),
       ];
 
-      final isSolved = ZipLogic.validatePath(invalidPath, points, 3);
+      final isSolved = ZipLogic.validatePath(invalidPath, points, 2);
       expect(isSolved, isFalse);
     });
   });

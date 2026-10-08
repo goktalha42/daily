@@ -81,15 +81,27 @@ class PatchRect {
       rightCol.hashCode;
 }
 
+enum PatchShapeType {
+  square('Kare'),
+  tall('Uzun dikdörtgen'),
+  wide('Geniş dikdörtgen'),
+  any('Herhangi biri');
+
+  final String label;
+  const PatchShapeType(this.label);
+}
+
 class PatchesClue {
   final int row;
   final int col;
   final int targetArea;
+  final PatchShapeType shapeType;
 
   const PatchesClue({
     required this.row,
     required this.col,
     required this.targetArea,
+    this.shapeType = PatchShapeType.any,
   });
 }
 

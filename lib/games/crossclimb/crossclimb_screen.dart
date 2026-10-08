@@ -19,7 +19,6 @@ import 'crossclimb_models.dart';
 import 'crossclimb_logic.dart';
 import 'crossclimb_levels.dart';
 
-
 class CrossclimbScreen extends ConsumerStatefulWidget {
   final String levelId;
 
@@ -35,7 +34,7 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> {
   late List<String> _userWords;
   final TextEditingController _inputController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
-  String _currentInputText = '';
+  String _currentInputChar = '';
 
   int _elapsedMs = 0;
   Timer? _timer;
@@ -47,8 +46,13 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> {
     super.initState();
     _initGame();
     _inputController.addListener(() {
+      final text = _inputController.text.trim();
       setState(() {
-        _currentInputText = CrossclimbLogic.normalize(_inputController.text);
+        if (text.isNotEmpty) {
+          _currentInputChar = CrossclimbLogic.normalize(text.substring(text.length - 1));
+        } else {
+          _currentInputChar = '';
+        }
         if (_errorMsg != null) {
           _errorMsg = null;
         }
@@ -61,7 +65,7 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> {
     _currentStepIndex = 0;
     _userWords = List.filled(_level.steps.length, '');
     _inputController.clear();
-    _currentInputText = '';
+    _currentInputChar = '';
     _elapsedMs = 0;
     _isSolved = false;
     _errorMsg = null;
@@ -87,20 +91,29 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> {
     super.dispose();
   }
 
-  void _submitStepWord() {
+  void _submitStepLetter() {
     if (_isSolved) return;
-    final rawInput = _inputController.text.trim();
-    if (rawInput.isEmpty) return;
+    if (_currentInputChar.isEmpty) return;
 
-    final input = CrossclimbLogic.normalize(rawInput);
-    final target = _level.steps[_currentStepIndex].targetWord;
+    final step = _level.steps[_currentStepIndex];
+    final prevWord = _getPreviousWord();
 
-    if (CrossclimbLogic.isStepValid(input, target)) {
+    final buffer = StringBuffer();
+    for (int i = 0; i < prevWord.length; i++) {
+      if (i == step.changedIndex) {
+        buffer.write(_currentInputChar);
+      } else {
+        buffer.write(prevWord[i]);
+      }
+    }
+    final fullCandidateWord = buffer.toString();
+
+    if (CrossclimbLogic.isStepValid(fullCandidateWord, step.targetWord)) {
       HapticFeedback.mediumImpact();
       setState(() {
-        _userWords[_currentStepIndex] = _level.steps[_currentStepIndex].targetWord;
+        _userWords[_currentStepIndex] = step.targetWord;
         _inputController.clear();
-        _currentInputText = '';
+        _currentInputChar = '';
         _errorMsg = null;
 
         if (_currentStepIndex < _level.steps.length - 1) {
@@ -116,9 +129,17 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> {
       HapticFeedback.vibrate();
       ScreenShake.shake(context, intensity: 6.0);
       setState(() {
-        _errorMsg = 'Yanlış kelime! İpucuna ve değişen harfe dikkat et.';
+        _errorMsg = 'Yanlış harf! "${step.clue}" ipucuna uygun harfi bulmalısın.';
       });
     }
+  }
+
+  String _getPreviousWord() {
+    if (_currentStepIndex == 0) {
+      return _level.startWord;
+    }
+    final prev = _userWords[_currentStepIndex - 1];
+    return prev.isNotEmpty ? prev : _level.startWord;
   }
 
   void _handleWin() {
@@ -126,7 +147,6 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> {
       durationMs: _elapsedMs,
       stepCount: _level.steps.length,
     );
-
 
     final result = GameResult(
       id: const Uuid().v4(),
@@ -178,7 +198,7 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> {
         ),
         title: Row(
           children: [
-            const Icon(Icons.stairs_rounded, color: AppColors.highlighterPurple, size: 28),
+            const Icon(Icons.stairs_rounded, color: AppColors.sunYellow, size: 28),
             const SizedBox(width: 8),
             Text(
               'Kelime Tırmanışı: Nasıl Oynanır?',
@@ -196,53 +216,27 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> {
           children: [
             _buildRuleCard(
               '1',
-              'Sadece 1 Harf Değişir',
-              'Her basamakta önceki kelimeden tam olarak 1 harf değiştirilerek yeni bir anlamlı kelime oluşturulur.',
+              'Aşağıdan Yukarı Tırman',
+              'Oyun en alttaki başlangıç kelimesinden başlar ve yukarıya zirveye doğru tırmanır.',
             ),
             const SizedBox(height: 8),
             _buildRuleCard(
               '2',
-              'İpucunu ve Pozisyonu Takip Et',
-              'Her basamak için bir anlam ipucu verilir ve hangi harfin değiştiği sarı fosforla gösterilir.',
+              'Sadece 1 Harf Değişir',
+              'Her basamakta önceki kelimeden tam olarak 1 harf değişerek yeni kelime oluşur.',
             ),
             const SizedBox(height: 8),
             _buildRuleCard(
               '3',
-              'Zirveye Ulaş',
-              'Başlangıç kelimesinden başlayarak tüm basamakları adım adım tırman ve hedef kelimeye ulaş!',
-            ),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: AppColors.highlighterYellow.withValues(alpha: 0.3),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.pencilBlack, width: 2.0),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.tips_and_updates_rounded, size: 20, color: AppColors.pencilBlack),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      '• Örnek: KAR → TAR → TAS → TOS → TON\n• Her adımda 1 harf değişir!\n• Klavyeden doğru kelimeyi yaz ve "Tırman"a bas!',
-                      style: GoogleFonts.patrickHand(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.pencilBlack,
-                        height: 1.25,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+              'Eksik Harfe Dokun ve Yaz',
+              'Ayrı bir kutu yok! Doğrudan basamaktaki sarı eksik harf kutusuna dokunup doğru harfi yaz.',
             ),
           ],
         ),
         actions: [
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.highlighterYellow,
+              backgroundColor: AppColors.sunYellow,
               foregroundColor: AppColors.pencilBlack,
               elevation: 0,
               shape: RoundedRectangleBorder(
@@ -281,7 +275,7 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> {
             height: 24,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: AppColors.highlighterPurple,
+              color: AppColors.skyBlue,
               shape: BoxShape.circle,
               border: Border.all(color: AppColors.pencilBlack, width: 1.5),
             ),
@@ -326,7 +320,6 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> {
   @override
   Widget build(BuildContext context) {
     final currentStep = _level.steps[_currentStepIndex];
-    final wordLength = _level.startWord.length;
 
     return Scaffold(
       backgroundColor: AppColors.backgroundLight,
@@ -334,13 +327,12 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> {
         child: SafeArea(
           child: Column(
             children: [
-              // 1. ÜST KONTROL & BAŞLIK ÇUBUĞU (Organik Kara Kalem Skeç Kartları)
+              // 1. ÜST KONTROL & BAŞLIK ÇUBUĞU
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 10, 16, 6),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // Geri Butonu
                     SketchCard(
                       padding: const EdgeInsets.all(8),
                       borderRadius: 10,
@@ -349,7 +341,6 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> {
                       child: const Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: AppColors.pencilBlack),
                     ),
 
-                    // Oyun Başlığı ve Rozet
                     SketchCard(
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
                       borderRadius: 12,
@@ -374,12 +365,12 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> {
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
                                 decoration: BoxDecoration(
-                                  color: AppColors.highlighterPurple,
+                                  color: AppColors.skyBlue.withValues(alpha: 0.35),
                                   borderRadius: BorderRadius.circular(6),
                                   border: Border.all(color: AppColors.pencilBlack, width: 1.2),
                                 ),
                                 child: Text(
-                                  '🪜 1 Harf Merdiveni',
+                                  '🧗 Aşağıdan Yukarı Zirveye',
                                   style: GoogleFonts.patrickHand(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w700,
@@ -393,7 +384,7 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> {
                       ),
                     ),
 
-                    // Sayaç & Yardım Butonları
+                    // Kronometre (Sabit genişlik - Titremez)
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -405,12 +396,17 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> {
                             children: [
                               const Icon(Icons.timer_outlined, size: 15, color: AppColors.pencilBlack),
                               const SizedBox(width: 4),
-                              Text(
-                                GameDateUtils.formatGameTime(_elapsedMs),
-                                style: GoogleFonts.patrickHand(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.pencilBlack,
+                              SizedBox(
+                                width: 50,
+                                child: Center(
+                                  child: Text(
+                                    GameDateUtils.formatGameTime(_elapsedMs),
+                                    style: GoogleFonts.patrickHand(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.pencilBlack,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ],
@@ -418,7 +414,7 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> {
                         ),
                         const SizedBox(width: 6),
                         SketchCard(
-                          backgroundColor: AppColors.highlighterYellow,
+                          backgroundColor: AppColors.sunYellow,
                           padding: const EdgeInsets.all(7),
                           borderRadius: 10,
                           shadowOffset: const Offset(2, 2),
@@ -433,7 +429,7 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> {
 
               const SizedBox(height: 6),
 
-              // 2. İLERLEME ÇUBUĞU (Organik SketchCard)
+              // 2. BASAMAK İLERLEME ÇUBUĞU
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: SketchCard(
@@ -445,7 +441,11 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> {
                     children: [
                       Row(
                         children: [
-                          const Icon(Icons.hiking_rounded, size: 20, color: AppColors.pencilBlack),
+                          Icon(
+                            _isSolved ? Icons.emoji_events_rounded : Icons.hiking_rounded,
+                            size: 20,
+                            color: _isSolved ? AppColors.sunYellow : AppColors.pencilBlack,
+                          ),
                           const SizedBox(width: 6),
                           Text(
                             _isSolved
@@ -459,7 +459,6 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> {
                           ),
                         ],
                       ),
-                      // Basamak İlerleme Noktaları
                       Row(
                         children: List.generate(_level.steps.length, (idx) {
                           final isCompleted = _userWords[idx].isNotEmpty;
@@ -467,9 +466,9 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> {
 
                           Color bgColor;
                           if (isCompleted) {
-                            bgColor = AppColors.highlighterGreen;
+                            bgColor = const Color(0xFF34D399);
                           } else if (isCurrent) {
-                            bgColor = AppColors.highlighterPurple;
+                            bgColor = AppColors.sunYellow;
                           } else {
                             bgColor = AppColors.surfaceSecondaryLight;
                           }
@@ -486,6 +485,15 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> {
                                 color: AppColors.pencilBlack,
                                 width: isCompleted || isCurrent ? 2.0 : 1.2,
                               ),
+                              boxShadow: isCompleted || isCurrent
+                                  ? const [
+                                      BoxShadow(
+                                        color: AppColors.pencilBlack,
+                                        offset: Offset(1, 1),
+                                        blurRadius: 0,
+                                      ),
+                                    ]
+                                  : null,
                             ),
                             child: Center(
                               child: Text(
@@ -507,7 +515,7 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> {
 
               const SizedBox(height: 8),
 
-              // 3. KELİME MERDİVENİ VE TAHMİN ALANI
+              // 3. KELİME MERDİVENİ (AŞAĞIDAN YUKARIYA DOĞRU SIRALANMIŞ!)
               Expanded(
                 child: SingleChildScrollView(
                   physics: const BouncingScrollPhysics(),
@@ -515,14 +523,20 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // SKEÇ MERDİVEN KARTI
+                      // MERDİVEN KARTI (Tüm Basamaklar - En altta Başlangıç, En üstte Zirve!)
                       SketchCard(
                         borderRadius: 14,
                         shadowOffset: const Offset(3.5, 3.5),
                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                         child: Column(
                           children: [
-                            // BAŞLANGIÇ KELİMESİ KARTI
+                            // 1. En Üst Basamaktan Başlayarak Geriye Doğru Sıralama (Zirve En Üstte!)
+                            for (int i = _level.steps.length - 1; i >= 0; i--) ...[
+                              _buildStepTile(i),
+                              _buildLadderConnector(),
+                            ],
+
+                            // En Altta: 🚩 BAŞLANGIÇ KELİMESİ KARTI
                             _buildWordTile(
                               word: _level.startWord,
                               label: '🚩 BAŞLANGIÇ',
@@ -530,26 +544,21 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> {
                               isCurrent: false,
                               highlightIndex: -1,
                               isStartWord: true,
+                              stepIndex: -1,
                             ),
-
-                            // MERDİVEN ADIMLARI
-                            for (int i = 0; i < _level.steps.length; i++) ...[
-                              _buildLadderConnector(),
-                              _buildStepTile(i),
-                            ],
                           ],
                         ),
                       ),
 
                       const SizedBox(height: 12),
 
-                      // 4. AKTİF İPUCU DEFTER NOTU (Sticky Note)
+                      // 4. AKTİF İPUCU & ETKİLEŞİM PANELİ
                       if (!_isSolved) ...[
                         SketchCard(
                           backgroundColor: Colors.white,
                           borderRadius: 14,
                           shadowOffset: const Offset(3, 3),
-                          padding: const EdgeInsets.all(12),
+                          padding: const EdgeInsets.all(14),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -558,7 +567,7 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> {
                                 children: [
                                   Row(
                                     children: [
-                                      const Icon(Icons.lightbulb_rounded, size: 20, color: AppColors.highlighterYellow),
+                                      const Icon(Icons.lightbulb_rounded, size: 20, color: AppColors.sunYellow),
                                       const SizedBox(width: 6),
                                       Text(
                                         'BASAMAK ${_currentStepIndex + 1} İPUCU',
@@ -570,13 +579,13 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> {
                                       ),
                                     ],
                                   ),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.highlighterYellow,
-                                      borderRadius: BorderRadius.circular(6),
-                                      border: Border.all(color: AppColors.pencilBlack, width: 1.4),
-                                    ),
+                                  // El Çizimi SketchCard ile Harf Değişiyor Rozeti
+                                  SketchCard(
+                                    backgroundColor: AppColors.sunYellow,
+                                    borderRadius: 8,
+                                    borderWidth: 1.6,
+                                    shadowOffset: const Offset(1.5, 1.5),
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                     child: Text(
                                       '📌 ${currentStep.changedIndex + 1}. HARF DEĞİŞİYOR',
                                       style: GoogleFonts.patrickHand(
@@ -592,179 +601,79 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> {
                               Text(
                                 currentStep.clue,
                                 style: GoogleFonts.patrickHand(
-                                  fontSize: 18,
+                                  fontSize: 19,
                                   fontWeight: FontWeight.w700,
                                   color: AppColors.pencilBlack,
                                   height: 1.2,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              // Tırman Butonu
+                              SketchCard(
+                                backgroundColor: _currentInputChar.isNotEmpty
+                                    ? AppColors.sunYellow
+                                    : AppColors.surfaceSecondaryLight,
+                                borderRadius: 12,
+                                shadowOffset: _currentInputChar.isNotEmpty ? const Offset(2.5, 2.5) : Offset.zero,
+                                borderWidth: 2.0,
+                                padding: const EdgeInsets.symmetric(vertical: 10),
+                                onTap: _currentInputChar.isNotEmpty ? _submitStepLetter : null,
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.arrow_upward_rounded,
+                                      size: 20,
+                                      color: _currentInputChar.isNotEmpty ? AppColors.pencilBlack : AppColors.pencilLight,
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      _currentInputChar.isNotEmpty
+                                          ? 'Basamağa Tırman ("$_currentInputChar")'
+                                          : 'Basamaktaki Eksik Harfe Dokun ve Yaz',
+                                      style: GoogleFonts.patrickHand(
+                                        fontSize: 17,
+                                        fontWeight: FontWeight.w700,
+                                        color: _currentInputChar.isNotEmpty ? AppColors.pencilBlack : AppColors.pencilLight,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ],
                           ),
                         ),
 
-                        const SizedBox(height: 12),
-
-                        // 5. HARF YUVALARI (CANLI ÖNİZLEME)
-                        SketchCard(
-                          borderRadius: 12,
-                          shadowOffset: const Offset(2.5, 2.5),
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: List.generate(wordLength, (index) {
-                              String letter = '';
-                              if (index < _currentInputText.length) {
-                                letter = _currentInputText[index];
-                              }
-
-                              final isChangedSlot = index == currentStep.changedIndex;
-                              final hasLetter = letter.isNotEmpty;
-
-                              return Container(
-                                margin: const EdgeInsets.symmetric(horizontal: 5),
-                                width: 46,
-                                height: 50,
-                                decoration: BoxDecoration(
-                                  color: hasLetter
-                                      ? AppColors.highlighterYellow.withValues(alpha: 0.4)
-                                      : (isChangedSlot ? AppColors.highlighterPurple.withValues(alpha: 0.25) : AppColors.surfaceSecondaryLight),
-                                  borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(
-                                    color: AppColors.pencilBlack,
-                                    width: isChangedSlot || hasLetter ? 2.2 : 1.5,
-                                  ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: AppColors.pencilBlack,
-                                      offset: hasLetter ? const Offset(2, 2) : const Offset(1, 1),
-                                      blurRadius: 0,
-                                    ),
-                                  ],
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    letter.isNotEmpty
-                                        ? letter
-                                        : (isChangedSlot ? '?' : _getPreviousLetter(index)),
-                                    style: GoogleFonts.patrickHand(
-                                      fontSize: 26,
-                                      fontWeight: FontWeight.w700,
-                                      color: letter.isNotEmpty
-                                          ? AppColors.pencilBlack
-                                          : (isChangedSlot ? AppColors.pencilBlack : AppColors.pencilLight),
-                                    ),
-                                  ),
-                                ),
-                              );
-                            }),
+                        // Gizli TextField
+                        SizedBox(
+                          height: 0,
+                          width: 0,
+                          child: Opacity(
+                            opacity: 0,
+                            child: TextField(
+                              controller: _inputController,
+                              focusNode: _focusNode,
+                              maxLength: 1,
+                              textCapitalization: TextCapitalization.characters,
+                              textInputAction: TextInputAction.done,
+                              onSubmitted: (_) => _submitStepLetter(),
+                            ),
                           ),
-                        ),
-
-                        const SizedBox(height: 12),
-
-                        // 6. TAHMİN ET VE TIRMAN GİRİŞ ALANI
-                        Row(
-                          children: [
-                            // Yazı Alanı
-                            Expanded(
-                              child: Container(
-                                height: 52,
-                                padding: const EdgeInsets.symmetric(horizontal: 14),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: AppColors.pencilBlack, width: 2.2),
-                                  boxShadow: const [
-                                    BoxShadow(
-                                      color: AppColors.pencilBlack,
-                                      offset: Offset(3, 3),
-                                      blurRadius: 0,
-                                    ),
-                                  ],
-                                ),
-                                child: Center(
-                                  child: TextField(
-                                    controller: _inputController,
-                                    focusNode: _focusNode,
-                                    textCapitalization: TextCapitalization.characters,
-                                    textInputAction: TextInputAction.done,
-                                    maxLength: wordLength,
-                                    onSubmitted: (_) => _submitStepWord(),
-                                    style: GoogleFonts.patrickHand(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w700,
-                                      color: AppColors.pencilBlack,
-                                      letterSpacing: 3.0,
-                                    ),
-                                    decoration: InputDecoration(
-                                      counterText: '',
-                                      hintText: 'Kelimeyi yaz...',
-                                      hintStyle: GoogleFonts.patrickHand(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w600,
-                                        color: AppColors.pencilLight,
-                                        letterSpacing: 0.5,
-                                      ),
-                                      border: InputBorder.none,
-                                      isDense: true,
-                                      contentPadding: EdgeInsets.zero,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            // Tırman Butonu
-                            GestureDetector(
-                              onTap: _submitStepWord,
-                              child: Container(
-                                height: 52,
-                                padding: const EdgeInsets.symmetric(horizontal: 18),
-                                decoration: BoxDecoration(
-                                  color: AppColors.highlighterPurple,
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: AppColors.pencilBlack, width: 2.2),
-                                  boxShadow: const [
-                                    BoxShadow(
-                                      color: AppColors.pencilBlack,
-                                      offset: Offset(3, 3),
-                                      blurRadius: 0,
-                                    ),
-                                  ],
-                                ),
-                                child: Row(
-                                  children: [
-                                    const Icon(Icons.arrow_upward_rounded, size: 20, color: AppColors.pencilBlack),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      'Tırman',
-                                      style: GoogleFonts.patrickHand(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w700,
-                                        color: AppColors.pencilBlack,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
                         ),
 
                         // HATA MESAJI
                         if (_errorMsg != null) ...[
-                          const SizedBox(height: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: AppColors.errorBgLight,
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: AppColors.error, width: 1.5),
-                            ),
+                          const SizedBox(height: 10),
+                          SketchCard(
+                            backgroundColor: AppColors.errorBgLight,
+                            borderRadius: 10,
+                            shadowOffset: const Offset(2, 2),
+                            borderWidth: 1.8,
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                             child: Row(
                               children: [
-                                const Icon(Icons.close_rounded, size: 18, color: AppColors.error),
-                                const SizedBox(width: 6),
+                                const Icon(Icons.close_rounded, size: 20, color: AppColors.error),
+                                const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
                                     _errorMsg!,
@@ -793,20 +702,9 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> {
     );
   }
 
-  String _getPreviousLetter(int index) {
-    if (_currentStepIndex == 0) {
-      return _level.startWord[index];
-    }
-    final prevWord = _userWords[_currentStepIndex - 1];
-    if (prevWord.isNotEmpty) {
-      return prevWord[index];
-    }
-    return '';
-  }
-
   Widget _buildLadderConnector() {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: 3),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -816,7 +714,7 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> {
             color: AppColors.pencilBlack,
           ),
           const SizedBox(width: 8),
-          const Icon(Icons.arrow_downward_rounded, size: 16, color: AppColors.pencilBlack),
+          const Icon(Icons.arrow_upward_rounded, size: 16, color: AppColors.pencilBlack),
           const SizedBox(width: 8),
           Container(
             width: 2,
@@ -833,22 +731,14 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> {
     final isCurrent = stepIdx == _currentStepIndex && !_isSolved;
     final step = _level.steps[stepIdx];
 
-    String displayWord;
-    if (isCompleted) {
-      displayWord = _userWords[stepIdx];
-    } else if (isCurrent) {
-      displayWord = '?' * step.targetWord.length;
-    } else {
-      displayWord = '?' * step.targetWord.length;
-    }
-
     return _buildWordTile(
-      word: displayWord,
+      word: isCompleted ? _userWords[stepIdx] : step.targetWord,
       label: 'Basamak ${stepIdx + 1}',
       isCompleted: isCompleted,
       isCurrent: isCurrent,
       highlightIndex: isCurrent ? step.changedIndex : -1,
       isStartWord: false,
+      stepIndex: stepIdx,
     );
   }
 
@@ -859,94 +749,121 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> {
     required bool isCurrent,
     required int highlightIndex,
     required bool isStartWord,
+    required int stepIndex,
   }) {
     Color cardBg;
     if (isStartWord) {
-      cardBg = AppColors.highlighterYellow.withValues(alpha: 0.35);
+      cardBg = const Color(0xFFFBF8F0);
     } else if (isCompleted) {
-      cardBg = AppColors.highlighterGreen.withValues(alpha: 0.25);
+      cardBg = const Color(0xFFECFDF5);
     } else if (isCurrent) {
       cardBg = Colors.white;
     } else {
-      cardBg = AppColors.surfaceSecondaryLight.withValues(alpha: 0.5);
+      cardBg = AppColors.surfaceSecondaryLight.withValues(alpha: 0.40);
     }
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: BoxDecoration(
-        color: cardBg,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: isCurrent || isCompleted || isStartWord ? AppColors.pencilBlack : AppColors.pencilLight,
-          width: isCurrent ? 2.2 : 1.5,
-        ),
-        boxShadow: isCurrent || isCompleted || isStartWord
-            ? const [
-                BoxShadow(
-                  color: AppColors.pencilBlack,
-                  offset: Offset(2, 2),
-                  blurRadius: 0,
-                ),
-              ]
-            : null,
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: [
-              if (isCompleted && !isStartWord) ...[
-                const Icon(Icons.check_circle_rounded, size: 18, color: AppColors.successDark),
-                const SizedBox(width: 6),
-              ] else if (isCurrent) ...[
-                const Icon(Icons.play_arrow_rounded, size: 18, color: AppColors.pencilBlack),
-                const SizedBox(width: 4),
-              ],
-              Text(
-                label,
-                style: GoogleFonts.patrickHand(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: isCurrent || isCompleted || isStartWord ? AppColors.pencilBlack : AppColors.pencilLight,
-                ),
-              ),
-            ],
-          ),
-          Row(
-            children: List.generate(word.length, (i) {
-              final char = word[i];
-              final isHighlighted = i == highlightIndex;
+    final prevWord = isCurrent ? _getPreviousWord() : '';
 
-              return Container(
-                margin: const EdgeInsets.symmetric(horizontal: 2.5),
-                width: 32,
-                height: 34,
-                decoration: BoxDecoration(
-                  color: isHighlighted
-                      ? AppColors.highlighterYellow
-                      : (isCompleted || isStartWord ? Colors.white : AppColors.surfaceSecondaryLight),
-                  borderRadius: BorderRadius.circular(6),
-                  border: Border.all(
-                    color: isHighlighted || isCompleted || isStartWord ? AppColors.pencilBlack : AppColors.pencilLight,
-                    width: isHighlighted ? 2.0 : 1.2,
+    return GestureDetector(
+      onTap: () {
+        if (isCurrent && !_isSolved) {
+          _focusNode.requestFocus();
+        }
+      },
+      child: SketchCard(
+        backgroundColor: cardBg,
+        borderRadius: 12,
+        shadowOffset: isCurrent || isCompleted || isStartWord
+            ? const Offset(2.5, 2.5)
+            : const Offset(1, 1),
+        borderWidth: isCurrent ? 2.4 : 1.6,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                if (isCompleted && !isStartWord) ...[
+                  const Icon(Icons.check_circle_rounded, size: 18, color: Color(0xFF059669)),
+                  const SizedBox(width: 6),
+                ] else if (isCurrent) ...[
+                  const Icon(Icons.play_arrow_rounded, size: 18, color: AppColors.pencilBlack),
+                  const SizedBox(width: 4),
+                ],
+                Text(
+                  label,
+                  style: GoogleFonts.patrickHand(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: isCurrent || isCompleted || isStartWord ? AppColors.pencilBlack : AppColors.pencilLight,
                   ),
                 ),
-                child: Center(
-                  child: Text(
-                    char,
-                    style: GoogleFonts.patrickHand(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                      color: isHighlighted || isCompleted || isStartWord
-                          ? AppColors.pencilBlack
-                          : AppColors.pencilLight,
+              ],
+            ),
+            Row(
+              children: List.generate(word.length, (i) {
+                final isChangedSlot = i == highlightIndex;
+
+                String char;
+                if (isStartWord || isCompleted) {
+                  char = word[i];
+                } else if (isCurrent) {
+                  if (isChangedSlot) {
+                    char = _currentInputChar.isNotEmpty ? _currentInputChar : '?';
+                  } else {
+                    char = prevWord[i];
+                  }
+                } else {
+                  char = '?';
+                }
+
+                Color boxBg;
+                if (isChangedSlot && isCurrent) {
+                  boxBg = AppColors.sunYellow;
+                } else if (isCompleted || isStartWord) {
+                  boxBg = Colors.white;
+                } else {
+                  boxBg = AppColors.surfaceSecondaryLight;
+                }
+
+                // Tamamen El Çizimi SketchCard Harf Kutuları!
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 2.5),
+                  child: GestureDetector(
+                    onTap: () {
+                      if (isCurrent && isChangedSlot && !_isSolved) {
+                        _focusNode.requestFocus();
+                      }
+                    },
+                    child: SketchCard(
+                      backgroundColor: boxBg,
+                      borderRadius: 8,
+                      borderWidth: isChangedSlot ? 2.2 : 1.4,
+                      shadowOffset: isChangedSlot ? const Offset(1.8, 1.8) : const Offset(1.0, 1.0),
+                      padding: EdgeInsets.zero,
+                      child: SizedBox(
+                        width: 34,
+                        height: 38,
+                        child: Center(
+                          child: Text(
+                            char,
+                            style: GoogleFonts.patrickHand(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w700,
+                              color: isChangedSlot || isCompleted || isStartWord
+                                  ? AppColors.pencilBlack
+                                  : AppColors.pencilLight,
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              );
-            }),
-          ),
-        ],
+                );
+              }),
+            ),
+          ],
+        ),
       ),
     );
   }

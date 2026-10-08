@@ -177,6 +177,7 @@ class GameResult {
   final int moveCount;
   final int score;
   final DateTime completedAt;
+  final String? difficulty;
 
   GameResult({
     required this.id,
@@ -188,6 +189,7 @@ class GameResult {
     required this.moveCount,
     required this.score,
     required this.completedAt,
+    this.difficulty,
   });
 
   Map<String, dynamic> toJson() {
@@ -201,6 +203,7 @@ class GameResult {
       'moveCount': moveCount,
       'score': score,
       'completedAt': completedAt.toIso8601String(),
+      if (difficulty != null) 'difficulty': difficulty,
     };
   }
 
@@ -215,6 +218,7 @@ class GameResult {
       moveCount: json['moveCount'],
       score: json['score'],
       completedAt: DateTime.parse(json['completedAt']),
+      difficulty: json['difficulty'] as String?,
     );
   }
 }

@@ -24,20 +24,50 @@ class LeaderboardService {
     ];
 
     for (var game in GameType.values) {
-      for (var u in mockUsers) {
-        _resultsStore.add(
-          GameResult(
-            id: '${game.id}_${u['name']}',
-            gameType: game,
-            levelId: '2026-08-17',
-            userId: u['name'] as String,
-            userName: u['name'] as String,
-            durationMs: u['time'] as int,
-            moveCount: 12,
-            score: u['score'] as int,
-            completedAt: now.subtract(const Duration(hours: 4)),
-          ),
-        );
+      if (game == GameType.queens) {
+        final diffConfigs = [
+          {'diff': 'kolay', 'baseScore': 900, 'timeOffset': 20000},
+          {'diff': 'orta', 'baseScore': 1200, 'timeOffset': 40000},
+          {'diff': 'zor', 'baseScore': 1500, 'timeOffset': 70000},
+        ];
+        for (var cfg in diffConfigs) {
+          final diff = cfg['diff'] as String;
+          final baseScore = cfg['baseScore'] as int;
+          final timeOff = cfg['timeOffset'] as int;
+          for (var i = 0; i < mockUsers.length; i++) {
+            final u = mockUsers[i];
+            _resultsStore.add(
+              GameResult(
+                id: '${game.id}_${diff}_${u['name']}',
+                gameType: game,
+                levelId: '2026-08-17',
+                userId: u['name'] as String,
+                userName: u['name'] as String,
+                durationMs: timeOff + (i * 7000),
+                moveCount: 8 + i * 2,
+                score: baseScore - (i * 65),
+                completedAt: now.subtract(Duration(hours: 2 + i)),
+                difficulty: diff,
+              ),
+            );
+          }
+        }
+      } else {
+        for (var u in mockUsers) {
+          _resultsStore.add(
+            GameResult(
+              id: '${game.id}_${u['name']}',
+              gameType: game,
+              levelId: '2026-08-17',
+              userId: u['name'] as String,
+              userName: u['name'] as String,
+              durationMs: u['time'] as int,
+              moveCount: 12,
+              score: u['score'] as int,
+              completedAt: now.subtract(const Duration(hours: 4)),
+            ),
+          );
+        }
       }
     }
   }
@@ -49,12 +79,14 @@ class LeaderboardService {
   List<LeaderboardEntry> getLeaderboard({
     required GameType gameType,
     required LeaderboardTimeframe timeframe,
+    String? difficulty,
   }) {
     final now = DateTime.now();
 
-    // Filter results by game and time window
+    // Filter results by game, difficulty and time window
     final filtered = _resultsStore.where((r) {
       if (r.gameType != gameType) return false;
+      if (difficulty != null && r.difficulty != difficulty) return false;
 
       if (timeframe == LeaderboardTimeframe.weekly) {
         return r.completedAt.isAfter(now.subtract(const Duration(days: 7)));

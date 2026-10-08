@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -355,31 +356,33 @@ class _TangoScreenState extends ConsumerState<TangoScreen> {
   }
 
   Widget _buildRuleCard(String number, String title, String desc) {
-    return Container(
+    return SketchCard(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      decoration: BoxDecoration(
-        color: AppColors.backgroundLight,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.pencilBlack, width: 1.8),
-      ),
+      backgroundColor: AppColors.backgroundLight,
+      borderRadius: 12,
+      borderWidth: 1.8,
+      shadowOffset: const Offset(2, 2),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 24,
-            height: 24,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: AppColors.highlighterOrange,
-              shape: BoxShape.circle,
-              border: Border.all(color: AppColors.pencilBlack, width: 1.5),
-            ),
-            child: Text(
-              number,
-              style: GoogleFonts.patrickHand(
-                fontWeight: FontWeight.w700,
-                color: AppColors.pencilBlack,
-                fontSize: 14,
+          SketchCard(
+            padding: EdgeInsets.zero,
+            borderRadius: 6,
+            borderWidth: 1.4,
+            shadowOffset: const Offset(1, 1),
+            backgroundColor: AppColors.highlighterOrange,
+            child: SizedBox(
+              width: 24,
+              height: 24,
+              child: Center(
+                child: Text(
+                  number,
+                  style: GoogleFonts.patrickHand(
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.pencilBlack,
+                    fontSize: 14,
+                  ),
+                ),
               ),
             ),
           ),
@@ -501,12 +504,17 @@ class _TangoScreenState extends ConsumerState<TangoScreen> {
                             children: [
                               const Icon(Icons.timer_outlined, size: 15, color: AppColors.pencilBlack),
                               const SizedBox(width: 4),
-                              Text(
-                                GameDateUtils.formatGameTime(_elapsedMs),
-                                style: GoogleFonts.patrickHand(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.pencilBlack,
+                              SizedBox(
+                                width: 50,
+                                child: Center(
+                                  child: Text(
+                                    GameDateUtils.formatGameTime(_elapsedMs),
+                                    style: GoogleFonts.patrickHand(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.pencilBlack,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ],
@@ -514,7 +522,7 @@ class _TangoScreenState extends ConsumerState<TangoScreen> {
                         ),
                         const SizedBox(width: 6),
                         SketchCard(
-                          backgroundColor: AppColors.highlighterYellow,
+                          backgroundColor: AppColors.sunYellow,
                           padding: const EdgeInsets.all(7),
                           borderRadius: 10,
                           shadowOffset: const Offset(2, 2),
@@ -539,24 +547,26 @@ class _TangoScreenState extends ConsumerState<TangoScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      // Güneş Sayacı
-                      Container(
+                      // Güneş Sayacı (Organik El Çizimi)
+                      SketchCard(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: sunCount == targetCount
-                              ? AppColors.highlighterGreen.withValues(alpha: 0.4)
-                              : AppColors.highlighterYellow.withValues(alpha: 0.35),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: AppColors.pencilBlack, width: 1.5),
-                        ),
+                        borderRadius: 8,
+                        borderWidth: 1.5,
+                        shadowOffset: const Offset(1.5, 1.5),
+                        backgroundColor: sunCount == targetCount
+                            ? AppColors.sunYellow.withValues(alpha: 0.25)
+                            : AppColors.surfaceLight,
                         child: Row(
                           children: [
-                            const Text('☀️', style: TextStyle(fontSize: 16)),
-                            const SizedBox(width: 4),
+                            CustomPaint(
+                              size: const Size(20, 20),
+                              painter: const _OrganicDrawnSunPainter(isConflict: false),
+                            ),
+                            const SizedBox(width: 6),
                             Text(
                               'Güneş: $sunCount / $targetCount',
                               style: GoogleFonts.patrickHand(
-                                fontSize: 15,
+                                fontSize: 16,
                                 fontWeight: FontWeight.w700,
                                 color: AppColors.pencilBlack,
                               ),
@@ -565,24 +575,26 @@ class _TangoScreenState extends ConsumerState<TangoScreen> {
                         ),
                       ),
 
-                      // Ay Sayacı
-                      Container(
+                      // Ay Sayacı (Organik El Çizimi)
+                      SketchCard(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: moonCount == targetCount
-                              ? AppColors.highlighterGreen.withValues(alpha: 0.4)
-                              : AppColors.highlighterCyan.withValues(alpha: 0.35),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: AppColors.pencilBlack, width: 1.5),
-                        ),
+                        borderRadius: 8,
+                        borderWidth: 1.5,
+                        shadowOffset: const Offset(1.5, 1.5),
+                        backgroundColor: moonCount == targetCount
+                            ? AppColors.skyBlue.withValues(alpha: 0.25)
+                            : AppColors.surfaceLight,
                         child: Row(
                           children: [
-                            const Text('🌙', style: TextStyle(fontSize: 16)),
-                            const SizedBox(width: 4),
+                            CustomPaint(
+                              size: const Size(20, 20),
+                              painter: const _OrganicDrawnMoonPainter(isConflict: false),
+                            ),
+                            const SizedBox(width: 6),
                             Text(
                               'Ay: $moonCount / $targetCount',
                               style: GoogleFonts.patrickHand(
-                                fontSize: 15,
+                                fontSize: 16,
                                 fontWeight: FontWeight.w700,
                                 color: AppColors.pencilBlack,
                               ),
@@ -632,109 +644,90 @@ class _TangoScreenState extends ConsumerState<TangoScreen> {
                                     if (cell.isConflict) {
                                       cellBg = AppColors.errorBgLight;
                                     } else if (cell.isFixed) {
-                                      cellBg = AppColors.surfaceSecondaryLight.withValues(alpha: 0.6);
+                                      cellBg = const Color(0xFFFBF8F0);
                                     } else {
                                       cellBg = Colors.white;
                                     }
 
                                     return GestureDetector(
                                       onTap: () => _onCellTap(r, c),
-                                      child: AnimatedContainer(
-                                        duration: const Duration(milliseconds: 180),
-                                        margin: const EdgeInsets.all(2.5),
-                                        decoration: BoxDecoration(
-                                          color: cellBg,
-                                          borderRadius: BorderRadius.circular(10),
-                                          border: Border.all(
-                                            color: cell.isConflict
-                                                ? AppColors.error
-                                                : (cell.isFixed ? AppColors.pencilBlack : AppColors.pencilLight),
-                                            width: cell.isConflict ? 2.4 : (cell.isFixed ? 1.8 : 1.2),
-                                          ),
-                                          boxShadow: cell.isConflict
-                                              ? const [
-                                                  BoxShadow(
-                                                    color: AppColors.error,
-                                                    offset: Offset(1.5, 1.5),
-                                                    blurRadius: 0,
-                                                  ),
-                                                ]
-                                              : (cell.symbol != TangoSymbol.empty
-                                                  ? const [
-                                                      BoxShadow(
-                                                        color: AppColors.pencilBlack,
-                                                        offset: Offset(1.5, 1.5),
-                                                        blurRadius: 0,
-                                                      ),
-                                                    ]
-                                                  : null),
-                                        ),
-                                        child: Stack(
-                                          alignment: Alignment.center,
-                                          children: [
-                                            if (cell.isFixed)
-                                              Positioned(
-                                                top: 3,
-                                                left: 3,
-                                                child: Container(
-                                                  width: 5,
-                                                  height: 5,
-                                                  decoration: const BoxDecoration(
-                                                    color: AppColors.pencilBlack,
-                                                    shape: BoxShape.circle,
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(2.5),
+                                        child: SketchCard(
+                                          padding: EdgeInsets.zero,
+                                          borderRadius: 10,
+                                          borderWidth: cell.isConflict ? 2.4 : (cell.isFixed ? 1.8 : 1.4),
+                                          shadowOffset: cell.isConflict
+                                              ? const Offset(2.0, 2.0)
+                                              : (cell.symbol != TangoSymbol.empty ? const Offset(2.0, 2.0) : const Offset(1.0, 1.0)),
+                                          backgroundColor: cellBg,
+                                          borderColor: cell.isConflict
+                                              ? AppColors.error
+                                              : (cell.isFixed ? AppColors.pencilBlack : AppColors.pencilBlack.withValues(alpha: 0.6)),
+                                          child: Stack(
+                                            alignment: Alignment.center,
+                                            children: [
+                                              // Sabit/Dolu Hücre için Minik Zarif Köşe Raptiyesi
+                                              if (cell.isFixed)
+                                                Positioned(
+                                                  top: 3,
+                                                  left: 3,
+                                                  child: Container(
+                                                    width: 5,
+                                                    height: 5,
+                                                    decoration: const BoxDecoration(
+                                                      color: AppColors.pencilBlack,
+                                                      shape: BoxShape.circle,
+                                                    ),
                                                   ),
                                                 ),
-                                              ),
-                                            _buildSymbol(cell),
-                                          ],
+                                              _buildSymbol(cell),
+                                            ],
+                                          ),
                                         ),
                                       ),
                                     );
                                   },
                                 ),
 
-                                // Kısıt İşaretleri (Constraint Overlays: = ve ✕)
+                                // Kısıt İşaretleri (Constraint Overlays: = ve ✕) - TAM ORTADA & ORGANİK SKETCH
                                 ..._level.constraints.map((cons) {
                                   final isHorizontal = cons.r1 == cons.r2;
                                   final isEqual = cons.type == ConstraintType.equal;
-                                  final markerText = isEqual ? '=' : '✕';
-                                  final markerColor = isEqual ? AppColors.highlighterGreen : AppColors.highlighterOrange;
+                                  const markerSize = 22.0;
 
                                   double left, top;
                                   if (isHorizontal) {
-                                    left = (cons.c1 + 1) * cellSize - 11;
-                                    top = cons.r1 * cellSize + cellSize / 2 - 11;
+                                    // İki yatay hücrenin tam ortak kenar çizgisi ortası
+                                    left = (cons.c1 + 1) * cellSize - (markerSize / 2);
+                                    top = cons.r1 * cellSize + (cellSize / 2) - (markerSize / 2);
                                   } else {
-                                    left = cons.c1 * cellSize + cellSize / 2 - 11;
-                                    top = (cons.r1 + 1) * cellSize - 11;
+                                    // İki dikey hücrenin tam ortak kenar çizgisi ortası
+                                    left = cons.c1 * cellSize + (cellSize / 2) - (markerSize / 2);
+                                    top = (cons.r1 + 1) * cellSize - (markerSize / 2);
                                   }
 
                                   return Positioned(
                                     left: left,
                                     top: top,
-                                    child: Container(
-                                      width: 22,
-                                      height: 22,
-                                      decoration: BoxDecoration(
-                                        color: markerColor,
-                                        shape: BoxShape.circle,
-                                        border: Border.all(color: AppColors.pencilBlack, width: 1.8),
-                                        boxShadow: const [
-                                          BoxShadow(
-                                            color: AppColors.pencilBlack,
-                                            offset: Offset(1.5, 1.5),
-                                            blurRadius: 0,
-                                          ),
-                                        ],
-                                      ),
-                                      child: Center(
-                                        child: Text(
-                                          markerText,
-                                          style: GoogleFonts.patrickHand(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w700,
-                                            color: AppColors.pencilBlack,
-                                            height: 1.0,
+                                    child: SketchCard(
+                                      padding: EdgeInsets.zero,
+                                      borderRadius: 6,
+                                      borderWidth: 1.5,
+                                      shadowOffset: const Offset(1.5, 1.5),
+                                      backgroundColor: isEqual ? const Color(0xFFD1FAE5) : const Color(0xFFFECDD3),
+                                      child: SizedBox(
+                                        width: markerSize,
+                                        height: markerSize,
+                                        child: Center(
+                                          child: Text(
+                                            isEqual ? '=' : '✕',
+                                            style: GoogleFonts.patrickHand(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.w700,
+                                              color: AppColors.pencilBlack,
+                                              height: 1.0,
+                                            ),
                                           ),
                                         ),
                                       ),
@@ -753,88 +746,63 @@ class _TangoScreenState extends ConsumerState<TangoScreen> {
 
               const SizedBox(height: 12),
 
-              // 4. ALT KONTROLLER (Geri Al & Sıfırla)
+              // 4. ALT KONTROLLER (Geri Al & Sıfırla) - Tamamen Organik SketchCard!
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     // Geri Al Butonu
-                    GestureDetector(
+                    SketchCard(
                       onTap: _history.isNotEmpty ? _undoMove : null,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-                        decoration: BoxDecoration(
-                          color: _history.isNotEmpty ? Colors.white : AppColors.surfaceSecondaryLight,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      backgroundColor: _history.isNotEmpty ? Colors.white : AppColors.surfaceSecondaryLight,
+                      borderRadius: 12,
+                      borderWidth: 2.0,
+                      shadowOffset: _history.isNotEmpty ? const Offset(2.5, 2.5) : const Offset(1.0, 1.0),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.undo_rounded,
+                            size: 18,
                             color: _history.isNotEmpty ? AppColors.pencilBlack : AppColors.pencilLight,
-                            width: 2.0,
                           ),
-                          boxShadow: _history.isNotEmpty
-                              ? const [
-                                  BoxShadow(
-                                    color: AppColors.pencilBlack,
-                                    offset: Offset(2.5, 2.5),
-                                    blurRadius: 0,
-                                  ),
-                                ]
-                              : null,
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.undo_rounded,
-                              size: 18,
+                          const SizedBox(width: 6),
+                          Text(
+                            'Geri Al',
+                            style: GoogleFonts.patrickHand(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
                               color: _history.isNotEmpty ? AppColors.pencilBlack : AppColors.pencilLight,
                             ),
-                            const SizedBox(width: 6),
-                            Text(
-                              'Geri Al',
-                              style: GoogleFonts.patrickHand(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                                color: _history.isNotEmpty ? AppColors.pencilBlack : AppColors.pencilLight,
-                              ),
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
 
                     const SizedBox(width: 16),
 
                     // Sıfırla Butonu
-                    GestureDetector(
+                    SketchCard(
                       onTap: _resetBoard,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-                        decoration: BoxDecoration(
-                          color: AppColors.highlighterYellow,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: AppColors.pencilBlack, width: 2.0),
-                          boxShadow: const [
-                            BoxShadow(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      backgroundColor: AppColors.surfaceSecondaryLight,
+                      borderRadius: 12,
+                      borderWidth: 2.0,
+                      shadowOffset: const Offset(2.5, 2.5),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.restart_alt_rounded, size: 18, color: AppColors.pencilBlack),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Sıfırla',
+                            style: GoogleFonts.patrickHand(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
                               color: AppColors.pencilBlack,
-                              offset: Offset(2.5, 2.5),
-                              blurRadius: 0,
                             ),
-                          ],
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.restart_alt_rounded, size: 18, color: AppColors.pencilBlack),
-                            const SizedBox(width: 6),
-                            Text(
-                              'Sıfırla',
-                              style: GoogleFonts.patrickHand(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.pencilBlack,
-                              ),
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -851,14 +819,240 @@ class _TangoScreenState extends ConsumerState<TangoScreen> {
 
   Widget _buildSymbol(TangoCell cell) {
     if (cell.symbol == TangoSymbol.sun) {
-      return const Text('☀️', style: TextStyle(fontSize: 26))
+      return CustomPaint(
+        size: const Size(32, 32),
+        painter: _OrganicDrawnSunPainter(isConflict: cell.isConflict),
+      )
           .animate()
-          .scale(duration: 150.ms, curve: Curves.easeOutBack);
+          .scale(duration: 180.ms, curve: Curves.easeOutBack)
+          .shake(duration: cell.isConflict ? 350.ms : 0.ms);
     } else if (cell.symbol == TangoSymbol.moon) {
-      return const Text('🌙', style: TextStyle(fontSize: 26))
+      return CustomPaint(
+        size: const Size(32, 32),
+        painter: _OrganicDrawnMoonPainter(isConflict: cell.isConflict),
+      )
           .animate()
-          .scale(duration: 150.ms, curve: Curves.easeOutBack);
+          .scale(duration: 180.ms, curve: Curves.easeOutBack)
+          .shake(duration: cell.isConflict ? 350.ms : 0.ms);
     }
     return const SizedBox.shrink();
   }
+}
+
+/// Elle Çizilmiş Organik Güneş (Sıcak Sarı & Hata Anında Kırmızıya Dönüp Çatlayan Güneş)
+class _OrganicDrawnSunPainter extends CustomPainter {
+  final bool isConflict;
+
+  const _OrganicDrawnSunPainter({required this.isConflict});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
+    final center = Offset(w / 2, h / 2);
+
+    final pen = Paint()
+      ..color = isConflict ? AppColors.error : AppColors.pencilBlack
+      ..strokeWidth = 2.0
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    final draft = Paint()
+      ..color = (isConflict ? AppColors.error : AppColors.pencilBlack).withValues(alpha: 0.35)
+      ..strokeWidth = 1.2
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+
+    final fillColor = isConflict ? AppColors.errorBgLight : AppColors.sunYellow;
+    final raysColor = isConflict ? AppColors.error.withValues(alpha: 0.35) : AppColors.sunYellow.withValues(alpha: 0.50);
+
+    // 1. Organik El Çizimi Güneş Işınları
+    final rays = Path();
+    const int rayCount = 8;
+    for (int i = 0; i < rayCount; i++) {
+      final angle = (i * (360 / rayCount)) * 3.14159 / 180;
+      final nextAngle = ((i + 1) * (360 / rayCount)) * 3.14159 / 180;
+      final midAngle = (angle + nextAngle) / 2;
+
+      final pStart = Offset(center.dx + (w * 0.30) * math.cos(angle), center.dy + (h * 0.30) * math.sin(angle));
+      final pTip = Offset(center.dx + (w * 0.48) * math.cos(midAngle), center.dy + (h * 0.48) * math.sin(midAngle));
+      final pEnd = Offset(center.dx + (w * 0.30) * math.cos(nextAngle), center.dy + (h * 0.30) * math.sin(nextAngle));
+
+      if (i == 0) rays.moveTo(pStart.dx, pStart.dy);
+      rays.quadraticBezierTo(pTip.dx, pTip.dy, pTip.dx, pTip.dy);
+      rays.quadraticBezierTo(pEnd.dx, pEnd.dy, pEnd.dx, pEnd.dy);
+    }
+    rays.close();
+
+    canvas.drawPath(rays, Paint()..color = raysColor..style = PaintingStyle.fill);
+    canvas.drawPath(rays, pen);
+
+    // 2. Güneş Gövdesi (Hafif yamuk serbest el çemberi)
+    final sunBody = Path();
+    sunBody.addOval(Rect.fromCircle(center: center, radius: w * 0.28));
+    canvas.drawPath(sunBody, Paint()..color = fillColor..style = PaintingStyle.fill);
+    canvas.drawPath(sunBody, pen);
+
+    // Taslak vuruşu
+    canvas.drawArc(
+      Rect.fromCircle(center: center, radius: w * 0.25),
+      0.4,
+      3.14159 * 1.4,
+      false,
+      draft,
+    );
+
+    // Normal: Sevimli ufacık skeç gözler ve tebessüm
+    if (!isConflict) {
+      final eyePaint = Paint()..color = AppColors.pencilBlack..style = PaintingStyle.fill;
+      canvas.drawCircle(Offset(center.dx - w * 0.10, center.dy - h * 0.04), 1.6, eyePaint);
+      canvas.drawCircle(Offset(center.dx + w * 0.10, center.dy - h * 0.04), 1.6, eyePaint);
+      // Tebessüm
+      final smile = Path()
+        ..moveTo(center.dx - w * 0.08, center.dy + h * 0.06)
+        ..quadraticBezierTo(center.dx, center.dy + h * 0.14, center.dx + w * 0.08, center.dy + h * 0.06);
+      canvas.drawPath(smile, pen..strokeWidth = 1.6);
+    }
+
+    // KURAL İHLALİ / HATA: KIRMIZIYA DÖNÜP ORTASINDAN ÇATLAYAN GÜNEŞ
+    if (isConflict) {
+      final crackPaint = Paint()
+        ..color = AppColors.pencilBlack
+        ..strokeWidth = 2.4
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round
+        ..style = PaintingStyle.stroke;
+
+      final crack = Path();
+      crack.moveTo(center.dx, center.dy - h * 0.40);
+      crack.lineTo(center.dx - w * 0.08, center.dy - h * 0.16);
+      crack.lineTo(center.dx + w * 0.10, center.dy + h * 0.02);
+      crack.lineTo(center.dx - w * 0.06, center.dy + h * 0.20);
+      crack.lineTo(center.dx + w * 0.02, center.dy + h * 0.38);
+      canvas.drawPath(crack, crackPaint);
+
+      // Yan kırıklar ve kıymıklar
+      canvas.drawLine(Offset(center.dx - w * 0.08, center.dy - h * 0.16), Offset(center.dx - w * 0.22, center.dy - h * 0.10), crackPaint..strokeWidth = 1.6);
+      canvas.drawLine(Offset(center.dx + w * 0.10, center.dy + h * 0.02), Offset(center.dx + w * 0.24, center.dy + h * 0.08), crackPaint..strokeWidth = 1.6);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _OrganicDrawnSunPainter oldDelegate) => oldDelegate.isConflict != isConflict;
+}
+
+/// Elle Çizilmiş Organik Ay (Türk Bayrağındaki Sağa Bakan Hilal Formunda & Eskiz Diliyle)
+class _OrganicDrawnMoonPainter extends CustomPainter {
+  final bool isConflict;
+
+  const _OrganicDrawnMoonPainter({required this.isConflict});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
+    final minDim = w < h ? w : h;
+    final rOuter = minDim * 0.36;
+    final rInner = rOuter * 0.80; // Türk bayrağı hilal iç çember oranı (~0.8)
+
+    // Ağırlık merkezini dengelemek için dış çemberi hafif sola, iç çemberi sağa alıyoruz
+    final centerOuter = Offset(w / 2 - rOuter * 0.12, h / 2);
+    final centerInner = Offset(centerOuter.dx + rOuter * 0.28, h / 2);
+
+    final pen = Paint()
+      ..color = isConflict ? AppColors.error : AppColors.pencilBlack
+      ..strokeWidth = 2.2
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    final draft = Paint()
+      ..color = (isConflict ? AppColors.error : AppColors.pencilBlack).withValues(alpha: 0.32)
+      ..strokeWidth = 1.2
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+
+    final fillColor = isConflict ? AppColors.errorBgLight : AppColors.skyBlue;
+
+    // 1. Türk Bayrağı Hilal Formu (Dış çember fark iç çember)
+    final outerPath = Path()..addOval(Rect.fromCircle(center: centerOuter, radius: rOuter));
+    final innerPath = Path()..addOval(Rect.fromCircle(center: centerInner, radius: rInner));
+    final moon = Path.combine(PathOperation.difference, outerPath, innerPath);
+
+    // Dolgu ve ana el çizimi konturu
+    canvas.drawPath(moon, Paint()..color = fillColor..style = PaintingStyle.fill);
+    canvas.drawPath(moon, pen);
+
+    // 2. Çift Hatlı Organik Taslak Çizgisi (Eskiz havası)
+    final draftOuter = Path()
+      ..addOval(Rect.fromCircle(center: Offset(centerOuter.dx + 0.6, centerOuter.dy + 0.6), radius: rOuter * 0.98));
+    final draftInner = Path()
+      ..addOval(Rect.fromCircle(center: Offset(centerInner.dx + 0.6, centerInner.dy + 0.6), radius: rInner * 1.01));
+    final draftMoon = Path.combine(PathOperation.difference, draftOuter, draftInner);
+    canvas.drawPath(draftMoon, draft);
+
+    // 3. Zarif Kurşun Kalem Sırt Taraması (Organik eskiz dokusu)
+    if (!isConflict) {
+      final hatchPaint = Paint()
+        ..color = AppColors.pencilBlack.withValues(alpha: 0.25)
+        ..strokeWidth = 1.1
+        ..strokeCap = StrokeCap.round;
+
+      // Hilalin sol göbeğinde 3 adet kavisli gölgeleme taraması
+      final hatch1 = Path()
+        ..moveTo(centerOuter.dx - rOuter * 0.65, centerOuter.dy - rOuter * 0.25)
+        ..quadraticBezierTo(
+          centerOuter.dx - rOuter * 0.75, centerOuter.dy,
+          centerOuter.dx - rOuter * 0.65, centerOuter.dy + rOuter * 0.25,
+        );
+      final hatch2 = Path()
+        ..moveTo(centerOuter.dx - rOuter * 0.45, centerOuter.dy - rOuter * 0.40)
+        ..quadraticBezierTo(
+          centerOuter.dx - rOuter * 0.58, centerOuter.dy,
+          centerOuter.dx - rOuter * 0.45, centerOuter.dy + rOuter * 0.40,
+        );
+      final hatch3 = Path()
+        ..moveTo(centerOuter.dx - rOuter * 0.25, centerOuter.dy - rOuter * 0.55)
+        ..quadraticBezierTo(
+          centerOuter.dx - rOuter * 0.38, centerOuter.dy,
+          centerOuter.dx - rOuter * 0.25, centerOuter.dy + rOuter * 0.55,
+        );
+
+      canvas.drawPath(hatch1, hatchPaint);
+      canvas.drawPath(hatch2, hatchPaint);
+      canvas.drawPath(hatch3, hatchPaint);
+    }
+
+    // 4. KURAL İHLALİ / HATA: ORTASINDAN ÇATLAYAN KIRMIZI HİLAL
+    if (isConflict) {
+      final crackPaint = Paint()
+        ..color = AppColors.pencilBlack
+        ..strokeWidth = 2.4
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round
+        ..style = PaintingStyle.stroke;
+
+      final crack = Path();
+      crack.moveTo(centerOuter.dx - rOuter * 0.55, centerOuter.dy - rOuter * 0.50);
+      crack.lineTo(centerOuter.dx - rOuter * 0.35, centerOuter.dy - rOuter * 0.15);
+      crack.lineTo(centerOuter.dx - rOuter * 0.60, centerOuter.dy + rOuter * 0.15);
+      crack.lineTo(centerOuter.dx - rOuter * 0.40, centerOuter.dy + rOuter * 0.55);
+      canvas.drawPath(crack, crackPaint);
+
+      canvas.drawLine(
+        Offset(centerOuter.dx - rOuter * 0.35, centerOuter.dy - rOuter * 0.15),
+        Offset(centerOuter.dx - rOuter * 0.15, centerOuter.dy - rOuter * 0.25),
+        crackPaint..strokeWidth = 1.6,
+      );
+      canvas.drawLine(
+        Offset(centerOuter.dx - rOuter * 0.60, centerOuter.dy + rOuter * 0.15),
+        Offset(centerOuter.dx - rOuter * 0.80, centerOuter.dy + rOuter * 0.20),
+        crackPaint..strokeWidth = 1.6,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _OrganicDrawnMoonPainter oldDelegate) => oldDelegate.isConflict != isConflict;
 }
