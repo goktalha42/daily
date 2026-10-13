@@ -8,6 +8,8 @@ sıralama kısmında vezirler oyunu için olan puan, bütün vezirler oyunların
 
 Vezirler oyununun içine girince günlük olarak vezirler oyununda ki günlük sıralamayı görebiliyoruz. ama diğer oyunların günlük sıralamasını göremiyoruz. Menude o gün bitirmiş oldugumuz bir oyuna girdiğimiz zaman karşımıza çıkan bugünkü bulmacayı zaten başarıyla çözdün kartına o günün ilk 5 sıralamasını ve oyuncunun kendi sıralamasını koyalım. oyuncu ilk 5 e girdiyse sadece ilk 5 sıralamayı, giremediyse ilk 5'in altında oyuncunun kendi sıralaması olsun.
 
+bu söylediklerimin dışında sıralama sayfası ve skorlar ile ilgili fikirlerine açığım.
+
 
 
 1-) Vezirler:
