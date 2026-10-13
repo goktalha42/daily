@@ -556,9 +556,14 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
     final leaderboardService = ref.watch(leaderboardServiceProvider);
     final entries = leaderboardService.getLeaderboard(
       gameType: GameType.queens,
-      timeframe: LeaderboardTimeframe.allTime,
+      timeframe: LeaderboardTimeframe.daily,
       difficulty: diff.name,
+      levelId: widget.levelId,
     );
+
+    final myEntryIndex = entries.indexWhere(
+        (e) => e.userId == 'user_local' || e.userName.contains('Siz') || e.userName.contains('Sen'));
+    final isTop5 = myEntryIndex != -1 && myEntryIndex < 5;
 
     return SketchCard(
       padding: const EdgeInsets.all(14),
@@ -571,7 +576,7 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                '${diff.label} Skorbordu (En İyiler)',
+                '${diff.label} Skorbordu (Bugün)',
                 style: GoogleFonts.patrickHand(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
@@ -610,12 +615,15 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
                 ),
               ),
             )
-          else
+          else ...[
             ...entries.take(5).toList().asMap().entries.map((item) {
               final idx = item.key;
               final entry = item.value;
               final rank = idx + 1;
               final isTop3 = rank <= 3;
+              final isMe = entry.userId == 'user_local' ||
+                  entry.userName.contains('Siz') ||
+                  entry.userName.contains('Sen');
               final rankColor = rank == 1
                   ? AppColors.sunYellow
                   : (rank == 2 ? const Color(0xFFE2E8F0) : (rank == 3 ? const Color(0xFFFED7AA) : Colors.transparent));
@@ -624,13 +632,14 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
                 padding: const EdgeInsets.only(bottom: 6),
                 child: SketchCard(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                  backgroundColor: isTop3 ? rankColor.withValues(alpha: 0.35) : AppColors.backgroundLight,
+                  backgroundColor: isMe
+                      ? AppColors.sunYellow.withValues(alpha: 0.35)
+                      : (isTop3 ? rankColor.withValues(alpha: 0.35) : AppColors.backgroundLight),
                   borderRadius: 10,
-                  borderWidth: 1.5,
-                  shadowOffset: const Offset(2.0, 2.0),
+                  borderWidth: isMe ? 2.2 : 1.5,
+                  shadowOffset: isMe ? const Offset(2.5, 2.5) : const Offset(2.0, 2.0),
                   child: Row(
                     children: [
-                      // Sıra Numarası (Organik SketchCard)
                       SketchCard(
                         padding: EdgeInsets.zero,
                         borderRadius: 6,
@@ -653,18 +662,16 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
                         ),
                       ),
                       const SizedBox(width: 10),
-                      // Kullanıcı Adı
                       Expanded(
                         child: Text(
-                          entry.userName,
+                          entry.userName + (isMe ? ' (Sen)' : ''),
                           style: GoogleFonts.patrickHand(
                             fontSize: 16,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: isMe ? FontWeight.w800 : FontWeight.w700,
                             color: AppColors.pencilBlack,
                           ),
                         ),
                       ),
-                      // Tamamlama Süresi
                       Row(
                         children: [
                           const Icon(Icons.timer_outlined, size: 14, color: AppColors.pencilGray),
@@ -680,7 +687,6 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
                         ],
                       ),
                       const SizedBox(width: 14),
-                      // Puan (Organik SketchCard)
                       SketchCard(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                         backgroundColor: AppColors.sunYellow,
@@ -701,12 +707,130 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
                 ),
               );
             }),
+            if (!isTop5 && myEntryIndex != -1) ...[
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 2),
+                child: Center(
+                  child: Text(
+                    '•   •   •',
+                    style: GoogleFonts.patrickHand(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.pencilGray,
+                      letterSpacing: 4,
+                    ),
+                  ),
+                ),
+              ),
+              Builder(builder: (context) {
+                final myEntry = entries[myEntryIndex];
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: SketchCard(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    backgroundColor: AppColors.sunYellow.withValues(alpha: 0.35),
+                    borderRadius: 10,
+                    borderWidth: 2.2,
+                    shadowOffset: const Offset(2.5, 2.5),
+                    child: Row(
+                      children: [
+                        SketchCard(
+                          padding: EdgeInsets.zero,
+                          borderRadius: 6,
+                          borderWidth: 1.2,
+                          shadowOffset: const Offset(1.0, 1.0),
+                          backgroundColor: AppColors.sunYellow,
+                          child: SizedBox(
+                            width: 28,
+                            height: 24,
+                            child: Center(
+                              child: Text(
+                                '#${myEntry.rank}',
+                                style: GoogleFonts.patrickHand(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.pencilBlack,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Row(
+                            children: [
+                              Text(
+                                '${myEntry.userName} (Sen)',
+                                style: GoogleFonts.patrickHand(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppColors.pencilBlack,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              const Icon(Icons.person_rounded, size: 14, color: AppColors.pencilBlack),
+                            ],
+                          ),
+                        ),
+                        Row(
+                          children: [
+                            const Icon(Icons.timer_outlined, size: 14, color: AppColors.pencilGray),
+                            const SizedBox(width: 4),
+                            Text(
+                              GameDateUtils.formatGameTime(myEntry.bestTimeMs),
+                              style: GoogleFonts.patrickHand(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.pencilGraphite,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(width: 14),
+                        SketchCard(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          backgroundColor: AppColors.sunYellow,
+                          borderRadius: 6,
+                          borderWidth: 1.2,
+                          shadowOffset: const Offset(1.0, 1.0),
+                          child: Text(
+                            '${myEntry.totalScore} P',
+                            style: GoogleFonts.patrickHand(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.pencilBlack,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }),
+            ],
+          ],
         ],
       ),
     );
   }
 
   void _showCompletedDialog(BuildContext context, QueensDifficulty diff, DailyPlayRecord? record) {
+    final leaderboardService = ref.read(leaderboardServiceProvider);
+    leaderboardService.syncWithDailyPlay(ref.read(dailyPlayServiceProvider));
+
+    final entries = leaderboardService.getLeaderboard(
+      gameType: GameType.queens,
+      timeframe: LeaderboardTimeframe.daily,
+      difficulty: diff.name,
+      levelId: widget.levelId,
+    );
+
+    final myEntryIndex = entries.indexWhere(
+        (e) => e.userId == 'user_local' || e.userName.contains('Siz') || e.userName.contains('Sen'));
+    final myRank = myEntryIndex != -1 ? entries[myEntryIndex].rank : null;
+    final isTop5 = myRank != null && myRank <= 5;
+    final top5 = entries.take(5).toList();
+
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -715,70 +839,369 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
           borderRadius: BorderRadius.circular(18),
           side: const BorderSide(color: AppColors.pencilBlack, width: 2.5),
         ),
+        titlePadding: const EdgeInsets.fromLTRB(20, 18, 20, 8),
+        contentPadding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+        actionsPadding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
         title: Row(
           children: [
-            const Icon(Icons.check_circle_rounded, color: AppColors.accentCyan, size: 28),
-            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: AppColors.success.withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+                border: Border.all(color: AppColors.pencilBlack, width: 1.8),
+              ),
+              child: const Icon(Icons.check_circle_rounded, color: AppColors.success, size: 24),
+            ),
+            const SizedBox(width: 10),
             Expanded(
-              child: Text(
-                '${diff.label} Seviyesi Tamamlandı!',
-                style: GoogleFonts.patrickHand(
-                  color: AppColors.pencilBlack,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 22,
-                ),
-              ),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Bugünkü ${diff.label} seviyesini zaten başarıyla çözdün! Günlük tek oynama kuralı gereği skorun kaydedildi.',
-              style: GoogleFonts.patrickHand(
-                color: AppColors.pencilGraphite,
-                fontSize: 16,
-              ),
-            ),
-            const SizedBox(height: 12),
-            SketchCard(
-              padding: const EdgeInsets.all(12),
-              borderRadius: 12,
-              borderWidth: 1.8,
-              shadowOffset: const Offset(2, 2),
-              backgroundColor: AppColors.surfaceSecondaryLight,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Column(
-                    children: [
-                      Text('SKOR', style: GoogleFonts.patrickHand(fontSize: 13, color: AppColors.pencilGray, fontWeight: FontWeight.w700)),
-                      Text('${record?.score ?? 0}', style: GoogleFonts.patrickHand(fontSize: 22, color: AppColors.pencilBlack, fontWeight: FontWeight.w700)),
-                    ],
+                  Text(
+                    '${diff.label} Seviyesi Tamamlandı!',
+                    style: GoogleFonts.patrickHand(
+                      color: AppColors.pencilBlack,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 22,
+                    ),
                   ),
-                  Column(
-                    children: [
-                      Text('SÜRE', style: GoogleFonts.patrickHand(fontSize: 13, color: AppColors.pencilGray, fontWeight: FontWeight.w700)),
-                      Text(
-                        GameDateUtils.formatGameTime(record?.durationMs ?? 0),
-                        style: GoogleFonts.patrickHand(fontSize: 20, color: AppColors.pencilBlack, fontWeight: FontWeight.w700),
-                      ),
-                    ],
+                  Text(
+                    'Bugünkü ${diff.label} seviyesi başarıyla çözüldü.',
+                    style: GoogleFonts.patrickHand(
+                      color: AppColors.pencilGray,
+                      fontSize: 13,
+                    ),
                   ),
                 ],
               ),
             ),
           ],
         ),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SketchCard(
+                  padding: const EdgeInsets.all(12),
+                  borderRadius: 12,
+                  borderWidth: 2.0,
+                  shadowOffset: const Offset(2.5, 2.5),
+                  backgroundColor: AppColors.surfaceSecondaryLight,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      Column(
+                        children: [
+                          Text('SKOR', style: GoogleFonts.patrickHand(fontSize: 12, color: AppColors.pencilGray, fontWeight: FontWeight.w700)),
+                          Text('${record?.score ?? 0}', style: GoogleFonts.patrickHand(fontSize: 22, color: AppColors.pencilBlack, fontWeight: FontWeight.w700)),
+                        ],
+                      ),
+                      Container(width: 1.5, height: 32, color: AppColors.pencilBlack.withValues(alpha: 0.2)),
+                      Column(
+                        children: [
+                          Text('SÜRE', style: GoogleFonts.patrickHand(fontSize: 12, color: AppColors.pencilGray, fontWeight: FontWeight.w700)),
+                          Text(
+                            GameDateUtils.formatGameTime(record?.durationMs ?? 0),
+                            style: GoogleFonts.patrickHand(fontSize: 20, color: AppColors.pencilBlack, fontWeight: FontWeight.w700),
+                          ),
+                        ],
+                      ),
+                      Container(width: 1.5, height: 32, color: AppColors.pencilBlack.withValues(alpha: 0.2)),
+                      Column(
+                        children: [
+                          Text('GÜNLÜK SIRA', style: GoogleFonts.patrickHand(fontSize: 12, color: AppColors.pencilGray, fontWeight: FontWeight.w700)),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text('#${myRank ?? '-'}', style: GoogleFonts.patrickHand(fontSize: 22, color: AppColors.pencilBlack, fontWeight: FontWeight.w700)),
+                              Text('/${entries.length}', style: GoogleFonts.patrickHand(fontSize: 13, color: AppColors.pencilGray, fontWeight: FontWeight.w600)),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.leaderboard_rounded, size: 16, color: AppColors.pencilBlack),
+                        const SizedBox(width: 6),
+                        Text(
+                          '${diff.label.toUpperCase()} İLK 5 SIRALAMASI',
+                          style: GoogleFonts.patrickHand(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.pencilBlack,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (myRank != null)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: AppColors.sunYellow.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: AppColors.pencilBlack, width: 1.2),
+                        ),
+                        child: Text(
+                          myRank <= 3
+                              ? '🏆 Podyumdasın!'
+                              : (myRank <= 5 ? '🔥 İlk 5\'tesin!' : 'İlk %${((myRank / entries.length) * 100).ceil()}\'desin'),
+                          style: GoogleFonts.patrickHand(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.pencilBlack,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                ...top5.map((entry) {
+                  final isMe = entry.userId == 'user_local' ||
+                      entry.userName.contains('Siz') ||
+                      entry.userName.contains('Sen');
+                  final isPodium = entry.rank <= 3;
+                  final rankBg = entry.rank == 1
+                      ? AppColors.sunYellow
+                      : (entry.rank == 2
+                          ? const Color(0xFFE2E8F0)
+                          : (entry.rank == 3 ? const Color(0xFFFED7AA) : AppColors.surfaceLight));
+
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 6),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: isMe
+                          ? AppColors.sunYellow.withValues(alpha: 0.35)
+                          : (isPodium ? rankBg.withValues(alpha: 0.25) : AppColors.backgroundLight),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: AppColors.pencilBlack,
+                        width: isMe ? 2.2 : 1.4,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.pencilBlack,
+                          offset: isMe ? const Offset(2.0, 2.0) : const Offset(1.0, 1.0),
+                          blurRadius: 0,
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 24,
+                          height: 24,
+                          decoration: BoxDecoration(
+                            color: rankBg,
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(color: AppColors.pencilBlack, width: 1.2),
+                          ),
+                          child: Center(
+                            child: Text(
+                              '${entry.rank}',
+                              style: GoogleFonts.patrickHand(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.pencilBlack,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            entry.userName + (isMe ? ' (Sen)' : ''),
+                            style: GoogleFonts.patrickHand(
+                              fontSize: 15,
+                              fontWeight: isMe ? FontWeight.w800 : FontWeight.w700,
+                              color: AppColors.pencilBlack,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        Row(
+                          children: [
+                            const Icon(Icons.timer_outlined, size: 12, color: AppColors.pencilGray),
+                            const SizedBox(width: 3),
+                            Text(
+                              GameDateUtils.formatGameTime(entry.bestTimeMs),
+                              style: GoogleFonts.patrickHand(
+                                fontSize: 13,
+                                color: AppColors.pencilGraphite,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(width: 10),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: AppColors.sunYellow,
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(color: AppColors.pencilBlack, width: 1.2),
+                          ),
+                          child: Text(
+                            '${entry.totalScore} P',
+                            style: GoogleFonts.patrickHand(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.pencilBlack,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
+                if (!isTop5 && myEntryIndex != -1) ...[
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 2),
+                    child: Center(
+                      child: Text(
+                        '•   •   •',
+                        style: GoogleFonts.patrickHand(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.pencilGray,
+                          letterSpacing: 4,
+                        ),
+                      ),
+                    ),
+                  ),
+                  Builder(builder: (context) {
+                    final myEntry = entries[myEntryIndex];
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 4),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: AppColors.sunYellow.withValues(alpha: 0.35),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: AppColors.pencilBlack, width: 2.2),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: AppColors.pencilBlack,
+                            offset: Offset(2.0, 2.0),
+                            blurRadius: 0,
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 28,
+                            height: 24,
+                            decoration: BoxDecoration(
+                              color: AppColors.sunYellow,
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(color: AppColors.pencilBlack, width: 1.2),
+                            ),
+                            child: Center(
+                              child: Text(
+                                '#${myEntry.rank}',
+                                style: GoogleFonts.patrickHand(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.pencilBlack,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Row(
+                              children: [
+                                Text(
+                                  '${myEntry.userName} (Sen)',
+                                  style: GoogleFonts.patrickHand(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w800,
+                                    color: AppColors.pencilBlack,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(width: 4),
+                                const Icon(Icons.person_rounded, size: 14, color: AppColors.pencilBlack),
+                              ],
+                            ),
+                          ),
+                          Row(
+                            children: [
+                              const Icon(Icons.timer_outlined, size: 12, color: AppColors.pencilGray),
+                              const SizedBox(width: 3),
+                              Text(
+                                GameDateUtils.formatGameTime(myEntry.bestTimeMs),
+                                style: GoogleFonts.patrickHand(
+                                  fontSize: 13,
+                                  color: AppColors.pencilGraphite,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(width: 10),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: AppColors.sunYellow,
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(color: AppColors.pencilBlack, width: 1.2),
+                            ),
+                            child: Text(
+                              '${myEntry.totalScore} P',
+                              style: GoogleFonts.patrickHand(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.pencilBlack,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }),
+                ],
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    const Icon(Icons.lock_clock_rounded, size: 15, color: AppColors.pencilBlack),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        'Yeni bulmaca yarın saat 00:00 (UTC) sıfırlanmasında açılacak.',
+                        style: GoogleFonts.patrickHand(
+                          fontSize: 13,
+                          color: AppColors.pencilBlack,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
         actions: [
           SketchCard(
             onTap: () => Navigator.pop(ctx),
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
             backgroundColor: AppColors.surfaceSecondaryLight,
             borderRadius: 10,
-            borderWidth: 2.0,
+            borderWidth: 1.8,
             shadowOffset: const Offset(2, 2),
             child: Text(
               'Tamam',

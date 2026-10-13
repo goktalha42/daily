@@ -17,7 +17,7 @@ class LeaderboardScreen extends ConsumerStatefulWidget {
 
 class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
   GameType _selectedGame = GameType.queens;
-  LeaderboardTimeframe _timeframe = LeaderboardTimeframe.weekly;
+  LeaderboardTimeframe _timeframe = LeaderboardTimeframe.daily;
 
   @override
   Widget build(BuildContext context) {
@@ -27,9 +27,14 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
       timeframe: _timeframe,
     );
 
-    // Kullanıcının kendi derecesini bul veya simüle et
-    final myEntryIndex = entries.indexWhere((e) => e.userId == 'user_local' || e.userName.contains('Siz'));
-    final myRank = myEntryIndex != -1 ? myEntryIndex + 1 : 4;
+    // Kullanıcının kendi derecesini bul
+    final myEntryIndex = entries.indexWhere((e) =>
+        e.userId == 'user_local' ||
+        e.userName.contains('Siz') ||
+        e.userName.contains('Sen'));
+    final myEntry = myEntryIndex != -1 ? entries[myEntryIndex] : null;
+    final myRank = myEntry?.rank;
+    final topPercentile = myRank != null ? ((myRank / entries.length) * 100).ceil() : null;
 
     return CustomScrollView(
       physics: const BouncingScrollPhysics(),
@@ -51,7 +56,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                           height: 8,
                           decoration: const BoxDecoration(
                             shape: BoxShape.circle,
-                            color: AppColors.highlighterYellow,
+                            color: AppColors.sunYellow,
                             border: Border.fromBorderSide(
                               BorderSide(color: AppColors.pencilBlack, width: 1.5),
                             ),
@@ -85,7 +90,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: AppColors.highlighterYellow,
+                    color: AppColors.sunYellow,
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(color: AppColors.pencilBlack, width: 2.0),
                     boxShadow: const [
@@ -116,7 +121,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
           ),
         ),
 
-        // 2. FOTOĞRAFTAKİ GİBİ SKEÇ DÖNEM SEÇİCİ (HAFTALIK / AYLIK / GENEL)
+        // 2. SKEÇ DÖNEM SEÇİCİ (BUGÜN / HAFTALIK / AYLIK / GENEL)
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
@@ -147,7 +152,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 160),
                         decoration: BoxDecoration(
-                          color: isSelected ? AppColors.highlighterYellow : Colors.transparent,
+                          color: isSelected ? AppColors.sunYellow : Colors.transparent,
                           borderRadius: BorderRadius.circular(8),
                           border: isSelected
                               ? Border.all(color: AppColors.pencilBlack, width: 1.5)
@@ -235,7 +240,39 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
           ),
         ),
 
-        // 4. KULLANICININ KENDİ DURUM KARTI (SKEÇ KUTUSU)
+        // 3.1. VEZİRLER ÖZEL PUANLAMA BİLGİ BANTLIĞI
+        if (_selectedGame == GameType.queens)
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+              child: SketchCard(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                backgroundColor: AppColors.queensGame.withValues(alpha: 0.2),
+                borderRadius: 10,
+                borderWidth: 1.6,
+                shadowOffset: const Offset(1.5, 1.5),
+                child: Row(
+                  children: [
+                    const Icon(Icons.info_outline_rounded, size: 16, color: AppColors.pencilBlack),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        '👑 Vezirler Toplam Puanı = Kolay + Zor + Master seviyelerinin toplamıdır. Eksik seviyeler 0 puan sayılır.',
+                        style: GoogleFonts.patrickHand(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.pencilBlack,
+                          height: 1.15,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+        // 4. KULLANICININ KENDİ DURUM KARTI (DİNAMİK SKOR VE SIRA)
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
@@ -247,16 +284,16 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
               padding: const EdgeInsets.all(14),
               child: Row(
                 children: [
-                  // Sol: Çapraz X Kutusu İçinde Sıralama
+                  // Sol: Sıralama Kutusu
                   SketchPlaceholderBox(
                     width: 48,
                     height: 48,
-                    fillColor: _selectedGame.color,
+                    fillColor: myRank != null ? _selectedGame.color : AppColors.surfaceSecondaryLight,
                     lineColor: AppColors.pencilBlack,
                     borderRadius: 8,
                     child: Center(
                       child: Text(
-                        '#$myRank',
+                        myRank != null ? '#$myRank' : '-',
                         style: GoogleFonts.patrickHand(
                           color: AppColors.pencilBlack,
                           fontWeight: FontWeight.w700,
@@ -285,7 +322,11 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                           ],
                         ),
                         Text(
-                          'Zirve %1 Dilimindesiniz',
+                          myRank != null
+                              ? (myRank == 1
+                                  ? 'Zirvedesiniz! 👑'
+                                  : (myRank <= 3 ? 'Podyumdasınız! 🏆' : 'Zirve %$topPercentile Dilimindesiniz'))
+                              : 'Henüz Skorunuz Yok',
                           style: GoogleFonts.patrickHand(
                             color: AppColors.pencilBlack,
                             fontSize: 17,
@@ -293,7 +334,15 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                           ),
                         ),
                         Text(
-                          'Podyuma girmeye sadece 80 puan kaldı!',
+                          myRank != null
+                              ? (myRank == 1
+                                  ? 'Tebrikler! Liderlik koltuğundasınız!'
+                                  : (myRank <= 3
+                                      ? 'Harika bir performans, liderliği zorlayın!'
+                                      : (myRank > 1
+                                          ? 'Bir üst sıra (#${myRank - 1}) için +${entries[myEntryIndex - 1].totalScore - myEntry!.totalScore} puan gerekiyor!'
+                                          : 'Liderliği korumaya devam edin!')))
+                              : 'Bugünkü bulmacayı çöz ve sıralamadaki yerini al!',
                           style: GoogleFonts.patrickHand(
                             color: AppColors.pencilGraphite,
                             fontSize: 13,
@@ -305,14 +354,14 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     decoration: BoxDecoration(
-                      color: AppColors.highlighterYellow,
+                      color: AppColors.sunYellow,
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(color: AppColors.pencilBlack, width: 1.5),
                     ),
                     child: Column(
                       children: [
                         Text(
-                          '1,740',
+                          myEntry != null ? '${myEntry.totalScore}' : '0',
                           style: GoogleFonts.patrickHand(
                             color: AppColors.pencilBlack,
                             fontWeight: FontWeight.w700,
@@ -379,7 +428,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                         _SketchPodiumPillar(
                           entry: entries[0],
                           rank: 1,
-                          fillColor: AppColors.highlighterYellow,
+                          fillColor: AppColors.sunYellow,
                           pillarHeight: 105,
                           crownWidget: const SketchDoodleCrown(size: 26, color: AppColors.pencilBlack),
                           isFirst: true,
@@ -407,7 +456,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'TÜM YARIŞMACILAR',
+                  'TÜM YARIŞMACILAR (${entries.length} Kişi)',
                   style: GoogleFonts.patrickHand(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
@@ -452,24 +501,30 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                     (context, index) {
                       final entry = entries[index];
                       final isTop3 = entry.rank <= 3;
-                      final isMe = entry.userId == 'user_local' || entry.userName.contains('Siz');
+                      final isMe = entry.userId == 'user_local' ||
+                          entry.userName.contains('Siz') ||
+                          entry.userName.contains('Sen');
+
+                      final detailText = _selectedGame == GameType.queens
+                          ? '${entry.gamesPlayed}/3 Seviye • Süre: ${GameDateUtils.formatGameTime(entry.bestTimeMs)}'
+                          : 'Süre: ${GameDateUtils.formatGameTime(entry.bestTimeMs)}';
 
                       return Container(
                         margin: const EdgeInsets.only(bottom: 10),
                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                         decoration: BoxDecoration(
                           color: isMe
-                              ? AppColors.highlighterYellow.withValues(alpha: 0.4)
+                              ? AppColors.sunYellow.withValues(alpha: 0.35)
                               : Colors.white,
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
                             color: AppColors.pencilBlack,
                             width: isMe ? 2.2 : 1.8,
                           ),
-                          boxShadow: const [
+                          boxShadow: [
                             BoxShadow(
                               color: AppColors.pencilBlack,
-                              offset: Offset(2, 2),
+                              offset: isMe ? const Offset(3, 3) : const Offset(2, 2),
                               blurRadius: 0,
                             ),
                           ],
@@ -478,11 +533,11 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                           children: [
                             // Rank Number
                             Container(
-                              width: 30,
-                              height: 30,
+                              width: 32,
+                              height: 32,
                               decoration: BoxDecoration(
                                 color: isTop3
-                                    ? AppColors.highlighterYellow
+                                    ? AppColors.sunYellow
                                     : AppColors.surfaceSecondaryLight,
                                 borderRadius: BorderRadius.circular(6),
                                 border: Border.all(color: AppColors.pencilBlack, width: 1.5),
@@ -509,10 +564,10 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                                     children: [
                                       Flexible(
                                         child: Text(
-                                          entry.userName + (isMe ? ' (Siz)' : ''),
+                                          entry.userName + (isMe ? ' (Sen)' : ''),
                                           style: GoogleFonts.patrickHand(
                                             fontSize: 17,
-                                            fontWeight: FontWeight.w700,
+                                            fontWeight: isMe ? FontWeight.w800 : FontWeight.w700,
                                             color: AppColors.pencilBlack,
                                           ),
                                           overflow: TextOverflow.ellipsis,
@@ -522,10 +577,29 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                                         const SizedBox(width: 4),
                                         const Icon(Icons.star_rounded, size: 16, color: AppColors.pencilBlack),
                                       ],
+                                      if (_selectedGame == GameType.queens && entry.gamesPlayed == 3) ...[
+                                        const SizedBox(width: 6),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                                          decoration: BoxDecoration(
+                                            color: AppColors.sunYellow.withValues(alpha: 0.25),
+                                            borderRadius: BorderRadius.circular(4),
+                                            border: Border.all(color: AppColors.pencilBlack, width: 1.0),
+                                          ),
+                                          child: Text(
+                                            '3/3',
+                                            style: GoogleFonts.patrickHand(
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.w700,
+                                              color: AppColors.pencilBlack,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
                                     ],
                                   ),
                                   Text(
-                                    'Süre: ${GameDateUtils.formatGameTime(entry.bestTimeMs)}',
+                                    detailText,
                                     style: GoogleFonts.patrickHand(
                                       fontSize: 13,
                                       fontWeight: FontWeight.w600,
@@ -627,7 +701,7 @@ class _SketchPodiumPillar extends StatelessWidget {
         ),
         const SizedBox(height: 4),
 
-        // Podyum Kaidesi (Fotoğraftaki gibi kutu içinde çapraz skeç çizgileri)
+        // Podyum Kaidesi
         Container(
           width: 82,
           height: pillarHeight,
@@ -661,5 +735,3 @@ class _SketchPodiumPillar extends StatelessWidget {
     );
   }
 }
-
-

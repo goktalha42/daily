@@ -346,7 +346,7 @@ class SketchPlaceholderBox extends StatelessWidget {
     super.key,
     required this.width,
     required this.height,
-    this.fillColor = AppColors.highlighterYellow,
+    this.fillColor = AppColors.sunYellow,
     this.lineColor = AppColors.pencilBlack,
     this.lineWidth = 2.2,
     this.child,
@@ -854,7 +854,7 @@ class SketchDoodleTrophy extends StatelessWidget {
     super.key,
     this.size = 28,
     this.color = AppColors.pencilBlack,
-    this.fillColor = AppColors.highlighterYellow,
+    this.fillColor = AppColors.sunYellow,
   });
 
   @override

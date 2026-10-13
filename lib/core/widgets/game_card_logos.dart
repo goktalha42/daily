@@ -115,7 +115,7 @@ class OrganicQueensLogoPainter extends CustomPainter {
 
     canvas.drawPath(
       crown,
-      Paint()..color = AppColors.highlighterYellow.withValues(alpha: 0.60)..style = PaintingStyle.fill,
+      Paint()..color = AppColors.sunYellow.withValues(alpha: 0.60)..style = PaintingStyle.fill,
     );
     canvas.drawPath(crown, pencil);
 
@@ -356,7 +356,7 @@ class OrganicCrossclimbLogoPainter extends CustomPainter {
 
     canvas.drawPath(
       flag,
-      Paint()..color = AppColors.highlighterYellow..style = PaintingStyle.fill,
+      Paint()..color = AppColors.sunYellow..style = PaintingStyle.fill,
     );
     canvas.drawPath(flag, pencil);
 
@@ -412,7 +412,7 @@ class OrganicTangoLogoPainter extends CustomPainter {
 
     canvas.drawPath(
       rays,
-      Paint()..color = AppColors.highlighterYellow.withValues(alpha: 0.50)..style = PaintingStyle.fill,
+      Paint()..color = AppColors.sunYellow.withValues(alpha: 0.50)..style = PaintingStyle.fill,
     );
     canvas.drawPath(rays, pencil);
 
@@ -518,10 +518,10 @@ class OrganicZipPathLogoPainter extends CustomPainter {
 
     // 2. Patika Üzerindeki Organik Dere Çakıl Taşları (①, ②, ③, ④)
     final stones = [
-      {'pos': p1, 'num': '1', 'color': AppColors.highlighterYellow},
+      {'pos': p1, 'num': '1', 'color': AppColors.sunYellow},
       {'pos': p2, 'num': '2', 'color': Colors.white},
       {'pos': p3, 'num': '3', 'color': Colors.white},
-      {'pos': p4, 'num': '4', 'color': AppColors.highlighterYellow},
+      {'pos': p4, 'num': '4', 'color': AppColors.sunYellow},
     ];
 
     for (var s in stones) {

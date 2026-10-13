@@ -45,7 +45,7 @@ class AppTheme {
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.highlighterYellow,
+          backgroundColor: AppColors.sunYellow,
           foregroundColor: AppColors.pencilBlack,
           elevation: 0,
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),

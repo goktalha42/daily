@@ -129,7 +129,7 @@ class ProfileScreen extends ConsumerWidget {
                       const SketchPlaceholderBox(
                         width: 64,
                         height: 64,
-                        fillColor: AppColors.highlighterYellow,
+                        fillColor: AppColors.sunYellow,
                         lineColor: AppColors.pencilBlack,
                         borderRadius: 12,
                         child: Center(
@@ -160,7 +160,7 @@ class ProfileScreen extends ConsumerWidget {
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
                                   decoration: BoxDecoration(
-                                    color: AppColors.highlighterYellow,
+                                    color: AppColors.sunYellow,
                                     borderRadius: BorderRadius.circular(4),
                                     border: Border.all(color: AppColors.pencilBlack, width: 1.2),
                                   ),
@@ -324,7 +324,7 @@ class ProfileScreen extends ConsumerWidget {
                 Expanded(
                   child: _SketchMetricBox(
                     icon: Icons.military_tech_rounded,
-                    fillColor: AppColors.highlighterYellow,
+                    fillColor: AppColors.sunYellow,
                     title: 'TOPLAM PUAN',
                     value: '$totalScore P',
                     subtitle: 'Zirve Sıralama',
@@ -433,7 +433,7 @@ class ProfileScreen extends ConsumerWidget {
                           decoration: BoxDecoration(
                             color: perf.hasPlayed
                                 ? (perf.percentile! <= 1
-                                    ? AppColors.highlighterYellow
+                                    ? AppColors.sunYellow
                                     : game.color)
                                 : AppColors.surfaceSecondaryLight,
                             borderRadius: BorderRadius.circular(6),
@@ -493,7 +493,7 @@ class ProfileScreen extends ConsumerWidget {
                   icon: Icons.bolt_rounded,
                   title: 'Işık Hızı',
                   desc: '< 40 sn Çözüm',
-                  fillColor: AppColors.highlighterYellow,
+                  fillColor: AppColors.sunYellow,
                   isUnlocked: true,
                 ),
                 _SketchBadgeCard(
@@ -507,7 +507,7 @@ class ProfileScreen extends ConsumerWidget {
                   icon: Icons.workspace_premium_rounded,
                   title: 'Zirve %1',
                   desc: 'Global Zühtü',
-                  fillColor: AppColors.highlighterGreen,
+                  fillColor: AppColors.success,
                   isUnlocked: true,
                 ),
                 _SketchBadgeCard(

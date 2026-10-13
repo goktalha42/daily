@@ -149,6 +149,7 @@ extension GameTypeExtension on GameType {
 }
 
 enum LeaderboardTimeframe {
+  daily,
   weekly,
   monthly,
   allTime,
@@ -157,6 +158,8 @@ enum LeaderboardTimeframe {
 extension LeaderboardTimeframeExtension on LeaderboardTimeframe {
   String get label {
     switch (this) {
+      case LeaderboardTimeframe.daily:
+        return 'Bugün';
       case LeaderboardTimeframe.weekly:
         return 'Haftalık';
       case LeaderboardTimeframe.monthly:

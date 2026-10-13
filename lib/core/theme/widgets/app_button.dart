@@ -29,7 +29,7 @@ class _AppButtonState extends State<AppButton> {
 
   @override
   Widget build(BuildContext context) {
-    final bgColor = widget.isPrimary ? AppColors.highlighterYellow : Colors.white;
+    final bgColor = widget.isPrimary ? AppColors.sunYellow : Colors.white;
 
     Widget buttonChild = Row(
       mainAxisSize: MainAxisSize.min,

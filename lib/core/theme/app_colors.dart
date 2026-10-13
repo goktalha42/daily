@@ -17,11 +17,11 @@ class AppColors {
   // İkonik Kalem & Sanatçı Eskiz Vurguları (Altın Kural gereği çiğ neon sarı ve çiğ neon yeşil tamamen yasaklandı)
   static const Color sunYellow = Color(0xFFF59E0B);        // Güzel, sıcak altın sarısı
   static const Color skyBlue = Color(0xFF38BDF8);          // Temiz gök mavisi (Ay için)
-  static const Color highlighterYellow = Color(0xFFF59E0B); // Çiğ sarı yerine sıcak altın kehribar
+  static const Color highlighterYellow = sunYellow; // Altın Kural: Sıcak altın sarısına bağlandı
   static const Color highlighterCyan = Color(0xFF70E0D8);   // Turkuaz
   static const Color highlighterOrange = Color(0xFFFF9F68); // Mercan/turuncu
   static const Color highlighterPink = Color(0xFFFF85A1);   // Pembe
-  static const Color highlighterGreen = Color(0xFF34D399);  // Çiğ neon yeşil yerine ferah pastel nane
+  static const Color highlighterGreen = success;  // Altın Kural: Doğal yeşile bağlandı
   static const Color highlighterPurple = Color(0xFFC4B5FD); // Lavanta moru
 
   // Zühtü Renk Eşleşmeleri
