@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,6 +10,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/utils/date_utils.dart';
 import '../../core/services/game_stats_service.dart';
 import '../../core/services/daily_play_service.dart';
+import '../../core/services/game_session_service.dart';
 import '../../core/widgets/genius_win_dialog.dart';
 import '../../core/widgets/sketch_decorations.dart';
 import '../common/base_game.dart';
@@ -26,17 +28,26 @@ class ZipScreen extends ConsumerStatefulWidget {
   ConsumerState<ZipScreen> createState() => _ZipScreenState();
 }
 
-class _ZipScreenState extends ConsumerState<ZipScreen> {
+class _ZipScreenState extends ConsumerState<ZipScreen> with WidgetsBindingObserver {
   late ZipLevel _level;
   final List<Point> _path = [];
   int _elapsedMs = 0;
+  int _tickCount = 0;
   Timer? _timer;
   bool _isSolved = false;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _initGame();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+      _saveSession();
+    }
   }
 
   void _initGame() {
@@ -45,21 +56,75 @@ class _ZipScreenState extends ConsumerState<ZipScreen> {
     _elapsedMs = 0;
     _isSolved = false;
     _startTimer();
+    _loadSession();
+  }
+
+  Future<void> _loadSession() async {
+    try {
+      final session = await GameSessionService.loadSession(
+        game: GameType.zipPath,
+        levelId: widget.levelId,
+      );
+      if (session != null && mounted) {
+        final data = session['data'] as Map<String, dynamic>?;
+        final savedElapsed = session['elapsedMs'] as int? ?? 0;
+        if (data != null && data['path'] != null) {
+          final rawPath = data['path'] as List;
+          final loadedPath = rawPath.map((item) {
+            final coords = item as List;
+            return Point(coords[0] as int, coords[1] as int);
+          }).toList();
+
+          setState(() {
+            _path.clear();
+            _path.addAll(loadedPath);
+            _elapsedMs = savedElapsed;
+            _checkState();
+          });
+        }
+      }
+    } catch (_) {}
+  }
+
+  void _saveSession() {
+    if (_isSolved) return;
+    try {
+      final pathCoords = _path.map((p) => [p.row, p.col]).toList();
+      GameSessionService.saveSession(
+        game: GameType.zipPath,
+        levelId: widget.levelId,
+        data: {
+          'path': pathCoords,
+        },
+        elapsedMs: _elapsedMs,
+      );
+    } catch (_) {}
   }
 
   void _startTimer() {
     _timer?.cancel();
+    _tickCount = 0;
     _timer = Timer.periodic(const Duration(milliseconds: 100), (t) {
       if (!_isSolved && mounted) {
         setState(() {
           _elapsedMs += 100;
         });
+        _tickCount++;
+        if (_tickCount % 10 == 0) {
+          GameSessionService.updateElapsedMs(
+            game: GameType.zipPath,
+            levelId: widget.levelId,
+            elapsedMs: _elapsedMs,
+          );
+        }
       }
     });
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _saveSession();
     _timer?.cancel();
     super.dispose();
   }
@@ -91,6 +156,7 @@ class _ZipScreenState extends ConsumerState<ZipScreen> {
           _path.removeRange(idx + 1, _path.length);
           _checkState();
         });
+        _saveSession();
       }
       return;
     }
@@ -102,6 +168,7 @@ class _ZipScreenState extends ConsumerState<ZipScreen> {
           _path.add(targetPoint);
           _checkState();
         });
+        _saveSession();
       }
     } else {
       final last = _path.last;
@@ -109,6 +176,12 @@ class _ZipScreenState extends ConsumerState<ZipScreen> {
       final dc = (last.col - c).abs();
 
       if (dr + dc == 1) {
+        // LinkedIn Zip: İki kare arasındaki hat/çit üzerinden geçilemez!
+        if (_level.edgeWalls.contains(ZipEdgeWall(last, targetPoint))) {
+          HapticFeedback.vibrate();
+          return;
+        }
+
         final nextTarget = _getNextTargetNumber();
         final cellNum = _level.numberPoints[targetPoint];
 
@@ -122,6 +195,7 @@ class _ZipScreenState extends ConsumerState<ZipScreen> {
           _path.add(targetPoint);
           _checkState();
         });
+        _saveSession();
       }
     }
   }
@@ -141,15 +215,18 @@ class _ZipScreenState extends ConsumerState<ZipScreen> {
       _path.removeLast();
       _checkState();
     });
+    _saveSession();
   }
 
   void _resetPath() {
-    if (_isSolved || _path.isEmpty) return;
+    if (_isSolved) return;
     HapticFeedback.mediumImpact();
     setState(() {
       _path.clear();
+      // Süre sıfırlanmaz, o ana kadar geçen süre akmaya devam eder.
       _checkState();
     });
+    _saveSession();
   }
 
   void _checkState() {
@@ -158,6 +235,7 @@ class _ZipScreenState extends ConsumerState<ZipScreen> {
       _level.numberPoints,
       _level.gridSize,
       walls: _level.walls,
+      edgeWalls: _level.edgeWalls,
     );
     if (solved && !_isSolved) {
       _isSolved = true;
@@ -167,6 +245,7 @@ class _ZipScreenState extends ConsumerState<ZipScreen> {
   }
 
   void _handleWin() {
+    GameSessionService.clearSession(game: GameType.zipPath, levelId: widget.levelId);
     final score = (2000 - (_elapsedMs ~/ 1000) * 10).clamp(100, 2000);
 
     final result = GameResult(
@@ -201,6 +280,7 @@ class _ZipScreenState extends ConsumerState<ZipScreen> {
       gameTitle: 'Sayı Yolu',
       onRestart: () {
         Navigator.pop(context);
+        GameSessionService.clearSession(game: GameType.zipPath, levelId: widget.levelId);
         setState(() {
           _initGame();
         });
@@ -257,6 +337,12 @@ class _ZipScreenState extends ConsumerState<ZipScreen> {
               '4',
               'Tüm Kareleri Gez',
               'Tahtadaki istisnasız tüm kareler tek bir zincirle tam bir kez gezilmelidir.',
+            ),
+            const SizedBox(height: 8),
+            _buildRuleCard(
+              '5',
+              'Hatlar ve Çitler',
+              'Kareler arasındaki kalın siyah hatların üzerinden geçilemez, etrafından dolanmalısın.',
             ),
           ],
         ),
@@ -634,6 +720,20 @@ class _ZipScreenState extends ConsumerState<ZipScreen> {
                                       ),
                                     ),
                                   ),
+
+                                  // 3. Kareler Arası Hatlar / Çitler (LinkedIn Zip)
+                                  if (_level.edgeWalls.isNotEmpty)
+                                    Positioned.fill(
+                                      child: IgnorePointer(
+                                        child: CustomPaint(
+                                          painter: _ZipEdgeWallsPainter(
+                                            edgeWalls: _level.edgeWalls,
+                                            gridSize: _level.gridSize,
+                                            cellSize: cellSize,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
                                 ],
                               ),
                             ),
@@ -865,5 +965,106 @@ class _ZipPathOverlayPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _ZipPathOverlayPainter oldDelegate) {
     return oldDelegate.path.length != path.length;
+  }
+}
+
+/// LinkedIn Zip tarzı kareler arasındaki organik hatları (çitleri/duvarları) çizer
+class _ZipEdgeWallsPainter extends CustomPainter {
+  final Set<ZipEdgeWall> edgeWalls;
+  final int gridSize;
+  final double cellSize;
+
+  _ZipEdgeWallsPainter({
+    required this.edgeWalls,
+    required this.gridSize,
+    required this.cellSize,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (edgeWalls.isEmpty) return;
+
+    // 1. Gölge / Derinlik boyası
+    final shadowPaint = Paint()
+      ..color = AppColors.pencilBlack.withValues(alpha: 0.35)
+      ..strokeWidth = 6.5
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+
+    // 2. Ana Duvar / Çit boyası (Kalın ve net siyah hat)
+    final wallPaint = Paint()
+      ..color = AppColors.pencilBlack
+      ..strokeWidth = 6.0
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+
+    // 3. Dikine Engel Tırnakları (Çit / Duvar deseni)
+    final tickPaint = Paint()
+      ..color = AppColors.pencilBlack
+      ..strokeWidth = 2.4
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+
+    // 4. Uç Direkler / Perçinler
+    final postOuterPaint = Paint()
+      ..color = AppColors.pencilBlack
+      ..style = PaintingStyle.fill;
+
+    final postInnerPaint = Paint()
+      ..color = AppColors.backgroundLight
+      ..style = PaintingStyle.fill;
+
+    for (final wall in edgeWalls) {
+      final p1 = wall.p1;
+      final p2 = wall.p2;
+
+      double x1, y1, x2, y2;
+      final bool isVertical = (p1.row == p2.row);
+
+      if (isVertical) {
+        // Dikey hat (yatay komşu iki hücre arasında)
+        final cMax = math.max(p1.col, p2.col);
+        x1 = cMax * cellSize;
+        y1 = p1.row * cellSize + 2.0;
+        x2 = cMax * cellSize;
+        y2 = (p1.row + 1) * cellSize - 2.0;
+      } else {
+        // Yatay hat (dikey komşu iki hücre arasında)
+        final rMax = math.max(p1.row, p2.row);
+        x1 = p1.col * cellSize + 2.0;
+        y1 = rMax * cellSize;
+        x2 = (p1.col + 1) * cellSize - 2.0;
+        y2 = rMax * cellSize;
+      }
+
+      // 1. Gölge hattı
+      canvas.drawLine(Offset(x1 + 1.5, y1 + 1.5), Offset(x2 + 1.5, y2 + 1.5), shadowPaint);
+
+      // 2. Ana kalın duvar hattı
+      canvas.drawLine(Offset(x1, y1), Offset(x2, y2), wallPaint);
+
+      // 3. Duvar üzerindeki belirgin engel tırnakları (Geçilemez olduğunu herkesin görmesi için)
+      for (final t in [0.25, 0.50, 0.75]) {
+        if (isVertical) {
+          final my = y1 + (y2 - y1) * t;
+          canvas.drawLine(Offset(x1 - 4.5, my), Offset(x1 + 4.5, my), tickPaint);
+        } else {
+          final mx = x1 + (x2 - x1) * t;
+          canvas.drawLine(Offset(mx, y1 - 4.5), Offset(mx, y1 + 4.5), tickPaint);
+        }
+      }
+
+      // 4. Uç perçin / bariyer direkleri
+      canvas.drawCircle(Offset(x1, y1), 4.5, postOuterPaint);
+      canvas.drawCircle(Offset(x1, y1), 2.0, postInnerPaint);
+
+      canvas.drawCircle(Offset(x2, y2), 4.5, postOuterPaint);
+      canvas.drawCircle(Offset(x2, y2), 2.0, postInnerPaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _ZipEdgeWallsPainter oldDelegate) {
+    return oldDelegate.edgeWalls != edgeWalls || oldDelegate.cellSize != cellSize;
   }
 }

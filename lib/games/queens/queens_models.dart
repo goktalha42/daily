@@ -11,30 +11,35 @@ enum QueensDifficulty {
   kolay(
     label: 'KOLAY',
     gridSize: 6,
+    queensPerUnit: 1,
     color: AppColors.accentCyan,
-    description: '6x6 - Net mantıksal bloklar',
-  ),
-  orta(
-    label: 'ORTA',
-    gridSize: 8,
-    color: AppColors.accentPurple,
-    description: '8x8 - Dengeli kısıtlar',
+    description: '6×6 - Net mantıksal bloklar, rahat çıkarımlar',
   ),
   zor(
     label: 'ZOR',
-    gridSize: 9,
+    gridSize: 8,
+    queensPerUnit: 1,
     color: AppColors.accentOrange,
-    description: '9x9 - İleri düzey girintili bölgeler',
+    description: '8×8 - Stratejik alanlar ve dengeli zorluk',
+  ),
+  master(
+    label: 'MASTER',
+    gridSize: 9,
+    queensPerUnit: 2,
+    color: AppColors.accentPurple,
+    description: '9×9 - Çift Vezir Kuralı! Her satır, sütun ve renkte tam 2 vezir',
   );
 
   final String label;
   final int gridSize;
+  final int queensPerUnit;
   final Color color;
   final String description;
 
   const QueensDifficulty({
     required this.label,
     required this.gridSize,
+    required this.queensPerUnit,
     required this.color,
     required this.description,
   });
@@ -80,6 +85,7 @@ class QueensLevel {
   final String id;
   final int gridSize;
   final QueensDifficulty difficulty;
+  final int queensPerUnit;
   final List<List<int>> regionMap; // N x N grid containing region IDs (0 .. N-1)
   final List<List<int>> solution; // Array of [row, col] positions for queens
 
@@ -87,9 +93,12 @@ class QueensLevel {
     required this.id,
     required this.gridSize,
     required this.difficulty,
+    this.queensPerUnit = 1,
     required this.regionMap,
     required this.solution,
   });
+
+  int get totalQueens => gridSize * queensPerUnit;
 }
 
 /// Sınır hesaplamaları (LinkedIn tarzı kalın ve ince çizgiler için)

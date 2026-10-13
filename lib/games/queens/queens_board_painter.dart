@@ -49,7 +49,7 @@ class QueensBoardPainter extends CustomPainter {
         // İpucu için parlatılmış hücre (Organik fosforlu sarı vurgu)
         if (cell.isHighlighted) {
           final highlightPaint = Paint()
-            ..color = AppColors.highlighterYellow.withValues(alpha: 0.55);
+            ..color = AppColors.sunYellow.withValues(alpha: 0.55);
           canvas.drawRect(rect, highlightPaint);
 
           final highlightBorder = Paint()

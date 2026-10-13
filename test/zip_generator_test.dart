@@ -35,6 +35,7 @@ void main() {
           level.gridSize,
           level.numberPoints,
           walls: level.walls,
+          edgeWalls: level.edgeWalls,
           maxCount: 2,
         );
 
@@ -55,6 +56,7 @@ void main() {
         level.numberPoints,
         level.gridSize,
         walls: level.walls,
+        edgeWalls: level.edgeWalls,
       );
 
       expect(isValid, isTrue, reason: 'Üretilen yol Zip kurallarına tam uymalı.');

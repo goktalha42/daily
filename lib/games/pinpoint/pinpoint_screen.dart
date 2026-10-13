@@ -13,6 +13,7 @@ import '../../core/services/daily_play_service.dart';
 import '../../core/widgets/genius_win_dialog.dart';
 import '../../core/widgets/sketch_decorations.dart';
 import '../../core/widgets/screen_shake.dart';
+import '../../core/services/game_session_service.dart';
 import '../common/base_game.dart';
 import '../../features/leaderboard/leaderboard_service.dart';
 import 'pinpoint_models.dart';
@@ -28,7 +29,7 @@ class PinpointScreen extends ConsumerStatefulWidget {
   ConsumerState<PinpointScreen> createState() => _PinpointScreenState();
 }
 
-class _PinpointScreenState extends ConsumerState<PinpointScreen> {
+class _PinpointScreenState extends ConsumerState<PinpointScreen> with WidgetsBindingObserver {
   late PinpointLevel _level;
   int _revealedClues = 1;
   final List<String> _wrongGuesses = [];
@@ -52,7 +53,8 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> {
   @override
   void initState() {
     super.initState();
-    _initGame();
+    WidgetsBinding.instance.addObserver(this);
+    _level = PinpointLevelRepository.getLevelForDate(widget.levelId);
     _guessController.addListener(() {
       setState(() {
         _currentInputText = PinpointLogic.normalize(_guessController.text);
@@ -61,6 +63,54 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> {
         }
       });
     });
+    _loadSession().then((_) {
+      if (mounted) _startTimer();
+    });
+  }
+
+  Future<void> _loadSession() async {
+    final session = await GameSessionService.loadSession(
+      game: GameType.pinpoint,
+      levelId: widget.levelId,
+    );
+    if (session != null && mounted) {
+      final elapsed = session['elapsedMs'] as int? ?? 0;
+      final data = session['data'] as Map<String, dynamic>?;
+      if (data != null) {
+        final clues = data['revealedClues'] as int?;
+        if (clues != null && clues >= 1) {
+          _revealedClues = clues.clamp(1, _level.clues.length);
+        }
+        final guesses = data['wrongGuesses'] as List<dynamic>?;
+        if (guesses != null) {
+          _wrongGuesses.clear();
+          _wrongGuesses.addAll(guesses.map((e) => e.toString()));
+        }
+      }
+      setState(() {
+        _elapsedMs = elapsed;
+      });
+    }
+  }
+
+  void _saveSession() {
+    if (_isSolved) return;
+    GameSessionService.saveSession(
+      game: GameType.pinpoint,
+      levelId: widget.levelId,
+      elapsedMs: _elapsedMs,
+      data: {
+        'revealedClues': _revealedClues,
+        'wrongGuesses': _wrongGuesses,
+      },
+    );
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+      _saveSession();
+    }
   }
 
   void _initGame() {
@@ -72,22 +122,34 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> {
     _elapsedMs = 0;
     _isSolved = false;
     _errorMessage = null;
+    GameSessionService.clearSession(game: GameType.pinpoint, levelId: widget.levelId);
     _startTimer();
   }
 
   void _startTimer() {
     _timer?.cancel();
+    int ticks = 0;
     _timer = Timer.periodic(const Duration(milliseconds: 100), (t) {
       if (!_isSolved && mounted) {
         setState(() {
           _elapsedMs += 100;
         });
+        ticks++;
+        if (ticks % 10 == 0) {
+          GameSessionService.updateElapsedMs(
+            game: GameType.pinpoint,
+            levelId: widget.levelId,
+            elapsedMs: _elapsedMs,
+          );
+        }
       }
     });
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _saveSession();
     _timer?.cancel();
     _guessController.dispose();
     _focusNode.dispose();
@@ -130,6 +192,7 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> {
           _revealedClues++;
         }
       });
+      _saveSession();
     }
   }
 
@@ -140,6 +203,7 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> {
       setState(() {
         _revealedClues++;
       });
+      _saveSession();
     }
   }
 
@@ -175,6 +239,11 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> {
           score: score,
           durationMs: _elapsedMs,
         );
+
+    GameSessionService.clearSession(
+      game: GameType.pinpoint,
+      levelId: widget.levelId,
+    );
 
     GeniusWinDialog.show(
       context,

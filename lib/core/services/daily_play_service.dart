@@ -10,6 +10,7 @@ class DailyPlayRecord {
   final int score;
   final int durationMs;
   final DateTime completedAt;
+  final String? subKey;
 
   const DailyPlayRecord({
     required this.gameType,
@@ -17,6 +18,7 @@ class DailyPlayRecord {
     required this.score,
     required this.durationMs,
     required this.completedAt,
+    this.subKey,
   });
 
   Map<String, dynamic> toJson() => {
@@ -25,6 +27,7 @@ class DailyPlayRecord {
         'score': score,
         'durationMs': durationMs,
         'completedAt': completedAt.toIso8601String(),
+        if (subKey != null) 'subKey': subKey,
       };
 
   factory DailyPlayRecord.fromJson(Map<String, dynamic> json) => DailyPlayRecord(
@@ -36,25 +39,33 @@ class DailyPlayRecord {
         score: json['score'] as int,
         durationMs: json['durationMs'] as int,
         completedAt: DateTime.parse(json['completedAt'] as String),
+        subKey: json['subKey'] as String?,
       );
 }
 
 class DailyPlayState {
-  /// Anahtar: "$gameId|$dateId" -> Örn: "queens|2026-10-08"
+  /// Anahtar: "$gameId|$dateId" veya "$gameId:$subKey|$dateId" -> Örn: "queens:kolay|2026-10-08"
   final Map<String, DailyPlayRecord> records;
 
   const DailyPlayState({this.records = const {}});
 
-  bool isCompleted(GameType game, String dateId) {
-    return records.containsKey('${game.id}|$dateId');
+  static String makeKey(GameType game, String dateId, [String? subKey]) {
+    if (subKey != null && subKey.isNotEmpty) {
+      return '${game.id}:$subKey|$dateId';
+    }
+    return '${game.id}|$dateId';
   }
 
-  DailyPlayRecord? getRecord(GameType game, String dateId) {
-    return records['${game.id}|$dateId'];
+  bool isCompleted(GameType game, String dateId, {String? subKey}) {
+    return records.containsKey(makeKey(game, dateId, subKey));
+  }
+
+  DailyPlayRecord? getRecord(GameType game, String dateId, {String? subKey}) {
+    return records[makeKey(game, dateId, subKey)];
   }
 
   int getCompletedCountForDate(String dateId) {
-    return records.values.where((r) => r.dateId == dateId).length;
+    return records.values.where((r) => r.dateId == dateId && r.subKey == null).length;
   }
 
   DailyPlayState copyWith({Map<String, DailyPlayRecord>? records}) {
@@ -89,6 +100,7 @@ class DailyPlayNotifier extends StateNotifier<DailyPlayState> {
     required String dateId,
     required int score,
     required int durationMs,
+    String? subKey,
   }) async {
     final record = DailyPlayRecord(
       gameType: game,
@@ -96,11 +108,21 @@ class DailyPlayNotifier extends StateNotifier<DailyPlayState> {
       score: score,
       durationMs: durationMs,
       completedAt: DateTime.now(),
+      subKey: subKey,
     );
 
-    final key = '${game.id}|$dateId';
+    final key = DailyPlayState.makeKey(game, dateId, subKey);
     final updated = Map<String, DailyPlayRecord>.from(state.records);
     updated[key] = record;
+
+    // Eğer subKey varsa ana anahtarı da (örn. 'queens|date') güncelle
+    if (subKey != null && subKey.isNotEmpty) {
+      final mainKey = '${game.id}|$dateId';
+      if (!updated.containsKey(mainKey) || updated[mainKey]!.score < score) {
+        updated[mainKey] = record;
+      }
+    }
+
     state = state.copyWith(records: updated);
 
     try {

@@ -6,6 +6,7 @@ class ZipLogic {
     Map<Point, int> numberPoints,
     int gridSize, {
     Set<Point> walls = const {},
+    Set<ZipEdgeWall> edgeWalls = const {},
   }) {
     if (path.isEmpty) return false;
 
@@ -13,7 +14,8 @@ class ZipLogic {
     if (path.toSet().length != path.length) return false;
 
     // Kural: LinkedIn mantığı - Tahtadaki TÜM kareler eksiksiz gezilmelidir
-    if (path.length != gridSize * gridSize) return false;
+    final targetTotal = (gridSize * gridSize) - walls.length;
+    if (path.length != targetTotal) return false;
 
     final maxNumber = numberPoints.values.reduce((a, b) => a > b ? a : b);
 
@@ -35,13 +37,18 @@ class ZipLogic {
         }
       }
 
-      // Adımlar arası bitişiklik (yalnızca yatay/dikey)
+      // Adımlar arası bitişiklik (yalnızca yatay/dikey) ve hat/duvar kontrolü
       if (i < path.length - 1) {
         final next = path[i + 1];
         final dr = (point.row - next.row).abs();
         final dc = (point.col - next.col).abs();
 
         if (dr + dc != 1) {
+          return false;
+        }
+
+        // LinkedIn Zip: İki kare arasındaki hat/çit üzerinden geçilemez
+        if (edgeWalls.contains(ZipEdgeWall(point, next))) {
           return false;
         }
       }
@@ -56,6 +63,7 @@ class ZipLogic {
     int gridSize,
     Map<Point, int> numberPoints, {
     Set<Point> walls = const {},
+    Set<ZipEdgeWall> edgeWalls = const {},
     int maxCount = 2,
   }) {
     if (numberPoints.isEmpty) return 0;
@@ -99,6 +107,7 @@ class ZipLogic {
 
         final next = Point(nr, nc);
         if (walls.contains(next)) continue;
+        if (edgeWalls.contains(ZipEdgeWall(current, next))) continue;
         if (visited.contains(next)) continue;
 
         final nextNum = numberPoints[next];

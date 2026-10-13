@@ -106,9 +106,9 @@ class PatchesClue {
 }
 
 enum PatchesDifficulty {
-  kolay(4, 'Kolay'),
-  orta(5, 'Orta'),
-  zor(6, 'Zor');
+  kolay(5, 'Kolay'),
+  orta(6, 'Orta'),
+  zor(7, 'Zor');
 
   final int gridSize;
   final String label;

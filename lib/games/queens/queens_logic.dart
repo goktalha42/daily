@@ -3,8 +3,12 @@ import 'queens_models.dart';
 
 class QueensLogic {
   /// Tahtadaki çakışmaları kontrol eder ve işaretler.
-  /// Kazanma koşulu: Tam N vezir ve 0 çakışma.
-  static bool validateGrid(List<List<QueensCell>> grid, int gridSize) {
+  /// Kazanma koşulu: Tam N * queensPerUnit vezir ve 0 çakışma.
+  static bool validateGrid(
+    List<List<QueensCell>> grid,
+    int gridSize, {
+    int queensPerUnit = 1,
+  }) {
     // Tüm çakışma bayraklarını sıfırla
     for (var r = 0; r < gridSize; r++) {
       for (var c = 0; c < gridSize; c++) {
@@ -23,28 +27,14 @@ class QueensLogic {
 
     bool hasConflict = false;
 
+    // 1. 8-Yönlü Bitişiklik (Yatay, dikey veya çapraz komşu asla dokunamaz)
     for (int i = 0; i < queenCells.length; i++) {
       for (int j = i + 1; j < queenCells.length; j++) {
         final q1 = queenCells[i];
         final q2 = queenCells[j];
-
-        bool isConflicting = false;
-
-        // 1. Aynı Satır
-        if (q1.row == q2.row) isConflicting = true;
-
-        // 2. Aynı Sütun
-        if (q1.col == q2.col) isConflicting = true;
-
-        // 3. Aynı Renk Bölgesi
-        if (q1.regionId == q2.regionId) isConflicting = true;
-
-        // 4. 8-Yönlü Bitişiklik (Yatay, dikey veya çapraz komşu)
         final dr = (q1.row - q2.row).abs();
         final dc = (q1.col - q2.col).abs();
-        if (dr <= 1 && dc <= 1) isConflicting = true;
-
-        if (isConflicting) {
+        if (dr <= 1 && dc <= 1) {
           q1.isConflict = true;
           q2.isConflict = true;
           hasConflict = true;
@@ -52,31 +42,113 @@ class QueensLogic {
       }
     }
 
-    return queenCells.length == gridSize && !hasConflict;
+    // 2. Satır Kotası
+    for (int r = 0; r < gridSize; r++) {
+      final inRow = queenCells.where((q) => q.row == r).toList();
+      if (inRow.length > queensPerUnit) {
+        hasConflict = true;
+        for (final q in inRow) {
+          q.isConflict = true;
+        }
+      }
+    }
+
+    // 3. Sütun Kotası
+    for (int c = 0; c < gridSize; c++) {
+      final inCol = queenCells.where((q) => q.col == c).toList();
+      if (inCol.length > queensPerUnit) {
+        hasConflict = true;
+        for (final q in inCol) {
+          q.isConflict = true;
+        }
+      }
+    }
+
+    // 4. Renk Bölgesi Kotası
+    final regionQueens = <int, List<QueensCell>>{};
+    for (final q in queenCells) {
+      regionQueens.putIfAbsent(q.regionId, () => []).add(q);
+    }
+    for (final entry in regionQueens.entries) {
+      if (entry.value.length > queensPerUnit) {
+        hasConflict = true;
+        for (final q in entry.value) {
+          q.isConflict = true;
+        }
+      }
+    }
+
+    return queenCells.length == (gridSize * queensPerUnit) && !hasConflict;
   }
 
-  /// Vezir yerleştirildiğinde etrafını (satır, sütun, bölge ve 8 komşu) otomatik 'X' ile doldurur.
-  /// Yapılan değişikliklerin koordinatlarını geri alabilmek için döner.
+  /// Vezir yerleştirildiğinde etrafını otomatik 'X' ile doldurur.
+  /// 8 komşu her zaman X yapılır; satır, sütun ve bölge ise kotası dolduğunda X ile kapatılır.
   static List<Point<int>> autoCrossNeighbors(
     List<List<QueensCell>> grid,
     int qRow,
     int qCol,
-    int gridSize,
-  ) {
+    int gridSize, {
+    int queensPerUnit = 1,
+  }) {
     final modified = <Point<int>>[];
     final regionId = grid[qRow][qCol].regionId;
 
+    // 1. 8-Yönlü komşular her zaman ✖ yapılır (vezirler asla temas edemez)
+    for (int dr = -1; dr <= 1; dr++) {
+      for (int dc = -1; dc <= 1; dc++) {
+        if (dr == 0 && dc == 0) continue;
+        final nr = qRow + dr;
+        final nc = qCol + dc;
+        if (nr >= 0 && nr < gridSize && nc >= 0 && nc < gridSize) {
+          if (grid[nr][nc].content == CellContent.empty) {
+            grid[nr][nc].content = CellContent.cross;
+            modified.add(Point(nr, nc));
+          }
+        }
+      }
+    }
+
+    // 2. Satır kotası dolduysa kalan boşluklar ✖
+    int rowQueens = 0;
+    for (int c = 0; c < gridSize; c++) {
+      if (grid[qRow][c].content == CellContent.queen) rowQueens++;
+    }
+    if (rowQueens >= queensPerUnit) {
+      for (int c = 0; c < gridSize; c++) {
+        if (grid[qRow][c].content == CellContent.empty) {
+          grid[qRow][c].content = CellContent.cross;
+          modified.add(Point(qRow, c));
+        }
+      }
+    }
+
+    // 3. Sütun kotası dolduysa kalan boşluklar ✖
+    int colQueens = 0;
+    for (int r = 0; r < gridSize; r++) {
+      if (grid[r][qCol].content == CellContent.queen) colQueens++;
+    }
+    if (colQueens >= queensPerUnit) {
+      for (int r = 0; r < gridSize; r++) {
+        if (grid[r][qCol].content == CellContent.empty) {
+          grid[r][qCol].content = CellContent.cross;
+          modified.add(Point(r, qCol));
+        }
+      }
+    }
+
+    // 4. Bölge kotası dolduysa kalan boşluklar ✖
+    int regQueens = 0;
     for (int r = 0; r < gridSize; r++) {
       for (int c = 0; c < gridSize; c++) {
-        if (r == qRow && c == qCol) continue;
-
-        final isSameRow = r == qRow;
-        final isSameCol = c == qCol;
-        final isSameRegion = grid[r][c].regionId == regionId;
-        final isAdjacent = (r - qRow).abs() <= 1 && (c - qCol).abs() <= 1;
-
-        if (isSameRow || isSameCol || isSameRegion || isAdjacent) {
-          if (grid[r][c].content == CellContent.empty) {
+        if (grid[r][c].regionId == regionId && grid[r][c].content == CellContent.queen) {
+          regQueens++;
+        }
+      }
+    }
+    if (regQueens >= queensPerUnit) {
+      for (int r = 0; r < gridSize; r++) {
+        for (int c = 0; c < gridSize; c++) {
+          if (grid[r][c].regionId == regionId && grid[r][c].content == CellContent.empty) {
             grid[r][c].content = CellContent.cross;
             modified.add(Point(r, c));
           }
@@ -91,8 +163,13 @@ class QueensLogic {
   static List<List<Point<int>>> solveBacktracking(
     int gridSize,
     List<List<int>> regionMap, {
+    int queensPerUnit = 1,
     int maxSolutions = 2,
   }) {
+    if (queensPerUnit == 2) {
+      return _solve2QueensBacktracking(gridSize, regionMap, maxSolutions: maxSolutions);
+    }
+
     final solutions = <List<Point<int>>>[];
     final queens = <Point<int>>[];
     final usedCols = List<bool>.filled(gridSize, false);
@@ -120,7 +197,6 @@ class QueensLogic {
         }
         if (touches) continue;
 
-        // Yerleştir ve devam et
         queens.add(Point(row, col));
         usedCols[col] = true;
         usedRegions[region] = true;
@@ -134,6 +210,59 @@ class QueensLogic {
     }
 
     search(0);
+    return solutions;
+  }
+
+  static List<List<Point<int>>> _solve2QueensBacktracking(
+    int gridSize,
+    List<List<int>> regionMap, {
+    int maxSolutions = 2,
+  }) {
+    final solutions = <List<Point<int>>>[];
+    final queens = <Point<int>>[];
+    final colCounts = List<int>.filled(gridSize, 0);
+    final regionCounts = List<int>.filled(gridSize, 0);
+
+    bool place(int r, int queensInRow, int startCol) {
+      if (solutions.length >= maxSolutions) return true;
+      if (r == gridSize) {
+        solutions.add(List.from(queens));
+        return solutions.length >= maxSolutions;
+      }
+      if (queensInRow == 2) {
+        return place(r + 1, 0, 0);
+      }
+
+      for (int c = startCol; c < gridSize; c++) {
+        if (colCounts[c] >= 2) continue;
+        final reg = regionMap[r][c];
+        if (regionCounts[reg] >= 2) continue;
+
+        bool touches = false;
+        for (final q in queens) {
+          if ((q.x - r).abs() <= 1 && (q.y - c).abs() <= 1) {
+            touches = true;
+            break;
+          }
+        }
+        if (touches) continue;
+
+        queens.add(Point(r, c));
+        colCounts[c]++;
+        regionCounts[reg]++;
+
+        if (place(r, queensInRow + 1, c + 2)) {
+          if (solutions.length >= maxSolutions) return true;
+        }
+
+        queens.removeLast();
+        colCounts[c]--;
+        regionCounts[reg]--;
+      }
+      return false;
+    }
+
+    place(0, 0, 0);
     return solutions;
   }
 

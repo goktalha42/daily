@@ -11,6 +11,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/utils/date_utils.dart';
 import '../../core/services/game_stats_service.dart';
 import '../../core/services/daily_play_service.dart';
+import '../../core/services/game_session_service.dart';
 import '../../core/widgets/genius_win_dialog.dart';
 import '../../core/widgets/sketch_decorations.dart';
 import '../common/base_game.dart';
@@ -36,23 +37,36 @@ class TangoScreen extends ConsumerStatefulWidget {
   ConsumerState<TangoScreen> createState() => _TangoScreenState();
 }
 
-class _TangoScreenState extends ConsumerState<TangoScreen> {
+class _TangoScreenState extends ConsumerState<TangoScreen> with WidgetsBindingObserver {
   late TangoLevel _level;
   late List<List<TangoCell>> _grid;
   final List<_TangoHistoryItem> _history = [];
   int _moveCount = 0;
+  int _hintCount = 0;
   int _elapsedMs = 0;
+  int _tickCount = 0;
   Timer? _timer;
+  Timer? _conflictDebounceTimer;
   bool _isSolved = false;
+  List<List<TangoSymbol>>? _cachedSolution;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _initGame();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+      _saveSession();
+    }
   }
 
   void _initGame() {
     _level = TangoLevelRepository.getLevelForDate(widget.levelId);
+    _cachedSolution = null;
     _grid = List.generate(
       _level.gridSize,
       (r) => List.generate(
@@ -70,26 +84,187 @@ class _TangoScreenState extends ConsumerState<TangoScreen> {
     );
     _history.clear();
     _moveCount = 0;
+    _hintCount = 0;
     _elapsedMs = 0;
     _isSolved = false;
+    _conflictDebounceTimer?.cancel();
+    _conflictDebounceTimer = null;
     _startTimer();
+    _loadSession();
+  }
+
+  Future<void> _loadSession() async {
+    try {
+      final session = await GameSessionService.loadSession(
+        game: GameType.tango,
+        levelId: widget.levelId,
+      );
+      if (session != null && mounted) {
+        final data = session['data'] as Map<String, dynamic>?;
+        final savedElapsed = session['elapsedMs'] as int? ?? 0;
+        if (data != null && data['grid'] != null) {
+          final rawGrid = data['grid'] as List;
+          for (int r = 0; r < _level.gridSize; r++) {
+            final rawRow = rawGrid[r] as List;
+            for (int c = 0; c < _level.gridSize; c++) {
+              if (!_grid[r][c].isFixed) {
+                final symIdx = rawRow[c] as int;
+                if (symIdx >= 0 && symIdx < TangoSymbol.values.length) {
+                  _grid[r][c].symbol = TangoSymbol.values[symIdx];
+                }
+              }
+            }
+          }
+          setState(() {
+            _elapsedMs = savedElapsed;
+            _moveCount = data['moveCount'] as int? ?? 0;
+            _hintCount = data['hintCount'] as int? ?? 0;
+            _checkState(delayed: false);
+          });
+        }
+      }
+    } catch (_) {}
+  }
+
+  void _saveSession() {
+    if (_isSolved) return;
+    try {
+      final gridSymbols = _grid.map((row) => row.map((c) => c.symbol.index).toList()).toList();
+      GameSessionService.saveSession(
+        game: GameType.tango,
+        levelId: widget.levelId,
+        data: {
+          'grid': gridSymbols,
+          'moveCount': _moveCount,
+          'hintCount': _hintCount,
+        },
+        elapsedMs: _elapsedMs,
+      );
+    } catch (_) {}
   }
 
   void _startTimer() {
     _timer?.cancel();
+    _tickCount = 0;
     _timer = Timer.periodic(const Duration(milliseconds: 100), (t) {
       if (!_isSolved && mounted) {
         setState(() {
           _elapsedMs += 100;
         });
+        _tickCount++;
+        if (_tickCount % 10 == 0) {
+          GameSessionService.updateElapsedMs(
+            game: GameType.tango,
+            levelId: widget.levelId,
+            elapsedMs: _elapsedMs,
+          );
+        }
       }
     });
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _saveSession();
     _timer?.cancel();
+    _conflictDebounceTimer?.cancel();
     super.dispose();
+  }
+
+  List<List<TangoSymbol>>? _getSolution() {
+    _cachedSolution ??= TangoLogic.solve(
+      _level.initialGrid,
+      _level.gridSize,
+      _level.constraints,
+    );
+    return _cachedSolution;
+  }
+
+  void _useHint() {
+    if (_isSolved) return;
+
+    // Aktif kural ihlali var mı kontrol et
+    final conflicts = TangoLogic.findConflicts(_grid, _level.gridSize, _level.constraints);
+    if (conflicts.isNotEmpty) {
+      _checkState(delayed: false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Önce tahtadaki kırmızı işaretli kural hatalarını düzeltmelisin!',
+            style: GoogleFonts.patrickHand(fontSize: 16, color: Colors.white, fontWeight: FontWeight.w700),
+          ),
+          backgroundColor: AppColors.error,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
+    final solution = _getSolution();
+    if (solution == null) return;
+
+    // Önce boş hücre ara
+    int targetR = -1;
+    int targetC = -1;
+
+    for (int r = 0; r < _level.gridSize; r++) {
+      for (int c = 0; c < _level.gridSize; c++) {
+        if (!_grid[r][c].isFixed && _grid[r][c].symbol == TangoSymbol.empty) {
+          targetR = r;
+          targetC = c;
+          break;
+        }
+      }
+      if (targetR != -1) break;
+    }
+
+    // Boş hücre kalmamışsa hatalı doldurulmuş olanı düzelt
+    if (targetR == -1) {
+      for (int r = 0; r < _level.gridSize; r++) {
+        for (int c = 0; c < _level.gridSize; c++) {
+          if (!_grid[r][c].isFixed && _grid[r][c].symbol != solution[r][c]) {
+            targetR = r;
+            targetC = c;
+            break;
+          }
+        }
+        if (targetR != -1) break;
+      }
+    }
+
+    if (targetR == -1) {
+      _checkState();
+      return;
+    }
+
+    final correctSym = solution[targetR][targetC];
+    HapticFeedback.mediumImpact();
+
+    setState(() {
+      _history.add(_TangoHistoryItem(targetR, targetC, _grid[targetR][targetC].symbol));
+      _grid[targetR][targetC].symbol = correctSym;
+      _hintCount++;
+      _moveCount++;
+      _checkState();
+    });
+    _saveSession();
+
+    final symName = correctSym == TangoSymbol.sun ? '☀️ Güneş' : '🌙 Ay';
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'İpucu: (${targetR + 1}. satır, ${targetC + 1}. sütun) ➔ $symName',
+          style: GoogleFonts.patrickHand(
+            fontSize: 16,
+            color: AppColors.pencilBlack,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        backgroundColor: AppColors.surfaceLight,
+        duration: const Duration(seconds: 2),
+      ),
+    );
   }
 
   void _onCellTap(int r, int c) {
@@ -110,6 +285,7 @@ class _TangoScreenState extends ConsumerState<TangoScreen> {
       _moveCount++;
       _checkState();
     });
+    _saveSession();
   }
 
   void _undoMove() {
@@ -122,6 +298,7 @@ class _TangoScreenState extends ConsumerState<TangoScreen> {
       _moveCount++;
       _checkState();
     });
+    _saveSession();
   }
 
   void _resetBoard() {
@@ -180,18 +357,22 @@ class _TangoScreenState extends ConsumerState<TangoScreen> {
             ),
             onPressed: () {
               Navigator.pop(ctx);
+              _conflictDebounceTimer?.cancel();
+              _conflictDebounceTimer = null;
               setState(() {
                 for (var r = 0; r < _level.gridSize; r++) {
                   for (var c = 0; c < _level.gridSize; c++) {
                     if (!_grid[r][c].isFixed) {
                       _grid[r][c].symbol = TangoSymbol.empty;
                     }
+                    _grid[r][c].isConflict = false;
                   }
                 }
                 _history.clear();
                 _moveCount = 0;
-                TangoLogic.validateGrid(_grid, _level.gridSize, _level.constraints);
+                // Süre sıfırlanmaz, o ana kadar geçen süre akmaya devam eder.
               });
+              _saveSession();
             },
             child: Text(
               'Temizle',
@@ -206,16 +387,74 @@ class _TangoScreenState extends ConsumerState<TangoScreen> {
     );
   }
 
-  void _checkState() {
-    final solved = TangoLogic.validateGrid(_grid, _level.gridSize, _level.constraints);
-    if (solved && !_isSolved) {
-      _isSolved = true;
-      _timer?.cancel();
-      _handleWin();
+  void _checkState({bool delayed = true}) {
+    final conflicts = TangoLogic.findConflicts(_grid, _level.gridSize, _level.constraints);
+
+    // 1. Artık kural ihlali olmayan hücrelerin kırmızılığını ANINDA temizle
+    bool clearedConflict = false;
+    for (var r = 0; r < _level.gridSize; r++) {
+      for (var c = 0; c < _level.gridSize; c++) {
+        if (_grid[r][c].isConflict && !conflicts.contains(math.Point(r, c))) {
+          _grid[r][c].isConflict = false;
+          clearedConflict = true;
+        }
+      }
+    }
+
+    if (clearedConflict) {
+      setState(() {});
+    }
+
+    // 2. Çakışma yoksa ve tahta dolduysa kazanma durumunu anında tetikle
+    if (conflicts.isEmpty) {
+      _conflictDebounceTimer?.cancel();
+      _conflictDebounceTimer = null;
+
+      bool isFilled = true;
+      for (var r = 0; r < _level.gridSize; r++) {
+        for (var c = 0; c < _level.gridSize; c++) {
+          if (_grid[r][c].symbol == TangoSymbol.empty) {
+            isFilled = false;
+            break;
+          }
+        }
+      }
+
+      if (isFilled && !_isSolved) {
+        _isSolved = true;
+        _timer?.cancel();
+        _handleWin();
+      }
+      return;
+    }
+
+    // 3. Yeni çakışma varsa:
+    _conflictDebounceTimer?.cancel();
+
+    if (delayed) {
+      // Hatalı yerleştirmede anında değil, tam 1 saniye sonra kırmızıya dönsün
+      _conflictDebounceTimer = Timer(const Duration(seconds: 1), () {
+        if (!mounted || _isSolved) return;
+        final currentConflicts = TangoLogic.findConflicts(_grid, _level.gridSize, _level.constraints);
+        if (currentConflicts.isNotEmpty) {
+          setState(() {
+            for (final pt in currentConflicts) {
+              _grid[pt.x][pt.y].isConflict = true;
+            }
+          });
+        }
+      });
+    } else {
+      setState(() {
+        for (final pt in conflicts) {
+          _grid[pt.x][pt.y].isConflict = true;
+        }
+      });
     }
   }
 
   void _handleWin() {
+    GameSessionService.clearSession(game: GameType.tango, levelId: widget.levelId);
     final score = (2000 - (_elapsedMs ~/ 1000) * 10 - _moveCount * 4).clamp(100, 2000);
 
     final result = GameResult(
@@ -250,6 +489,7 @@ class _TangoScreenState extends ConsumerState<TangoScreen> {
       gameTitle: 'Güneş & Ay',
       onRestart: () {
         Navigator.pop(context);
+        GameSessionService.clearSession(game: GameType.tango, levelId: widget.levelId);
         setState(() {
           _initGame();
         });
@@ -305,7 +545,7 @@ class _TangoScreenState extends ConsumerState<TangoScreen> {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: AppColors.highlighterYellow.withValues(alpha: 0.3),
+                color: AppColors.sunYellow.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: AppColors.pencilBlack, width: 2.0),
               ),
@@ -332,7 +572,7 @@ class _TangoScreenState extends ConsumerState<TangoScreen> {
         actions: [
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.highlighterYellow,
+              backgroundColor: AppColors.sunYellow,
               foregroundColor: AppColors.pencilBlack,
               elevation: 0,
               shape: RoundedRectangleBorder(
@@ -746,16 +986,16 @@ class _TangoScreenState extends ConsumerState<TangoScreen> {
 
               const SizedBox(height: 12),
 
-              // 4. ALT KONTROLLER (Geri Al & Sıfırla) - Tamamen Organik SketchCard!
+              // 4. ALT KONTROLLER (Geri Al, İpucu & Sıfırla) - Tamamen Organik SketchCard!
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     // Geri Al Butonu
                     SketchCard(
                       onTap: _history.isNotEmpty ? _undoMove : null,
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
                       backgroundColor: _history.isNotEmpty ? Colors.white : AppColors.surfaceSecondaryLight,
                       borderRadius: 12,
                       borderWidth: 2.0,
@@ -767,7 +1007,7 @@ class _TangoScreenState extends ConsumerState<TangoScreen> {
                             size: 18,
                             color: _history.isNotEmpty ? AppColors.pencilBlack : AppColors.pencilLight,
                           ),
-                          const SizedBox(width: 6),
+                          const SizedBox(width: 5),
                           Text(
                             'Geri Al',
                             style: GoogleFonts.patrickHand(
@@ -780,12 +1020,38 @@ class _TangoScreenState extends ConsumerState<TangoScreen> {
                       ),
                     ),
 
-                    const SizedBox(width: 16),
+                    const SizedBox(width: 10),
+
+                    // İpucu Butonu
+                    SketchCard(
+                      onTap: !_isSolved ? _useHint : null,
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+                      backgroundColor: Colors.white,
+                      borderRadius: 12,
+                      borderWidth: 2.0,
+                      shadowOffset: const Offset(2.5, 2.5),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.lightbulb_outline_rounded, size: 18, color: AppColors.sunYellow),
+                          const SizedBox(width: 5),
+                          Text(
+                            'İpucu',
+                            style: GoogleFonts.patrickHand(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.pencilBlack,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(width: 10),
 
                     // Sıfırla Butonu
                     SketchCard(
                       onTap: _resetBoard,
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
                       backgroundColor: AppColors.surfaceSecondaryLight,
                       borderRadius: 12,
                       borderWidth: 2.0,
@@ -793,7 +1059,7 @@ class _TangoScreenState extends ConsumerState<TangoScreen> {
                       child: Row(
                         children: [
                           const Icon(Icons.restart_alt_rounded, size: 18, color: AppColors.pencilBlack),
-                          const SizedBox(width: 6),
+                          const SizedBox(width: 5),
                           Text(
                             'Sıfırla',
                             style: GoogleFonts.patrickHand(

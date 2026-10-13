@@ -30,8 +30,8 @@ class QueensLobbyScreen extends ConsumerStatefulWidget {
 }
 
 class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
-  QueensDifficulty _selectedDifficulty = QueensDifficulty.orta;
-  QueensDifficulty _activeLeaderboardTab = QueensDifficulty.orta;
+  QueensDifficulty _selectedDifficulty = QueensDifficulty.kolay;
+  QueensDifficulty _activeLeaderboardTab = QueensDifficulty.kolay;
 
   @override
   Widget build(BuildContext context) {
@@ -94,7 +94,7 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
                       ),
                       // Bilgi & İpucu Butonu
                       SketchCard(
-                        backgroundColor: AppColors.highlighterYellow,
+                        backgroundColor: AppColors.sunYellow,
                         padding: const EdgeInsets.all(8),
                         borderRadius: 10,
                         shadowOffset: const Offset(2.5, 2.5),
@@ -149,7 +149,7 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
                                 ),
                               ),
                               Text(
-                                'Her satır, sütun ve renkte tam 1 vezir! Hiçbir iki vezir birbirine temas edemez.',
+                                'Kolay & Zor modlarda 1 vezir; Master modunda ise her renkte, satırda ve sütunda tam 2 vezir!',
                                 style: GoogleFonts.patrickHand(
                                   fontSize: 14,
                                   color: AppColors.pencilGraphite,
@@ -206,7 +206,7 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
                         title: 'Kolay Seviye',
                         badge: '6×6 IZGARA',
                         desc: 'Geniş bölgeler, rahat çıkarımlar. Hızlı ve keyifli bir başlangıç.',
-                        color: AppColors.highlighterGreen,
+                        color: AppColors.accentCyan,
                         icon: Icons.eco_rounded,
                         queensCount: 6,
                         dailyPlay: dailyPlay,
@@ -214,8 +214,8 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
                       const SizedBox(height: 10),
                       _buildDifficultyCard(
                         context: context,
-                        diff: QueensDifficulty.orta,
-                        title: 'Orta Seviye (Önerilen)',
+                        diff: QueensDifficulty.zor,
+                        title: 'Zor Seviye',
                         badge: '8×8 IZGARA',
                         desc: 'Dengeli mantık zincirleri ve stratejik alan elemeleri.',
                         color: AppColors.highlighterOrange,
@@ -226,13 +226,13 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
                       const SizedBox(height: 10),
                       _buildDifficultyCard(
                         context: context,
-                        diff: QueensDifficulty.zor,
-                        title: 'Zor Seviye',
-                        badge: '9×9 IZGARA',
-                        desc: 'İç içe geçmiş karmaşık bölgeler. Gerçek Zühtü ustalarına özel.',
-                        color: AppColors.highlighterPink,
-                        icon: Icons.psychology_rounded,
-                        queensCount: 9,
+                        diff: QueensDifficulty.master,
+                        title: 'Master Seviye',
+                        badge: '9×9 • ÇİFT VEZİR',
+                        desc: 'Her renkte, satırda ve sütunda 2 vezir! Gerçek Zühtü ustalarına özel.',
+                        color: AppColors.accentPurple,
+                        icon: Icons.castle_rounded,
+                        queensCount: 18,
                         dailyPlay: dailyPlay,
                       ),
                     ],
@@ -254,7 +254,7 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
                             borderRadius: 4,
                             borderWidth: 1.2,
                             shadowOffset: const Offset(1.0, 1.0),
-                            backgroundColor: AppColors.highlighterYellow,
+                            backgroundColor: AppColors.sunYellow,
                             child: const SizedBox(width: 8, height: 8),
                           ),
                           const SizedBox(width: 6),
@@ -344,11 +344,71 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
   Color _getDiffColor(QueensDifficulty diff) {
     switch (diff) {
       case QueensDifficulty.kolay:
-        return AppColors.highlighterGreen;
-      case QueensDifficulty.orta:
-        return AppColors.highlighterOrange;
+        return AppColors.accentCyan;
       case QueensDifficulty.zor:
-        return AppColors.highlighterPink;
+        return AppColors.highlighterOrange;
+      case QueensDifficulty.master:
+        return AppColors.accentPurple;
+    }
+  }
+
+  Widget _buildDifficultyLogo(QueensDifficulty diff) {
+    switch (diff) {
+      case QueensDifficulty.kolay:
+        return const Center(
+          child: SketchDoodleCrown(
+            size: 28,
+            color: AppColors.pencilBlack,
+            fillColor: AppColors.sunYellow,
+          ),
+        );
+      case QueensDifficulty.zor:
+        return Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  const Icon(Icons.star_rounded, size: 9, color: AppColors.pencilBlack),
+                  const SizedBox(width: 1),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 2),
+                    child: const Icon(Icons.star_rounded, size: 12, color: AppColors.pencilBlack),
+                  ),
+                  const SizedBox(width: 1),
+                  const Icon(Icons.star_rounded, size: 9, color: AppColors.pencilBlack),
+                ],
+              ),
+              const SizedBox(height: 1),
+              const SketchDoodleCrown(
+                size: 24,
+                color: AppColors.pencilBlack,
+                fillColor: AppColors.sunYellow,
+              ),
+            ],
+          ),
+        );
+      case QueensDifficulty.master:
+        return const Center(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SketchDoodleCrown(
+                size: 19,
+                color: AppColors.pencilBlack,
+                fillColor: AppColors.sunYellow,
+              ),
+              SizedBox(width: 2),
+              SketchDoodleCrown(
+                size: 19,
+                color: AppColors.pencilBlack,
+                fillColor: AppColors.sunYellow,
+              ),
+            ],
+          ),
+        );
     }
   }
 
@@ -364,8 +424,8 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
     required DailyPlayState dailyPlay,
   }) {
     final isSelected = _selectedDifficulty == diff;
-    final isCompleted = dailyPlay.isCompleted(GameType.queens, widget.levelId);
-    final record = dailyPlay.getRecord(GameType.queens, widget.levelId);
+    final isCompleted = dailyPlay.isCompleted(GameType.queens, widget.levelId, subKey: diff.name);
+    final record = dailyPlay.getRecord(GameType.queens, widget.levelId, subKey: diff.name);
 
     return SketchCard(
       onTap: () {
@@ -374,6 +434,9 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
           _selectedDifficulty = diff;
           _activeLeaderboardTab = diff;
         });
+        if (isCompleted) {
+          _showCompletedDialog(context, diff, record);
+        }
       },
       backgroundColor: isSelected
           ? Color.lerp(color, Colors.white, 0.75)!
@@ -385,7 +448,7 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
       padding: const EdgeInsets.all(14),
       child: Row(
         children: [
-          // İkon Kutusu (Organik SketchCard)
+          // İkon Kutusu (Kolay: Tek Vezir, Zor: Tek Vezir + 3 Yıldız, Master: Çift Vezir)
           SketchCard(
             padding: EdgeInsets.zero,
             borderRadius: 12,
@@ -393,11 +456,9 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
             shadowOffset: const Offset(2.0, 2.0),
             backgroundColor: color,
             child: SizedBox(
-              width: 48,
-              height: 48,
-              child: Center(
-                child: Icon(icon, color: AppColors.pencilBlack, size: 28),
-              ),
+              width: 50,
+              height: 50,
+              child: _buildDifficultyLogo(diff),
             ),
           ),
           const SizedBox(width: 14),
@@ -417,18 +478,23 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    SketchCard(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      backgroundColor: color.withValues(alpha: 0.35),
-                      borderRadius: 6,
-                      borderWidth: 1.2,
-                      shadowOffset: const Offset(1.0, 1.0),
-                      child: Text(
-                        badge,
-                        style: GoogleFonts.patrickHand(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.pencilBlack,
+                    Flexible(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: SketchCard(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          backgroundColor: color.withValues(alpha: 0.35),
+                          borderRadius: 6,
+                          borderWidth: 1.2,
+                          shadowOffset: const Offset(1.0, 1.0),
+                          child: Text(
+                            badge,
+                            style: GoogleFonts.patrickHand(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.pencilBlack,
+                            ),
+                          ),
                         ),
                       ),
                     ),
@@ -449,9 +515,15 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
           const SizedBox(width: 8),
           // Başla / Oyna Butonu (Organik SketchCard)
           SketchCard(
-            onTap: () => _launchQueens(context, diff),
+            onTap: () {
+              if (isCompleted) {
+                _showCompletedDialog(context, diff, record);
+              } else {
+                _launchQueens(context, diff);
+              }
+            },
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            backgroundColor: isSelected ? color : AppColors.highlighterYellow,
+            backgroundColor: isSelected ? color : AppColors.sunYellow,
             borderRadius: 10,
             borderWidth: 2.0,
             shadowOffset: const Offset(2.0, 2.0),
@@ -545,7 +617,7 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
               final rank = idx + 1;
               final isTop3 = rank <= 3;
               final rankColor = rank == 1
-                  ? AppColors.highlighterYellow
+                  ? AppColors.sunYellow
                   : (rank == 2 ? const Color(0xFFE2E8F0) : (rank == 3 ? const Color(0xFFFED7AA) : Colors.transparent));
 
               return Padding(
@@ -611,7 +683,7 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
                       // Puan (Organik SketchCard)
                       SketchCard(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                        backgroundColor: AppColors.highlighterYellow,
+                        backgroundColor: AppColors.sunYellow,
                         borderRadius: 6,
                         borderWidth: 1.2,
                         shadowOffset: const Offset(1.0, 1.0),
@@ -629,6 +701,90 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
                 ),
               );
             }),
+        ],
+      ),
+    );
+  }
+
+  void _showCompletedDialog(BuildContext context, QueensDifficulty diff, DailyPlayRecord? record) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+          side: const BorderSide(color: AppColors.pencilBlack, width: 2.5),
+        ),
+        title: Row(
+          children: [
+            const Icon(Icons.check_circle_rounded, color: AppColors.accentCyan, size: 28),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                '${diff.label} Seviyesi Tamamlandı!',
+                style: GoogleFonts.patrickHand(
+                  color: AppColors.pencilBlack,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 22,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Bugünkü ${diff.label} seviyesini zaten başarıyla çözdün! Günlük tek oynama kuralı gereği skorun kaydedildi.',
+              style: GoogleFonts.patrickHand(
+                color: AppColors.pencilGraphite,
+                fontSize: 16,
+              ),
+            ),
+            const SizedBox(height: 12),
+            SketchCard(
+              padding: const EdgeInsets.all(12),
+              borderRadius: 12,
+              borderWidth: 1.8,
+              shadowOffset: const Offset(2, 2),
+              backgroundColor: AppColors.surfaceSecondaryLight,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  Column(
+                    children: [
+                      Text('SKOR', style: GoogleFonts.patrickHand(fontSize: 13, color: AppColors.pencilGray, fontWeight: FontWeight.w700)),
+                      Text('${record?.score ?? 0}', style: GoogleFonts.patrickHand(fontSize: 22, color: AppColors.pencilBlack, fontWeight: FontWeight.w700)),
+                    ],
+                  ),
+                  Column(
+                    children: [
+                      Text('SÜRE', style: GoogleFonts.patrickHand(fontSize: 13, color: AppColors.pencilGray, fontWeight: FontWeight.w700)),
+                      Text(
+                        GameDateUtils.formatGameTime(record?.durationMs ?? 0),
+                        style: GoogleFonts.patrickHand(fontSize: 20, color: AppColors.pencilBlack, fontWeight: FontWeight.w700),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          SketchCard(
+            onTap: () => Navigator.pop(ctx),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+            backgroundColor: AppColors.surfaceSecondaryLight,
+            borderRadius: 10,
+            borderWidth: 2.0,
+            shadowOffset: const Offset(2, 2),
+            child: Text(
+              'Tamam',
+              style: GoogleFonts.patrickHand(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.pencilBlack),
+            ),
+          ),
         ],
       ),
     );
@@ -674,15 +830,15 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildRuleItem('1', 'Her Satır ve Sütunda 1 Vezir', 'Izgaradaki her yatay satır ve dikey sütunda tam olarak 1 adet vezir yer almalıdır.'),
+            _buildRuleItem('1', 'Her Satır ve Sütunda Vezir Kuralı', 'Kolay ve Zor modlarda her satır ve sütunda tam 1 vezir; Master modunda ise tam 2 vezir yer almalıdır.'),
             const SizedBox(height: 8),
-            _buildRuleItem('2', 'Her Renk Bölgesinde 1 Vezir', 'Kalın siyah hatlarla ayrılmış her renkli bölgede tam 1 vezir bulunmalıdır.'),
+            _buildRuleItem('2', 'Her Renk Bölgesinde Vezir Kuralı', 'Her renkli bölgede moduna göre tam 1 (Master modda tam 2) vezir bulunmalıdır.'),
             const SizedBox(height: 8),
             _buildRuleItem('3', 'Temas Yasağı (8 Yön)', 'Vezirler birbirine çapraz, dikey veya yatay olarak ASLA komşu olamaz.'),
             const SizedBox(height: 12),
             SketchCard(
               padding: const EdgeInsets.all(10),
-              backgroundColor: AppColors.highlighterYellow.withValues(alpha: 0.3),
+              backgroundColor: AppColors.sunYellow.withValues(alpha: 0.3),
               borderRadius: 12,
               borderWidth: 1.8,
               shadowOffset: const Offset(2.0, 2.0),
@@ -701,7 +857,7 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
         actions: [
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.highlighterYellow,
+              backgroundColor: AppColors.sunYellow,
               foregroundColor: AppColors.pencilBlack,
               elevation: 0,
               shape: RoundedRectangleBorder(

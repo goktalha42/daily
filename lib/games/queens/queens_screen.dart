@@ -12,6 +12,7 @@ import '../../core/services/game_stats_service.dart';
 import '../../core/services/daily_play_service.dart';
 import '../../core/widgets/genius_win_dialog.dart';
 import '../../core/widgets/sketch_decorations.dart';
+import '../../core/services/game_session_service.dart';
 import '../common/base_game.dart';
 import '../../features/leaderboard/leaderboard_service.dart';
 import 'queens_models.dart';
@@ -65,7 +66,8 @@ class QueensScreen extends ConsumerStatefulWidget {
   ConsumerState<QueensScreen> createState() => _QueensScreenState();
 }
 
-class _QueensScreenState extends ConsumerState<QueensScreen> with SingleTickerProviderStateMixin {
+class _QueensScreenState extends ConsumerState<QueensScreen>
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   late QueensDifficulty _currentDifficulty;
   final Map<QueensDifficulty, _DifficultyState> _difficultyStates = {};
   Timer? _timer;
@@ -93,16 +95,16 @@ class _QueensScreenState extends ConsumerState<QueensScreen> with SingleTickerPr
   math.Point<int>? _lastTapCell;
 
   static const List<Color> _sketchRegionColors = [
-    AppColors.highlighterYellow,
+    AppColors.sunYellow,
     AppColors.highlighterCyan,
     AppColors.highlighterOrange,
     AppColors.highlighterPink,
-    AppColors.highlighterGreen,
+    Color(0xFF6EE7B7), // Nane / adaçayı (tatlı pastel yeşil)
     AppColors.highlighterPurple,
     Color(0xFFBAE6FD), // Açık Gökyüzü
     Color(0xFFFED7AA), // Pastel Kayısı
     Color(0xFFDDD6FE), // Yumuşak Lila
-    Color(0xFFD9F99D), // Taze Çimen
+    Color(0xFFFDE68A), // Sıcak vanilya / kehribar
   ];
 
   // Aktif Zorluğun Durumuna ve Özelliklerine Kolay Erişim Getter'ları
@@ -128,11 +130,12 @@ class _QueensScreenState extends ConsumerState<QueensScreen> with SingleTickerPr
     return count;
   }
 
-  int get _remainingQueenCount => math.max(0, _level.gridSize - _placedQueenCount);
+  int get _remainingQueenCount => math.max(0, _level.totalQueens - _placedQueenCount);
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _currentDifficulty = widget.initialDifficulty ?? QueensDifficultyScheduler.getDifficultyForDate(widget.levelId);
 
     _rippleController = AnimationController(
@@ -145,7 +148,74 @@ class _QueensScreenState extends ConsumerState<QueensScreen> with SingleTickerPr
     );
 
     _getOrCreateState(_currentDifficulty);
+    _loadSession();
     _startTimer();
+  }
+
+  Future<void> _loadSession() async {
+    final session = await GameSessionService.loadSession(
+      game: GameType.queens,
+      levelId: widget.levelId,
+      subKey: _currentDifficulty.name,
+    );
+    if (session != null && mounted) {
+      final elapsed = session['elapsedMs'] as int? ?? 0;
+      final data = session['data'] as Map<String, dynamic>?;
+      if (data != null) {
+        final gridData = data['grid'] as List<dynamic>?;
+        if (gridData != null && gridData.length == _level.gridSize) {
+          for (int r = 0; r < _level.gridSize; r++) {
+            final rowList = gridData[r] as List<dynamic>;
+            for (int c = 0; c < _level.gridSize; c++) {
+              final cellTypeStr = rowList[c] as String;
+              if (cellTypeStr == 'queen') {
+                _grid[r][c].content = CellContent.queen;
+              } else if (cellTypeStr == 'cross') {
+                _grid[r][c].content = CellContent.cross;
+              } else {
+                _grid[r][c].content = CellContent.empty;
+              }
+            }
+          }
+          QueensLogic.validateGrid(_grid, _level.gridSize);
+        }
+        final moves = data['moveCount'] as int?;
+        if (moves != null) {
+          _moveCount = moves;
+        }
+      }
+      setState(() {
+        _currentState.elapsedMs = elapsed;
+      });
+    }
+  }
+
+  void _saveSession() {
+    if (_currentState.isSolved) return;
+    final gridData = List.generate(
+      _level.gridSize,
+      (r) => List.generate(
+        _level.gridSize,
+        (c) => _grid[r][c].content.name,
+      ),
+    );
+    GameSessionService.saveSession(
+      game: GameType.queens,
+      levelId: widget.levelId,
+      subKey: _currentDifficulty.name,
+      elapsedMs: _currentState.elapsedMs,
+      data: {
+        'moveCount': _moveCount,
+        'grid': gridData,
+      },
+    );
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+      _saveSession();
+    }
   }
 
   _DifficultyState _getOrCreateState(QueensDifficulty diff) {
@@ -166,39 +236,31 @@ class _QueensScreenState extends ConsumerState<QueensScreen> with SingleTickerPr
     });
   }
 
-  void _resetCurrentDifficulty() {
-    final level = QueensLevelRepository.getLevelForDateAndDifficulty(widget.levelId, _currentDifficulty);
-    final grid = List.generate(
-      level.gridSize,
-      (r) => List.generate(
-        level.gridSize,
-        (c) => QueensCell(row: r, col: c, regionId: level.regionMap[r][c]),
-      ),
-    );
-    _difficultyStates[_currentDifficulty] = _DifficultyState(
-      level: level,
-      grid: grid,
-      history: [],
-    );
-    _currentDragMode = null;
-    _dragStartCell = null;
-    _hasDragged = false;
-    _rippleController.stop();
-  }
-
   void _startTimer() {
     _timer?.cancel();
+    int ticks = 0;
     _timer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
       if (!_currentState.isSolved && mounted) {
         setState(() {
           _currentState.elapsedMs += 100;
         });
+        ticks++;
+        if (ticks % 10 == 0) {
+          GameSessionService.updateElapsedMs(
+            game: GameType.queens,
+            levelId: widget.levelId,
+            subKey: _currentDifficulty.name,
+            elapsedMs: _currentState.elapsedMs,
+          );
+        }
       }
     });
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _saveSession();
     _timer?.cancel();
     _highlightTimer?.cancel();
     _rippleController.dispose();
@@ -390,10 +452,10 @@ class _QueensScreenState extends ConsumerState<QueensScreen> with SingleTickerPr
       HapticFeedback.lightImpact();
     } else {
       // Taç yerleştirilirken sınır kontrolü:
-      if (_placedQueenCount >= _level.gridSize) {
+      if (_placedQueenCount >= _level.totalQueens) {
         HapticFeedback.heavyImpact();
         _showHintBanner(
-          'Maksimum vezir sınırına (${_level.gridSize}/${_level.gridSize}) ulaşıldı! Yeni vezir eklemek için önce mevcut vezirlerden birini kaldırın.',
+          'Maksimum vezir sınırına (${_level.totalQueens}/${_level.totalQueens}) ulaşıldı! Yeni vezir eklemek için önce mevcut vezirlerden birini kaldırın.',
           title: '⚠️ Vezir Sınırı',
           isWarning: true,
         );
@@ -496,8 +558,10 @@ class _QueensScreenState extends ConsumerState<QueensScreen> with SingleTickerPr
                 }
                 _history.clear();
                 _moveCount = 0;
+                // Süre sıfırlanmaz, o ana kadar geçen süre akmaya devam eder.
                 QueensLogic.validateGrid(_grid, _level.gridSize);
               });
+              _saveSession();
             },
             child: Text(
               'Temizle',
@@ -513,6 +577,7 @@ class _QueensScreenState extends ConsumerState<QueensScreen> with SingleTickerPr
   }
 
   void _showHelpDialog() {
+    final isMaster = _level.queensPerUnit == 2;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -523,14 +588,25 @@ class _QueensScreenState extends ConsumerState<QueensScreen> with SingleTickerPr
         ),
         title: Row(
           children: [
-            const Icon(Icons.castle_rounded, color: AppColors.highlighterPink, size: 28),
+            isMaster
+                ? const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SketchDoodleCrown(size: 20, color: AppColors.pencilBlack, fillColor: AppColors.sunYellow),
+                      SizedBox(width: 3),
+                      SketchDoodleCrown(size: 20, color: AppColors.pencilBlack, fillColor: AppColors.sunYellow),
+                    ],
+                  )
+                : const SketchDoodleCrown(size: 24, color: AppColors.pencilBlack, fillColor: AppColors.sunYellow),
             const SizedBox(width: 8),
-            Text(
-              'Vezirler: Nasıl Oynanır?',
-              style: GoogleFonts.patrickHand(
-                color: AppColors.pencilBlack,
-                fontWeight: FontWeight.w700,
-                fontSize: 24,
+            Expanded(
+              child: Text(
+                isMaster ? 'Master Seviye: Çift Vezir' : 'Vezirler: Nasıl Oynanır?',
+                style: GoogleFonts.patrickHand(
+                  color: AppColors.pencilBlack,
+                  fontWeight: FontWeight.w700,
+                  fontSize: isMaster ? 21 : 23,
+                ),
               ),
             ),
           ],
@@ -539,15 +615,33 @@ class _QueensScreenState extends ConsumerState<QueensScreen> with SingleTickerPr
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildRuleCard('1', 'Her Satır ve Sütunda 1 Vezir', 'Her satırda ve her sütunda tam 1 vezir bulunmalıdır.'),
+            _buildRuleCard(
+              '1',
+              isMaster ? 'Her Satır ve Sütunda 2 Vezir' : 'Her Satır ve Sütunda 1 Vezir',
+              isMaster
+                  ? 'Her satırda ve her sütunda tam 2 vezir bulunmalıdır.'
+                  : 'Her satırda ve her sütunda tam 1 vezir bulunmalıdır.',
+            ),
             const SizedBox(height: 8),
-            _buildRuleCard('2', 'Her Renk Bölgesinde 1 Vezir', 'Kalın skeç çizgileriyle ayrılmış her renkli bölgede tam 1 vezir olmalıdır.'),
+            _buildRuleCard(
+              '2',
+              isMaster ? 'Her Renk Bölgesinde 2 Vezir' : 'Her Renk Bölgesinde 1 Vezir',
+              isMaster
+                  ? 'Kalın skeç çizgileriyle ayrılmış her renkli bölgede tam 2 vezir olmalıdır.'
+                  : 'Kalın skeç çizgileriyle ayrılmış her renkli bölgede tam 1 vezir olmalıdır.',
+            ),
             const SizedBox(height: 8),
-            _buildRuleCard('3', 'Temas Yasağı (8-Yönlü)', 'Hiçbir vezir birbirine çapraz, yatay veya dikey temas edemez.'),
+            _buildRuleCard(
+              '3',
+              'Temas Yasağı (8-Yönlü)',
+              isMaster
+                  ? 'Hiçbir vezir birbirine çapraz, yatay veya dikey temas edemez (aynı satır/sütundaki vezirler de dahil!).'
+                  : 'Hiçbir vezir birbirine çapraz, yatay veya dikey temas edemez.',
+            ),
             const SizedBox(height: 12),
             SketchCard(
               padding: const EdgeInsets.all(10),
-              backgroundColor: AppColors.highlighterGreen.withValues(alpha: 0.3),
+              backgroundColor: AppColors.accentCyan.withValues(alpha: 0.25),
               borderRadius: 12,
               borderWidth: 1.8,
               shadowOffset: const Offset(2, 2),
@@ -557,9 +651,11 @@ class _QueensScreenState extends ConsumerState<QueensScreen> with SingleTickerPr
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      '• Parmağını sürükle: Hızlıca ✖ boya veya ✖ sil!\n• Çift dokun: 👑 (Vezir koy veya kaldır)\n• Tek dokun: ✖ koy veya kaldır',
+                      isMaster
+                          ? '• Master modda tahtada toplam 18 vezir yer alır (9×9 Izgara).\n• Parmağını sürükle: Hızlıca ✖ boya veya ✖ sil!\n• Çift dokun: 👑 (Vezir koy veya kaldır)\n• Tek dokun: ✖ koy veya kaldır'
+                          : '• Parmağını sürükle: Hızlıca ✖ boya veya ✖ sil!\n• Çift dokun: 👑 (Vezir koy veya kaldır)\n• Tek dokun: ✖ koy veya kaldır',
                       style: GoogleFonts.patrickHand(
-                        fontSize: 15,
+                        fontSize: 14,
                         fontWeight: FontWeight.w700,
                         color: AppColors.pencilBlack,
                         height: 1.25,
@@ -574,7 +670,7 @@ class _QueensScreenState extends ConsumerState<QueensScreen> with SingleTickerPr
         actions: [
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.highlighterYellow,
+              backgroundColor: AppColors.sunYellow,
               foregroundColor: AppColors.pencilBlack,
               elevation: 0,
               shape: RoundedRectangleBorder(
@@ -658,12 +754,14 @@ class _QueensScreenState extends ConsumerState<QueensScreen> with SingleTickerPr
   }
 
   void _checkState() {
-    final solved = QueensLogic.validateGrid(_grid, _level.gridSize);
+    final solved = QueensLogic.validateGrid(_grid, _level.gridSize, queensPerUnit: _level.queensPerUnit);
     if (solved && !_isSolved) {
       _isSolved = true;
       _timer?.cancel();
       HapticFeedback.heavyImpact();
       _handleWin();
+    } else {
+      _saveSession();
     }
   }
 
@@ -722,12 +820,60 @@ class _QueensScreenState extends ConsumerState<QueensScreen> with SingleTickerPr
     _lastHintTime = now;
     HapticFeedback.mediumImpact();
 
-    // 1. Yanlış yerleştirilmiş veya çakışan vezir varsa kaldır, ✖ koy ve açıkla
-    for (var r = 0; r < _level.gridSize; r++) {
-      for (var c = 0; c < _level.gridSize; c++) {
+    final reqQueens = _level.queensPerUnit;
+    final size = _level.gridSize;
+
+    // ADIM 1: Çakışan veya kural hatası yapan vezir varsa kaldır, ✖ koy ve nedenini açıkla
+    for (var r = 0; r < size; r++) {
+      for (var c = 0; c < size; c++) {
         if (_grid[r][c].content == CellContent.queen) {
           final isTrueQueen = _level.solution.any((pt) => pt[0] == r && pt[1] == c);
           if (!isTrueQueen || _grid[r][c].isConflict) {
+            String reason = 'kuralları ihlal ettiği için';
+            QueensCell? touchingQueen;
+            for (var dr = -1; dr <= 1; dr++) {
+              for (var dc = -1; dc <= 1; dc++) {
+                if (dr == 0 && dc == 0) continue;
+                final nr = r + dr;
+                final nc = c + dc;
+                if (nr >= 0 && nr < size && nc >= 0 && nc < size) {
+                  if (_grid[nr][nc].content == CellContent.queen) {
+                    touchingQueen = _grid[nr][nc];
+                    break;
+                  }
+                }
+              }
+              if (touchingQueen != null) break;
+            }
+
+            if (touchingQueen != null) {
+              reason = '(${touchingQueen.row + 1}. Satır, ${touchingQueen.col + 1}. Sütun)\'daki diğer vezire temas ettiği (çapraz/komşu)';
+            } else {
+              final inRow = _grid[r].where((cell) => cell.content == CellContent.queen).length;
+              if (inRow > reqQueens) {
+                reason = '${r + 1}. Satırdaki $reqQueens vezir kotasını aştığı';
+              } else {
+                int inCol = 0;
+                for (var ro = 0; ro < size; ro++) {
+                  if (_grid[ro][c].content == CellContent.queen) inCol++;
+                }
+                if (inCol > reqQueens) {
+                  reason = '${c + 1}. Sütundaki $reqQueens vezir kotasını aştığı';
+                } else {
+                  final regId = _level.regionMap[r][c];
+                  int inReg = 0;
+                  for (var ro = 0; ro < size; ro++) {
+                    for (var co = 0; co < size; co++) {
+                      if (_level.regionMap[ro][co] == regId && _grid[ro][co].content == CellContent.queen) inReg++;
+                    }
+                  }
+                  if (inReg > reqQueens) {
+                    reason = 'kendi renk bölgesindeki $reqQueens vezir kotasını aştığı';
+                  }
+                }
+              }
+            }
+
             _history.add(_QueensHistoryItem(
               changes: {math.Point(r, c): CellContent.queen},
             ));
@@ -737,8 +883,8 @@ class _QueensScreenState extends ConsumerState<QueensScreen> with SingleTickerPr
             });
             _highlightCells({math.Point(r, c)});
             _showHintBanner(
-              '${r + 1}. Satır, ${c + 1}. Sütun\'daki vezir yanlış yerleştirilmişti ve kuralları ihlal ediyordu. Vezir silindi ve bu kareye ✖ konuldu.',
-              title: '🚨 Çakışan Vezir Düzeltildi',
+              '${r + 1}. Satır, ${c + 1}. Sütun\'daki vezir $reason için kural hatası oluşturuyordu. Bu vezir kaldırıldı ve yerine ✖ konuldu.',
+              title: '🚨 Kural Hatası Düzeltildi',
             );
             return;
           }
@@ -746,69 +892,260 @@ class _QueensScreenState extends ConsumerState<QueensScreen> with SingleTickerPr
       }
     }
 
-    // 2. Tahtadaki DOĞRU bir vezirin etki alanını (satır, sütun, bölge, komşu) ✖ ile eleme
-    for (var r = 0; r < _level.gridSize; r++) {
-      for (var c = 0; c < _level.gridSize; c++) {
+    // ADIM 2: Vezir temas yasağı (Adjacency Rule) ile eleme
+    for (var r = 0; r < size; r++) {
+      for (var c = 0; c < size; c++) {
         if (_grid[r][c].content == CellContent.queen) {
           final isTrueQueen = _level.solution.any((pt) => pt[0] == r && pt[1] == c);
           if (isTrueQueen) {
-            final emptyNeighbors = <math.Point<int>>[];
-            final myRegion = _level.regionMap[r][c];
-
-            // Satır ve sütun boşlukları
-            for (var i = 0; i < _level.gridSize; i++) {
-              if (i != c && _grid[r][i].content == CellContent.empty) {
-                emptyNeighbors.add(math.Point(r, i));
-              }
-              if (i != r && _grid[i][c].content == CellContent.empty) {
-                emptyNeighbors.add(math.Point(i, c));
-              }
-            }
-
-            // Aynı bölgedeki boşluklar
-            for (var ro = 0; ro < _level.gridSize; ro++) {
-              for (var co = 0; co < _level.gridSize; co++) {
-                if (_level.regionMap[ro][co] == myRegion && !(ro == r && co == c)) {
-                  if (_grid[ro][co].content == CellContent.empty) {
-                    emptyNeighbors.add(math.Point(ro, co));
-                  }
-                }
-              }
-            }
-
-            // 8 yöndeki komşular (çapraz temas dahil)
             for (var dr = -1; dr <= 1; dr++) {
               for (var dc = -1; dc <= 1; dc++) {
+                if (dr == 0 && dc == 0) continue;
                 final nr = r + dr;
                 final nc = c + dc;
-                if (nr >= 0 && nr < _level.gridSize && nc >= 0 && nc < _level.gridSize) {
-                  if (!(nr == r && nc == c) && _grid[nr][nc].content == CellContent.empty) {
-                    emptyNeighbors.add(math.Point(nr, nc));
+                if (nr >= 0 && nr < size && nc >= 0 && nc < size) {
+                  if (_grid[nr][nc].content == CellContent.empty) {
+                    _history.add(_QueensHistoryItem(changes: {math.Point(nr, nc): CellContent.empty}));
+                    setState(() {
+                      _grid[nr][nc].content = CellContent.cross;
+                      _moveCount++;
+                      _checkState();
+                    });
+                    _highlightCells({math.Point(r, c), math.Point(nr, nc)});
+                    _showHintBanner(
+                      '(${r + 1}. Satır, ${c + 1}. Sütun)\'da yer alan vezire bitişik ve çapraz temas eden karelere asla başka vezir gelemez! Bu kural gereği (${nr + 1}. Satır, ${nc + 1}. Sütun) karesine ✖ yerleştirildi.',
+                      title: '❌ Temas Yasağı Kuralı',
+                    );
+                    return;
                   }
                 }
               }
             }
+          }
+        }
+      }
+    }
 
-            if (emptyNeighbors.isNotEmpty) {
-              final uniquePoints = emptyNeighbors.toSet();
-              final changes = <math.Point<int>, CellContent>{};
-              for (var pt in uniquePoints) {
-                changes[pt] = _grid[pt.x][pt.y].content;
-              }
-              _history.add(_QueensHistoryItem(changes: changes));
+    // ADIM 3: Kotası dolan Satır, Sütun veya Bölgedeki boşlukları eleme
+    // 3A. Satır kotası tamamlandıysa
+    for (var r = 0; r < size; r++) {
+      int queensInRow = 0;
+      final emptyCols = <int>[];
+      for (var c = 0; c < size; c++) {
+        if (_grid[r][c].content == CellContent.queen) queensInRow++;
+        if (_grid[r][c].content == CellContent.empty) emptyCols.add(c);
+      }
+      if (queensInRow == reqQueens && emptyCols.isNotEmpty) {
+        final c = emptyCols.first;
+        _history.add(_QueensHistoryItem(changes: {math.Point(r, c): CellContent.empty}));
+        setState(() {
+          _grid[r][c].content = CellContent.cross;
+          _moveCount++;
+          _checkState();
+        });
+        _highlightCells({math.Point(r, c)});
+        _showHintBanner(
+          '${r + 1}. Satırda gereken $reqQueens vezir zaten yerleştirilmiş durumda! Bu satıra başka vezir gelemeyeceği için (${r + 1}. Satır, ${c + 1}. Sütun) karesine ✖ yerleştirildi.',
+          title: '📌 Satır Kotası Tamamlandı',
+        );
+        return;
+      }
+    }
 
+    // 3B. Sütun kotası tamamlandıysa
+    for (var c = 0; c < size; c++) {
+      int queensInCol = 0;
+      final emptyRows = <int>[];
+      for (var r = 0; r < size; r++) {
+        if (_grid[r][c].content == CellContent.queen) queensInCol++;
+        if (_grid[r][c].content == CellContent.empty) emptyRows.add(r);
+      }
+      if (queensInCol == reqQueens && emptyRows.isNotEmpty) {
+        final r = emptyRows.first;
+        _history.add(_QueensHistoryItem(changes: {math.Point(r, c): CellContent.empty}));
+        setState(() {
+          _grid[r][c].content = CellContent.cross;
+          _moveCount++;
+          _checkState();
+        });
+        _highlightCells({math.Point(r, c)});
+        _showHintBanner(
+          '${c + 1}. Sütunda gereken $reqQueens vezir zaten tamamlandı! Bu sütunda başka vezir yer alamayacağı için (${r + 1}. Satır, ${c + 1}. Sütun) karesine ✖ konuldu.',
+          title: '📌 Sütun Kotası Tamamlandı',
+        );
+        return;
+      }
+    }
+
+    // 3C. Bölge kotası tamamlandıysa
+    for (var reg = 0; reg < size; reg++) {
+      int queensInReg = 0;
+      final emptyInReg = <math.Point<int>>[];
+      for (var r = 0; r < size; r++) {
+        for (var c = 0; c < size; c++) {
+          if (_level.regionMap[r][c] == reg) {
+            if (_grid[r][c].content == CellContent.queen) queensInReg++;
+            if (_grid[r][c].content == CellContent.empty) emptyInReg.add(math.Point(r, c));
+          }
+        }
+      }
+      if (queensInReg == reqQueens && emptyInReg.isNotEmpty) {
+        final pt = emptyInReg.first;
+        _history.add(_QueensHistoryItem(changes: {pt: CellContent.empty}));
+        setState(() {
+          _grid[pt.x][pt.y].content = CellContent.cross;
+          _moveCount++;
+          _checkState();
+        });
+        _highlightCells({pt});
+        _showHintBanner(
+          'Bu renk bölgesinde gereken $reqQueens vezir tamamlandı! Bu bölgede başka vezir olamayacağı için (${pt.x + 1}. Satır, ${pt.y + 1}. Sütun) karesine ✖ yerleştirildi.',
+          title: '🎨 Bölge Kotası Tamamlandı',
+        );
+        return;
+      }
+    }
+
+    // ADIM 4: Tek Kalan Seçenek Mantığıyla Mecburi Vezir Yerleştirme (Naked Single)
+    // 4A. Bölgede tek kalan mecburi vezir
+    for (var reg = 0; reg < size; reg++) {
+      int queensInReg = 0;
+      final candidates = <math.Point<int>>[];
+      for (var r = 0; r < size; r++) {
+        for (var c = 0; c < size; c++) {
+          if (_level.regionMap[r][c] == reg) {
+            if (_grid[r][c].content == CellContent.queen) queensInReg++;
+            if (_grid[r][c].content != CellContent.cross) candidates.add(math.Point(r, c));
+          }
+        }
+      }
+      final needed = reqQueens - queensInReg;
+      if (needed > 0 && candidates.length == needed) {
+        final pt = candidates.firstWhere((p) => _grid[p.x][p.y].content != CellContent.queen);
+        final prev = _grid[pt.x][pt.y].content;
+        _history.add(_QueensHistoryItem(changes: {pt: prev}));
+        _triggerBoardRipple(pt.x, pt.y);
+        setState(() {
+          _grid[pt.x][pt.y].content = CellContent.queen;
+          _moveCount++;
+          _checkState();
+        });
+        _highlightCells({pt});
+        _showHintBanner(
+          'Bu renk bölgesinde vezir konulabilecek sadece $needed adet boş yer kalmıştı! Bölge kuralını tamamlamak için (${pt.x + 1}. Satır, ${pt.y + 1}. Sütun) karesine mecburen vezir yerleştirildi.',
+          title: '👑 Bölgenin Tek Seçeneği',
+        );
+        return;
+      }
+    }
+
+    // 4B. Satırda tek kalan mecburi vezir
+    for (var r = 0; r < size; r++) {
+      int queensInRow = 0;
+      final candidates = <int>[];
+      for (var c = 0; c < size; c++) {
+        if (_grid[r][c].content == CellContent.queen) queensInRow++;
+        if (_grid[r][c].content != CellContent.cross) candidates.add(c);
+      }
+      final needed = reqQueens - queensInRow;
+      if (needed > 0 && candidates.length == needed) {
+        final c = candidates.firstWhere((col) => _grid[r][col].content != CellContent.queen);
+        final prev = _grid[r][c].content;
+        _history.add(_QueensHistoryItem(changes: {math.Point(r, c): prev}));
+        _triggerBoardRipple(r, c);
+        setState(() {
+          _grid[r][c].content = CellContent.queen;
+          _moveCount++;
+          _checkState();
+        });
+        _highlightCells({math.Point(r, c)});
+        _showHintBanner(
+          '${r + 1}. Satırda vezir konulabilecek tam $needed boş kare kalmıştı! Satır kotasını tamamlamak için (${r + 1}. Satır, ${c + 1}. Sütun) karesine vezir yerleştirildi.',
+          title: '👑 Satırın Tek Seçeneği',
+        );
+        return;
+      }
+    }
+
+    // 4C. Sütunda tek kalan mecburi vezir
+    for (var c = 0; c < size; c++) {
+      int queensInCol = 0;
+      final candidates = <int>[];
+      for (var r = 0; r < size; r++) {
+        if (_grid[r][c].content == CellContent.queen) queensInCol++;
+        if (_grid[r][c].content != CellContent.cross) candidates.add(r);
+      }
+      final needed = reqQueens - queensInCol;
+      if (needed > 0 && candidates.length == needed) {
+        final r = candidates.firstWhere((row) => _grid[row][c].content != CellContent.queen);
+        final prev = _grid[r][c].content;
+        _history.add(_QueensHistoryItem(changes: {math.Point(r, c): prev}));
+        _triggerBoardRipple(r, c);
+        setState(() {
+          _grid[r][c].content = CellContent.queen;
+          _moveCount++;
+          _checkState();
+        });
+        _highlightCells({math.Point(r, c)});
+        _showHintBanner(
+          '${c + 1}. Sütunda vezir konulabilecek tam $needed boş kare kalmıştı! Sütun kotasını tamamlamak için (${r + 1}. Satır, ${c + 1}. Sütun) karesine vezir yerleştirildi.',
+          title: '👑 Sütunun Tek Seçeneği',
+        );
+        return;
+      }
+    }
+
+    // ADIM 5: Çizgi-Bölge İndirgemesi (Pointing / Locked Candidates)
+    for (var reg = 0; reg < size; reg++) {
+      final regCandidates = <math.Point<int>>[];
+      for (var r = 0; r < size; r++) {
+        for (var c = 0; c < size; c++) {
+          if (_level.regionMap[r][c] == reg && _grid[r][c].content == CellContent.empty) {
+            regCandidates.add(math.Point(r, c));
+          }
+        }
+      }
+      if (regCandidates.length >= 2) {
+        final firstRow = regCandidates.first.x;
+        if (regCandidates.every((pt) => pt.x == firstRow)) {
+          for (var c = 0; c < size; c++) {
+            if (_level.regionMap[firstRow][c] != reg && _grid[firstRow][c].content == CellContent.empty) {
+              _history.add(_QueensHistoryItem(changes: {math.Point(firstRow, c): CellContent.empty}));
               setState(() {
-                for (var pt in uniquePoints) {
-                  _grid[pt.x][pt.y].content = CellContent.cross;
-                }
+                _grid[firstRow][c].content = CellContent.cross;
                 _moveCount++;
                 _checkState();
               });
-
-              _highlightCells(uniquePoints);
+              _highlightCells({math.Point(firstRow, c), ...regCandidates});
+              final hintText = reqQueens == 2
+                  ? 'Master seviyede bu renk bölgesinin tüm vezir adayları sadece ${firstRow + 1}. Satır üzerinde yer alıyor. Bölgenin 2 veziri de bu satıra yerleşmek zorunda olduğundan satırın kotası dolacaktır. Dolayısıyla bu satırın bölge dışındaki (${firstRow + 1}. Satır, ${c + 1}. Sütun) karesine vezir gelemez (✖ konuldu).'
+                  : 'Bu renk bölgesinin tüm vezir adayları sadece ${firstRow + 1}. Satır üzerinde yer alıyor. Dolayısıyla bu satırın veziri mutlaka bu bölgeden çıkacak. Bu sebeple aynı satırdaki bölge dışı (${firstRow + 1}. Satır, ${c + 1}. Sütun) karesine vezir gelemez (✖ konuldu).';
               _showHintBanner(
-                '${r + 1}. Satır, ${c + 1}. Sütun\'daki vezirin etki alanındaki (satır, sütun, bölge ve çapraz komşu) ${uniquePoints.length} adet boş kareye ✖ yerleştirildi.',
-                title: '✏️ Vezir Etki Alanı Temizlendi',
+                hintText,
+                title: reqQueens == 2 ? '📐 Çift Vezir Kilitli Aday' : '📐 Kilitli Aday İndirgemesi',
+              );
+              return;
+            }
+          }
+        }
+
+        final firstCol = regCandidates.first.y;
+        if (regCandidates.every((pt) => pt.y == firstCol)) {
+          for (var r = 0; r < size; r++) {
+            if (_level.regionMap[r][firstCol] != reg && _grid[r][firstCol].content == CellContent.empty) {
+              _history.add(_QueensHistoryItem(changes: {math.Point(r, firstCol): CellContent.empty}));
+              setState(() {
+                _grid[r][firstCol].content = CellContent.cross;
+                _moveCount++;
+                _checkState();
+              });
+              _highlightCells({math.Point(r, firstCol), ...regCandidates});
+              final hintText = reqQueens == 2
+                  ? 'Master seviyede bu renk bölgesinin tüm vezir adayları sadece ${firstCol + 1}. Sütun üzerinde yer alıyor. Bölgenin 2 veziri de bu sütuna yerleşeceğinden sütun kotası dolacaktır. Dolayısıyla bu sütunun bölge dışındaki (${r + 1}. Satır, ${firstCol + 1}. Sütun) karesine vezir gelemez (✖ konuldu).'
+                  : 'Bu renk bölgesinin tüm vezir adayları sadece ${firstCol + 1}. Sütun üzerinde yer alıyor. Bu sütunun veziri mutlaka bu bölgeden çıkacağından, aynı sütundaki bölge dışı (${r + 1}. Satır, ${firstCol + 1}. Sütun) karesine vezir gelemez (✖ konuldu).';
+              _showHintBanner(
+                hintText,
+                title: reqQueens == 2 ? '📐 Çift Vezir Kilitli Aday' : '📐 Kilitli Aday İndirgemesi',
               );
               return;
             }
@@ -817,70 +1154,7 @@ class _QueensScreenState extends ConsumerState<QueensScreen> with SingleTickerPr
       }
     }
 
-    // 3. Bir bölgede veya satırda tek bir aday kare kalmışsa vezir yerleştir
-    for (var reg = 0; reg < _level.gridSize; reg++) {
-      bool hasQueenInReg = false;
-      final candidates = <math.Point<int>>[];
-      for (var r = 0; r < _level.gridSize; r++) {
-        for (var c = 0; c < _level.gridSize; c++) {
-          if (_level.regionMap[r][c] == reg) {
-            if (_grid[r][c].content == CellContent.queen) {
-              hasQueenInReg = true;
-              break;
-            }
-            if (_grid[r][c].content != CellContent.cross) {
-              candidates.add(math.Point(r, c));
-            }
-          }
-        }
-        if (hasQueenInReg) break;
-      }
-
-      if (!hasQueenInReg && candidates.length == 1) {
-        final pt = candidates.first;
-        final prev = _grid[pt.x][pt.y].content;
-        _history.add(_QueensHistoryItem(changes: {pt: prev}));
-        _triggerBoardRipple(pt.x, pt.y);
-
-        setState(() {
-          _grid[pt.x][pt.y].content = CellContent.queen;
-          _moveCount++;
-          _checkState();
-        });
-
-        _highlightCells({pt});
-        _showHintBanner(
-          'Bu bölgede vezir konulabilecek sadece tek bir geçerli kare kalmıştı (${pt.x + 1}. Satır, ${pt.y + 1}. Sütun). Buraya vezir yerleştirildi!',
-          title: '👑 Tek Kalan Seçenek Kuralı',
-        );
-        return;
-      }
-    }
-
-    // 4. Çözümde vezir olmayan bir boş hücreyi ✖ ile eleme
-    for (var r = 0; r < _level.gridSize; r++) {
-      for (var c = 0; c < _level.gridSize; c++) {
-        if (_grid[r][c].content == CellContent.empty) {
-          final isTrueQueen = _level.solution.any((pt) => pt[0] == r && pt[1] == c);
-          if (!isTrueQueen) {
-            _history.add(_QueensHistoryItem(changes: {math.Point(r, c): CellContent.empty}));
-            setState(() {
-              _grid[r][c].content = CellContent.cross;
-              _moveCount++;
-              _checkState();
-            });
-            _highlightCells({math.Point(r, c)});
-            _showHintBanner(
-              '${r + 1}. Satır, ${c + 1}. Sütun karesine vezir gelemez. İhtimalleri elemek için buraya ✖ konuldu.',
-              title: '✖️ Mantıksal Eleme Yapıldı',
-            );
-            return;
-          }
-        }
-      }
-    }
-
-    // 5. Çözümdeki sıradaki doğru veziri yerleştir
+    // ADIM 6: Mantıksal Çözüm İlerlemesi (Hedef Vezir Yerleştirme)
     for (final pt in _level.solution) {
       final r = pt[0];
       final c = pt[1];
@@ -894,9 +1168,12 @@ class _QueensScreenState extends ConsumerState<QueensScreen> with SingleTickerPr
           _checkState();
         });
         _highlightCells({math.Point(r, c)});
+        final hintText = reqQueens == 2
+            ? 'Master seviyenin çift vezir kuralı ve bölge kısıtlamaları incelendiğinde, (${r + 1}. Satır, ${c + 1}. Sütun) karesi bu bölgenin kesin vezir konumlarından biridir. Buraya vezir yerleştirildi!'
+            : 'Tahtanın kısıtlamaları ve renk dengesi incelendiğinde, (${r + 1}. Satır, ${c + 1}. Sütun) karesi bu bölgenin stratejik vezir konumudur. Buraya vezir yerleştirildi!';
         _showHintBanner(
-          '${r + 1}. Satır, ${c + 1}. Sütun karesine doğru vezir yerleştirildi!',
-          title: '💡 Stratejik Vezir Konumu',
+          hintText,
+          title: reqQueens == 2 ? '👑 Çift Vezir Stratejisi' : '💡 Stratejik Vezir Konumu',
         );
         return;
       }
@@ -935,7 +1212,14 @@ class _QueensScreenState extends ConsumerState<QueensScreen> with SingleTickerPr
           dateId: widget.levelId,
           score: score,
           durationMs: _elapsedMs,
+          subKey: _currentDifficulty.name,
         );
+
+    GameSessionService.clearSession(
+      game: GameType.queens,
+      levelId: widget.levelId,
+      subKey: _currentDifficulty.name,
+    );
 
     GeniusWinDialog.show(
       context,
@@ -943,9 +1227,7 @@ class _QueensScreenState extends ConsumerState<QueensScreen> with SingleTickerPr
       gameTitle: 'Vezirler',
       onRestart: () {
         Navigator.pop(context);
-        setState(() {
-          _resetCurrentDifficulty();
-        });
+        Navigator.pop(context); // Lobiye dön (günlük oyun tek oynanır)
       },
     );
   }
@@ -1037,36 +1319,50 @@ class _QueensScreenState extends ConsumerState<QueensScreen> with SingleTickerPr
                           Text(
                             'Kalan Vezir: $_remainingQueenCount',
                             style: GoogleFonts.patrickHand(
-                              fontSize: 19,
+                              fontSize: 18,
                               fontWeight: FontWeight.w700,
                               color: AppColors.pencilBlack,
                             ),
                           ),
-                          Row(
-                            children: List.generate(_level.gridSize, (idx) {
-                              final isPlaced = idx < _placedQueenCount;
-                              return Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 2.5),
-                                child: SketchCard(
-                                  padding: EdgeInsets.zero,
-                                  borderRadius: 6,
-                                  borderWidth: isPlaced ? 1.8 : 1.2,
-                                  shadowOffset: isPlaced ? const Offset(1.5, 1.5) : const Offset(1.0, 1.0),
-                                  backgroundColor: isPlaced ? AppColors.highlighterYellow : AppColors.surfaceSecondaryLight,
-                                  child: SizedBox(
-                                    width: 22,
-                                    height: 22,
-                                    child: Center(
-                                      child: Icon(
-                                        Icons.castle_rounded,
-                                        size: 13,
-                                        color: isPlaced ? AppColors.pencilBlack : AppColors.pencilLight,
+                          const SizedBox(width: 8),
+                          Flexible(
+                            child: Align(
+                              alignment: Alignment.centerRight,
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: List.generate(_level.totalQueens, (idx) {
+                                    final isPlaced = idx < _placedQueenCount;
+                                    final cardSize = _level.totalQueens > 9 ? 15.0 : 20.0;
+                                    final iconSize = _level.totalQueens > 9 ? 9.0 : 12.0;
+                                    return Padding(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: _level.totalQueens > 9 ? 1.0 : 2.0,
                                       ),
-                                    ),
-                                  ),
+                                      child: SketchCard(
+                                        padding: EdgeInsets.zero,
+                                        borderRadius: _level.totalQueens > 9 ? 4 : 6,
+                                        borderWidth: isPlaced ? 1.6 : 1.0,
+                                        shadowOffset: isPlaced ? const Offset(1.0, 1.0) : const Offset(0.6, 0.6),
+                                        backgroundColor: isPlaced ? AppColors.sunYellow : AppColors.surfaceSecondaryLight,
+                                        child: SizedBox(
+                                          width: cardSize,
+                                          height: cardSize,
+                                          child: Center(
+                                            child: Icon(
+                                              Icons.castle_rounded,
+                                              size: iconSize,
+                                              color: isPlaced ? AppColors.pencilBlack : AppColors.pencilLight,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  }),
                                 ),
-                              ).animate(target: isPlaced ? 1 : 0).scale(duration: 180.ms);
-                            }),
+                              ),
+                            ),
                           ),
                         ],
                       ),
@@ -1079,14 +1375,15 @@ class _QueensScreenState extends ConsumerState<QueensScreen> with SingleTickerPr
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: Center(
-                        child: AspectRatio(
-                          aspectRatio: 1.0,
-                          child: LayoutBuilder(
-                            builder: (context, constraints) {
-                              final boardSize = constraints.maxWidth;
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          final boardSize = math.min(constraints.maxWidth, constraints.maxHeight);
 
-                              return Listener(
+                          return Center(
+                            child: SizedBox(
+                              width: boardSize,
+                              height: boardSize,
+                              child: Listener(
                                 behavior: HitTestBehavior.opaque,
                                 onPointerDown: (event) => _onPointerDown(event, boardSize),
                                 onPointerMove: (event) => _onPointerMove(event, boardSize),
@@ -1110,30 +1407,33 @@ class _QueensScreenState extends ConsumerState<QueensScreen> with SingleTickerPr
                                           ),
                                         ),
                                         // 2. Tablo Kutuları
-                                        GridView.builder(
-                                          physics: const NeverScrollableScrollPhysics(),
-                                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                                            crossAxisCount: _level.gridSize,
-                                          ),
-                                          itemCount: _level.gridSize * _level.gridSize,
-                                          itemBuilder: (context, index) {
-                                            final r = index ~/ _level.gridSize;
-                                            final c = index % _level.gridSize;
-                                            final cell = _grid[r][c];
+                                        Positioned.fill(
+                                          child: GridView.builder(
+                                            padding: EdgeInsets.zero,
+                                            physics: const NeverScrollableScrollPhysics(),
+                                            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                              crossAxisCount: _level.gridSize,
+                                            ),
+                                            itemCount: _level.gridSize * _level.gridSize,
+                                            itemBuilder: (context, index) {
+                                              final r = index ~/ _level.gridSize;
+                                              final c = index % _level.gridSize;
+                                              final cell = _grid[r][c];
 
-                                            return Center(
-                                              child: _buildCellContent(cell),
-                                            );
-                                          },
+                                              return Center(
+                                                child: _buildCellContent(cell),
+                                              );
+                                            },
+                                          ),
                                         ),
                                       ],
                                     );
                                   },
                                 ),
-                              );
-                            },
-                          ),
-                        ),
+                              ),
+                            ),
+                          );
+                        },
                       ),
                     ),
                   ),
@@ -1166,7 +1466,7 @@ class _QueensScreenState extends ConsumerState<QueensScreen> with SingleTickerPr
                             icon: isHintReady ? Icons.lightbulb_rounded : Icons.hourglass_bottom_rounded,
                             label: isHintReady ? 'İpucu' : '$cooldown s',
                             isActive: isHintReady,
-                            activeColor: AppColors.highlighterYellow,
+                            activeColor: AppColors.sunYellow,
                             onTap: !_isSolved ? _useHint : null,
                           ),
                         ],
@@ -1215,7 +1515,7 @@ class _QueensScreenState extends ConsumerState<QueensScreen> with SingleTickerPr
             shadowOffset: const Offset(1.5, 1.5),
             backgroundColor: isWarning
                 ? AppColors.highlighterPink.withValues(alpha: 0.4)
-                : AppColors.highlighterYellow,
+                : AppColors.sunYellow,
             borderColor: isWarning ? AppColors.error : AppColors.pencilBlack,
             child: Icon(
               isWarning ? Icons.warning_amber_rounded : Icons.lightbulb_rounded,
@@ -1304,7 +1604,7 @@ class _OrganicDrawnCrownPainter extends CustomPainter {
     final h = size.height;
 
     final fillPaint = Paint()
-      ..color = isConflict ? AppColors.error : AppColors.highlighterYellow
+      ..color = isConflict ? AppColors.error : AppColors.sunYellow
       ..style = PaintingStyle.fill;
 
     final penPaint = Paint()
@@ -1459,7 +1759,7 @@ class _OrganicSketchActionButton extends StatelessWidget {
     required this.label,
     this.onTap,
     this.isActive = false,
-    this.activeColor = AppColors.highlighterYellow,
+    this.activeColor = AppColors.sunYellow,
   });
 
   @override

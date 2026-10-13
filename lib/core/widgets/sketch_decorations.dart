@@ -645,7 +645,7 @@ class SketchDoodleCrown extends StatelessWidget {
     super.key,
     this.size = 24,
     this.color = AppColors.pencilBlack,
-    this.fillColor = AppColors.highlighterYellow,
+    this.fillColor = AppColors.sunYellow,
   });
 
   @override

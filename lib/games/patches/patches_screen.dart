@@ -9,6 +9,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/utils/date_utils.dart';
 import '../../core/services/game_stats_service.dart';
 import '../../core/services/daily_play_service.dart';
+import '../../core/services/game_session_service.dart';
 import '../../core/widgets/genius_win_dialog.dart';
 import '../../core/widgets/sketch_decorations.dart';
 import '../../core/widgets/screen_shake.dart';
@@ -27,13 +28,14 @@ class PatchesScreen extends ConsumerStatefulWidget {
   ConsumerState<PatchesScreen> createState() => _PatchesScreenState();
 }
 
-class _PatchesScreenState extends ConsumerState<PatchesScreen> {
+class _PatchesScreenState extends ConsumerState<PatchesScreen> with WidgetsBindingObserver {
   late PatchesLevel _level;
   final List<PatchRect> _userRects = [];
   PatchPoint? _dragStart;
   PatchPoint? _dragCurrent;
 
   int _elapsedMs = 0;
+  int _tickCount = 0;
   Timer? _timer;
   bool _isSolved = false;
 
@@ -52,7 +54,15 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _initGame();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+      _saveSession();
+    }
   }
 
   void _initGame() {
@@ -63,21 +73,83 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> {
     _elapsedMs = 0;
     _isSolved = false;
     _startTimer();
+    _loadSession();
+  }
+
+  Future<void> _loadSession() async {
+    try {
+      final session = await GameSessionService.loadSession(
+        game: GameType.patches,
+        levelId: widget.levelId,
+      );
+      if (session != null && mounted) {
+        final data = session['data'] as Map<String, dynamic>?;
+        final savedElapsed = session['elapsedMs'] as int? ?? 0;
+        if (data != null && data['rects'] != null) {
+          final rawRects = data['rects'] as List;
+          final loadedRects = rawRects.map((item) {
+            final list = item as List;
+            return PatchRect(
+              topRow: list[0] as int,
+              leftCol: list[1] as int,
+              bottomRow: list[2] as int,
+              rightCol: list[3] as int,
+              colorIndex: list[4] as int,
+            );
+          }).toList();
+
+          setState(() {
+            _userRects.clear();
+            _userRects.addAll(loadedRects);
+            _elapsedMs = savedElapsed;
+            _checkState();
+          });
+        }
+      }
+    } catch (_) {}
+  }
+
+  void _saveSession() {
+    if (_isSolved) return;
+    try {
+      final rectsData = _userRects
+          .map((r) => [r.topRow, r.leftCol, r.bottomRow, r.rightCol, r.colorIndex])
+          .toList();
+      GameSessionService.saveSession(
+        game: GameType.patches,
+        levelId: widget.levelId,
+        data: {
+          'rects': rectsData,
+        },
+        elapsedMs: _elapsedMs,
+      );
+    } catch (_) {}
   }
 
   void _startTimer() {
     _timer?.cancel();
+    _tickCount = 0;
     _timer = Timer.periodic(const Duration(milliseconds: 100), (t) {
       if (!_isSolved && mounted) {
         setState(() {
           _elapsedMs += 100;
         });
+        _tickCount++;
+        if (_tickCount % 10 == 0) {
+          GameSessionService.updateElapsedMs(
+            game: GameType.patches,
+            levelId: widget.levelId,
+            elapsedMs: _elapsedMs,
+          );
+        }
       }
     });
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _saveSession();
     _timer?.cancel();
     super.dispose();
   }
@@ -113,6 +185,7 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> {
         _userRects.removeAt(existingIdx);
         _checkState();
       });
+      _saveSession();
       return;
     }
 
@@ -156,6 +229,7 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> {
       HapticFeedback.mediumImpact();
       _checkState();
     });
+    _saveSession();
   }
 
   void _undoMove() {
@@ -165,6 +239,7 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> {
       _userRects.removeLast();
       _checkState();
     });
+    _saveSession();
   }
 
   void _resetBoard() {
@@ -225,8 +300,10 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> {
               Navigator.pop(ctx);
               setState(() {
                 _userRects.clear();
+                // Süre sıfırlanmaz, o ana kadar geçen süre akmaya devam eder.
                 _checkState();
               });
+              _saveSession();
             },
             child: Text(
               'Temizle',
@@ -251,6 +328,7 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> {
   }
 
   void _handleWin() {
+    GameSessionService.clearSession(game: GameType.patches, levelId: widget.levelId);
     final score = (2000 - (_elapsedMs ~/ 1000) * 10 - _userRects.length * 5).clamp(100, 2000);
 
     final result = GameResult(
@@ -285,6 +363,7 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> {
       gameTitle: 'Alan Bölme',
       onRestart: () {
         Navigator.pop(context);
+        GameSessionService.clearSession(game: GameType.patches, levelId: widget.levelId);
         setState(() {
           _initGame();
         });

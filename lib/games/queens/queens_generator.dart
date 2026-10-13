@@ -21,6 +21,7 @@ class QueensGenerator {
     required QueensDifficulty difficulty,
   }) {
     final n = difficulty.gridSize;
+    final queensPerUnit = difficulty.queensPerUnit;
 
     for (var attempt = 0; attempt < maxAttempts; attempt++) {
       final rng = PuzzleSeed.random(
@@ -29,28 +30,52 @@ class QueensGenerator {
         salt: '$attempt',
       );
 
-      final queens = _randomPlacement(n, rng);
-      if (queens == null) continue;
+      if (queensPerUnit == 2) {
+        final queens = _randomPlacement2Queens(n, rng);
+        if (queens == null) continue;
+        final pairs = _pairQueens(queens, rng);
+        final regionMap = _growRegionsFromPairs(n, pairs, rng);
+        final solutions = QueensLogic.solveBacktracking(
+          n,
+          regionMap,
+          queensPerUnit: 2,
+        );
+        if (solutions.length != 1) continue;
 
-      final regionMap = _growRegions(n, queens, rng);
-      if (!_repairToUnique(n, regionMap, queens, rng)) continue;
+        final solution = solutions.first.map((p) => [p.x, p.y]).toList();
+        return QueensLevel(
+          id: levelId,
+          gridSize: n,
+          difficulty: difficulty,
+          queensPerUnit: 2,
+          regionMap: regionMap,
+          solution: solution,
+        );
+      } else {
+        final queens = _randomPlacement(n, rng);
+        if (queens == null) continue;
 
-      final solutions = QueensLogic.solveBacktracking(n, regionMap);
-      if (solutions.length != 1) continue;
+        final regionMap = _growRegions(n, queens, rng);
+        if (!_repairToUnique(n, regionMap, queens, rng)) continue;
 
-      if (difficulty == QueensDifficulty.kolay &&
-          !QueensLogic.solveDeductively(n, regionMap).isSolvable) {
-        continue;
+        final solutions = QueensLogic.solveBacktracking(n, regionMap, queensPerUnit: 1);
+        if (solutions.length != 1) continue;
+
+        if (difficulty == QueensDifficulty.kolay &&
+            !QueensLogic.solveDeductively(n, regionMap).isSolvable) {
+          continue;
+        }
+
+        final solution = solutions.first.map((p) => [p.x, p.y]).toList();
+        return QueensLevel(
+          id: levelId,
+          gridSize: n,
+          difficulty: difficulty,
+          queensPerUnit: 1,
+          regionMap: regionMap,
+          solution: solution,
+        );
       }
-
-      final solution = solutions.first.map((p) => [p.x, p.y]).toList();
-      return QueensLevel(
-        id: levelId,
-        gridSize: n,
-        difficulty: difficulty,
-        regionMap: regionMap,
-        solution: solution,
-      );
     }
 
     throw StateError(
@@ -207,6 +232,109 @@ class QueensGenerator {
       remaining--;
     }
 
+    return map;
+  }
+
+  static List<Point<int>>? _randomPlacement2Queens(int n, Random rng) {
+    for (var att = 0; att < 50; att++) {
+      final queens = <Point<int>>[];
+      final colCounts = List<int>.filled(n, 0);
+
+      bool placeRow(int r) {
+        if (r == n) return true;
+        final validCols = <int>[];
+        for (int c = 0; c < n; c++) {
+          if (colCounts[c] >= 2) continue;
+          bool touches = false;
+          for (final q in queens) {
+            if ((q.x - r).abs() <= 1 && (q.y - c).abs() <= 1) {
+              touches = true;
+              break;
+            }
+          }
+          if (!touches) validCols.add(c);
+        }
+        final pairs = <List<int>>[];
+        for (int i = 0; i < validCols.length; i++) {
+          for (int j = i + 1; j < validCols.length; j++) {
+            if ((validCols[i] - validCols[j]).abs() > 1) {
+              pairs.add([validCols[i], validCols[j]]);
+            }
+          }
+        }
+        pairs.shuffle(rng);
+        for (final pair in pairs) {
+          queens.add(Point(r, pair[0]));
+          queens.add(Point(r, pair[1]));
+          colCounts[pair[0]]++;
+          colCounts[pair[1]]++;
+          if (placeRow(r + 1)) return true;
+          queens.removeLast();
+          queens.removeLast();
+          colCounts[pair[0]]--;
+          colCounts[pair[1]]--;
+        }
+        return false;
+      }
+
+      if (placeRow(0)) return queens;
+    }
+    return null;
+  }
+
+  static List<List<Point<int>>> _pairQueens(List<Point<int>> queens, Random rng) {
+    final available = List<Point<int>>.from(queens)..shuffle(rng);
+    final pairs = <List<Point<int>>>[];
+    while (available.isNotEmpty) {
+      final q1 = available.removeLast();
+      available.sort((a, b) {
+        final d1 = (a.x - q1.x).abs() + (a.y - q1.y).abs();
+        final d2 = (b.x - q1.x).abs() + (b.y - q1.y).abs();
+        return d1.compareTo(d2);
+      });
+      final q2 = available.removeAt(0);
+      pairs.add([q1, q2]);
+    }
+    return pairs;
+  }
+
+  static List<List<int>> _growRegionsFromPairs(int n, List<List<Point<int>>> pairs, Random rng) {
+    final map = List.generate(n, (_) => List<int>.filled(n, -1));
+    for (int reg = 0; reg < pairs.length; reg++) {
+      for (final q in pairs[reg]) {
+        map[q.x][q.y] = reg;
+      }
+    }
+    const dirs = [
+      [-1, 0],
+      [1, 0],
+      [0, -1],
+      [0, 1],
+    ];
+    int remaining = n * n - 2 * n;
+    while (remaining > 0) {
+      final candidates = <List<int>>[];
+      for (int r = 0; r < n; r++) {
+        for (int c = 0; c < n; c++) {
+          if (map[r][c] != -1) continue;
+          final neighborRegs = <int>[];
+          for (final d in dirs) {
+            final nr = r + d[0];
+            final nc = c + d[1];
+            if (nr >= 0 && nr < n && nc >= 0 && nc < n && map[nr][nc] != -1) {
+              neighborRegs.add(map[nr][nc]);
+            }
+          }
+          if (neighborRegs.isNotEmpty) {
+            candidates.add([r, c, neighborRegs[rng.nextInt(neighborRegs.length)]]);
+          }
+        }
+      }
+      if (candidates.isEmpty) break;
+      final pick = candidates[rng.nextInt(candidates.length)];
+      map[pick[0]][pick[1]] = pick[2];
+      remaining--;
+    }
     return map;
   }
 }

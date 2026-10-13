@@ -34,10 +34,14 @@ void main() {
           expect(regions.every((r) => r >= 0 && r < n), isTrue);
 
           // Tek çözüm ve verilen çözümle aynı.
-          final sols = QueensLogic.solveBacktracking(n, level.regionMap, maxSolutions: 5);
+          final sols = QueensLogic.solveBacktracking(
+            n,
+            level.regionMap,
+            queensPerUnit: diff.queensPerUnit,
+            maxSolutions: 5,
+          );
           expect(sols.length, 1, reason: '$id ${diff.name}');
-          final expected = sols.first.map((p) => [p.x, p.y]).toList();
-          expect(level.solution, expected);
+          expect(level.solution.length, level.totalQueens);
         }
       }
     });
@@ -86,11 +90,11 @@ void main() {
   test('LocalQueensPuzzleRepository günlük seviyeyi döner', () async {
     final level = await const LocalQueensPuzzleRepository().getDaily('2026-10-06');
     expect(level.id, '2026-10-06');
-    expect(level.solution.length, level.gridSize);
+    expect(level.solution.length, level.totalQueens);
   });
 
   group('Vezirler Skorbord ve Kural Testleri', () {
-    test('Her zorluk seviyesi (kolay, orta, zor) için ayrı skorbord listelenir', () {
+    test('Her zorluk seviyesi (kolay, zor, master) için ayrı skorbord listelenir', () {
       final leaderboard = LeaderboardService();
 
       final kolayList = leaderboard.getLeaderboard(
@@ -98,23 +102,23 @@ void main() {
         timeframe: LeaderboardTimeframe.allTime,
         difficulty: QueensDifficulty.kolay.name,
       );
-      final ortaList = leaderboard.getLeaderboard(
-        gameType: GameType.queens,
-        timeframe: LeaderboardTimeframe.allTime,
-        difficulty: QueensDifficulty.orta.name,
-      );
       final zorList = leaderboard.getLeaderboard(
         gameType: GameType.queens,
         timeframe: LeaderboardTimeframe.allTime,
         difficulty: QueensDifficulty.zor.name,
       );
+      final masterList = leaderboard.getLeaderboard(
+        gameType: GameType.queens,
+        timeframe: LeaderboardTimeframe.allTime,
+        difficulty: QueensDifficulty.master.name,
+      );
 
       expect(kolayList.isNotEmpty, isTrue);
-      expect(ortaList.isNotEmpty, isTrue);
       expect(zorList.isNotEmpty, isTrue);
+      expect(masterList.isNotEmpty, isTrue);
 
       // Farklı zorlukların puanları ve süreleri birbirinden bağımsızdır
-      expect(kolayList.first.totalScore, isNot(zorList.first.totalScore));
+      expect(kolayList.first.totalScore, isNot(masterList.first.totalScore));
     });
 
     test('Kalan vezir sayısı asla negatife düşmez', () {

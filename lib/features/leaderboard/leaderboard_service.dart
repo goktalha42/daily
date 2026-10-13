@@ -27,8 +27,8 @@ class LeaderboardService {
       if (game == GameType.queens) {
         final diffConfigs = [
           {'diff': 'kolay', 'baseScore': 900, 'timeOffset': 20000},
-          {'diff': 'orta', 'baseScore': 1200, 'timeOffset': 40000},
-          {'diff': 'zor', 'baseScore': 1500, 'timeOffset': 70000},
+          {'diff': 'zor', 'baseScore': 1200, 'timeOffset': 40000},
+          {'diff': 'master', 'baseScore': 1500, 'timeOffset': 70000},
         ];
         for (var cfg in diffConfigs) {
           final diff = cfg['diff'] as String;

@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:daily_games/games/queens/queens_models.dart';
 import 'package:daily_games/games/queens/queens_logic.dart';
@@ -60,6 +61,24 @@ void main() {
       expect(grid[0][1].isConflict, isTrue);
       expect(grid[0][2].isConflict, isTrue);
     });
+
+    test('findConflicts identifies conflicting coordinates without mutating isConflict', () {
+      final grid = List.generate(
+        4,
+        (r) => List.generate(4, (c) => TangoCell(row: r, col: c)),
+      );
+
+      grid[1][0].symbol = TangoSymbol.moon;
+      grid[1][1].symbol = TangoSymbol.moon;
+      grid[1][2].symbol = TangoSymbol.moon;
+
+      final conflicts = TangoLogic.findConflicts(grid, 4, []);
+      expect(conflicts.contains(const math.Point(1, 0)), isTrue);
+      expect(conflicts.contains(const math.Point(1, 1)), isTrue);
+      expect(conflicts.contains(const math.Point(1, 2)), isTrue);
+      // findConflicts should not mutate isConflict on the cells
+      expect(grid[1][0].isConflict, isFalse);
+    });
   });
 
   group('Zip Path Logic Tests', () {
@@ -95,6 +114,33 @@ void main() {
 
       final isSolved = ZipLogic.validatePath(invalidPath, points, 2);
       expect(isSolved, isFalse);
+    });
+
+    test('Fails when path crosses an edge wall barrier', () {
+      final points = {
+        const Point(0, 0): 1,
+        const Point(1, 0): 2,
+      };
+
+      final validCoords = [
+        const Point(0, 0),
+        const Point(0, 1),
+        const Point(1, 1),
+        const Point(1, 0),
+      ];
+
+      // Hat çekildi: (0, 1) ve (1, 1) arasından geçiş yasak
+      final edgeWalls = {
+        const ZipEdgeWall(Point(0, 1), Point(1, 1)),
+      };
+
+      final isSolvedWithWall = ZipLogic.validatePath(
+        validCoords,
+        points,
+        2,
+        edgeWalls: edgeWalls,
+      );
+      expect(isSolvedWithWall, isFalse);
     });
   });
 

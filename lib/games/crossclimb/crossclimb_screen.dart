@@ -13,6 +13,7 @@ import '../../core/services/daily_play_service.dart';
 import '../../core/widgets/genius_win_dialog.dart';
 import '../../core/widgets/sketch_decorations.dart';
 import '../../core/widgets/screen_shake.dart';
+import '../../core/services/game_session_service.dart';
 import '../common/base_game.dart';
 import '../../features/leaderboard/leaderboard_service.dart';
 import 'crossclimb_models.dart';
@@ -28,12 +29,13 @@ class CrossclimbScreen extends ConsumerStatefulWidget {
   ConsumerState<CrossclimbScreen> createState() => _CrossclimbScreenState();
 }
 
-class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> {
+class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> with WidgetsBindingObserver {
   late CrossclimbLevel _level;
   int _currentStepIndex = 0;
   late List<String> _userWords;
   final TextEditingController _inputController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
+  final ScrollController _scrollController = ScrollController();
   String _currentInputChar = '';
 
   int _elapsedMs = 0;
@@ -44,7 +46,9 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> {
   @override
   void initState() {
     super.initState();
-    _initGame();
+    WidgetsBinding.instance.addObserver(this);
+    _level = CrossclimbLevelRepository.getLevelForDate(widget.levelId);
+    _userWords = List.filled(_level.steps.length, '');
     _inputController.addListener(() {
       final text = _inputController.text.trim();
       setState(() {
@@ -58,6 +62,53 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> {
         }
       });
     });
+    _loadSession().then((_) {
+      if (mounted) _startTimer();
+    });
+  }
+
+  Future<void> _loadSession() async {
+    final session = await GameSessionService.loadSession(
+      game: GameType.crossclimb,
+      levelId: widget.levelId,
+    );
+    if (session != null && mounted) {
+      final elapsed = session['elapsedMs'] as int? ?? 0;
+      final data = session['data'] as Map<String, dynamic>?;
+      if (data != null) {
+        final stepIdx = data['currentStepIndex'] as int?;
+        if (stepIdx != null && stepIdx >= 0) {
+          _currentStepIndex = stepIdx.clamp(0, _level.steps.length - 1);
+        }
+        final words = data['userWords'] as List<dynamic>?;
+        if (words != null && words.length == _level.steps.length) {
+          _userWords = words.map((e) => e.toString()).toList();
+        }
+      }
+      setState(() {
+        _elapsedMs = elapsed;
+      });
+    }
+  }
+
+  void _saveSession() {
+    if (_isSolved) return;
+    GameSessionService.saveSession(
+      game: GameType.crossclimb,
+      levelId: widget.levelId,
+      elapsedMs: _elapsedMs,
+      data: {
+        'currentStepIndex': _currentStepIndex,
+        'userWords': _userWords,
+      },
+    );
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+      _saveSession();
+    }
   }
 
   void _initGame() {
@@ -69,26 +120,49 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> {
     _elapsedMs = 0;
     _isSolved = false;
     _errorMsg = null;
+    GameSessionService.clearSession(game: GameType.crossclimb, levelId: widget.levelId);
     _startTimer();
   }
 
   void _startTimer() {
     _timer?.cancel();
+    int ticks = 0;
     _timer = Timer.periodic(const Duration(milliseconds: 100), (t) {
       if (!_isSolved && mounted) {
         setState(() {
           _elapsedMs += 100;
         });
+        ticks++;
+        if (ticks % 10 == 0) {
+          GameSessionService.updateElapsedMs(
+            game: GameType.crossclimb,
+            levelId: widget.levelId,
+            elapsedMs: _elapsedMs,
+          );
+        }
       }
     });
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _saveSession();
     _timer?.cancel();
     _inputController.dispose();
     _focusNode.dispose();
+    _scrollController.dispose();
     super.dispose();
+  }
+
+  void _requestKeyboardFocus() {
+    if (_isSolved || !mounted) return;
+    _focusNode.unfocus();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && !_isSolved) {
+        _focusNode.requestFocus();
+      }
+    });
   }
 
   void _submitStepLetter() {
@@ -118,6 +192,7 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> {
 
         if (_currentStepIndex < _level.steps.length - 1) {
           _currentStepIndex++;
+          _requestKeyboardFocus();
         } else {
           _isSolved = true;
           _focusNode.unfocus();
@@ -125,6 +200,7 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> {
           _handleWin();
         }
       });
+      _saveSession();
     } else {
       HapticFeedback.vibrate();
       ScreenShake.shake(context, intensity: 6.0);
@@ -173,6 +249,11 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> {
           score: score,
           durationMs: _elapsedMs,
         );
+
+    GameSessionService.clearSession(
+      game: GameType.crossclimb,
+      levelId: widget.levelId,
+    );
 
     GeniusWinDialog.show(
       context,
@@ -549,155 +630,281 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> {
                           ],
                         ),
                       ),
+                    ],
+                  ),
+                ),
+              ),
 
-                      const SizedBox(height: 12),
+              // 4. ERGONOMİK SABİT İPUCU & HARF GİRİŞ PANELİ (KLAVYENİN ÜSTÜNDE HER ZAMAN SABİT!)
+              if (!_isSolved)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 6, 16, 8),
+                  child: _buildErgonomicActivePanel(currentStep),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
-                      // 4. AKTİF İPUCU & ETKİLEŞİM PANELİ
-                      if (!_isSolved) ...[
-                        SketchCard(
-                          backgroundColor: Colors.white,
-                          borderRadius: 14,
-                          shadowOffset: const Offset(3, 3),
-                          padding: const EdgeInsets.all(14),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Row(
-                                    children: [
-                                      const Icon(Icons.lightbulb_rounded, size: 20, color: AppColors.sunYellow),
-                                      const SizedBox(width: 6),
-                                      Text(
-                                        'BASAMAK ${_currentStepIndex + 1} İPUCU',
-                                        style: GoogleFonts.patrickHand(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w700,
-                                          color: AppColors.pencilBlack,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  // El Çizimi SketchCard ile Harf Değişiyor Rozeti
-                                  SketchCard(
-                                    backgroundColor: AppColors.sunYellow,
-                                    borderRadius: 8,
-                                    borderWidth: 1.6,
-                                    shadowOffset: const Offset(1.5, 1.5),
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                    child: Text(
-                                      '📌 ${currentStep.changedIndex + 1}. HARF DEĞİŞİYOR',
-                                      style: GoogleFonts.patrickHand(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w700,
-                                        color: AppColors.pencilBlack,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                currentStep.clue,
-                                style: GoogleFonts.patrickHand(
-                                  fontSize: 19,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.pencilBlack,
-                                  height: 1.2,
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              // Tırman Butonu
-                              SketchCard(
-                                backgroundColor: _currentInputChar.isNotEmpty
-                                    ? AppColors.sunYellow
-                                    : AppColors.surfaceSecondaryLight,
-                                borderRadius: 12,
-                                shadowOffset: _currentInputChar.isNotEmpty ? const Offset(2.5, 2.5) : Offset.zero,
-                                borderWidth: 2.0,
-                                padding: const EdgeInsets.symmetric(vertical: 10),
-                                onTap: _currentInputChar.isNotEmpty ? _submitStepLetter : null,
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.arrow_upward_rounded,
-                                      size: 20,
-                                      color: _currentInputChar.isNotEmpty ? AppColors.pencilBlack : AppColors.pencilLight,
-                                    ),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      _currentInputChar.isNotEmpty
-                                          ? 'Basamağa Tırman ("$_currentInputChar")'
-                                          : 'Basamaktaki Eksik Harfe Dokun ve Yaz',
-                                      style: GoogleFonts.patrickHand(
-                                        fontSize: 17,
-                                        fontWeight: FontWeight.w700,
-                                        color: _currentInputChar.isNotEmpty ? AppColors.pencilBlack : AppColors.pencilLight,
-                                      ),
-                                    ),
-                                  ],
-                                ),
+  Widget _buildErgonomicActivePanel(CrossclimbStep currentStep) {
+    final prevWord = _getPreviousWord();
+
+    return SketchCard(
+      backgroundColor: Colors.white,
+      borderRadius: 14,
+      shadowOffset: const Offset(3, 3),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 1. Başlık & Rozet Satırı
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.lightbulb_rounded, size: 18, color: AppColors.sunYellow),
+                  const SizedBox(width: 5),
+                  Text(
+                    'BASAMAK ${_currentStepIndex + 1} İPUCU',
+                    style: GoogleFonts.patrickHand(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.pencilBlack,
+                    ),
+                  ),
+                ],
+              ),
+              SketchCard(
+                backgroundColor: AppColors.sunYellow,
+                borderRadius: 8,
+                borderWidth: 1.5,
+                shadowOffset: const Offset(1.2, 1.2),
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                child: Text(
+                  '📌 ${currentStep.changedIndex + 1}. HARF DEĞİŞİYOR',
+                  style: GoogleFonts.patrickHand(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.pencilBlack,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+
+          // 2. İpucu Metni
+          Text(
+            currentStep.clue,
+            style: GoogleFonts.patrickHand(
+              fontSize: 17,
+              fontWeight: FontWeight.w700,
+              color: AppColors.pencilBlack,
+              height: 1.15,
+            ),
+          ),
+          const SizedBox(height: 8),
+
+          // 3. Ergonomik Harf Önizleme & Tıklama Kutuları (Eksik Harf Kutusu Doğrudan İnteraktif Giriştir)
+          GestureDetector(
+            onTap: _requestKeyboardFocus,
+            behavior: HitTestBehavior.opaque,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: AppColors.backgroundLight,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: AppColors.pencilBlack, width: 1.8),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Kelime:',
+                    style: GoogleFonts.patrickHand(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.pencilGraphite,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: List.generate(prevWord.length, (idx) {
+                      final isChanging = idx == currentStep.changedIndex;
+
+                      if (isChanging) {
+                        return Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 2.5),
+                          width: 36,
+                          height: 38,
+                          decoration: BoxDecoration(
+                            color: _currentInputChar.isNotEmpty ? AppColors.sunYellow : const Color(0xFFFEF3C7),
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(
+                              color: AppColors.pencilBlack,
+                              width: 2.2,
+                            ),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: AppColors.pencilBlack,
+                                offset: Offset(1.5, 1.5),
+                                blurRadius: 0,
                               ),
                             ],
                           ),
-                        ),
-
-                        // Gizli TextField
-                        SizedBox(
-                          height: 0,
-                          width: 0,
-                          child: Opacity(
-                            opacity: 0,
+                          child: Center(
                             child: TextField(
                               controller: _inputController,
                               focusNode: _focusNode,
                               maxLength: 1,
+                              textAlign: TextAlign.center,
                               textCapitalization: TextCapitalization.characters,
                               textInputAction: TextInputAction.done,
+                              style: GoogleFonts.patrickHand(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.pencilBlack,
+                              ),
+                              cursorColor: AppColors.pencilBlack,
+                              decoration: InputDecoration(
+                                border: InputBorder.none,
+                                counterText: '',
+                                contentPadding: EdgeInsets.zero,
+                                isDense: true,
+                                hintText: '?',
+                                hintStyle: GoogleFonts.patrickHand(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.error,
+                                ),
+                              ),
                               onSubmitted: (_) => _submitStepLetter(),
+                              onTap: _requestKeyboardFocus,
+                            ),
+                          ),
+                        );
+                      }
+
+                      return Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 2.5),
+                        width: 30,
+                        height: 34,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(
+                            color: AppColors.pencilLight,
+                            width: 1.2,
+                          ),
+                        ),
+                        child: Center(
+                          child: Text(
+                            prevWord[idx],
+                            style: GoogleFonts.patrickHand(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.pencilBlack,
                             ),
                           ),
                         ),
+                      );
+                    }),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
 
-                        // HATA MESAJI
-                        if (_errorMsg != null) ...[
-                          const SizedBox(height: 10),
-                          SketchCard(
-                            backgroundColor: AppColors.errorBgLight,
-                            borderRadius: 10,
-                            shadowOffset: const Offset(2, 2),
-                            borderWidth: 1.8,
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                            child: Row(
-                              children: [
-                                const Icon(Icons.close_rounded, size: 20, color: AppColors.error),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    _errorMsg!,
-                                    style: GoogleFonts.patrickHand(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w700,
-                                      color: AppColors.error,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ],
-
-                      const SizedBox(height: 30),
+          // 4. Ergonomik Aksiyon Çubuğu (Geri Al / Temizle ve Basamağa Tırman)
+          Row(
+            children: [
+              if (_currentInputChar.isNotEmpty) ...[
+                SketchCard(
+                  backgroundColor: AppColors.surfaceSecondaryLight,
+                  borderRadius: 10,
+                  borderWidth: 1.8,
+                  shadowOffset: const Offset(1.5, 1.5),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  onTap: () {
+                    _inputController.clear();
+                    _requestKeyboardFocus();
+                  },
+                  child: const Icon(Icons.backspace_outlined, size: 18, color: AppColors.pencilBlack),
+                ),
+                const SizedBox(width: 8),
+              ],
+              Expanded(
+                child: SketchCard(
+                  backgroundColor: _currentInputChar.isNotEmpty
+                      ? AppColors.sunYellow
+                      : AppColors.surfaceSecondaryLight,
+                  borderRadius: 10,
+                  shadowOffset: _currentInputChar.isNotEmpty ? const Offset(2.0, 2.0) : Offset.zero,
+                  borderWidth: 1.8,
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  onTap: _currentInputChar.isNotEmpty
+                      ? _submitStepLetter
+                      : _requestKeyboardFocus,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        _currentInputChar.isNotEmpty ? Icons.arrow_upward_rounded : Icons.keyboard_rounded,
+                        size: 18,
+                        color: _currentInputChar.isNotEmpty ? AppColors.pencilBlack : AppColors.pencilGraphite,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        _currentInputChar.isNotEmpty
+                            ? 'Basamağa Tırman ("$_currentInputChar")'
+                            : 'Klavyeyi Aç ve Harfi Yaz',
+                        style: GoogleFonts.patrickHand(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: _currentInputChar.isNotEmpty ? AppColors.pencilBlack : AppColors.pencilGraphite,
+                        ),
+                      ),
                     ],
                   ),
                 ),
               ),
             ],
           ),
-        ),
+
+          // HATA MESAJI
+          if (_errorMsg != null) ...[
+            const SizedBox(height: 6),
+            SketchCard(
+              backgroundColor: AppColors.errorBgLight,
+              borderRadius: 8,
+              shadowOffset: const Offset(1.5, 1.5),
+              borderWidth: 1.6,
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              child: Row(
+                children: [
+                  const Icon(Icons.close_rounded, size: 18, color: AppColors.error),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      _errorMsg!,
+                      style: GoogleFonts.patrickHand(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.error,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }
@@ -767,7 +974,7 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> {
     return GestureDetector(
       onTap: () {
         if (isCurrent && !_isSolved) {
-          _focusNode.requestFocus();
+          _requestKeyboardFocus();
         }
       },
       child: SketchCard(
@@ -832,7 +1039,7 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> {
                   child: GestureDetector(
                     onTap: () {
                       if (isCurrent && isChangedSlot && !_isSolved) {
-                        _focusNode.requestFocus();
+                        _requestKeyboardFocus();
                       }
                     },
                     child: SketchCard(

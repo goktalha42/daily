@@ -22,9 +22,9 @@ class PatchesGenerator {
     final n = difficulty.gridSize;
 
     final maxArea = switch (difficulty) {
-      PatchesDifficulty.kolay => 6,
-      PatchesDifficulty.orta => 8,
-      PatchesDifficulty.zor => 10,
+      PatchesDifficulty.kolay => 8,
+      PatchesDifficulty.orta => 10,
+      PatchesDifficulty.zor => 12,
     };
 
     for (var attempt = 0; attempt < maxAttempts; attempt++) {
@@ -38,19 +38,33 @@ class PatchesGenerator {
       final rectangles = _generateTiling(n, maxArea, rng);
       if (rectangles == null) continue;
 
-      // 2. Her dikdörtgenin içine rastgele bir hücreye ipucu yerleştir (image.png standardı şekil kısıtı ile)
+      // 2. Her dikdörtgenin içine rastgele bir hücreye ipucu yerleştir
       final clues = <PatchesClue>[];
       for (final rect in rectangles) {
         final r = rect.topRow + rng.nextInt(rect.height);
         final c = rect.leftCol + rng.nextInt(rect.width);
 
         PatchShapeType shape;
-        if (rect.width == rect.height) {
-          shape = PatchShapeType.square;
-        } else if (rect.height > rect.width) {
-          shape = rng.nextDouble() < 0.7 ? PatchShapeType.tall : PatchShapeType.any;
+        if (difficulty == PatchesDifficulty.kolay) {
+          if (rect.width == rect.height) {
+            shape = rng.nextDouble() < 0.4 ? PatchShapeType.square : PatchShapeType.any;
+          } else if (rect.height > rect.width) {
+            shape = rng.nextDouble() < 0.4 ? PatchShapeType.tall : PatchShapeType.any;
+          } else {
+            shape = rng.nextDouble() < 0.4 ? PatchShapeType.wide : PatchShapeType.any;
+          }
+        } else if (difficulty == PatchesDifficulty.orta) {
+          if (rect.width == rect.height) {
+            shape = rng.nextDouble() < 0.15 ? PatchShapeType.square : PatchShapeType.any;
+          } else if (rect.height > rect.width) {
+            shape = rng.nextDouble() < 0.15 ? PatchShapeType.tall : PatchShapeType.any;
+          } else {
+            shape = rng.nextDouble() < 0.15 ? PatchShapeType.wide : PatchShapeType.any;
+          }
         } else {
-          shape = rng.nextDouble() < 0.7 ? PatchShapeType.wide : PatchShapeType.any;
+          // Zor seviyede TÜM ipuçları PatchShapeType.any!
+          // Oyuncu dikdörtgenin yönünü kendi mantığı ve çarpan analiziyle bulur.
+          shape = PatchShapeType.any;
         }
 
         clues.add(PatchesClue(
