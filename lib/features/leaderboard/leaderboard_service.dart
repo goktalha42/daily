@@ -63,18 +63,53 @@ class LeaderboardService extends ChangeNotifier {
     final todayLevelId = GameDateUtils.getTodayLevelId();
     final rng = Random(42);
 
+    const allOtherGames = [
+      GameType.pinpoint,
+      GameType.crossclimb,
+      GameType.tango,
+      GameType.zipPath,
+      GameType.patches,
+    ];
+
+    // Geçmiş günler simülasyon haritası:
+    // Haftalık: 1..6 gün önce
+    // Aylık: 7..29 gün aralığından örnekleme (11 gün)
+    // Genel (Tüm Zamanlar): 32..95 gün aralığından örnekleme (10 gün)
+    const weeklyDays = [1, 2, 3, 4, 5, 6];
+    const monthlyExtraDays = [8, 10, 12, 14, 16, 18, 21, 23, 25, 27, 29];
+    const allTimeExtraDays = [33, 38, 43, 49, 55, 62, 70, 78, 86, 95];
+
     for (int i = 0; i < _seedUserNames.length; i++) {
       final name = _seedUserNames[i];
       final userId = 'mock_user_$i';
-      // User skill: 0 (en güçlü) -> 149 (başlangıç), ufak rastlantısallıkla
-      final skillFactor = (150 - i) / 150.0;
-      final jitter = (rng.nextDouble() - 0.5) * 0.08;
-      final effectiveSkill = (skillFactor + jitter).clamp(0.05, 1.0);
 
-      // 1. VEZİRLER (QUEENS) OYUNU
+      // Temel yetenek: 0 (en usta) -> 149 (yeni başlayan)
+      final baseSkill = (150 - i) / 150.0;
+      final jitter = (rng.nextDouble() - 0.5) * 0.08;
+      final effectiveSkill = (baseSkill + jitter).clamp(0.08, 1.0);
+
+      // Oyuncu yetenek ve ilgi alanları:
+      // Kelime dâhileri (pinpoint, crossclimb'de daha güçlü)
+      final isWordExpert = (i % 6 == 1 || i % 8 == 3);
+      // Mantık / Izgara dâhileri (queens, tango, zipPath, patches'de daha güçlü)
+      final isGridExpert = (i % 6 == 2 || i % 8 == 5);
+      // Hız canavarı (süreleri belirgin biçimde daha hızlı)
+      final isSpeedy = (i % 5 == 0);
+
+      // Katılım sıklığı dilimleri:
+      // Tier 1 (ilk 25): %90 katılım, neredeyse her gün oynar
+      // Tier 2 (25..65): %75 katılım
+      // Tier 3 (65..115): %50 katılım
+      // Tier 4 (115..150): %30 katılım
+      final double weeklyRate = i < 25 ? 0.90 : (i < 65 ? 0.75 : (i < 115 ? 0.50 : 0.30));
+      final double monthlyRate = i < 25 ? 0.85 : (i < 65 ? 0.70 : (i < 115 ? 0.45 : 0.25));
+      final double allTimeRate = i < 25 ? 0.85 : (i < 65 ? 0.65 : (i < 115 ? 0.40 : 0.20));
+
+      // --- 1. BUGÜN (GÜNLÜK) OYUNLARI ---
+      // A) VEZİRLER (Queens)
       // Kolay: Tüm 150 oyuncu oynar
+      final kolayDuration = (16000 + ((1.0 - effectiveSkill) * (isSpeedy ? 28000 : 44000))).round();
       final kolayScore = (760 + (effectiveSkill * 230)).round();
-      final kolayDuration = (16000 + ((1.0 - effectiveSkill) * 44000)).round();
       _resultsStore.add(
         GameResult(
           id: 'queens_kolay_$userId',
@@ -83,17 +118,17 @@ class LeaderboardService extends ChangeNotifier {
           userId: userId,
           userName: name,
           durationMs: kolayDuration,
-          moveCount: 6 + rng.nextInt(4),
+          moveCount: 6 + rng.nextInt(3),
           score: kolayScore,
-          completedAt: activeDate.subtract(Duration(minutes: 10 + i * 4)),
+          completedAt: activeDate.subtract(Duration(minutes: 10 + (i * 4) % 400)),
           difficulty: 'kolay',
         ),
       );
 
       // Zor: İlk 100 oyuncu oynar
       if (i < 100) {
+        final zorDuration = (32000 + ((1.0 - effectiveSkill) * (isSpeedy ? 42000 : 65000))).round();
         final zorScore = (980 + (effectiveSkill * 310)).round();
-        final zorDuration = (32000 + ((1.0 - effectiveSkill) * 65000)).round();
         _resultsStore.add(
           GameResult(
             id: 'queens_zor_$userId',
@@ -102,9 +137,9 @@ class LeaderboardService extends ChangeNotifier {
             userId: userId,
             userName: name,
             durationMs: zorDuration,
-            moveCount: 8 + rng.nextInt(6),
+            moveCount: 8 + rng.nextInt(5),
             score: zorScore,
-            completedAt: activeDate.subtract(Duration(minutes: 15 + i * 4)),
+            completedAt: activeDate.subtract(Duration(minutes: 15 + (i * 4) % 400)),
             difficulty: 'zor',
           ),
         );
@@ -112,8 +147,8 @@ class LeaderboardService extends ChangeNotifier {
 
       // Master: İlk 50 oyuncu oynar
       if (i < 50) {
+        final masterDuration = (55000 + ((1.0 - effectiveSkill) * (isSpeedy ? 65000 : 105000))).round();
         final masterScore = (1250 + (effectiveSkill * 420)).round();
-        final masterDuration = (55000 + ((1.0 - effectiveSkill) * 110000)).round();
         _resultsStore.add(
           GameResult(
             id: 'queens_master_$userId',
@@ -122,28 +157,22 @@ class LeaderboardService extends ChangeNotifier {
             userId: userId,
             userName: name,
             durationMs: masterDuration,
-            moveCount: 18 + rng.nextInt(10),
+            moveCount: 16 + rng.nextInt(8),
             score: masterScore,
-            completedAt: activeDate.subtract(Duration(minutes: 20 + i * 4)),
+            completedAt: activeDate.subtract(Duration(minutes: 20 + (i * 4) % 400)),
             difficulty: 'master',
           ),
         );
       }
 
-      // 2. DİĞER TÜM OYUNLAR (Pinpoint, Crossclimb, Tango, ZipPath, Patches)
-      const otherGames = [
-        GameType.pinpoint,
-        GameType.crossclimb,
-        GameType.tango,
-        GameType.zipPath,
-        GameType.patches,
-      ];
+      // B) DİĞER TÜM OYUNLAR (Bugün)
+      for (final game in allOtherGames) {
+        final isWord = game == GameType.pinpoint || game == GameType.crossclimb;
+        final bonus = (isWord && isWordExpert) ? 0.12 : ((!isWord && isGridExpert) ? 0.12 : 0.0);
+        final gameSkill = (effectiveSkill + bonus + (rng.nextDouble() - 0.5) * 0.06).clamp(0.08, 1.0);
 
-      for (var game in otherGames) {
-        final gameJitter = ((i * 13 + game.index * 29) % 50) / 50.0 - 0.5;
-        final gameSkill = (effectiveSkill + gameJitter * 0.12).clamp(0.05, 1.0);
-        final score = (620 + (gameSkill * 370)).round();
-        final duration = (22000 + ((1.0 - gameSkill) * 68000)).round();
+        final score = (640 + (gameSkill * 360)).round();
+        final duration = (20000 + ((1.0 - gameSkill) * (isSpeedy ? 38000 : 62000))).round();
 
         _resultsStore.add(
           GameResult(
@@ -153,71 +182,118 @@ class LeaderboardService extends ChangeNotifier {
             userId: userId,
             userName: name,
             durationMs: duration,
-            moveCount: 12 + rng.nextInt(8),
+            moveCount: 8 + rng.nextInt(8),
             score: score,
-            completedAt: activeDate.subtract(Duration(minutes: 5 + i * 3 + game.index * 7)),
+            completedAt: activeDate.subtract(Duration(minutes: 8 + (i * 3 + game.index * 11) % 480)),
           ),
         );
       }
 
-      // 3. HAFTALIK VE AYLIK GEÇMİŞ VERİLER (Son 6 gün)
-      for (int dayBack = 1; dayBack <= 6; dayBack++) {
-        final pastDate = activeDate.subtract(Duration(days: dayBack));
-        final pastLevelId = DateFormat('yyyy-MM-dd').format(pastDate);
+      // --- 2. GEÇMİŞ GÜNLER SİMÜLASYONU (HAFTALIK, AYLIK, GENEL) ---
+      void seedPastDays(List<int> daysList, double participationRate, String prefix) {
+        for (final dayBack in daysList) {
+          // Katılım olasılığı
+          final roll = ((i * 37 + dayBack * 19) % 100) / 100.0;
+          if (roll > participationRate) continue;
 
-        // Her gün oyuncuların %70'i katılmış gibi simüle edelim
-        if ((i + dayBack) % 3 != 0) {
+          final pastDate = activeDate.subtract(Duration(days: dayBack));
+          final pastLevelId = DateFormat('yyyy-MM-dd').format(pastDate);
+
           // Queens Kolay
+          final pKolayScore = (720 + (effectiveSkill * 260) + (rng.nextInt(40) - 20)).round();
+          final pKolayDur = (18000 + ((1.0 - effectiveSkill) * 40000) + rng.nextInt(6000)).round();
           _resultsStore.add(
             GameResult(
-              id: 'queens_kolay_${userId}_d$dayBack',
+              id: 'queens_kolay_${userId}_${prefix}_d$dayBack',
               gameType: GameType.queens,
               levelId: pastLevelId,
               userId: userId,
               userName: name,
-              durationMs: kolayDuration + rng.nextInt(5000),
-              moveCount: 6,
-              score: (kolayScore * 0.95).round(),
-              completedAt: pastDate,
+              durationMs: pKolayDur,
+              moveCount: 6 + rng.nextInt(3),
+              score: pKolayScore,
+              completedAt: pastDate.add(Duration(hours: 9 + (i * 5) % 13, minutes: (i * 11) % 60)),
               difficulty: 'kolay',
             ),
           );
 
-          if (i < 80) {
+          // Queens Zor (Tier 1 ve Tier 2 oyuncuları)
+          if (i < 85 && (i + dayBack) % 4 != 0) {
+            final pZorScore = (950 + (effectiveSkill * 320) + (rng.nextInt(50) - 25)).round();
+            final pZorDur = (35000 + ((1.0 - effectiveSkill) * 55000) + rng.nextInt(8000)).round();
             _resultsStore.add(
               GameResult(
-                id: 'queens_zor_${userId}_d$dayBack',
+                id: 'queens_zor_${userId}_${prefix}_d$dayBack',
                 gameType: GameType.queens,
                 levelId: pastLevelId,
                 userId: userId,
                 userName: name,
-                durationMs: 45000,
-                moveCount: 9,
-                score: 1100,
-                completedAt: pastDate,
+                durationMs: pZorDur,
+                moveCount: 8 + rng.nextInt(5),
+                score: pZorScore,
+                completedAt: pastDate.add(Duration(hours: 10 + (i * 5) % 12, minutes: (i * 13) % 60)),
                 difficulty: 'zor',
               ),
             );
           }
 
-          // Diğer oyunlar
-          for (var game in otherGames) {
+          // Queens Master (Tier 1 oyuncuları)
+          if (i < 40 && (i + dayBack) % 3 != 0) {
+            final pMasterScore = (1200 + (effectiveSkill * 440) + (rng.nextInt(60) - 30)).round();
+            final pMasterDur = (58000 + ((1.0 - effectiveSkill) * 90000) + rng.nextInt(12000)).round();
             _resultsStore.add(
               GameResult(
-                id: '${game.id}_${userId}_d$dayBack',
+                id: 'queens_master_${userId}_${prefix}_d$dayBack',
+                gameType: GameType.queens,
+                levelId: pastLevelId,
+                userId: userId,
+                userName: name,
+                durationMs: pMasterDur,
+                moveCount: 16 + rng.nextInt(8),
+                score: pMasterScore,
+                completedAt: pastDate.add(Duration(hours: 11 + (i * 5) % 11, minutes: (i * 17) % 60)),
+                difficulty: 'master',
+              ),
+            );
+          }
+
+          // Diğer tüm oyunlar
+          for (final game in allOtherGames) {
+            // Her oyun için ufak katılım filtresi (%80)
+            if ((i + dayBack * 3 + game.index * 7) % 5 == 0) continue;
+
+            final isWord = game == GameType.pinpoint || game == GameType.crossclimb;
+            final bonus = (isWord && isWordExpert) ? 0.12 : ((!isWord && isGridExpert) ? 0.12 : 0.0);
+            final gameSkill = (effectiveSkill + bonus + (rng.nextDouble() - 0.5) * 0.06).clamp(0.08, 1.0);
+
+            final score = (620 + (gameSkill * 370) + (rng.nextInt(40) - 20)).round();
+            final duration = (22000 + ((1.0 - gameSkill) * (isSpeedy ? 35000 : 58000)) + rng.nextInt(8000)).round();
+
+            _resultsStore.add(
+              GameResult(
+                id: '${game.id}_${userId}_${prefix}_d$dayBack',
                 gameType: game,
                 levelId: pastLevelId,
                 userId: userId,
                 userName: name,
-                durationMs: 40000 + rng.nextInt(20000),
-                moveCount: 10,
-                score: 750 + rng.nextInt(200),
-                completedAt: pastDate,
+                durationMs: duration,
+                moveCount: 8 + rng.nextInt(7),
+                score: score,
+                completedAt: pastDate.add(Duration(hours: 8 + (i * 3 + game.index * 5) % 14, minutes: (i * 7) % 60)),
               ),
             );
           }
         }
       }
+
+      // Haftalık geçmiş (Son 6 gün) -> Haftalık Liderlik Tablosunu oluşturur
+      seedPastDays(weeklyDays, weeklyRate, 'w');
+
+      // Aylık geçmiş (Son 7..29 gün) -> Aylık Liderlik Tablosunu güçlendirir
+      seedPastDays(monthlyExtraDays, monthlyRate, 'm');
+
+      // Genel geçmiş (33..95 gün) -> Genel (Tüm Zamanlar) Liderlik Tablosunu zenginleştirir
+      seedPastDays(allTimeExtraDays, allTimeRate, 'all');
     }
   }
 
@@ -235,7 +311,7 @@ class LeaderboardService extends ChangeNotifier {
         gameType: record.gameType,
         levelId: record.dateId,
         userId: 'user_local',
-        userName: 'Oyuncu (Sen)',
+        userName: 'Oyuncu',
         durationMs: record.durationMs,
         moveCount: 10,
         score: record.score,
@@ -283,7 +359,6 @@ class LeaderboardService extends ChangeNotifier {
     String? difficulty,
     String? levelId,
   }) {
-    final now = DateTime.now();
     final activeDate = GameDateUtils.getActiveDate();
     final targetLevelId = levelId ?? GameDateUtils.getTodayLevelId();
 
@@ -301,9 +376,9 @@ class LeaderboardService extends ChangeNotifier {
                 r.completedAt.month == activeDate.month &&
                 r.completedAt.day == activeDate.day);
       } else if (timeframe == LeaderboardTimeframe.weekly) {
-        return r.completedAt.isAfter(now.subtract(const Duration(days: 7)));
+        return r.completedAt.isAfter(activeDate.subtract(const Duration(days: 7)));
       } else if (timeframe == LeaderboardTimeframe.monthly) {
-        return r.completedAt.isAfter(now.subtract(const Duration(days: 30)));
+        return r.completedAt.isAfter(activeDate.subtract(const Duration(days: 30)));
       }
       return true; // allTime
     }).toList();
@@ -316,10 +391,10 @@ class LeaderboardService extends ChangeNotifier {
 
     final entries = <LeaderboardEntry>[];
 
-    // VEZİRLER (QUEENS) ÖZEL TOPLAM PUAN KURALI (Eğer belirli bir zorluk seçilmemişse):
+    // VEZİRLER (QUEENS) GÜNLÜK TOPLAM PUAN KURALI (Eğer belirli bir zorluk seçilmemişse ve günlük moddaysa):
     // "kolay, zor ve master seviyedeki oyuncuya ait bütün skorların toplamı olsun.
     // eğer oyuncu sadece kolayları oynamış ve diğerlerini oynamamış ise diğerleri de 0 olarak sayılsın."
-    if (gameType == GameType.queens && difficulty == null) {
+    if (gameType == GameType.queens && difficulty == null && timeframe == LeaderboardTimeframe.daily) {
       userMap.forEach((userId, list) {
         final userName = list.first.userName;
 
@@ -356,7 +431,7 @@ class LeaderboardService extends ChangeNotifier {
         }
       });
     } else {
-      // DİĞER OYUNLAR VEYA BELİRLİ BİR VEZİRLER ZORLUĞU
+      // DİĞER OYUNLAR VEYA HAFTALIK/AYLIK/GENEL (VEYA TEK BİR ZORLUK)
       userMap.forEach((userId, list) {
         final userName = list.first.userName;
         if (timeframe == LeaderboardTimeframe.daily) {
