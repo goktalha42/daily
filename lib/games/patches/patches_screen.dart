@@ -363,6 +363,7 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> with WidgetsBindi
           durationMs: _elapsedMs,
           overallIQ: statsResult.currentIQ,
           statsMap: ref.read(gameStatsServiceProvider),
+          dailyPlayState: ref.read(dailyPlayServiceProvider),
         );
 
     if (!mounted) return;

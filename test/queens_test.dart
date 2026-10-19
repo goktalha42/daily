@@ -54,6 +54,16 @@ void main() {
       }
     });
 
+    test('master seviye tahmin gerektirmeden insan aklıyla %100 çözülebilir', () {
+      for (var i = 0; i < 20; i++) {
+        final id = _dateId(DateTime.utc(2026, 11, 1).add(Duration(days: i)));
+        final level = QueensGenerator.generate(levelId: id, difficulty: QueensDifficulty.master);
+        final res = QueensLogic.solveDeductively(level.gridSize, level.regionMap, queensPerUnit: 2);
+        expect(res.isSolvable, isTrue, reason: 'Master puzzle $id deductively solvable olmalı');
+        expect(res.solution.length, equals(18));
+      }
+    });
+
     test('3 yıl boyunca günler birbirinin aynısı olmaz (zor seviye)', () {
       final seen = <String>{};
       final start = DateTime.utc(2029, 10, 6); // yayından ~3 yıl sonra

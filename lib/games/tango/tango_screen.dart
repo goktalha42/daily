@@ -455,8 +455,10 @@ class _TangoScreenState extends ConsumerState<TangoScreen> with WidgetsBindingOb
   }
 
   void _handleWin() async {
-    GameSessionService.clearSession(game: GameType.tango, levelId: widget.levelId);
-    final score = (2000 - (_elapsedMs ~/ 1000) * 10 - _moveCount * 4).clamp(100, 2000);
+    final durationSec = (_elapsedMs ~/ 1000);
+    final expectedMoves = 22; // 6x6 ızgaradaki boş hücreleri doldurmak için gereken standart hamle sayısı
+    final excessMoves = math.max(0, _moveCount - expectedMoves);
+    final score = (2000 - durationSec * 10 - excessMoves * 4).clamp(100, 2000);
 
     final result = GameResult(
       id: const Uuid().v4(),
@@ -489,6 +491,7 @@ class _TangoScreenState extends ConsumerState<TangoScreen> with WidgetsBindingOb
           durationMs: _elapsedMs,
           overallIQ: statsResult.currentIQ,
           statsMap: ref.read(gameStatsServiceProvider),
+          dailyPlayState: ref.read(dailyPlayServiceProvider),
         );
 
     if (!mounted) return;

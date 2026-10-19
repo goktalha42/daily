@@ -422,10 +422,10 @@ class QueensLogic {
       }
       if (changed) continue;
 
-      // KURAL 2: Çift Temas İndirgemesi (Touching Pair Exclusion)
-      // Eğer bir bölge 2 vezire ihtiyaç duyuyorsa ve 3 adayı varsa, ama bu adaylardan 2'si birbirine temas ediyorsa:
-      // O temas eden 2 adaydan EN FAZLA 1 vezir çıkabilir! Dolayısıyla 3. temas etmeyen aday KESİNLİKLE VEZİRDİR!
+      // KURAL 2: Çift Temas ve Bağımsız Küme İndirgemesi (Touching Pair / Independent Set Exclusion)
+      // Master modunda (2 vezir):
       if (queensPerUnit == 2) {
+        // A) Bölgeler
         for (int reg = 0; reg < gridSize; reg++) {
           final needed = 2 - regQueens[reg];
           if (needed == 2) {
@@ -437,17 +437,53 @@ class QueensLogic {
                 }
               }
             }
-            if (possibleCells.length == 3) {
-              // Hangi iki hücre temas ediyor?
+            if (possibleCells.length >= 2) {
+              // 1. Partner İmkânsızlığı: Eğer bir hücre diğer tüm adaylara temas ediyorsa vezir olamaz
+              for (final p in possibleCells) {
+                final hasPartner = possibleCells.any((other) =>
+                    other != p &&
+                    (other.x - p.x).abs() > 1 || (other.y - p.y).abs() > 1);
+                if (!hasPartner) {
+                  candidates[p.x][p.y] = false;
+                  changed = true;
+                }
+              }
+              // 2. 3 adaydan 2'si temas ediyorsa 3. hücre kesin vezirdir
+              if (possibleCells.length == 3) {
+                for (int i = 0; i < 3; i++) {
+                  for (int j = i + 1; j < 3; j++) {
+                    final p1 = possibleCells[i];
+                    final p2 = possibleCells[j];
+                    if ((p1.x - p2.x).abs() <= 1 && (p1.y - p2.y).abs() <= 1) {
+                      final k = 3 - i - j;
+                      final forced = possibleCells[k];
+                      placeQueen(forced.x, forced.y);
+                      changed = true;
+                      break;
+                    }
+                  }
+                  if (changed) break;
+                }
+              }
+            }
+          }
+        }
+        if (changed) continue;
+
+        // B) Satırlar
+        for (int r = 0; r < gridSize; r++) {
+          final needed = 2 - rowQueens[r];
+          if (needed == 2) {
+            final possibleCols = <int>[];
+            for (int c = 0; c < gridSize; c++) {
+              if (candidates[r][c]) possibleCols.add(c);
+            }
+            if (possibleCols.length == 3) {
               for (int i = 0; i < 3; i++) {
                 for (int j = i + 1; j < 3; j++) {
-                  final p1 = possibleCells[i];
-                  final p2 = possibleCells[j];
-                  if ((p1.x - p2.x).abs() <= 1 && (p1.y - p2.y).abs() <= 1) {
-                    // p1 ve p2 temas ediyor -> 3. hücre (k) temas etmiyorsa KESİN VEZİR
+                  if ((possibleCols[i] - possibleCols[j]).abs() <= 1) {
                     final k = 3 - i - j;
-                    final forced = possibleCells[k];
-                    placeQueen(forced.x, forced.y);
+                    placeQueen(r, possibleCols[k]);
                     changed = true;
                     break;
                   }
@@ -457,10 +493,36 @@ class QueensLogic {
             }
           }
         }
-      }
-      if (changed) continue;
+        if (changed) continue;
 
-      // KURAL 3: Çizgi-Bölge İndirgemesi (Line-Region Reduction)
+        // C) Sütunlar
+        for (int c = 0; c < gridSize; c++) {
+          final needed = 2 - colQueens[c];
+          if (needed == 2) {
+            final possibleRows = <int>[];
+            for (int r = 0; r < gridSize; r++) {
+              if (candidates[r][c]) possibleRows.add(r);
+            }
+            if (possibleRows.length == 3) {
+              for (int i = 0; i < 3; i++) {
+                for (int j = i + 1; j < 3; j++) {
+                  if ((possibleRows[i] - possibleRows[j]).abs() <= 1) {
+                    final k = 3 - i - j;
+                    placeQueen(possibleRows[k], c);
+                    changed = true;
+                    break;
+                  }
+                }
+                if (changed) break;
+              }
+            }
+          }
+        }
+        if (changed) continue;
+      }
+
+      // KURAL 3: Çizgi-Bölge İndirgemesi (Pointing & Claiming Line-Region Reduction)
+      // 3A. Pointing (Bölge -> Satır / Sütun)
       for (int reg = 0; reg < gridSize; reg++) {
         final needed = queensPerUnit - regQueens[reg];
         if (needed <= 0) continue;
@@ -474,7 +536,7 @@ class QueensLogic {
         }
         if (regCells.isEmpty) continue;
 
-        // Bölgenin tüm adayları tek bir satırda ise ve bu satırın kotası bu bölgeyle doluyorsa
+        // Bölgenin tüm adayları tek satırda mı?
         final firstRow = regCells.first.x;
         if (regCells.every((pt) => pt.x == firstRow)) {
           final rowNeeded = queensPerUnit - rowQueens[firstRow];
@@ -488,6 +550,7 @@ class QueensLogic {
           }
         }
 
+        // Bölgenin tüm adayları tek sütunda mı?
         final firstCol = regCells.first.y;
         if (regCells.every((pt) => pt.y == firstCol)) {
           final colNeeded = queensPerUnit - colQueens[firstCol];
@@ -503,8 +566,62 @@ class QueensLogic {
       }
       if (changed) continue;
 
+      // 3B. Claiming (Satır / Sütun -> Bölge)
+      for (int r = 0; r < gridSize; r++) {
+        final needed = queensPerUnit - rowQueens[r];
+        if (needed <= 0) continue;
+        final rowCandidates = <Point<int>>[];
+        for (int c = 0; c < gridSize; c++) {
+          if (candidates[r][c]) rowCandidates.add(Point(r, c));
+        }
+        if (rowCandidates.isNotEmpty) {
+          final targetReg = regionMap[r][rowCandidates.first.y];
+          if (rowCandidates.every((pt) => regionMap[r][pt.y] == targetReg)) {
+            final regNeeded = queensPerUnit - regQueens[targetReg];
+            if (regNeeded == needed) {
+              for (int ro = 0; ro < gridSize; ro++) {
+                if (ro == r) continue;
+                for (int co = 0; co < gridSize; co++) {
+                  if (regionMap[ro][co] == targetReg && candidates[ro][co]) {
+                    candidates[ro][co] = false;
+                    changed = true;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      if (changed) continue;
+
+      for (int c = 0; c < gridSize; c++) {
+        final needed = queensPerUnit - colQueens[c];
+        if (needed <= 0) continue;
+        final colCandidates = <Point<int>>[];
+        for (int r = 0; r < gridSize; r++) {
+          if (candidates[r][c]) colCandidates.add(Point(r, c));
+        }
+        if (colCandidates.isNotEmpty) {
+          final targetReg = regionMap[colCandidates.first.x][c];
+          if (colCandidates.every((pt) => regionMap[pt.x][c] == targetReg)) {
+            final regNeeded = queensPerUnit - regQueens[targetReg];
+            if (regNeeded == needed) {
+              for (int ro = 0; ro < gridSize; ro++) {
+                for (int co = 0; co < gridSize; co++) {
+                  if (co == c) continue;
+                  if (regionMap[ro][co] == targetReg && candidates[ro][co]) {
+                    candidates[ro][co] = false;
+                    changed = true;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      if (changed) continue;
+
       // KURAL 4: Ortak Komşuluk Gölgesi (Adjacency Dominance)
-      // Bir bölgenin tüm olası adaylarına bitişik olan herhangi bir hücre asla vezir olamaz -> Ele
       for (int reg = 0; reg < gridSize; reg++) {
         final needed = queensPerUnit - regQueens[reg];
         if (needed <= 0) continue;
@@ -523,7 +640,6 @@ class QueensLogic {
             if (!candidates[r][c]) continue;
             if (regionMap[r][c] == reg) continue;
 
-            // Bu (r,c) hücresi bölgedeki TÜM adaylara 8-yönlü komşu mu?
             bool touchesAll = true;
             for (final cand in regCells) {
               if ((cand.x - r).abs() > 1 || (cand.y - c).abs() > 1) {
@@ -535,6 +651,65 @@ class QueensLogic {
               candidates[r][c] = false;
               changed = true;
             }
+          }
+        }
+      }
+      if (changed) continue;
+
+      // KURAL 5: Birim Açlığı / Kontradiksiyon Tespiti (Unit Starvation Contradiction)
+      // Bir adaya vezir konulması başka bir bölgenin/satırın/sütunun kotasını doldurmasını engelliyorsa o aday elenir.
+      for (int r = 0; r < gridSize; r++) {
+        for (int c = 0; c < gridSize; c++) {
+          if (!candidates[r][c]) continue;
+
+          bool impossible = false;
+
+          // Bu (r,c) karesine vezir konulursa, herhangi bir bölge kotasını doldurabilir mi?
+          for (int reg = 0; reg < gridSize; reg++) {
+            if (regionMap[r][c] == reg) continue;
+            final needed = queensPerUnit - regQueens[reg];
+            if (needed <= 0) continue;
+
+            // (r,c)'ye vezir koyduğumuzda bu bölgede kalan geçerli adaylar
+            final valid = <Point<int>>[];
+            for (int ro = 0; ro < gridSize; ro++) {
+              for (int co = 0; co < gridSize; co++) {
+                if (regionMap[ro][co] == reg && candidates[ro][co]) {
+                  if ((ro - r).abs() > 1 || (co - c).abs() > 1) {
+                    valid.add(Point(ro, co));
+                  }
+                }
+              }
+            }
+
+            if (valid.length < needed) {
+              impossible = true;
+              break;
+            }
+
+            if (needed == 2) {
+              // Kalan adaylar arasında en az bir bağımsız (temas etmeyen) çift var mı?
+              bool hasIndependentPair = false;
+              for (int i = 0; i < valid.length; i++) {
+                for (int j = i + 1; j < valid.length; j++) {
+                  if ((valid[i].x - valid[j].x).abs() > 1 ||
+                      (valid[i].y - valid[j].y).abs() > 1) {
+                    hasIndependentPair = true;
+                    break;
+                  }
+                }
+                if (hasIndependentPair) break;
+              }
+              if (!hasIndependentPair) {
+                impossible = true;
+                break;
+              }
+            }
+          }
+
+          if (impossible) {
+            candidates[r][c] = false;
+            changed = true;
           }
         }
       }

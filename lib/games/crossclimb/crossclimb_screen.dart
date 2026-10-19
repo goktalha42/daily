@@ -256,6 +256,7 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> with Widget
           durationMs: _elapsedMs,
           overallIQ: statsResult.currentIQ,
           statsMap: ref.read(gameStatsServiceProvider),
+          dailyPlayState: ref.read(dailyPlayServiceProvider),
         );
 
     GameSessionService.clearSession(

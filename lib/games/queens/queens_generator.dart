@@ -43,9 +43,10 @@ class QueensGenerator {
         if (solutions.length != 1) continue;
 
         // İnsan aklıyla çözülebilirlik kontrolü:
-        // Kör tahmin gerektiren bölümleri filtrele, mantıksal çıkarım yolu olan bölümleri seç.
+        // Kör tahmin gerektiren bölümleri tamamen filtrele; sadece %100 mantıksal çıkarımla
+        // baştan sona çözülebilen (deductive.isSolvable == true) seviyeleri kabul et.
         final deductive = QueensLogic.solveDeductively(n, regionMap, queensPerUnit: 2);
-        if (attempt < 200 && !deductive.isSolvable && deductive.solution.length < 10) {
+        if (!deductive.isSolvable) {
           continue;
         }
 

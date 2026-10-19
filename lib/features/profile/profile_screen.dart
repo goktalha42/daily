@@ -8,6 +8,7 @@ import '../../core/utils/date_utils.dart';
 import '../../core/widgets/sketch_decorations.dart';
 import '../../games/common/base_game.dart';
 import 'widgets/badge_showcase_section.dart';
+import '../../core/services/badge_service.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -18,6 +19,9 @@ class ProfileScreen extends ConsumerWidget {
     final statsMap = ref.watch(gameStatsServiceProvider);
     final statsNotifier = ref.read(gameStatsServiceProvider.notifier);
     final userIQ = statsNotifier.getOverallIQ();
+    final badgeNotifier = ref.read(badgeServiceProvider.notifier);
+    final hasEinstein = badgeNotifier.isUnlocked('belt_einstein') || userIQ >= 130;
+    final hasGrandmaster = badgeNotifier.isUnlocked('belt_grandmaster') || userIQ >= 120;
 
     // Toplam istatistik hesaplamaları
     int totalPlayed = 0;
@@ -115,15 +119,18 @@ class ProfileScreen extends ConsumerWidget {
         // 2. FOTOĞRAFTAKİ GİBİ SKEÇ KİMLİK KARTI & %92 ÇEMBER GÖSTERGESİ
         SliverToBoxAdapter(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
-            child: SketchCard(
-              enableHatching: true,
-              borderRadius: 16,
-              borderWidth: 2.5,
-              shadowOffset: const Offset(4.0, 4.0),
-              padding: const EdgeInsets.all(18),
-              child: Column(
-                children: [
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                SketchCard(
+                  enableHatching: true,
+                  borderRadius: 16,
+                  borderWidth: 2.5,
+                  shadowOffset: const Offset(4.0, 4.0),
+                  padding: const EdgeInsets.all(18),
+                  child: Column(
+                    children: [
                   Row(
                     children: [
                       // Sol: Fotoğraftaki Çapraz X'li Avatar Kutusu
@@ -275,8 +282,75 @@ class ProfileScreen extends ConsumerWidget {
                 ],
               ),
             ),
+            // SOL KÖŞEDEKİ EINSTEIN (130+ IQ) VEYA BÜYÜK USTA ROZETİ
+              if (hasEinstein)
+                Positioned(
+                  top: -12,
+                  left: 14,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.highlighterPurple,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: AppColors.pencilBlack, width: 2.0),
+                      boxShadow: const [
+                        BoxShadow(color: AppColors.pencilBlack, offset: Offset(2.0, 2.0)),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text('🧠', style: TextStyle(fontSize: 14)),
+                        const SizedBox(width: 5),
+                        Text(
+                          'EINSTEIN STATÜSÜ (130+ IQ)',
+                          style: GoogleFonts.patrickHand(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.pencilBlack,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              else if (hasGrandmaster)
+                Positioned(
+                  top: -12,
+                  left: 14,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.sunYellow,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: AppColors.pencilBlack, width: 2.0),
+                      boxShadow: const [
+                        BoxShadow(color: AppColors.pencilBlack, offset: Offset(2.0, 2.0)),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text('💡', style: TextStyle(fontSize: 14)),
+                        const SizedBox(width: 5),
+                        Text(
+                          'BÜYÜK USTA (120+ IQ)',
+                          style: GoogleFonts.patrickHand(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.pencilBlack,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+            ],
           ),
         ),
+      ),
 
         // 3. KARA KALEM İSTATİSTİK 4'LÜ IZGARASI
         SliverToBoxAdapter(

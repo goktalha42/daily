@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -54,6 +53,8 @@ class LeaderboardService extends ChangeNotifier {
     'Bilal_A', 'Sevda_T', 'Bora_Z', 'Nergis_K', 'Burcu_S',
   ];
 
+  static int _excess(int value) => value > 0 ? value : 0;
+
   LeaderboardService() {
     _seedMockData();
   }
@@ -61,7 +62,6 @@ class LeaderboardService extends ChangeNotifier {
   void _seedMockData() {
     final activeDate = GameDateUtils.getActiveDate();
     final todayLevelId = GameDateUtils.getTodayLevelId();
-    final rng = Random(42);
 
     const allOtherGames = [
       GameType.pinpoint,
@@ -82,19 +82,6 @@ class LeaderboardService extends ChangeNotifier {
     for (int i = 0; i < _seedUserNames.length; i++) {
       final name = _seedUserNames[i];
       final userId = 'mock_user_$i';
-
-      // Temel yetenek: 0 (en usta) -> 149 (yeni başlayan)
-      final baseSkill = (150 - i) / 150.0;
-      final jitter = (rng.nextDouble() - 0.5) * 0.08;
-      final effectiveSkill = (baseSkill + jitter).clamp(0.08, 1.0);
-
-      // Oyuncu yetenek ve ilgi alanları:
-      // Kelime dâhileri (pinpoint, crossclimb'de daha güçlü)
-      final isWordExpert = (i % 6 == 1 || i % 8 == 3);
-      // Mantık / Izgara dâhileri (queens, tango, zipPath, patches'de daha güçlü)
-      final isGridExpert = (i % 6 == 2 || i % 8 == 5);
-      // Hız canavarı (süreleri belirgin biçimde daha hızlı)
-      final isSpeedy = (i % 5 == 0);
 
       // Katılım sıklığı dilimleri:
       // Tier 1 (ilk 25): %90 katılım, neredeyse her gün oynar
@@ -118,8 +105,10 @@ class LeaderboardService extends ChangeNotifier {
 
       // Kolay:
       if (playsKolay) {
-        final kolayDuration = (16000 + ((1.0 - effectiveSkill) * (isSpeedy ? 24000 : 42000))).round();
-        final kolayScore = (740 + (effectiveSkill * 240)).round();
+        final kolayDuration = (12200 + i * 360 + ((i * 13) % 240)).round();
+        final kolaySec = (kolayDuration / 1000).ceil();
+        final excessMoves = _excess((i - 20) ~/ 15);
+        final kolayScore = (900 - kolaySec * 2 - excessMoves * 2).clamp(400, 880);
         _resultsStore.add(
           GameResult(
             id: 'queens_kolay_$userId',
@@ -128,7 +117,7 @@ class LeaderboardService extends ChangeNotifier {
             userId: userId,
             userName: name,
             durationMs: kolayDuration,
-            moveCount: 6 + rng.nextInt(3),
+            moveCount: 18 + excessMoves,
             score: kolayScore,
             completedAt: activeDate.subtract(Duration(minutes: 10 + (i * 4) % 400)),
             difficulty: 'kolay',
@@ -138,8 +127,10 @@ class LeaderboardService extends ChangeNotifier {
 
       // Zor:
       if (playsZor) {
-        final zorDuration = (32000 + ((1.0 - effectiveSkill) * (isSpeedy ? 38000 : 62000))).round();
-        final zorScore = (940 + (effectiveSkill * 280)).round();
+        final zorDuration = (24000 + i * 580 + ((i * 17) % 320)).round();
+        final zorSec = (zorDuration / 1000).ceil();
+        final excessMoves = _excess((i - 15) ~/ 10);
+        final zorScore = (1200 - zorSec * 2 - excessMoves * 2).clamp(500, 1160);
         _resultsStore.add(
           GameResult(
             id: 'queens_zor_$userId',
@@ -148,7 +139,7 @@ class LeaderboardService extends ChangeNotifier {
             userId: userId,
             userName: name,
             durationMs: zorDuration,
-            moveCount: 8 + rng.nextInt(5),
+            moveCount: 24 + excessMoves,
             score: zorScore,
             completedAt: activeDate.subtract(Duration(minutes: 15 + (i * 4) % 400)),
             difficulty: 'zor',
@@ -157,9 +148,12 @@ class LeaderboardService extends ChangeNotifier {
       }
 
       // Master:
+      // Master'da i=0 için süre 18s -> timePenalty 36 -> 1350 - 36 = 1314 P (> 1300)
       if (playsMaster) {
-        final masterDuration = (55000 + ((1.0 - effectiveSkill) * (isSpeedy ? 58000 : 95000))).round();
-        final masterScore = (1180 + (effectiveSkill * 360)).round();
+        final masterDuration = (18000 + i * 920 + ((i * 19) % 380)).round();
+        final masterSec = (masterDuration / 1000).ceil();
+        final excessMoves = _excess((i - 10) ~/ 6);
+        final masterScore = (1350 - masterSec * 2 - excessMoves * 2).clamp(600, 1315);
         _resultsStore.add(
           GameResult(
             id: 'queens_master_$userId',
@@ -168,7 +162,7 @@ class LeaderboardService extends ChangeNotifier {
             userId: userId,
             userName: name,
             durationMs: masterDuration,
-            moveCount: 16 + rng.nextInt(8),
+            moveCount: 54 + excessMoves,
             score: masterScore,
             completedAt: activeDate.subtract(Duration(minutes: 20 + (i * 4) % 400)),
             difficulty: 'master',
@@ -177,15 +171,43 @@ class LeaderboardService extends ChangeNotifier {
       }
 
       // B) DİĞER TÜM OYUNLAR (Bugün)
-      // Üst seviye oyuncular (Tier 1) 1050-1180 aralığında puan alabilir.
-      // Böylece kullanıcı her oyunda "farkla birinci" olmaz, gerçek rekabet hisseder.
+      // Süreler ve puanlar birbiriyle %100 uyumlu: Süresi daha iyi olanın puanı ve sırası DAHA İYİDİR.
       for (final game in allOtherGames) {
-        final isWord = game == GameType.pinpoint || game == GameType.crossclimb;
-        final bonus = (isWord && isWordExpert) ? 0.12 : ((!isWord && isGridExpert) ? 0.12 : 0.0);
-        final gameSkill = (effectiveSkill + bonus + (rng.nextDouble() - 0.5) * 0.06).clamp(0.08, 1.0);
+        final baseOffset = (game.index * 7) % 11;
+        final duration = (13000 + (i * 420) + ((i * 23 + baseOffset * 100) % 300)).round();
+        final sec = (duration / 1000).ceil();
 
-        final score = (720 + (gameSkill * 440) + (rng.nextInt(26) - 13)).round();
-        final duration = (18000 + ((1.0 - gameSkill) * (isSpeedy ? 32000 : 56000))).round();
+        int score;
+        int moveCount = 10;
+        switch (game) {
+          case GameType.pinpoint:
+            final clues = i < 15 ? 1 : (i < 55 ? 2 : (i < 105 ? 3 : 4));
+            final wrong = i < 25 ? 0 : (i < 80 ? 1 : 2);
+            score = (2000 - clues * 250 - wrong * 100 - sec * 5).clamp(200, 1920);
+            moveCount = clues + wrong;
+            break;
+          case GameType.crossclimb:
+            final wrong = i < 30 ? 0 : (i < 90 ? 1 : 2);
+            score = (2000 - sec * 6 - wrong * 50).clamp(200, 1920);
+            moveCount = 5 + wrong;
+            break;
+          case GameType.tango:
+            final excessMoves = _excess((i - 20) ~/ 12);
+            score = (2000 - sec * 10 - excessMoves * 4).clamp(200, 1910);
+            moveCount = 22 + excessMoves;
+            break;
+          case GameType.zipPath:
+            score = (2000 - sec * 10).clamp(200, 1920);
+            moveCount = 1;
+            break;
+          case GameType.patches:
+            final excessRects = _excess((i - 25) ~/ 14);
+            score = (2000 - sec * 10 - excessRects * 5).clamp(200, 1910);
+            moveCount = 7 + excessRects;
+            break;
+          default:
+            score = (2000 - sec * 10).clamp(200, 1920);
+        }
 
         _resultsStore.add(
           GameResult(
@@ -195,7 +217,7 @@ class LeaderboardService extends ChangeNotifier {
             userId: userId,
             userName: name,
             durationMs: duration,
-            moveCount: 8 + rng.nextInt(8),
+            moveCount: moveCount,
             score: score,
             completedAt: activeDate.subtract(Duration(minutes: 8 + (i * 3 + game.index * 11) % 480)),
           ),
@@ -205,7 +227,6 @@ class LeaderboardService extends ChangeNotifier {
       // --- 2. GEÇMİŞ GÜNLER SİMÜLASYONU (HAFTALIK, AYLIK, GENEL) ---
       void seedPastDays(List<int> daysList, double participationRate, String prefix) {
         for (final dayBack in daysList) {
-          // Katılım olasılığı
           final roll = ((i * 37 + dayBack * 19) % 100) / 100.0;
           if (roll > participationRate) continue;
 
@@ -215,8 +236,10 @@ class LeaderboardService extends ChangeNotifier {
           // Queens Kolay
           final pPlaysKolay = i < 80 || (i % 2 == 0);
           if (pPlaysKolay) {
-            final pKolayScore = (720 + (effectiveSkill * 250) + (rng.nextInt(30) - 15)).round();
-            final pKolayDur = (18000 + ((1.0 - effectiveSkill) * 38000) + rng.nextInt(6000)).round();
+            final pKolayDur = (12500 + i * 380 + ((i * 17 + dayBack * 71) % 260)).round();
+            final pKolaySec = (pKolayDur / 1000).ceil();
+            final pExcessMoves = _excess((i - 20) ~/ 15);
+            final pKolayScore = (900 - pKolaySec * 2 - pExcessMoves * 2).clamp(400, 880);
             _resultsStore.add(
               GameResult(
                 id: 'queens_kolay_${userId}_${prefix}_d$dayBack',
@@ -225,7 +248,7 @@ class LeaderboardService extends ChangeNotifier {
                 userId: userId,
                 userName: name,
                 durationMs: pKolayDur,
-                moveCount: 6 + rng.nextInt(3),
+                moveCount: 18 + pExcessMoves,
                 score: pKolayScore,
                 completedAt: pastDate.add(Duration(hours: 9 + (i * 5) % 13, minutes: (i * 11) % 60)),
                 difficulty: 'kolay',
@@ -236,8 +259,10 @@ class LeaderboardService extends ChangeNotifier {
           // Queens Zor
           final pPlaysZor = i < 22 || (i % 3 == 0 && i < 75);
           if (pPlaysZor && (i + dayBack) % 4 != 0) {
-            final pZorScore = (930 + (effectiveSkill * 290) + (rng.nextInt(40) - 20)).round();
-            final pZorDur = (35000 + ((1.0 - effectiveSkill) * 52000) + rng.nextInt(8000)).round();
+            final pZorDur = (25000 + i * 600 + ((i * 19 + dayBack * 53) % 340)).round();
+            final pZorSec = (pZorDur / 1000).ceil();
+            final pExcessMoves = _excess((i - 15) ~/ 10);
+            final pZorScore = (1200 - pZorSec * 2 - pExcessMoves * 2).clamp(500, 1160);
             _resultsStore.add(
               GameResult(
                 id: 'queens_zor_${userId}_${prefix}_d$dayBack',
@@ -246,7 +271,7 @@ class LeaderboardService extends ChangeNotifier {
                 userId: userId,
                 userName: name,
                 durationMs: pZorDur,
-                moveCount: 8 + rng.nextInt(5),
+                moveCount: 24 + pExcessMoves,
                 score: pZorScore,
                 completedAt: pastDate.add(Duration(hours: 10 + (i * 5) % 12, minutes: (i * 13) % 60)),
                 difficulty: 'zor',
@@ -257,8 +282,10 @@ class LeaderboardService extends ChangeNotifier {
           // Queens Master (Sadece elit oyuncular)
           final pPlaysMaster = i < 12 || (i % 7 == 0 && i < 50);
           if (pPlaysMaster && (i + dayBack) % 3 != 0) {
-            final pMasterScore = (1160 + (effectiveSkill * 380) + (rng.nextInt(50) - 25)).round();
-            final pMasterDur = (58000 + ((1.0 - effectiveSkill) * 85000) + rng.nextInt(12000)).round();
+            final pMasterDur = (19000 + i * 950 + ((i * 23 + dayBack * 47) % 390)).round();
+            final pMasterSec = (pMasterDur / 1000).ceil();
+            final pExcessMoves = _excess((i - 10) ~/ 6);
+            final pMasterScore = (1350 - pMasterSec * 2 - pExcessMoves * 2).clamp(600, 1315);
             _resultsStore.add(
               GameResult(
                 id: 'queens_master_${userId}_${prefix}_d$dayBack',
@@ -267,7 +294,7 @@ class LeaderboardService extends ChangeNotifier {
                 userId: userId,
                 userName: name,
                 durationMs: pMasterDur,
-                moveCount: 16 + rng.nextInt(8),
+                moveCount: 54 + pExcessMoves,
                 score: pMasterScore,
                 completedAt: pastDate.add(Duration(hours: 11 + (i * 5) % 11, minutes: (i * 17) % 60)),
                 difficulty: 'master',
@@ -279,12 +306,40 @@ class LeaderboardService extends ChangeNotifier {
           for (final game in allOtherGames) {
             if ((i + dayBack * 3 + game.index * 7) % 5 == 0) continue;
 
-            final isWord = game == GameType.pinpoint || game == GameType.crossclimb;
-            final bonus = (isWord && isWordExpert) ? 0.12 : ((!isWord && isGridExpert) ? 0.12 : 0.0);
-            final gameSkill = (effectiveSkill + bonus + (rng.nextDouble() - 0.5) * 0.06).clamp(0.08, 1.0);
+            final duration = (13500 + i * 440 + ((i * 29 + dayBack * 37 + game.index * 83) % 320)).round();
+            final sec = (duration / 1000).ceil();
 
-            final score = (700 + (gameSkill * 450) + (rng.nextInt(34) - 17)).round();
-            final duration = (20000 + ((1.0 - gameSkill) * (isSpeedy ? 32000 : 54000)) + rng.nextInt(8000)).round();
+            int score;
+            int moveCount = 10;
+            switch (game) {
+              case GameType.pinpoint:
+                final clues = i < 15 ? 1 : (i < 55 ? 2 : (i < 105 ? 3 : 4));
+                final wrong = i < 25 ? 0 : (i < 80 ? 1 : 2);
+                score = (2000 - clues * 250 - wrong * 100 - sec * 5).clamp(200, 1920);
+                moveCount = clues + wrong;
+                break;
+              case GameType.crossclimb:
+                final wrong = i < 30 ? 0 : (i < 90 ? 1 : 2);
+                score = (2000 - sec * 6 - wrong * 50).clamp(200, 1920);
+                moveCount = 5 + wrong;
+                break;
+              case GameType.tango:
+                final excessMoves = _excess((i - 20) ~/ 12);
+                score = (2000 - sec * 10 - excessMoves * 4).clamp(200, 1910);
+                moveCount = 22 + excessMoves;
+                break;
+              case GameType.zipPath:
+                score = (2000 - sec * 10).clamp(200, 1920);
+                moveCount = 1;
+                break;
+              case GameType.patches:
+                final excessRects = _excess((i - 25) ~/ 14);
+                score = (2000 - sec * 10 - excessRects * 5).clamp(200, 1910);
+                moveCount = 7 + excessRects;
+                break;
+              default:
+                score = (2000 - sec * 10).clamp(200, 1920);
+            }
 
             _resultsStore.add(
               GameResult(
@@ -294,7 +349,7 @@ class LeaderboardService extends ChangeNotifier {
                 userId: userId,
                 userName: name,
                 durationMs: duration,
-                moveCount: 8 + rng.nextInt(7),
+                moveCount: moveCount,
                 score: score,
                 completedAt: pastDate.add(Duration(hours: 8 + (i * 3 + game.index * 5) % 14, minutes: (i * 7) % 60)),
               ),

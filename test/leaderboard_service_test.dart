@@ -71,7 +71,7 @@ void main() {
         'tango|$todayId': DailyPlayRecord(
           gameType: GameType.tango,
           dateId: todayId,
-          score: 1500, // Çok yüksek bir skor -> 1. sıraya yerleşmeli
+          score: 1980, // Çok yüksek bir skor -> 1. sıraya yerleşmeli
           durationMs: 15000,
           completedAt: DateTime.now(),
         ),
@@ -87,7 +87,7 @@ void main() {
 
       final myEntry = tangoLeaderboard.firstWhere((e) => e.userId == 'user_local');
       expect(myEntry.rank, equals(1));
-      expect(myEntry.totalScore, equals(1500));
+      expect(myEntry.totalScore, equals(1980));
       expect(tangoLeaderboard.length, equals(151)); // 150 bot + 1 yerel kullanıcı
     });
 

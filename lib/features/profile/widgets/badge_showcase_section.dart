@@ -4,23 +4,40 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/models/badge_model.dart';
 import '../../../core/services/badge_service.dart';
+import '../../../core/services/daily_play_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/sketch_decorations.dart';
+import '../../../games/common/base_game.dart';
 
-class BadgeShowcaseSection extends ConsumerWidget {
+class BadgeShowcaseSection extends ConsumerStatefulWidget {
   const BadgeShowcaseSection({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<BadgeShowcaseSection> createState() => _BadgeShowcaseSectionState();
+}
+
+class _BadgeShowcaseSectionState extends ConsumerState<BadgeShowcaseSection> {
+  BadgeCategory? _selectedCategory;
+  GameType? _selectedStreakGame;
+
+  @override
+  Widget build(BuildContext context) {
     final badgeState = ref.watch(badgeServiceProvider);
     final badgeNotifier = ref.read(badgeServiceProvider.notifier);
+    final dailyPlayState = ref.watch(dailyPlayServiceProvider);
 
     final championships = DailyBadge.allBadges
         .where((b) => b.category == BadgeCategory.championship)
         .toList();
-    final permanentBadges = DailyBadge.allBadges
-        .where((b) => b.category != BadgeCategory.championship)
-        .toList();
+
+    // Filtrelenmiş liste
+    List<DailyBadge> filteredBadges = DailyBadge.allBadges;
+    if (_selectedCategory != null) {
+      filteredBadges = filteredBadges.where((b) => b.category == _selectedCategory).toList();
+      if (_selectedCategory == BadgeCategory.streak && _selectedStreakGame != null) {
+        filteredBadges = filteredBadges.where((b) => b.relatedGame == _selectedStreakGame).toList();
+      }
+    }
 
     final activeCount = badgeNotifier.activeBadges.length;
     final totalCount = DailyBadge.allBadges.length;
@@ -28,7 +45,7 @@ class BadgeShowcaseSection extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // 1. BAŞLIK
+        // 1. BAŞLIK & İSTATİSTİK
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
           child: Row(
@@ -36,7 +53,7 @@ class BadgeShowcaseSection extends ConsumerWidget {
             children: [
               Row(
                 children: [
-                  const Icon(Icons.emoji_events_rounded, size: 18, color: AppColors.pencilBlack),
+                  const Icon(Icons.emoji_events_rounded, size: 20, color: AppColors.sunYellow),
                   const SizedBox(width: 6),
                   Text(
                     'ROZETLER & ŞAMPİYONLUK KEMERLERİ',
@@ -44,7 +61,7 @@ class BadgeShowcaseSection extends ConsumerWidget {
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
                       color: AppColors.pencilGraphite,
-                      letterSpacing: 1.0,
+                      letterSpacing: 0.8,
                     ),
                   ),
                 ],
@@ -57,7 +74,7 @@ class BadgeShowcaseSection extends ConsumerWidget {
                   border: Border.all(color: AppColors.pencilBlack, width: 1.2),
                 ),
                 child: Text(
-                  '$activeCount / $totalCount AKTİF',
+                  '$activeCount / $totalCount KAZANILDI',
                   style: GoogleFonts.patrickHand(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
@@ -69,21 +86,27 @@ class BadgeShowcaseSection extends ConsumerWidget {
           ),
         ),
 
-        // 2. ŞAMPİYONLUK KEMERLERİ (SÜRELİ ROZETLER VİTRİNİ)
+        // 2. SÜRELİ ŞAMPİYONLUK KEMERLERİ VİTRİNİ (YATAY KAYAN KARUSEL)
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 2),
-          child: Text(
-            '👑 Şampiyonluk Kemerleri (Süreli - Hak Edilmesi Gerekir)',
-            style: GoogleFonts.patrickHand(
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-              color: AppColors.pencilGray,
-            ),
+          child: Row(
+            children: [
+              const Text('👑', style: TextStyle(fontSize: 14)),
+              const SizedBox(width: 4),
+              Text(
+                'Süreli Rozetler & Şampiyonluk Kemerleri',
+                style: GoogleFonts.patrickHand(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.pencilGray,
+                ),
+              ),
+            ],
           ),
         ),
         const SizedBox(height: 6),
         SizedBox(
-          height: 120,
+          height: 122,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -109,42 +132,188 @@ class BadgeShowcaseSection extends ConsumerWidget {
 
         const SizedBox(height: 14),
 
-        // 3. KALICI KOLEKSİYON ROZETLERİ
+        // 3. KATEGORİ FİLTRELEME ÇUBUĞU
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 2),
-          child: Text(
-            '🎖️ Kalıcı Koleksiyon Rozetleri',
-            style: GoogleFonts.patrickHand(
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-              color: AppColors.pencilGray,
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            child: Row(
+              children: [
+                _buildCategoryFilterChip(
+                  label: 'Tümü ($totalCount)',
+                  isSelected: _selectedCategory == null,
+                  onTap: () => setState(() {
+                    _selectedCategory = null;
+                    _selectedStreakGame = null;
+                  }),
+                ),
+                const SizedBox(width: 6),
+                _buildCategoryFilterChip(
+                  label: '🔥 Seriler (91)',
+                  isSelected: _selectedCategory == BadgeCategory.streak,
+                  onTap: () => setState(() => _selectedCategory = BadgeCategory.streak),
+                ),
+                const SizedBox(width: 6),
+                _buildCategoryFilterChip(
+                  label: '👑 Süreli Kemerler (10)',
+                  isSelected: _selectedCategory == BadgeCategory.championship,
+                  onTap: () => setState(() {
+                    _selectedCategory = BadgeCategory.championship;
+                    _selectedStreakGame = null;
+                  }),
+                ),
+                const SizedBox(width: 6),
+                _buildCategoryFilterChip(
+                  label: '🎮 Oyun Ustalığı (6)',
+                  isSelected: _selectedCategory == BadgeCategory.gameMastery,
+                  onTap: () => setState(() {
+                    _selectedCategory = BadgeCategory.gameMastery;
+                    _selectedStreakGame = null;
+                  }),
+                ),
+                const SizedBox(width: 6),
+                _buildCategoryFilterChip(
+                  label: '🧠 Zekâ & Başarı (6)',
+                  isSelected: _selectedCategory == BadgeCategory.brainPower,
+                  onTap: () => setState(() {
+                    _selectedCategory = BadgeCategory.brainPower;
+                    _selectedStreakGame = null;
+                  }),
+                ),
+              ],
             ),
           ),
         ),
-        const SizedBox(height: 6),
-        SizedBox(
-          height: 104,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            physics: const BouncingScrollPhysics(),
-            itemCount: permanentBadges.length,
-            separatorBuilder: (context, index) => const SizedBox(width: 10),
-            itemBuilder: (context, index) {
-              final badge = permanentBadges[index];
-              final userBadge = badgeState[badge.id];
-              final isUnlocked = userBadge != null;
 
-              return _buildPermanentBadgeCard(
-                context,
-                badge: badge,
-                userBadge: userBadge,
-                isUnlocked: isUnlocked,
-              );
-            },
+        // 4. EĞER SERİLER SEÇİLİYSE: OYUN BAZLI ALT FİLTRE
+        if (_selectedCategory == BadgeCategory.streak) ...[
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              child: Row(
+                children: [
+                  _buildSubGameChip(
+                    label: 'Tüm Oyunlar',
+                    isSelected: _selectedStreakGame == null,
+                    onTap: () => setState(() => _selectedStreakGame = null),
+                  ),
+                  for (final g in GameType.values) ...[
+                    const SizedBox(width: 5),
+                    _buildSubGameChip(
+                      label: g.title,
+                      isSelected: _selectedStreakGame == g,
+                      currentStreak: dailyPlayState.getCurrentStreak(g),
+                      onTap: () => setState(() => _selectedStreakGame = g),
+                    ),
+                  ],
+                ],
+              ),
+            ),
           ),
+        ],
+
+        const SizedBox(height: 10),
+
+        // 5. ROZET LİSTESİ / IZGARASI
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: filteredBadges.isEmpty
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Text(
+                      'Bu kategoride rozet bulunamadı.',
+                      style: GoogleFonts.patrickHand(fontSize: 16, color: AppColors.pencilLight),
+                    ),
+                  ),
+                )
+              : ListView.separated(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: filteredBadges.length,
+                  separatorBuilder: (context, index) => const SizedBox(height: 8),
+                  itemBuilder: (context, index) {
+                    final badge = filteredBadges[index];
+                    final userBadge = badgeState[badge.id];
+                    final isUnlocked = userBadge != null && !userBadge.isExpired;
+
+                    return _buildBadgeListItem(
+                      context,
+                      badge: badge,
+                      userBadge: userBadge,
+                      isUnlocked: isUnlocked,
+                      dailyPlayState: dailyPlayState,
+                    );
+                  },
+                ),
         ),
       ],
+    );
+  }
+
+  Widget _buildCategoryFilterChip({
+    required String label,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.selectionClick();
+        onTap();
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.sunYellow : Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: AppColors.pencilBlack, width: isSelected ? 1.8 : 1.2),
+          boxShadow: isSelected
+              ? const [BoxShadow(color: AppColors.pencilBlack, offset: Offset(1.5, 1.5))]
+              : null,
+        ),
+        child: Text(
+          label,
+          style: GoogleFonts.patrickHand(
+            fontSize: 13,
+            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+            color: AppColors.pencilBlack,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSubGameChip({
+    required String label,
+    required bool isSelected,
+    required VoidCallback onTap,
+    int? currentStreak,
+  }) {
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.selectionClick();
+        onTap();
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.accentCyan : AppColors.surfaceSecondaryLight,
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(color: AppColors.pencilBlack, width: 1.2),
+        ),
+        child: Text(
+          currentStreak != null && currentStreak > 0 ? '$label (🔥$currentStreak)' : label,
+          style: GoogleFonts.patrickHand(
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+            color: AppColors.pencilBlack,
+          ),
+        ),
+      ),
     );
   }
 
@@ -179,40 +348,49 @@ class BadgeShowcaseSection extends ConsumerWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
-                      color: isUnlocked ? AppColors.sunYellow : AppColors.surfaceSecondaryLight,
+                      color: isUnlocked
+                          ? (badge.validityDays == 0 ? AppColors.highlighterPurple : AppColors.sunYellow)
+                          : AppColors.surfaceSecondaryLight,
                       borderRadius: BorderRadius.circular(6),
-                      border: Border.all(color: AppColors.pencilBlack, width: 1.0),
+                      border: Border.all(color: AppColors.pencilBlack, width: 1.2),
                     ),
                     child: Text(
-                      isUnlocked ? '⏳ $remainingDays GÜN' : '🔒 KİLİTLİ',
+                      isUnlocked
+                          ? (badge.validityDays == 0 ? '🧠 130+ IQ' : '⏳ $remainingDays GÜN')
+                          : '🔒 KİLİTLİ',
                       style: GoogleFonts.patrickHand(
-                        fontSize: 10,
+                        fontSize: 11,
                         fontWeight: FontWeight.w700,
-                        color: isUnlocked ? AppColors.pencilBlack : AppColors.pencilGray,
+                        color: AppColors.pencilBlack,
                       ),
                     ),
                   ),
                 ],
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              Text(
+                badge.title,
+                style: GoogleFonts.patrickHand(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: isUnlocked ? AppColors.pencilBlack : AppColors.pencilGray,
+                  height: 1.1,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              Row(
                 children: [
-                  Text(
-                    badge.title,
-                    style: GoogleFonts.patrickHand(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: isUnlocked ? AppColors.pencilBlack : AppColors.pencilGray,
-                      height: 1.1,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                  Icon(
+                    isUnlocked ? Icons.verified_rounded : Icons.lock_outline_rounded,
+                    size: 13,
+                    color: isUnlocked ? const Color(0xFF15803D) : AppColors.pencilLight,
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(width: 4),
                   Text(
-                    isUnlocked ? 'Aktif Şampiyon' : 'Kazanmak için dokun',
+                    isUnlocked ? 'Taşınıyor' : 'Kazanılmadı',
                     style: GoogleFonts.patrickHand(
                       fontSize: 11,
+                      fontWeight: FontWeight.w600,
                       color: isUnlocked ? const Color(0xFF15803D) : AppColors.pencilLight,
                     ),
                   ),
@@ -225,59 +403,113 @@ class BadgeShowcaseSection extends ConsumerWidget {
     );
   }
 
-  Widget _buildPermanentBadgeCard(
+  Widget _buildBadgeListItem(
     BuildContext context, {
     required DailyBadge badge,
     required UserBadge? userBadge,
     required bool isUnlocked,
+    required DailyPlayState dailyPlayState,
   }) {
+    int currentStreak = 0;
+    if (badge.category == BadgeCategory.streak) {
+      currentStreak = dailyPlayState.getCurrentStreak(badge.relatedGame);
+    }
+
     return GestureDetector(
       onTap: () {
         HapticFeedback.selectionClick();
         _showBadgeModal(context, badge, userBadge);
       },
       child: SketchCard(
-        backgroundColor: isUnlocked ? Colors.white : AppColors.surfaceSecondaryLight.withValues(alpha: 0.5),
+        backgroundColor: isUnlocked ? const Color(0xFFFAFAF5) : Colors.white,
         borderRadius: 12,
-        borderWidth: isUnlocked ? 1.8 : 1.2,
+        borderWidth: isUnlocked ? 2.0 : 1.4,
         shadowOffset: isUnlocked ? const Offset(2.0, 2.0) : const Offset(1.0, 1.0),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        child: SizedBox(
-          width: 105,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                badge.emoji,
-                style: TextStyle(
-                  fontSize: 26,
-                  color: isUnlocked ? null : Colors.grey,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        child: Row(
+          children: [
+            // Simge Kutusu
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: isUnlocked ? badge.color.withValues(alpha: 0.35) : AppColors.surfaceSecondaryLight,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: AppColors.pencilBlack, width: 1.5),
+              ),
+              child: Center(
+                child: Text(
+                  badge.emoji,
+                  style: TextStyle(
+                    fontSize: 22,
+                    color: isUnlocked ? null : Colors.grey,
+                  ),
                 ),
               ),
-              const SizedBox(height: 4),
-              Text(
-                badge.title,
-                textAlign: TextAlign.center,
-                style: GoogleFonts.patrickHand(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: isUnlocked ? AppColors.pencilBlack : AppColors.pencilGray,
-                  height: 1.1,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(width: 12),
+
+            // Metin Bilgileri
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    badge.title,
+                    style: GoogleFonts.patrickHand(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: isUnlocked ? AppColors.pencilBlack : AppColors.pencilGray,
+                    ),
+                  ),
+                  Text(
+                    badge.requirement,
+                    style: GoogleFonts.patrickHand(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.pencilLight,
+                    ),
+                  ),
+                  if (badge.category == BadgeCategory.streak && !isUnlocked) ...[
+                    const SizedBox(height: 3),
+                    Row(
+                      children: [
+                        Text(
+                          'Mevcut Seri: $currentStreak / ${badge.streakDays} Gün',
+                          style: GoogleFonts.patrickHand(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.pencilGraphite,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ],
               ),
-              const SizedBox(height: 2),
-              Text(
+            ),
+
+            // Durum Rozeti
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                color: isUnlocked ? const Color(0xFFD1FAE5) : AppColors.surfaceSecondaryLight,
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(
+                  color: isUnlocked ? const Color(0xFF059669) : AppColors.pencilLight,
+                  width: 1.2,
+                ),
+              ),
+              child: Text(
                 isUnlocked ? '✓ Kazanıldı' : '🔒 Kilitli',
                 style: GoogleFonts.patrickHand(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w600,
-                  color: isUnlocked ? const Color(0xFF15803D) : AppColors.pencilLight,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: isUnlocked ? const Color(0xFF047857) : AppColors.pencilLight,
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -330,8 +562,12 @@ class BadgeShowcaseSection extends ConsumerWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
                 child: Text(
                   badge.isTemporary
-                      ? '👑 ŞAMPİYONLUK KEMERİ (${badge.validityDays} GÜN GEÇERLİ)'
-                      : '🎖️ KALICI KOLEKSİYON ROZETİ',
+                      ? (badge.validityDays == 0
+                          ? '👑 KOŞULLU DİNAMİK ROZET'
+                          : '👑 ŞAMPİYONLUK KEMERİ (${badge.validityDays} GÜN GEÇERLİ)')
+                      : (badge.category == BadgeCategory.streak
+                          ? '🔥 KALICI SERİ ROZETİ'
+                          : '🎖️ KALICI KOLEKSİYON ROZETİ'),
                   style: GoogleFonts.patrickHand(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
@@ -350,73 +586,48 @@ class BadgeShowcaseSection extends ConsumerWidget {
                   height: 1.2,
                 ),
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 12),
 
-              // Nasıl Kazanılır Kutusu
-              SketchCard(
-                backgroundColor: AppColors.backgroundLight,
-                borderRadius: 12,
-                borderWidth: 1.6,
-                shadowOffset: const Offset(2, 2),
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: AppColors.backgroundLight,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: AppColors.pencilBlack, width: 1.4),
+                ),
+                child: Row(
                   children: [
-                    Row(
-                      children: [
-                        const Icon(Icons.stars_rounded, size: 16, color: AppColors.pencilBlack),
-                        const SizedBox(width: 4),
-                        Text(
-                          'KAZANMA ŞARTI:',
-                          style: GoogleFonts.patrickHand(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.pencilGraphite,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      badge.requirement,
-                      style: GoogleFonts.patrickHand(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.pencilBlack,
-                      ),
-                    ),
-                    if (badge.isTemporary) ...[
-                      const Divider(height: 12, color: AppColors.pencilBlack, thickness: 1.0),
-                      Text(
-                        '⚠️ Bu rozet sürelidir. Bir kez kazandıktan sonra ömür boyu durmaz, süresi dolmadan oyunu tekrar kazanarak kemeri sürekli korumalısın!',
+                    const Icon(Icons.info_outline_rounded, size: 16, color: AppColors.pencilGraphite),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Kazanma Koşulu: ${badge.requirement}',
                         style: GoogleFonts.patrickHand(
-                          fontSize: 12,
-                          color: AppColors.pencilGraphite,
-                          fontStyle: FontStyle.italic,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.pencilBlack,
                         ),
                       ),
-                    ],
+                    ),
                   ],
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 14),
 
               // Kapat Butonu
               SketchCard(
                 backgroundColor: AppColors.sunYellow,
                 borderRadius: 12,
                 borderWidth: 2.0,
-                shadowOffset: const Offset(2.5, 2.5),
-                padding: const EdgeInsets.symmetric(vertical: 8),
+                shadowOffset: const Offset(2.0, 2.0),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
                 onTap: () => Navigator.pop(ctx),
-                child: Center(
-                  child: Text(
-                    'Tamam',
-                    style: GoogleFonts.patrickHand(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.pencilBlack,
-                    ),
+                child: Text(
+                  'Kapat',
+                  style: GoogleFonts.patrickHand(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.pencilBlack,
                   ),
                 ),
               ),

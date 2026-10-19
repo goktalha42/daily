@@ -1134,8 +1134,9 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
       }
     }
 
-    // ADIM 5: Master Çift Temas Çıkarımı (Touching Pair Deduction for Master)
+    // ADIM 5: Master Çift Temas ve Bağımsız Çıkarımlar (Touching Pair & Partner Deductions)
     if (reqQueens == 2) {
+      // 5A. Bölgede Çift Temas (3 adaydan 2'si temas ediyor -> 3. KESİN VEZİR)
       for (var reg = 0; reg < size; reg++) {
         int queensInReg = 0;
         final candidates = <math.Point<int>>[];
@@ -1154,7 +1155,6 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
               final p1 = candidates[i];
               final p2 = candidates[j];
               if ((p1.x - p2.x).abs() <= 1 && (p1.y - p2.y).abs() <= 1) {
-                // p1 ve p2 temas ediyor, dolayısıyla 3. hücre (k) kesinlikle vezir olmalıdır!
                 final k = 3 - i - j;
                 final forced = candidates[k];
                 _history.add(_QueensHistoryItem(changes: {forced: CellContent.empty}));
@@ -1174,10 +1174,104 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
             }
           }
         }
+
+        // 5B. Bölgede Partner İmkânsızlığı (Bir aday diğer tüm adaylara değiyorsa vezir olamaz -> ✖)
+        if (needed == 2 && candidates.length >= 3) {
+          for (final p in candidates) {
+            final hasPartner = candidates.any((other) =>
+                other != p &&
+                ((other.x - p.x).abs() > 1 || (other.y - p.y).abs() > 1));
+            if (!hasPartner) {
+              _history.add(_QueensHistoryItem(changes: {p: CellContent.empty}));
+              setState(() {
+                _grid[p.x][p.y].content = CellContent.cross;
+                _moveCount++;
+                _checkState();
+              });
+              _highlightCells({p, ...candidates.where((c) => c != p)});
+              _showHintBanner(
+                'Bu renk bölgesinde 2 vezir gerekiyor. (${p.x + 1}. Satır, ${p.y + 1}. Sütun) karesine vezir konulursa bölgedeki diğer tüm boş kareler engellenir ve 2. vezire yer kalmaz! Bu nedenle bu kare vezir olamaz (✖ konuldu).',
+                title: '🚫 İmkânsız Partner Tespiti',
+              );
+              return;
+            }
+          }
+        }
+      }
+
+      // 5C. Satırda Çift Temas (3 adaydan 2'si temas ediyor -> 3. KESİN VEZİR)
+      for (var r = 0; r < size; r++) {
+        int queensInRow = 0;
+        final candidates = <int>[];
+        for (var c = 0; c < size; c++) {
+          if (_grid[r][c].content == CellContent.queen) queensInRow++;
+          if (_grid[r][c].content == CellContent.empty) candidates.add(c);
+        }
+        final needed = 2 - queensInRow;
+        if (needed == 2 && candidates.length == 3) {
+          for (int i = 0; i < 3; i++) {
+            for (int j = i + 1; j < 3; j++) {
+              if ((candidates[i] - candidates[j]).abs() <= 1) {
+                final k = 3 - i - j;
+                final forcedCol = candidates[k];
+                final forced = math.Point(r, forcedCol);
+                _history.add(_QueensHistoryItem(changes: {forced: CellContent.empty}));
+                _triggerBoardRipple(r, forcedCol);
+                setState(() {
+                  _grid[r][forcedCol].content = CellContent.queen;
+                  _moveCount++;
+                  _checkState();
+                });
+                _highlightCells({math.Point(r, candidates[i]), math.Point(r, candidates[j]), forced});
+                _showHintBanner(
+                  '${r + 1}. Satırda 2 vezir gerekiyor. Yan yana duran sütunlar aynı anda vezir alamayacağı için, temas etmeyen (${r + 1}. Satır, ${forcedCol + 1}. Sütun) karesi kesinlikle vezir olmak zorundadır.',
+                  title: '⚡ Satır Çift Temas Çıkarımı',
+                );
+                return;
+              }
+            }
+          }
+        }
+      }
+
+      // 5D. Sütunda Çift Temas (3 adaydan 2'si temas ediyor -> 3. KESİN VEZİR)
+      for (var c = 0; c < size; c++) {
+        int queensInCol = 0;
+        final candidates = <int>[];
+        for (var r = 0; r < size; r++) {
+          if (_grid[r][c].content == CellContent.queen) queensInCol++;
+          if (_grid[r][c].content == CellContent.empty) candidates.add(r);
+        }
+        final needed = 2 - queensInCol;
+        if (needed == 2 && candidates.length == 3) {
+          for (int i = 0; i < 3; i++) {
+            for (int j = i + 1; j < 3; j++) {
+              if ((candidates[i] - candidates[j]).abs() <= 1) {
+                final k = 3 - i - j;
+                final forcedRow = candidates[k];
+                final forced = math.Point(forcedRow, c);
+                _history.add(_QueensHistoryItem(changes: {forced: CellContent.empty}));
+                _triggerBoardRipple(forcedRow, c);
+                setState(() {
+                  _grid[forcedRow][c].content = CellContent.queen;
+                  _moveCount++;
+                  _checkState();
+                });
+                _highlightCells({math.Point(candidates[i], c), math.Point(candidates[j], c), forced});
+                _showHintBanner(
+                  '${c + 1}. Sütunda 2 vezir gerekiyor. Birbirine değen satırlar aynı anda vezir alamayacağı için, temas etmeyen (${forcedRow + 1}. Satır, ${c + 1}. Sütun) karesi kesinlikle vezir olmak zorundadır.',
+                  title: '⚡ Sütun Çift Temas Çıkarımı',
+                );
+                return;
+              }
+            }
+          }
+        }
       }
     }
 
-    // ADIM 6: Çizgi-Bölge İndirgemesi (Pointing / Locked Candidates)
+    // ADIM 6: Kilitli Aday İndirgemesi (Pointing & Claiming Line-Region Reduction)
+    // 6A. Pointing: Bölge -> Satır / Sütun
     for (var reg = 0; reg < size; reg++) {
       final regCandidates = <math.Point<int>>[];
       for (var r = 0; r < size; r++) {
@@ -1190,7 +1284,6 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
       if (regCandidates.length >= 2) {
         final firstRow = regCandidates.first.x;
         if (regCandidates.every((pt) => pt.x == firstRow)) {
-          // Satır kotası bu bölgeyle tamamen kilitleniyor mu?
           int queensInReg = 0;
           for (var r = 0; r < size; r++) {
             for (var c = 0; c < size; c++) {
@@ -1263,7 +1356,115 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
       }
     }
 
-    // ADIM 7: Mantıksal Çözüm İlerlemesi (Stratejik Vezir Yerleştirme)
+    // 6B. Claiming: Satır / Sütun -> Bölge
+    for (var r = 0; r < size; r++) {
+      final rowCandidates = <math.Point<int>>[];
+      int queensInRow = 0;
+      for (var c = 0; c < size; c++) {
+        if (_grid[r][c].content == CellContent.queen) queensInRow++;
+        if (_grid[r][c].content == CellContent.empty) rowCandidates.add(math.Point(r, c));
+      }
+      final neededInRow = reqQueens - queensInRow;
+      if (neededInRow > 0 && rowCandidates.isNotEmpty) {
+        final targetReg = _level.regionMap[r][rowCandidates.first.y];
+        if (rowCandidates.every((pt) => _level.regionMap[r][pt.y] == targetReg)) {
+          int queensInReg = 0;
+          for (var ro = 0; ro < size; ro++) {
+            for (var co = 0; co < size; co++) {
+              if (_level.regionMap[ro][co] == targetReg && _grid[ro][co].content == CellContent.queen) queensInReg++;
+            }
+          }
+          final neededInReg = reqQueens - queensInReg;
+          if (neededInReg == neededInRow) {
+            for (var ro = 0; ro < size; ro++) {
+              if (ro == r) continue;
+              for (var co = 0; co < size; co++) {
+                if (_level.regionMap[ro][co] == targetReg && _grid[ro][co].content == CellContent.empty) {
+                  _history.add(_QueensHistoryItem(changes: {math.Point(ro, co): CellContent.empty}));
+                  setState(() {
+                    _grid[ro][co].content = CellContent.cross;
+                    _moveCount++;
+                    _checkState();
+                  });
+                  _highlightCells({math.Point(ro, co), ...rowCandidates});
+                  _showHintBanner(
+                    '${r + 1}. Satırın tüm vezir adayları bu renk bölgesinde bulunuyor. Satırın vezirleri bu bölgeyi dolduracağı için, bölgenin satır dışındaki (${ro + 1}. Satır, ${co + 1}. Sütun) karesine vezir gelemez (✖ konuldu).',
+                    title: '📐 Kilitli Satır İndirgemesi',
+                  );
+                  return;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // ADIM 7: Birim Açlığı / Kontradiksiyon Tespiti (Unit Starvation Impossibility Deduction)
+    if (reqQueens == 2) {
+      for (var r = 0; r < size; r++) {
+        for (var c = 0; c < size; c++) {
+          if (_grid[r][c].content != CellContent.empty) continue;
+
+          for (var reg = 0; reg < size; reg++) {
+            if (_level.regionMap[r][c] == reg) continue;
+            int queensInReg = 0;
+            for (var ro = 0; ro < size; ro++) {
+              for (var co = 0; co < size; co++) {
+                if (_level.regionMap[ro][co] == reg && _grid[ro][co].content == CellContent.queen) queensInReg++;
+              }
+            }
+            final needed = 2 - queensInReg;
+            if (needed <= 0) continue;
+
+            final valid = <math.Point<int>>[];
+            for (var ro = 0; ro < size; ro++) {
+              for (var co = 0; co < size; co++) {
+                if (_level.regionMap[ro][co] == reg && _grid[ro][co].content == CellContent.empty) {
+                  if ((ro - r).abs() > 1 || (co - c).abs() > 1) {
+                    valid.add(math.Point(ro, co));
+                  }
+                }
+              }
+            }
+
+            bool blocksUnit = false;
+            if (valid.length < needed) {
+              blocksUnit = true;
+            } else if (needed == 2) {
+              bool hasIndependentPair = false;
+              for (int i = 0; i < valid.length; i++) {
+                for (int j = i + 1; j < valid.length; j++) {
+                  if ((valid[i].x - valid[j].x).abs() > 1 || (valid[i].y - valid[j].y).abs() > 1) {
+                    hasIndependentPair = true;
+                    break;
+                  }
+                }
+                if (hasIndependentPair) break;
+              }
+              if (!hasIndependentPair) blocksUnit = true;
+            }
+
+            if (blocksUnit) {
+              _history.add(_QueensHistoryItem(changes: {math.Point(r, c): CellContent.empty}));
+              setState(() {
+                _grid[r][c].content = CellContent.cross;
+                _moveCount++;
+                _checkState();
+              });
+              _highlightCells({math.Point(r, c)});
+              _showHintBanner(
+                '(${r + 1}. Satır, ${c + 1}. Sütun) karesine vezir yerleştirilirse, komşu renk bölgesinde gereken $needed vezir için yeterli boş kare kalmaz (kural ihlali oluşur). Dolayısıyla bu kareye vezir gelemez (✖ konuldu).',
+                title: '🔍 Mantıksal Çelişki Tespiti',
+              );
+              return;
+            }
+          }
+        }
+      }
+    }
+
+    // ADIM 8: Mantıksal Çözüm İlerlemesi (Stratejik Vezir Yerleştirme)
     for (final pt in _level.solution) {
       final r = pt[0];
       final c = pt[1];
@@ -1293,7 +1494,11 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
     final durationSeconds = (_elapsedMs / 1000).ceil();
     final baseScore = _level.gridSize * 150;
     final timePenalty = (durationSeconds * 2).clamp(0, baseScore ~/ 2);
-    final movePenalty = (_moveCount * 3).clamp(0, baseScore ~/ 4);
+    // Normal oyun hamleleri (vezir yerleştirme ve temel çarpı koyma) cezalandırılmaz;
+    // yalnızca beklenen hamle sayısını aşan gereksiz tıklama/hatalar cezalandırılır.
+    final expectedMoves = _level.totalQueens * 3;
+    final excessMoves = math.max(0, _moveCount - expectedMoves);
+    final movePenalty = (excessMoves * 2).clamp(0, baseScore ~/ 4);
     final score = (baseScore - timePenalty - movePenalty).clamp(50, 1500);
 
     final result = GameResult(
@@ -1330,6 +1535,7 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
           durationMs: _elapsedMs,
           overallIQ: statsResult.currentIQ,
           statsMap: ref.read(gameStatsServiceProvider),
+          dailyPlayState: ref.read(dailyPlayServiceProvider),
           difficulty: _currentDifficulty.name,
         );
 

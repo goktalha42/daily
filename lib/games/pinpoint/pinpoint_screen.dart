@@ -246,6 +246,7 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> with WidgetsBin
           durationMs: _elapsedMs,
           overallIQ: statsResult.currentIQ,
           statsMap: ref.read(gameStatsServiceProvider),
+          dailyPlayState: ref.read(dailyPlayServiceProvider),
         );
 
     GameSessionService.clearSession(

@@ -280,6 +280,7 @@ class _ZipScreenState extends ConsumerState<ZipScreen> with WidgetsBindingObserv
           durationMs: _elapsedMs,
           overallIQ: statsResult.currentIQ,
           statsMap: ref.read(gameStatsServiceProvider),
+          dailyPlayState: ref.read(dailyPlayServiceProvider),
         );
 
     if (!mounted) return;

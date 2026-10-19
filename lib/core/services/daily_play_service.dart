@@ -68,6 +68,74 @@ class DailyPlayState {
     return records.values.where((r) => r.dateId == dateId && r.subKey == null).length;
   }
 
+  /// Belirli bir oyun (veya [game] null ise herhangi bir oyun) için
+  /// bugün ve geçmişe doğru kaç gün aralıksız oynandığını (aktif seri) hesaplar.
+  int getCurrentStreak([GameType? game]) {
+    final distinctDates = <String>{};
+    for (final r in records.values) {
+      if (game == null || r.gameType == game) {
+        distinctDates.add(r.dateId);
+      }
+    }
+    if (distinctDates.isEmpty) return 0;
+
+    final now = DateTime.now();
+    DateTime checkDate = DateTime(now.year, now.month, now.day);
+    String checkKey = _formatDateKey(checkDate);
+
+    // Eğer bugün henüz oynanmadıysa seriyi kırmıyoruz; dün oynandıysa dünden itibaren sayıyoruz.
+    if (!distinctDates.contains(checkKey)) {
+      checkDate = checkDate.subtract(const Duration(days: 1));
+      checkKey = _formatDateKey(checkDate);
+      if (!distinctDates.contains(checkKey)) {
+        return 0; // Hem bugün hem dün oynanmamışsa seri 0'dır.
+      }
+    }
+
+    int streak = 0;
+    while (distinctDates.contains(checkKey)) {
+      streak++;
+      checkDate = checkDate.subtract(const Duration(days: 1));
+      checkKey = _formatDateKey(checkDate);
+    }
+    return streak;
+  }
+
+  /// Tüm zamanların en uzun aralıksız serisini hesaplar.
+  int getMaxStreak([GameType? game]) {
+    final distinctDates = <String>{};
+    for (final r in records.values) {
+      if (game == null || r.gameType == game) {
+        distinctDates.add(r.dateId);
+      }
+    }
+    if (distinctDates.isEmpty) return 0;
+
+    final sortedDates = distinctDates.map((d) => DateTime.parse(d)).toList()..sort();
+    int maxStreak = 1;
+    int currentRun = 1;
+
+    for (int i = 1; i < sortedDates.length; i++) {
+      final prev = sortedDates[i - 1];
+      final curr = sortedDates[i];
+      final diff = curr.difference(prev).inDays;
+      if (diff == 1) {
+        currentRun++;
+        if (currentRun > maxStreak) maxStreak = currentRun;
+      } else if (diff > 1) {
+        currentRun = 1;
+      }
+    }
+    return maxStreak;
+  }
+
+  static String _formatDateKey(DateTime d) {
+    final year = d.year.toString().padLeft(4, '0');
+    final month = d.month.toString().padLeft(2, '0');
+    final day = d.day.toString().padLeft(2, '0');
+    return '$year-$month-$day';
+  }
+
   DailyPlayState copyWith({Map<String, DailyPlayRecord>? records}) {
     return DailyPlayState(records: records ?? this.records);
   }
