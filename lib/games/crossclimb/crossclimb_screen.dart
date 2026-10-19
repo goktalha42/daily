@@ -39,6 +39,7 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> with Widget
   final ScrollController _scrollController = ScrollController();
   String _currentInputChar = '';
 
+  int _wrongAttempts = 0;
   int _elapsedMs = 0;
   Timer? _timer;
   bool _isSolved = false;
@@ -85,6 +86,10 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> with Widget
         if (words != null && words.length == _level.steps.length) {
           _userWords = words.map((e) => e.toString()).toList();
         }
+        final wrongs = data['wrongAttempts'] as int?;
+        if (wrongs != null && wrongs >= 0) {
+          _wrongAttempts = wrongs;
+        }
       }
       setState(() {
         _elapsedMs = elapsed;
@@ -101,6 +106,7 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> with Widget
       data: {
         'currentStepIndex': _currentStepIndex,
         'userWords': _userWords,
+        'wrongAttempts': _wrongAttempts,
       },
     );
   }
@@ -118,6 +124,7 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> with Widget
     _userWords = List.filled(_level.steps.length, '');
     _inputController.clear();
     _currentInputChar = '';
+    _wrongAttempts = 0;
     _elapsedMs = 0;
     _isSolved = false;
     _errorMsg = null;
@@ -206,8 +213,10 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> with Widget
       HapticFeedback.vibrate();
       ScreenShake.shake(context, intensity: 6.0);
       setState(() {
+        _wrongAttempts++;
         _errorMsg = 'Yanlış harf! "${step.clue}" ipucuna uygun harfi bulmalısın.';
       });
+      _saveSession();
     }
   }
 
@@ -223,6 +232,7 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> with Widget
     final score = CrossclimbLogic.calculateScore(
       durationMs: _elapsedMs,
       stepCount: _level.steps.length,
+      wrongAttempts: _wrongAttempts,
     );
 
     final result = GameResult(

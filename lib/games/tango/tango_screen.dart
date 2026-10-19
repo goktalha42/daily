@@ -433,8 +433,8 @@ class _TangoScreenState extends ConsumerState<TangoScreen> with WidgetsBindingOb
     _conflictDebounceTimer?.cancel();
 
     if (delayed) {
-      // Hatalı yerleştirmede anında değil, tam 1 saniye sonra kırmızıya dönsün
-      _conflictDebounceTimer = Timer(const Duration(seconds: 1), () {
+      // Hatalı yerleştirmede akıcı ve tepkisel 250ms sonra kırmızıya dönsün
+      _conflictDebounceTimer = Timer(const Duration(milliseconds: 250), () {
         if (!mounted || _isSolved) return;
         final currentConflicts = TangoLogic.findConflicts(_grid, _level.gridSize, _level.constraints);
         if (currentConflicts.isNotEmpty) {

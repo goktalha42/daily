@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -35,6 +36,7 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> with WidgetsBindi
   PatchPoint? _dragStart;
   PatchPoint? _dragCurrent;
 
+  int _moveCount = 0;
   int _elapsedMs = 0;
   int _tickCount = 0;
   Timer? _timer;
@@ -71,6 +73,7 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> with WidgetsBindi
     _userRects.clear();
     _dragStart = null;
     _dragCurrent = null;
+    _moveCount = 0;
     _elapsedMs = 0;
     _isSolved = false;
     _startTimer();
@@ -99,9 +102,14 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> with WidgetsBindi
             );
           }).toList();
 
+          final savedMoves = data['moveCount'] as int?;
+
           setState(() {
             _userRects.clear();
             _userRects.addAll(loadedRects);
+            if (savedMoves != null && savedMoves >= 0) {
+              _moveCount = savedMoves;
+            }
             _elapsedMs = savedElapsed;
             _checkState();
           });
@@ -121,6 +129,7 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> with WidgetsBindi
         levelId: widget.levelId,
         data: {
           'rects': rectsData,
+          'moveCount': _moveCount,
         },
         elapsedMs: _elapsedMs,
       );
@@ -227,6 +236,7 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> with WidgetsBindi
       }
 
       _userRects.add(newRect);
+      _moveCount++;
       HapticFeedback.mediumImpact();
       _checkState();
     });
@@ -330,7 +340,9 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> with WidgetsBindi
 
   void _handleWin() async {
     GameSessionService.clearSession(game: GameType.patches, levelId: widget.levelId);
-    final score = (2000 - (_elapsedMs ~/ 1000) * 10 - _userRects.length * 5).clamp(100, 2000);
+    final expectedMoves = _level.clues.length;
+    final excessMoves = math.max(0, _moveCount - expectedMoves);
+    final score = (2000 - (_elapsedMs ~/ 1000) * 10 - excessMoves * 5).clamp(200, 2000);
 
     final result = GameResult(
       id: const Uuid().v4(),
@@ -339,7 +351,7 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> with WidgetsBindi
       userId: 'user_local',
       userName: 'Oyuncu',
       durationMs: _elapsedMs,
-      moveCount: _userRects.length,
+      moveCount: _moveCount,
       score: score,
       completedAt: DateTime.now(),
     );

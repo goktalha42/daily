@@ -719,24 +719,27 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> with WidgetsBin
                                       boxBg = AppColors.backgroundLight;
                                     }
 
-                                    return SketchCard(
-                                      backgroundColor: boxBg,
-                                      borderRadius: 12,
-                                      shadowOffset: hasLetter || isCurrentCaret
-                                          ? const Offset(2.2, 2.2)
-                                          : const Offset(1.5, 1.5),
-                                      borderWidth: isCurrentCaret ? 2.5 : (hasLetter || _isSolved ? 2.2 : 1.5),
-                                      padding: EdgeInsets.zero,
-                                      child: SizedBox(
-                                        width: 48,
-                                        height: 54,
-                                        child: Center(
-                                          child: Text(
-                                            letter,
-                                            style: GoogleFonts.patrickHand(
-                                              fontSize: 28,
-                                              fontWeight: FontWeight.w700,
-                                              color: AppColors.pencilBlack,
+                                    return Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 3),
+                                      child: SketchCard(
+                                        backgroundColor: boxBg,
+                                        borderRadius: 12,
+                                        shadowOffset: hasLetter || isCurrentCaret
+                                            ? const Offset(2.2, 2.2)
+                                            : const Offset(1.5, 1.5),
+                                        borderWidth: isCurrentCaret ? 2.5 : (hasLetter || _isSolved ? 2.2 : 1.5),
+                                        padding: EdgeInsets.zero,
+                                        child: SizedBox(
+                                          width: 48,
+                                          height: 54,
+                                          child: Center(
+                                            child: Text(
+                                              letter,
+                                              style: GoogleFonts.patrickHand(
+                                                fontSize: 28,
+                                                fontWeight: FontWeight.w700,
+                                                color: AppColors.pencilBlack,
+                                              ),
                                             ),
                                           ),
                                         ),
