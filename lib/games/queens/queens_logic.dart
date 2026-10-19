@@ -267,53 +267,132 @@ class QueensLogic {
   }
 
   /// Saf insan mantığıyla (Deductive Elimination) tahtanın tahmin yapmadan çözülebilirliğini doğrular.
-  static DeductiveResult solveDeductively(int gridSize, List<List<int>> regionMap) {
+  static DeductiveResult solveDeductively(
+    int gridSize,
+    List<List<int>> regionMap, {
+    int queensPerUnit = 1,
+  }) {
+    final targetQueens = gridSize * queensPerUnit;
     // Olası adaylar tablosu (her hücre true = aday olabilir)
     final candidates = List.generate(
       gridSize,
       (_) => List.generate(gridSize, (_) => true),
     );
     final placedQueens = <Point<int>>[];
+    final rowQueens = List<int>.filled(gridSize, 0);
+    final colQueens = List<int>.filled(gridSize, 0);
+    final regQueens = List<int>.filled(gridSize, 0);
     int steps = 0;
 
+    void placeQueen(int r, int c) {
+      placedQueens.add(Point(r, c));
+      candidates[r][c] = false;
+      final reg = regionMap[r][c];
+      rowQueens[r]++;
+      colQueens[c]++;
+      regQueens[reg]++;
+
+      // 8-yönlü komşular asla vezir olamaz
+      for (int dr = -1; dr <= 1; dr++) {
+        for (int dc = -1; dc <= 1; dc++) {
+          if (dr == 0 && dc == 0) continue;
+          final nr = r + dr;
+          final nc = c + dc;
+          if (nr >= 0 && nr < gridSize && nc >= 0 && nc < gridSize) {
+            candidates[nr][nc] = false;
+          }
+        }
+      }
+
+      // Kota dolduysa satır, sütun ve bölgedeki tüm adayları ele
+      if (rowQueens[r] >= queensPerUnit) {
+        for (int col = 0; col < gridSize; col++) {
+          candidates[r][col] = false;
+        }
+      }
+      if (colQueens[c] >= queensPerUnit) {
+        for (int row = 0; row < gridSize; row++) {
+          candidates[row][c] = false;
+        }
+      }
+      if (regQueens[reg] >= queensPerUnit) {
+        for (int ro = 0; ro < gridSize; ro++) {
+          for (int co = 0; co < gridSize; co++) {
+            if (regionMap[ro][co] == reg) {
+              candidates[ro][co] = false;
+            }
+          }
+        }
+      }
+    }
+
     bool changed = true;
-    while (changed && placedQueens.length < gridSize) {
+    while (changed && placedQueens.length < targetQueens) {
       changed = false;
       steps++;
 
-      // KURAL 1: Bir satırda, sütunda veya bölgede sadece 1 aday kalmışsa -> VEZİR
+      // KURAL 1: Kalan ihtiyaç ile kalan aday sayısı eşitse -> Hepsi VEZİR
       // Satırlar
       for (int r = 0; r < gridSize; r++) {
+        final needed = queensPerUnit - rowQueens[r];
+        if (needed <= 0) continue;
         final possibleCols = <int>[];
         for (int c = 0; c < gridSize; c++) {
           if (candidates[r][c]) possibleCols.add(c);
         }
-        if (possibleCols.length == 1) {
-          final c = possibleCols.first;
-          if (!placedQueens.contains(Point(r, c))) {
-            _placeDeductiveQueen(r, c, gridSize, regionMap, candidates, placedQueens);
-            changed = true;
+        if (possibleCols.length == needed) {
+          // Birbirine temas etmeyen geçerli yerleşim mi?
+          bool touches = false;
+          for (int i = 0; i < possibleCols.length; i++) {
+            for (int j = i + 1; j < possibleCols.length; j++) {
+              if ((possibleCols[i] - possibleCols[j]).abs() <= 1) {
+                touches = true;
+                break;
+              }
+            }
+          }
+          if (!touches) {
+            for (final c in possibleCols) {
+              placeQueen(r, c);
+              changed = true;
+            }
           }
         }
       }
+      if (changed) continue;
 
       // Sütunlar
       for (int c = 0; c < gridSize; c++) {
+        final needed = queensPerUnit - colQueens[c];
+        if (needed <= 0) continue;
         final possibleRows = <int>[];
         for (int r = 0; r < gridSize; r++) {
           if (candidates[r][c]) possibleRows.add(r);
         }
-        if (possibleRows.length == 1) {
-          final r = possibleRows.first;
-          if (!placedQueens.contains(Point(r, c))) {
-            _placeDeductiveQueen(r, c, gridSize, regionMap, candidates, placedQueens);
-            changed = true;
+        if (possibleRows.length == needed) {
+          bool touches = false;
+          for (int i = 0; i < possibleRows.length; i++) {
+            for (int j = i + 1; j < possibleRows.length; j++) {
+              if ((possibleRows[i] - possibleRows[j]).abs() <= 1) {
+                touches = true;
+                break;
+              }
+            }
+          }
+          if (!touches) {
+            for (final r in possibleRows) {
+              placeQueen(r, c);
+              changed = true;
+            }
           }
         }
       }
+      if (changed) continue;
 
       // Bölgeler
       for (int reg = 0; reg < gridSize; reg++) {
+        final needed = queensPerUnit - regQueens[reg];
+        if (needed <= 0) continue;
         final possibleCells = <Point<int>>[];
         for (int r = 0; r < gridSize; r++) {
           for (int c = 0; c < gridSize; c++) {
@@ -322,20 +401,69 @@ class QueensLogic {
             }
           }
         }
-        if (possibleCells.length == 1) {
-          final pt = possibleCells.first;
-          if (!placedQueens.contains(pt)) {
-            _placeDeductiveQueen(pt.x, pt.y, gridSize, regionMap, candidates, placedQueens);
-            changed = true;
+        if (possibleCells.length == needed) {
+          bool touches = false;
+          for (int i = 0; i < possibleCells.length; i++) {
+            for (int j = i + 1; j < possibleCells.length; j++) {
+              if ((possibleCells[i].x - possibleCells[j].x).abs() <= 1 &&
+                  (possibleCells[i].y - possibleCells[j].y).abs() <= 1) {
+                touches = true;
+                break;
+              }
+            }
+          }
+          if (!touches) {
+            for (final pt in possibleCells) {
+              placeQueen(pt.x, pt.y);
+              changed = true;
+            }
           }
         }
       }
-
       if (changed) continue;
 
-      // KURAL 2: Çizgi-Bölge İndirgemesi (Line-Region Reduction)
-      // Eğer bir bölgenin tüm adayları tek bir satırda ise, o satırın bölge dışındaki tüm adaylarını ele.
+      // KURAL 2: Çift Temas İndirgemesi (Touching Pair Exclusion)
+      // Eğer bir bölge 2 vezire ihtiyaç duyuyorsa ve 3 adayı varsa, ama bu adaylardan 2'si birbirine temas ediyorsa:
+      // O temas eden 2 adaydan EN FAZLA 1 vezir çıkabilir! Dolayısıyla 3. temas etmeyen aday KESİNLİKLE VEZİRDİR!
+      if (queensPerUnit == 2) {
+        for (int reg = 0; reg < gridSize; reg++) {
+          final needed = 2 - regQueens[reg];
+          if (needed == 2) {
+            final possibleCells = <Point<int>>[];
+            for (int r = 0; r < gridSize; r++) {
+              for (int c = 0; c < gridSize; c++) {
+                if (regionMap[r][c] == reg && candidates[r][c]) {
+                  possibleCells.add(Point(r, c));
+                }
+              }
+            }
+            if (possibleCells.length == 3) {
+              // Hangi iki hücre temas ediyor?
+              for (int i = 0; i < 3; i++) {
+                for (int j = i + 1; j < 3; j++) {
+                  final p1 = possibleCells[i];
+                  final p2 = possibleCells[j];
+                  if ((p1.x - p2.x).abs() <= 1 && (p1.y - p2.y).abs() <= 1) {
+                    // p1 ve p2 temas ediyor -> 3. hücre (k) temas etmiyorsa KESİN VEZİR
+                    final k = 3 - i - j;
+                    final forced = possibleCells[k];
+                    placeQueen(forced.x, forced.y);
+                    changed = true;
+                    break;
+                  }
+                }
+                if (changed) break;
+              }
+            }
+          }
+        }
+      }
+      if (changed) continue;
+
+      // KURAL 3: Çizgi-Bölge İndirgemesi (Line-Region Reduction)
       for (int reg = 0; reg < gridSize; reg++) {
+        final needed = queensPerUnit - regQueens[reg];
+        if (needed <= 0) continue;
         final regCells = <Point<int>>[];
         for (int r = 0; r < gridSize; r++) {
           for (int c = 0; c < gridSize; c++) {
@@ -346,32 +474,40 @@ class QueensLogic {
         }
         if (regCells.isEmpty) continue;
 
+        // Bölgenin tüm adayları tek bir satırda ise ve bu satırın kotası bu bölgeyle doluyorsa
         final firstRow = regCells.first.x;
         if (regCells.every((pt) => pt.x == firstRow)) {
-          for (int c = 0; c < gridSize; c++) {
-            if (regionMap[firstRow][c] != reg && candidates[firstRow][c]) {
-              candidates[firstRow][c] = false;
-              changed = true;
+          final rowNeeded = queensPerUnit - rowQueens[firstRow];
+          if (rowNeeded == needed) {
+            for (int c = 0; c < gridSize; c++) {
+              if (regionMap[firstRow][c] != reg && candidates[firstRow][c]) {
+                candidates[firstRow][c] = false;
+                changed = true;
+              }
             }
           }
         }
 
         final firstCol = regCells.first.y;
         if (regCells.every((pt) => pt.y == firstCol)) {
-          for (int r = 0; r < gridSize; r++) {
-            if (regionMap[r][firstCol] != reg && candidates[r][firstCol]) {
-              candidates[r][firstCol] = false;
-              changed = true;
+          final colNeeded = queensPerUnit - colQueens[firstCol];
+          if (colNeeded == needed) {
+            for (int r = 0; r < gridSize; r++) {
+              if (regionMap[r][firstCol] != reg && candidates[r][firstCol]) {
+                candidates[r][firstCol] = false;
+                changed = true;
+              }
             }
           }
         }
       }
-
       if (changed) continue;
 
-      // KURAL 3: Ortak Komşuluk Gölgesi (Adjacency Dominance)
+      // KURAL 4: Ortak Komşuluk Gölgesi (Adjacency Dominance)
       // Bir bölgenin tüm olası adaylarına bitişik olan herhangi bir hücre asla vezir olamaz -> Ele
       for (int reg = 0; reg < gridSize; reg++) {
+        final needed = queensPerUnit - regQueens[reg];
+        if (needed <= 0) continue;
         final regCells = <Point<int>>[];
         for (int r = 0; r < gridSize; r++) {
           for (int c = 0; c < gridSize; c++) {
@@ -404,35 +540,12 @@ class QueensLogic {
       }
     }
 
-    final isSolvable = placedQueens.length == gridSize;
+    final isSolvable = placedQueens.length == targetQueens;
     return DeductiveResult(
       isSolvable: isSolvable,
       solution: placedQueens,
       steps: steps,
     );
-  }
-
-  static void _placeDeductiveQueen(
-    int qr,
-    int qc,
-    int gridSize,
-    List<List<int>> regionMap,
-    List<List<bool>> candidates,
-    List<Point<int>> placedQueens,
-  ) {
-    placedQueens.add(Point(qr, qc));
-    final reg = regionMap[qr][qc];
-
-    for (int r = 0; r < gridSize; r++) {
-      for (int c = 0; c < gridSize; c++) {
-        if (r == qr && c == qc) continue;
-        if (r == qr || c == qc || regionMap[r][c] == reg) {
-          candidates[r][c] = false;
-        } else if ((r - qr).abs() <= 1 && (c - qc).abs() <= 1) {
-          candidates[r][c] = false;
-        }
-      }
-    }
   }
 }
 

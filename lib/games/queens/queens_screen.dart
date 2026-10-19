@@ -9,6 +9,7 @@ import 'package:uuid/uuid.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/date_utils.dart';
 import '../../core/services/game_stats_service.dart';
+import '../../core/services/badge_service.dart';
 import '../../core/services/daily_play_service.dart';
 import '../../core/widgets/genius_win_dialog.dart';
 import '../../core/widgets/sketch_decorations.dart';
@@ -1006,8 +1007,8 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
       }
     }
 
-    // ADIM 4: Tek Kalan Seçenek Mantığıyla Mecburi Vezir Yerleştirme (Naked Single)
-    // 4A. Bölgede tek kalan mecburi vezir
+    // ADIM 4: Tek Kalan Seçenek Mantığıyla Mecburi Vezir Yerleştirme (Naked Single / Forced Queens)
+    // 4A. Bölgede mecburi vezir
     for (var reg = 0; reg < size; reg++) {
       int queensInReg = 0;
       final candidates = <math.Point<int>>[];
@@ -1021,25 +1022,41 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
       }
       final needed = reqQueens - queensInReg;
       if (needed > 0 && candidates.length == needed) {
-        final pt = candidates.firstWhere((p) => _grid[p.x][p.y].content != CellContent.queen);
-        final prev = _grid[pt.x][pt.y].content;
-        _history.add(_QueensHistoryItem(changes: {pt: prev}));
-        _triggerBoardRipple(pt.x, pt.y);
-        setState(() {
-          _grid[pt.x][pt.y].content = CellContent.queen;
-          _moveCount++;
-          _checkState();
-        });
-        _highlightCells({pt});
-        _showHintBanner(
-          'Bu renk bölgesinde vezir konulabilecek sadece $needed adet boş yer kalmıştı! Bölge kuralını tamamlamak için (${pt.x + 1}. Satır, ${pt.y + 1}. Sütun) karesine mecburen vezir yerleştirildi.',
-          title: '👑 Bölgenin Tek Seçeneği',
-        );
-        return;
+        // Çift vezir modunda adayların birbirine temas edip etmediğini doğrula
+        bool touches = false;
+        for (int i = 0; i < candidates.length; i++) {
+          for (int j = i + 1; j < candidates.length; j++) {
+            if ((candidates[i].x - candidates[j].x).abs() <= 1 &&
+                (candidates[i].y - candidates[j].y).abs() <= 1) {
+              touches = true;
+              break;
+            }
+          }
+        }
+        if (!touches) {
+          final pt = candidates.firstWhere((p) => _grid[p.x][p.y].content != CellContent.queen);
+          final prev = _grid[pt.x][pt.y].content;
+          _history.add(_QueensHistoryItem(changes: {pt: prev}));
+          _triggerBoardRipple(pt.x, pt.y);
+          setState(() {
+            _grid[pt.x][pt.y].content = CellContent.queen;
+            _moveCount++;
+            _checkState();
+          });
+          _highlightCells({pt});
+          final hintDesc = reqQueens == 2
+              ? 'Bu renk bölgesinde gereken $needed vezir için birbirine temas etmeyen tam $needed adet boş kare kalmıştı! Bölge kuralını tamamlamak için (${pt.x + 1}. Satır, ${pt.y + 1}. Sütun) karesine vezir yerleştirildi.'
+              : 'Bu renk bölgesinde vezir konulabilecek sadece $needed adet boş yer kalmıştı! Bölge kuralını tamamlamak için (${pt.x + 1}. Satır, ${pt.y + 1}. Sütun) karesine mecburen vezir yerleştirildi.';
+          _showHintBanner(
+            hintDesc,
+            title: '👑 Bölgenin Tek Seçeneği',
+          );
+          return;
+        }
       }
     }
 
-    // 4B. Satırda tek kalan mecburi vezir
+    // 4B. Satırda mecburi vezir
     for (var r = 0; r < size; r++) {
       int queensInRow = 0;
       final candidates = <int>[];
@@ -1049,25 +1066,36 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
       }
       final needed = reqQueens - queensInRow;
       if (needed > 0 && candidates.length == needed) {
-        final c = candidates.firstWhere((col) => _grid[r][col].content != CellContent.queen);
-        final prev = _grid[r][c].content;
-        _history.add(_QueensHistoryItem(changes: {math.Point(r, c): prev}));
-        _triggerBoardRipple(r, c);
-        setState(() {
-          _grid[r][c].content = CellContent.queen;
-          _moveCount++;
-          _checkState();
-        });
-        _highlightCells({math.Point(r, c)});
-        _showHintBanner(
-          '${r + 1}. Satırda vezir konulabilecek tam $needed boş kare kalmıştı! Satır kotasını tamamlamak için (${r + 1}. Satır, ${c + 1}. Sütun) karesine vezir yerleştirildi.',
-          title: '👑 Satırın Tek Seçeneği',
-        );
-        return;
+        bool touches = false;
+        for (int i = 0; i < candidates.length; i++) {
+          for (int j = i + 1; j < candidates.length; j++) {
+            if ((candidates[i] - candidates[j]).abs() <= 1) {
+              touches = true;
+              break;
+            }
+          }
+        }
+        if (!touches) {
+          final c = candidates.firstWhere((col) => _grid[r][col].content != CellContent.queen);
+          final prev = _grid[r][c].content;
+          _history.add(_QueensHistoryItem(changes: {math.Point(r, c): prev}));
+          _triggerBoardRipple(r, c);
+          setState(() {
+            _grid[r][c].content = CellContent.queen;
+            _moveCount++;
+            _checkState();
+          });
+          _highlightCells({math.Point(r, c)});
+          _showHintBanner(
+            '${r + 1}. Satırda vezir konulabilecek tam $needed boş kare kalmıştı! Satır kotasını tamamlamak için (${r + 1}. Satır, ${c + 1}. Sütun) karesine vezir yerleştirildi.',
+            title: '👑 Satırın Tek Seçeneği',
+          );
+          return;
+        }
       }
     }
 
-    // 4C. Sütunda tek kalan mecburi vezir
+    // 4C. Sütunda mecburi vezir
     for (var c = 0; c < size; c++) {
       int queensInCol = 0;
       final candidates = <int>[];
@@ -1077,25 +1105,79 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
       }
       final needed = reqQueens - queensInCol;
       if (needed > 0 && candidates.length == needed) {
-        final r = candidates.firstWhere((row) => _grid[row][c].content != CellContent.queen);
-        final prev = _grid[r][c].content;
-        _history.add(_QueensHistoryItem(changes: {math.Point(r, c): prev}));
-        _triggerBoardRipple(r, c);
-        setState(() {
-          _grid[r][c].content = CellContent.queen;
-          _moveCount++;
-          _checkState();
-        });
-        _highlightCells({math.Point(r, c)});
-        _showHintBanner(
-          '${c + 1}. Sütunda vezir konulabilecek tam $needed boş kare kalmıştı! Sütun kotasını tamamlamak için (${r + 1}. Satır, ${c + 1}. Sütun) karesine vezir yerleştirildi.',
-          title: '👑 Sütunun Tek Seçeneği',
-        );
-        return;
+        bool touches = false;
+        for (int i = 0; i < candidates.length; i++) {
+          for (int j = i + 1; j < candidates.length; j++) {
+            if ((candidates[i] - candidates[j]).abs() <= 1) {
+              touches = true;
+              break;
+            }
+          }
+        }
+        if (!touches) {
+          final r = candidates.firstWhere((row) => _grid[row][c].content != CellContent.queen);
+          final prev = _grid[r][c].content;
+          _history.add(_QueensHistoryItem(changes: {math.Point(r, c): prev}));
+          _triggerBoardRipple(r, c);
+          setState(() {
+            _grid[r][c].content = CellContent.queen;
+            _moveCount++;
+            _checkState();
+          });
+          _highlightCells({math.Point(r, c)});
+          _showHintBanner(
+            '${c + 1}. Sütunda vezir konulabilecek tam $needed boş kare kalmıştı! Sütun kotasını tamamlamak için (${r + 1}. Satır, ${c + 1}. Sütun) karesine vezir yerleştirildi.',
+            title: '👑 Sütunun Tek Seçeneği',
+          );
+          return;
+        }
       }
     }
 
-    // ADIM 5: Çizgi-Bölge İndirgemesi (Pointing / Locked Candidates)
+    // ADIM 5: Master Çift Temas Çıkarımı (Touching Pair Deduction for Master)
+    if (reqQueens == 2) {
+      for (var reg = 0; reg < size; reg++) {
+        int queensInReg = 0;
+        final candidates = <math.Point<int>>[];
+        for (var r = 0; r < size; r++) {
+          for (var c = 0; c < size; c++) {
+            if (_level.regionMap[r][c] == reg) {
+              if (_grid[r][c].content == CellContent.queen) queensInReg++;
+              if (_grid[r][c].content == CellContent.empty) candidates.add(math.Point(r, c));
+            }
+          }
+        }
+        final needed = 2 - queensInReg;
+        if (needed == 2 && candidates.length == 3) {
+          for (int i = 0; i < 3; i++) {
+            for (int j = i + 1; j < 3; j++) {
+              final p1 = candidates[i];
+              final p2 = candidates[j];
+              if ((p1.x - p2.x).abs() <= 1 && (p1.y - p2.y).abs() <= 1) {
+                // p1 ve p2 temas ediyor, dolayısıyla 3. hücre (k) kesinlikle vezir olmalıdır!
+                final k = 3 - i - j;
+                final forced = candidates[k];
+                _history.add(_QueensHistoryItem(changes: {forced: CellContent.empty}));
+                _triggerBoardRipple(forced.x, forced.y);
+                setState(() {
+                  _grid[forced.x][forced.y].content = CellContent.queen;
+                  _moveCount++;
+                  _checkState();
+                });
+                _highlightCells({p1, p2, forced});
+                _showHintBanner(
+                  'Bu bölgede 2 vezir gerekiyor. (${p1.x + 1}. Satır, ${p1.y + 1}. Sütun) ile (${p2.x + 1}. Satır, ${p2.y + 1}. Sütun) birbirine temas ettiği için ikisi birden vezir olamaz! Bu yüzden temas etmeyen (${forced.x + 1}. Satır, ${forced.y + 1}. Sütun) karesi kesinlikle vezir olmak zorundadır.',
+                  title: '⚡ Çift Temas Çıkarımı (Master)',
+                );
+                return;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // ADIM 6: Çizgi-Bölge İndirgemesi (Pointing / Locked Candidates)
     for (var reg = 0; reg < size; reg++) {
       final regCandidates = <math.Point<int>>[];
       for (var r = 0; r < size; r++) {
@@ -1108,53 +1190,80 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
       if (regCandidates.length >= 2) {
         final firstRow = regCandidates.first.x;
         if (regCandidates.every((pt) => pt.x == firstRow)) {
+          // Satır kotası bu bölgeyle tamamen kilitleniyor mu?
+          int queensInReg = 0;
+          for (var r = 0; r < size; r++) {
+            for (var c = 0; c < size; c++) {
+              if (_level.regionMap[r][c] == reg && _grid[r][c].content == CellContent.queen) queensInReg++;
+            }
+          }
+          final neededInReg = reqQueens - queensInReg;
+
+          int queensInRow = 0;
           for (var c = 0; c < size; c++) {
-            if (_level.regionMap[firstRow][c] != reg && _grid[firstRow][c].content == CellContent.empty) {
-              _history.add(_QueensHistoryItem(changes: {math.Point(firstRow, c): CellContent.empty}));
-              setState(() {
-                _grid[firstRow][c].content = CellContent.cross;
-                _moveCount++;
-                _checkState();
-              });
-              _highlightCells({math.Point(firstRow, c), ...regCandidates});
-              final hintText = reqQueens == 2
-                  ? 'Master seviyede bu renk bölgesinin tüm vezir adayları sadece ${firstRow + 1}. Satır üzerinde yer alıyor. Bölgenin 2 veziri de bu satıra yerleşmek zorunda olduğundan satırın kotası dolacaktır. Dolayısıyla bu satırın bölge dışındaki (${firstRow + 1}. Satır, ${c + 1}. Sütun) karesine vezir gelemez (✖ konuldu).'
-                  : 'Bu renk bölgesinin tüm vezir adayları sadece ${firstRow + 1}. Satır üzerinde yer alıyor. Dolayısıyla bu satırın veziri mutlaka bu bölgeden çıkacak. Bu sebeple aynı satırdaki bölge dışı (${firstRow + 1}. Satır, ${c + 1}. Sütun) karesine vezir gelemez (✖ konuldu).';
-              _showHintBanner(
-                hintText,
-                title: reqQueens == 2 ? '📐 Çift Vezir Kilitli Aday' : '📐 Kilitli Aday İndirgemesi',
-              );
-              return;
+            if (_grid[firstRow][c].content == CellContent.queen) queensInRow++;
+          }
+          final neededInRow = reqQueens - queensInRow;
+
+          if (neededInRow == neededInReg) {
+            for (var c = 0; c < size; c++) {
+              if (_level.regionMap[firstRow][c] != reg && _grid[firstRow][c].content == CellContent.empty) {
+                _history.add(_QueensHistoryItem(changes: {math.Point(firstRow, c): CellContent.empty}));
+                setState(() {
+                  _grid[firstRow][c].content = CellContent.cross;
+                  _moveCount++;
+                  _checkState();
+                });
+                _highlightCells({math.Point(firstRow, c), ...regCandidates});
+                _showHintBanner(
+                  'Bu renk bölgesinin kalan tüm vezir adayları sadece ${firstRow + 1}. Satır üzerinde yer alıyor. Satırın kalan kotasını bu bölge karşılayacağı için, satırın bölge dışındaki (${firstRow + 1}. Satır, ${c + 1}. Sütun) karesine vezir gelemez (✖ konuldu).',
+                  title: '📐 Kilitli Aday İndirgemesi',
+                );
+                return;
+              }
             }
           }
         }
 
         final firstCol = regCandidates.first.y;
         if (regCandidates.every((pt) => pt.y == firstCol)) {
+          int queensInReg = 0;
           for (var r = 0; r < size; r++) {
-            if (_level.regionMap[r][firstCol] != reg && _grid[r][firstCol].content == CellContent.empty) {
-              _history.add(_QueensHistoryItem(changes: {math.Point(r, firstCol): CellContent.empty}));
-              setState(() {
-                _grid[r][firstCol].content = CellContent.cross;
-                _moveCount++;
-                _checkState();
-              });
-              _highlightCells({math.Point(r, firstCol), ...regCandidates});
-              final hintText = reqQueens == 2
-                  ? 'Master seviyede bu renk bölgesinin tüm vezir adayları sadece ${firstCol + 1}. Sütun üzerinde yer alıyor. Bölgenin 2 veziri de bu sütuna yerleşeceğinden sütun kotası dolacaktır. Dolayısıyla bu sütunun bölge dışındaki (${r + 1}. Satır, ${firstCol + 1}. Sütun) karesine vezir gelemez (✖ konuldu).'
-                  : 'Bu renk bölgesinin tüm vezir adayları sadece ${firstCol + 1}. Sütun üzerinde yer alıyor. Bu sütunun veziri mutlaka bu bölgeden çıkacağından, aynı sütundaki bölge dışı (${r + 1}. Satır, ${firstCol + 1}. Sütun) karesine vezir gelemez (✖ konuldu).';
-              _showHintBanner(
-                hintText,
-                title: reqQueens == 2 ? '📐 Çift Vezir Kilitli Aday' : '📐 Kilitli Aday İndirgemesi',
-              );
-              return;
+            for (var c = 0; c < size; c++) {
+              if (_level.regionMap[r][c] == reg && _grid[r][c].content == CellContent.queen) queensInReg++;
+            }
+          }
+          final neededInReg = reqQueens - queensInReg;
+
+          int queensInCol = 0;
+          for (var r = 0; r < size; r++) {
+            if (_grid[r][firstCol].content == CellContent.queen) queensInCol++;
+          }
+          final neededInCol = reqQueens - queensInCol;
+
+          if (neededInCol == neededInReg) {
+            for (var r = 0; r < size; r++) {
+              if (_level.regionMap[r][firstCol] != reg && _grid[r][firstCol].content == CellContent.empty) {
+                _history.add(_QueensHistoryItem(changes: {math.Point(r, firstCol): CellContent.empty}));
+                setState(() {
+                  _grid[r][firstCol].content = CellContent.cross;
+                  _moveCount++;
+                  _checkState();
+                });
+                _highlightCells({math.Point(r, firstCol), ...regCandidates});
+                _showHintBanner(
+                  'Bu renk bölgesinin kalan tüm vezir adayları sadece ${firstCol + 1}. Sütun üzerinde yer alıyor. Sütunun kalan kotasını bu bölge karşılayacağı için, sütunun bölge dışındaki (${r + 1}. Satır, ${firstCol + 1}. Sütun) karesine vezir gelemez (✖ konuldu).',
+                  title: '📐 Kilitli Aday İndirgemesi',
+                );
+                return;
+              }
             }
           }
         }
       }
     }
 
-    // ADIM 6: Mantıksal Çözüm İlerlemesi (Hedef Vezir Yerleştirme)
+    // ADIM 7: Mantıksal Çözüm İlerlemesi (Stratejik Vezir Yerleştirme)
     for (final pt in _level.solution) {
       final r = pt[0];
       final c = pt[1];
@@ -1169,8 +1278,8 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
         });
         _highlightCells({math.Point(r, c)});
         final hintText = reqQueens == 2
-            ? 'Master seviyenin çift vezir kuralı ve bölge kısıtlamaları incelendiğinde, (${r + 1}. Satır, ${c + 1}. Sütun) karesi bu bölgenin kesin vezir konumlarından biridir. Buraya vezir yerleştirildi!'
-            : 'Tahtanın kısıtlamaları ve renk dengesi incelendiğinde, (${r + 1}. Satır, ${c + 1}. Sütun) karesi bu bölgenin stratejik vezir konumudur. Buraya vezir yerleştirildi!';
+            ? 'Master seviyenin çift vezir kuralı gereğince, (${r + 1}. Satır, ${c + 1}. Sütun) karesi bu bölgenin kesin vezir konumlarından biridir. Buraya vezir yerleştirildi!'
+            : 'Tahtanın kısıtlamaları ve renk dengesi incelendiğinde, (${r + 1}. Satır, ${c + 1}. Sütun) karesi bu bölgenin kesin vezir konumudur. Buraya vezir yerleştirildi!';
         _showHintBanner(
           hintText,
           title: reqQueens == 2 ? '👑 Çift Vezir Stratejisi' : '💡 Stratejik Vezir Konumu',
@@ -1180,7 +1289,7 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
     }
   }
 
-  void _handleWin() {
+  void _handleWin() async {
     final durationSeconds = (_elapsedMs / 1000).ceil();
     final baseScore = _level.gridSize * 150;
     final timePenalty = (durationSeconds * 2).clamp(0, baseScore ~/ 2);
@@ -1201,7 +1310,7 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
     );
 
     ref.read(leaderboardServiceProvider).submitScore(result);
-    ref.read(gameStatsServiceProvider.notifier).recordGameResult(
+    final statsResult = await ref.read(gameStatsServiceProvider.notifier).recordGameResult(
           gameType: GameType.queens,
           score: score,
           durationMs: _elapsedMs,
@@ -1215,16 +1324,27 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
           subKey: _currentDifficulty.name,
         );
 
+    ref.read(badgeServiceProvider.notifier).evaluateBadges(
+          gameType: GameType.queens,
+          score: score,
+          durationMs: _elapsedMs,
+          overallIQ: statsResult.currentIQ,
+          statsMap: ref.read(gameStatsServiceProvider),
+          difficulty: _currentDifficulty.name,
+        );
+
     GameSessionService.clearSession(
       game: GameType.queens,
       levelId: widget.levelId,
       subKey: _currentDifficulty.name,
     );
 
+    if (!mounted) return;
     GeniusWinDialog.show(
       context,
       result: result,
       gameTitle: 'Vezirler',
+      statsResult: statsResult,
       onRestart: () {
         Navigator.pop(context);
         Navigator.pop(context); // Lobiye dön (günlük oyun tek oynanır)

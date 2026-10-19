@@ -42,6 +42,13 @@ class QueensGenerator {
         );
         if (solutions.length != 1) continue;
 
+        // İnsan aklıyla çözülebilirlik kontrolü:
+        // Kör tahmin gerektiren bölümleri filtrele, mantıksal çıkarım yolu olan bölümleri seç.
+        final deductive = QueensLogic.solveDeductively(n, regionMap, queensPerUnit: 2);
+        if (attempt < 200 && !deductive.isSolvable && deductive.solution.length < 10) {
+          continue;
+        }
+
         final solution = solutions.first.map((p) => [p.x, p.y]).toList();
         return QueensLevel(
           id: levelId,

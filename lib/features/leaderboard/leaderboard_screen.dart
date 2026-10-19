@@ -18,6 +18,7 @@ class LeaderboardScreen extends ConsumerStatefulWidget {
 class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
   GameType _selectedGame = GameType.queens;
   LeaderboardTimeframe _timeframe = LeaderboardTimeframe.daily;
+  String? _selectedQueensDifficulty; // null = Tümü (Toplam)
 
   @override
   Widget build(BuildContext context) {
@@ -25,6 +26,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
     final entries = service.getLeaderboard(
       gameType: _selectedGame,
       timeframe: _timeframe,
+      difficulty: _selectedGame == GameType.queens ? _selectedQueensDifficulty : null,
     );
 
     // Kullanıcının kendi derecesini bul
@@ -220,34 +222,81 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
           ),
         ),
 
-        // 3.1. VEZİRLER ÖZEL PUANLAMA BİLGİ BANTLIĞI
+        // 3.1. VEZİRLER ZORLUK SEÇİCİ & BİLGİ BANTLIĞI
         if (_selectedGame == GameType.queens)
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-              child: SketchCard(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                backgroundColor: AppColors.queensGame.withValues(alpha: 0.2),
-                borderRadius: 10,
-                borderWidth: 1.6,
-                shadowOffset: const Offset(1.5, 1.5),
-                child: Row(
-                  children: [
-                    const Icon(Icons.info_outline_rounded, size: 16, color: AppColors.pencilBlack),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        '👑 Vezirler Toplam Puanı = Kolay + Zor + Master seviyelerinin toplamıdır. Eksik seviyeler 0 puan sayılır.',
-                        style: GoogleFonts.patrickHand(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.pencilBlack,
-                          height: 1.15,
-                        ),
+              child: Column(
+                children: [
+                  // Zorluk Filtre Çipleri
+                  Row(
+                    children: [
+                      _buildQueensDifficultyChip(
+                        label: '👑 Tümü (Toplam)',
+                        isSelected: _selectedQueensDifficulty == null,
+                        onTap: () {
+                          HapticFeedback.selectionClick();
+                          setState(() => _selectedQueensDifficulty = null);
+                        },
                       ),
+                      const SizedBox(width: 6),
+                      _buildQueensDifficultyChip(
+                        label: 'Kolay',
+                        isSelected: _selectedQueensDifficulty == 'kolay',
+                        onTap: () {
+                          HapticFeedback.selectionClick();
+                          setState(() => _selectedQueensDifficulty = 'kolay');
+                        },
+                      ),
+                      const SizedBox(width: 6),
+                      _buildQueensDifficultyChip(
+                        label: 'Zor',
+                        isSelected: _selectedQueensDifficulty == 'zor',
+                        onTap: () {
+                          HapticFeedback.selectionClick();
+                          setState(() => _selectedQueensDifficulty = 'zor');
+                        },
+                      ),
+                      const SizedBox(width: 6),
+                      _buildQueensDifficultyChip(
+                        label: 'Master',
+                        isSelected: _selectedQueensDifficulty == 'master',
+                        onTap: () {
+                          HapticFeedback.selectionClick();
+                          setState(() => _selectedQueensDifficulty = 'master');
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  SketchCard(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    backgroundColor: AppColors.queensGame.withValues(alpha: 0.18),
+                    borderRadius: 10,
+                    borderWidth: 1.6,
+                    shadowOffset: const Offset(1.5, 1.5),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.info_outline_rounded, size: 16, color: AppColors.pencilBlack),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            _selectedQueensDifficulty == null
+                                ? '👑 Vezirler Toplam Puanı = Kolay + Zor + Master seviyelerinin toplamıdır. Tekil sıralama görmek için yukarıdaki butonlara basabilirsiniz.'
+                                : '👑 Vezirler ${_selectedQueensDifficulty!.toUpperCase()} seviyesi tekil sıralaması listeleniyor.',
+                            style: GoogleFonts.patrickHand(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.pencilBlack,
+                              height: 1.15,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -665,6 +714,37 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
               ],
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQueensDifficultyChip({
+    required String label,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: SketchCard(
+          borderRadius: 8,
+          borderWidth: isSelected ? 2.0 : 1.4,
+          shadowOffset: isSelected ? const Offset(1.8, 1.8) : const Offset(1.0, 1.0),
+          backgroundColor: isSelected ? AppColors.sunYellow : Colors.white,
+          padding: const EdgeInsets.symmetric(vertical: 5),
+          child: Center(
+            child: Text(
+              label,
+              style: GoogleFonts.patrickHand(
+                fontSize: 13,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                color: AppColors.pencilBlack,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
         ),
       ),
     );

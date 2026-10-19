@@ -7,6 +7,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/utils/date_utils.dart';
 import '../../core/widgets/sketch_decorations.dart';
 import '../../games/common/base_game.dart';
+import 'widgets/badge_showcase_section.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -332,6 +333,14 @@ class ProfileScreen extends ConsumerWidget {
                 ),
               ],
             ),
+          ),
+        ),
+
+        // ROZETLER & ŞAMPİYONLUK KEMERLERİ VİTRİNİ
+        const SliverToBoxAdapter(
+          child: Padding(
+            padding: EdgeInsets.symmetric(vertical: 8),
+            child: BadgeShowcaseSection(),
           ),
         ),
 

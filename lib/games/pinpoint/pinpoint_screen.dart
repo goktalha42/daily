@@ -9,6 +9,7 @@ import 'package:uuid/uuid.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/date_utils.dart';
 import '../../core/services/game_stats_service.dart';
+import '../../core/services/badge_service.dart';
 import '../../core/services/daily_play_service.dart';
 import '../../core/widgets/genius_win_dialog.dart';
 import '../../core/widgets/sketch_decorations.dart';
@@ -207,7 +208,7 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> with WidgetsBin
     }
   }
 
-  void _handleWin() {
+  void _handleWin() async {
     final score = PinpointLogic.calculateScore(
       durationMs: _elapsedMs,
       revealedClues: _revealedClues,
@@ -227,7 +228,7 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> with WidgetsBin
     );
 
     ref.read(leaderboardServiceProvider).submitScore(result);
-    ref.read(gameStatsServiceProvider.notifier).recordGameResult(
+    final statsResult = await ref.read(gameStatsServiceProvider.notifier).recordGameResult(
           gameType: GameType.pinpoint,
           score: score,
           durationMs: _elapsedMs,
@@ -239,16 +240,25 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> with WidgetsBin
           score: score,
           durationMs: _elapsedMs,
         );
+    ref.read(badgeServiceProvider.notifier).evaluateBadges(
+          gameType: GameType.pinpoint,
+          score: score,
+          durationMs: _elapsedMs,
+          overallIQ: statsResult.currentIQ,
+          statsMap: ref.read(gameStatsServiceProvider),
+        );
 
     GameSessionService.clearSession(
       game: GameType.pinpoint,
       levelId: widget.levelId,
     );
 
+    if (!mounted) return;
     GeniusWinDialog.show(
       context,
       result: result,
       gameTitle: 'Kelime İzleri',
+      statsResult: statsResult,
       onRestart: () {
         Navigator.pop(context);
         setState(() {

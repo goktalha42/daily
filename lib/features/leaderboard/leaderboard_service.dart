@@ -107,28 +107,39 @@ class LeaderboardService extends ChangeNotifier {
 
       // --- 1. BUGÜN (GÜNLÜK) OYUNLARI ---
       // A) VEZİRLER (Queens)
-      // Kolay: Tüm 150 oyuncu oynar
-      final kolayDuration = (16000 + ((1.0 - effectiveSkill) * (isSpeedy ? 28000 : 44000))).round();
-      final kolayScore = (760 + (effectiveSkill * 230)).round();
-      _resultsStore.add(
-        GameResult(
-          id: 'queens_kolay_$userId',
-          gameType: GameType.queens,
-          levelId: todayLevelId,
-          userId: userId,
-          userName: name,
-          durationMs: kolayDuration,
-          moveCount: 6 + rng.nextInt(3),
-          score: kolayScore,
-          completedAt: activeDate.subtract(Duration(minutes: 10 + (i * 4) % 400)),
-          difficulty: 'kolay',
-        ),
-      );
+      // Gerçekçi katılım: Herkes 3 seviyeyi birden oynamaz!
+      // - Kolay: ~110 oyuncu oynar
+      // - Zor: ~40 oyuncu oynar
+      // - Master: ~18 oyuncu oynar
+      // - 3 seviyeyi birden (Kolay + Zor + Master) sadece en iddialı ~12 oyuncu tamamlar!
+      final playsKolay = true;
+      final playsZor = i < 100;
+      final playsMaster = i < 50;
 
-      // Zor: İlk 100 oyuncu oynar
-      if (i < 100) {
-        final zorDuration = (32000 + ((1.0 - effectiveSkill) * (isSpeedy ? 42000 : 65000))).round();
-        final zorScore = (980 + (effectiveSkill * 310)).round();
+      // Kolay:
+      if (playsKolay) {
+        final kolayDuration = (16000 + ((1.0 - effectiveSkill) * (isSpeedy ? 24000 : 42000))).round();
+        final kolayScore = (740 + (effectiveSkill * 240)).round();
+        _resultsStore.add(
+          GameResult(
+            id: 'queens_kolay_$userId',
+            gameType: GameType.queens,
+            levelId: todayLevelId,
+            userId: userId,
+            userName: name,
+            durationMs: kolayDuration,
+            moveCount: 6 + rng.nextInt(3),
+            score: kolayScore,
+            completedAt: activeDate.subtract(Duration(minutes: 10 + (i * 4) % 400)),
+            difficulty: 'kolay',
+          ),
+        );
+      }
+
+      // Zor:
+      if (playsZor) {
+        final zorDuration = (32000 + ((1.0 - effectiveSkill) * (isSpeedy ? 38000 : 62000))).round();
+        final zorScore = (940 + (effectiveSkill * 280)).round();
         _resultsStore.add(
           GameResult(
             id: 'queens_zor_$userId',
@@ -145,10 +156,10 @@ class LeaderboardService extends ChangeNotifier {
         );
       }
 
-      // Master: İlk 50 oyuncu oynar
-      if (i < 50) {
-        final masterDuration = (55000 + ((1.0 - effectiveSkill) * (isSpeedy ? 65000 : 105000))).round();
-        final masterScore = (1250 + (effectiveSkill * 420)).round();
+      // Master:
+      if (playsMaster) {
+        final masterDuration = (55000 + ((1.0 - effectiveSkill) * (isSpeedy ? 58000 : 95000))).round();
+        final masterScore = (1180 + (effectiveSkill * 360)).round();
         _resultsStore.add(
           GameResult(
             id: 'queens_master_$userId',
@@ -166,13 +177,15 @@ class LeaderboardService extends ChangeNotifier {
       }
 
       // B) DİĞER TÜM OYUNLAR (Bugün)
+      // Üst seviye oyuncular (Tier 1) 1050-1180 aralığında puan alabilir.
+      // Böylece kullanıcı her oyunda "farkla birinci" olmaz, gerçek rekabet hisseder.
       for (final game in allOtherGames) {
         final isWord = game == GameType.pinpoint || game == GameType.crossclimb;
         final bonus = (isWord && isWordExpert) ? 0.12 : ((!isWord && isGridExpert) ? 0.12 : 0.0);
         final gameSkill = (effectiveSkill + bonus + (rng.nextDouble() - 0.5) * 0.06).clamp(0.08, 1.0);
 
-        final score = (640 + (gameSkill * 360)).round();
-        final duration = (20000 + ((1.0 - gameSkill) * (isSpeedy ? 38000 : 62000))).round();
+        final score = (720 + (gameSkill * 440) + (rng.nextInt(26) - 13)).round();
+        final duration = (18000 + ((1.0 - gameSkill) * (isSpeedy ? 32000 : 56000))).round();
 
         _resultsStore.add(
           GameResult(
@@ -200,27 +213,31 @@ class LeaderboardService extends ChangeNotifier {
           final pastLevelId = DateFormat('yyyy-MM-dd').format(pastDate);
 
           // Queens Kolay
-          final pKolayScore = (720 + (effectiveSkill * 260) + (rng.nextInt(40) - 20)).round();
-          final pKolayDur = (18000 + ((1.0 - effectiveSkill) * 40000) + rng.nextInt(6000)).round();
-          _resultsStore.add(
-            GameResult(
-              id: 'queens_kolay_${userId}_${prefix}_d$dayBack',
-              gameType: GameType.queens,
-              levelId: pastLevelId,
-              userId: userId,
-              userName: name,
-              durationMs: pKolayDur,
-              moveCount: 6 + rng.nextInt(3),
-              score: pKolayScore,
-              completedAt: pastDate.add(Duration(hours: 9 + (i * 5) % 13, minutes: (i * 11) % 60)),
-              difficulty: 'kolay',
-            ),
-          );
+          final pPlaysKolay = i < 80 || (i % 2 == 0);
+          if (pPlaysKolay) {
+            final pKolayScore = (720 + (effectiveSkill * 250) + (rng.nextInt(30) - 15)).round();
+            final pKolayDur = (18000 + ((1.0 - effectiveSkill) * 38000) + rng.nextInt(6000)).round();
+            _resultsStore.add(
+              GameResult(
+                id: 'queens_kolay_${userId}_${prefix}_d$dayBack',
+                gameType: GameType.queens,
+                levelId: pastLevelId,
+                userId: userId,
+                userName: name,
+                durationMs: pKolayDur,
+                moveCount: 6 + rng.nextInt(3),
+                score: pKolayScore,
+                completedAt: pastDate.add(Duration(hours: 9 + (i * 5) % 13, minutes: (i * 11) % 60)),
+                difficulty: 'kolay',
+              ),
+            );
+          }
 
-          // Queens Zor (Tier 1 ve Tier 2 oyuncuları)
-          if (i < 85 && (i + dayBack) % 4 != 0) {
-            final pZorScore = (950 + (effectiveSkill * 320) + (rng.nextInt(50) - 25)).round();
-            final pZorDur = (35000 + ((1.0 - effectiveSkill) * 55000) + rng.nextInt(8000)).round();
+          // Queens Zor
+          final pPlaysZor = i < 22 || (i % 3 == 0 && i < 75);
+          if (pPlaysZor && (i + dayBack) % 4 != 0) {
+            final pZorScore = (930 + (effectiveSkill * 290) + (rng.nextInt(40) - 20)).round();
+            final pZorDur = (35000 + ((1.0 - effectiveSkill) * 52000) + rng.nextInt(8000)).round();
             _resultsStore.add(
               GameResult(
                 id: 'queens_zor_${userId}_${prefix}_d$dayBack',
@@ -237,10 +254,11 @@ class LeaderboardService extends ChangeNotifier {
             );
           }
 
-          // Queens Master (Tier 1 oyuncuları)
-          if (i < 40 && (i + dayBack) % 3 != 0) {
-            final pMasterScore = (1200 + (effectiveSkill * 440) + (rng.nextInt(60) - 30)).round();
-            final pMasterDur = (58000 + ((1.0 - effectiveSkill) * 90000) + rng.nextInt(12000)).round();
+          // Queens Master (Sadece elit oyuncular)
+          final pPlaysMaster = i < 12 || (i % 7 == 0 && i < 50);
+          if (pPlaysMaster && (i + dayBack) % 3 != 0) {
+            final pMasterScore = (1160 + (effectiveSkill * 380) + (rng.nextInt(50) - 25)).round();
+            final pMasterDur = (58000 + ((1.0 - effectiveSkill) * 85000) + rng.nextInt(12000)).round();
             _resultsStore.add(
               GameResult(
                 id: 'queens_master_${userId}_${prefix}_d$dayBack',
@@ -259,15 +277,14 @@ class LeaderboardService extends ChangeNotifier {
 
           // Diğer tüm oyunlar
           for (final game in allOtherGames) {
-            // Her oyun için ufak katılım filtresi (%80)
             if ((i + dayBack * 3 + game.index * 7) % 5 == 0) continue;
 
             final isWord = game == GameType.pinpoint || game == GameType.crossclimb;
             final bonus = (isWord && isWordExpert) ? 0.12 : ((!isWord && isGridExpert) ? 0.12 : 0.0);
             final gameSkill = (effectiveSkill + bonus + (rng.nextDouble() - 0.5) * 0.06).clamp(0.08, 1.0);
 
-            final score = (620 + (gameSkill * 370) + (rng.nextInt(40) - 20)).round();
-            final duration = (22000 + ((1.0 - gameSkill) * (isSpeedy ? 35000 : 58000)) + rng.nextInt(8000)).round();
+            final score = (700 + (gameSkill * 450) + (rng.nextInt(34) - 17)).round();
+            final duration = (20000 + ((1.0 - gameSkill) * (isSpeedy ? 32000 : 54000)) + rng.nextInt(8000)).round();
 
             _resultsStore.add(
               GameResult(

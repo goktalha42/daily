@@ -8,6 +8,7 @@ import 'package:uuid/uuid.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/date_utils.dart';
 import '../../core/services/game_stats_service.dart';
+import '../../core/services/badge_service.dart';
 import '../../core/services/daily_play_service.dart';
 import '../../core/services/game_session_service.dart';
 import '../../core/widgets/genius_win_dialog.dart';
@@ -327,7 +328,7 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> with WidgetsBindi
     }
   }
 
-  void _handleWin() {
+  void _handleWin() async {
     GameSessionService.clearSession(game: GameType.patches, levelId: widget.levelId);
     final score = (2000 - (_elapsedMs ~/ 1000) * 10 - _userRects.length * 5).clamp(100, 2000);
 
@@ -344,7 +345,7 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> with WidgetsBindi
     );
 
     ref.read(leaderboardServiceProvider).submitScore(result);
-    ref.read(gameStatsServiceProvider.notifier).recordGameResult(
+    final statsResult = await ref.read(gameStatsServiceProvider.notifier).recordGameResult(
           gameType: GameType.patches,
           score: score,
           durationMs: _elapsedMs,
@@ -356,11 +357,20 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> with WidgetsBindi
           score: score,
           durationMs: _elapsedMs,
         );
+    ref.read(badgeServiceProvider.notifier).evaluateBadges(
+          gameType: GameType.patches,
+          score: score,
+          durationMs: _elapsedMs,
+          overallIQ: statsResult.currentIQ,
+          statsMap: ref.read(gameStatsServiceProvider),
+        );
 
+    if (!mounted) return;
     GeniusWinDialog.show(
       context,
       result: result,
       gameTitle: 'Alan Bölme',
+      statsResult: statsResult,
       onRestart: () {
         Navigator.pop(context);
         GameSessionService.clearSession(game: GameType.patches, levelId: widget.levelId);
