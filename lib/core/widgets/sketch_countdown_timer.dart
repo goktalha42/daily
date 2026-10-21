@@ -24,16 +24,19 @@ class SketchCountdownTimer extends ConsumerWidget {
     final duration = countdownAsync.value ?? ref.watch(timeSyncServiceProvider).getTimeUntilNextReset();
     final formatted = TimeSyncService.formatCountdown(duration);
 
+    final isDark = AppColors.isDark(context);
+    final textColor = isDark ? Colors.white : AppColors.pencilBlack;
+
     return Container(
       padding: padding,
       decoration: BoxDecoration(
-        color: AppColors.surfaceSecondaryLight,
+        color: isDark ? AppColors.surfaceSecondaryDark : AppColors.surfaceSecondaryLight,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppColors.pencilBlack, width: 1.8),
-        boxShadow: const [
+        border: Border.all(color: isDark ? Colors.white : AppColors.pencilBlack, width: 1.8),
+        boxShadow: [
           BoxShadow(
-            color: AppColors.pencilBlack,
-            offset: Offset(2.0, 2.0),
+            color: isDark ? AppColors.cardShadowDark : AppColors.pencilBlack,
+            offset: const Offset(2.0, 2.0),
             blurRadius: 0,
           ),
         ],
@@ -41,10 +44,10 @@ class SketchCountdownTimer extends ConsumerWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(
+          Icon(
             Icons.timer_outlined,
             size: 16,
-            color: AppColors.pencilBlack,
+            color: textColor,
           ),
           const SizedBox(width: 5),
           if (showLabel) ...[
@@ -53,7 +56,7 @@ class SketchCountdownTimer extends ConsumerWidget {
               style: GoogleFonts.patrickHand(
                 fontSize: fontSize - 2,
                 fontWeight: FontWeight.w700,
-                color: AppColors.pencilGraphite,
+                color: isDark ? Colors.white : AppColors.pencilGraphite,
               ),
             ),
           ],
@@ -62,7 +65,7 @@ class SketchCountdownTimer extends ConsumerWidget {
             style: GoogleFonts.patrickHand(
               fontWeight: FontWeight.w700,
               fontSize: fontSize,
-              color: AppColors.pencilBlack,
+              color: textColor,
               letterSpacing: 0.5,
             ),
           ),

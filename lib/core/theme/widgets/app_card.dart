@@ -8,6 +8,8 @@ class AppCard extends StatefulWidget {
   final EdgeInsetsGeometry padding;
   final VoidCallback? onTap;
   final bool withGlassEffect;
+  final Color? backgroundColor;
+  final Color? borderColor;
 
   const AppCard({
     super.key,
@@ -15,6 +17,8 @@ class AppCard extends StatefulWidget {
     this.padding = const EdgeInsets.all(AppSpacing.md),
     this.onTap,
     this.withGlassEffect = false,
+    this.backgroundColor,
+    this.borderColor,
   });
 
   @override
@@ -46,22 +50,35 @@ class _AppCardState extends State<AppCard> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardBg = widget.backgroundColor ?? (isDark ? AppColors.surfaceDark : AppColors.surfaceLight);
+    final isBgLight = cardBg.computeLuminance() > 0.42;
+    final textColor = isDark ? (isBgLight ? AppColors.inkBlack : AppColors.inkWhite) : AppColors.pencilBlack;
+    final borderColor = widget.borderColor ?? (isDark ? (isBgLight ? AppColors.inkBlack : AppColors.pencilWhite) : AppColors.pencilBlack);
+    final shadowColor = isDark ? (isBgLight ? const Color(0xFF000000) : AppColors.cardShadowDark) : AppColors.pencilBlack;
+
     final cardContent = Container(
       decoration: BoxDecoration(
-        color: AppColors.surfaceLight,
+        color: cardBg,
         borderRadius: BorderRadius.circular(AppSpacing.borderRadiusLg),
-        border: Border.all(color: AppColors.pencilBlack, width: 2.0),
-        boxShadow: const [
+        border: Border.all(color: borderColor, width: 2.0),
+        boxShadow: [
           BoxShadow(
-            color: AppColors.pencilBlack,
+            color: shadowColor,
             blurRadius: 0,
-            offset: Offset(3.5, 3.5),
+            offset: const Offset(3.5, 3.5),
           ),
         ],
       ),
       child: Padding(
         padding: widget.padding,
-        child: widget.child,
+        child: IconTheme.merge(
+          data: IconThemeData(color: textColor),
+          child: DefaultTextStyle.merge(
+            style: TextStyle(color: textColor),
+            child: widget.child,
+          ),
+        ),
       ),
     );
 

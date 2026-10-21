@@ -339,11 +339,11 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> with Widget
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.sunYellow,
-              foregroundColor: AppColors.pencilBlack,
+              foregroundColor: AppColors.inkBlack,
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
-                side: const BorderSide(color: AppColors.pencilBlack, width: 2.0),
+                side: const BorderSide(color: AppColors.inkBlack, width: 2.0),
               ),
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
             ),
@@ -519,7 +519,7 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> with Widget
                           borderRadius: 10,
                           shadowOffset: const Offset(2, 2),
                           onTap: _showHelpDialog,
-                          child: const Icon(Icons.question_mark_rounded, size: 16, color: AppColors.pencilBlack),
+                          child: const Icon(Icons.question_mark_rounded, size: 16, color: AppColors.inkBlack),
                         ),
                       ],
                     ),

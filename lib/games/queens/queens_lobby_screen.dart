@@ -40,7 +40,7 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
     final formattedDate = GameDateUtils.getFormattedDate(activeDate);
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
+      backgroundColor: AppColors.backgroundOf(context),
       body: SketchPaperBackground(
         child: SafeArea(
           child: CustomScrollView(
@@ -58,10 +58,10 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
                         borderRadius: 10,
                         shadowOffset: const Offset(2.5, 2.5),
                         onTap: () => Navigator.pop(context),
-                        child: const Icon(
+                        child: Icon(
                           Icons.arrow_back_ios_new_rounded,
                           size: 18,
-                          color: AppColors.pencilBlack,
+                          color: AppColors.pencil(context),
                         ),
                       ),
                       Column(
@@ -69,14 +69,14 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const SketchDoodleCrown(size: 16, color: AppColors.pencilBlack),
+                              SketchDoodleCrown(size: 16, color: AppColors.pencil(context)),
                               const SizedBox(width: 6),
                               Text(
                                 formattedDate.toUpperCase(),
                                 style: GoogleFonts.patrickHand(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w700,
-                                  color: AppColors.pencilGraphite,
+                                  color: AppColors.graphite(context),
                                   letterSpacing: 1.0,
                                 ),
                               ),
@@ -87,7 +87,7 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
                             style: GoogleFonts.patrickHand(
                               fontSize: 24,
                               fontWeight: FontWeight.w700,
-                              color: AppColors.pencilBlack,
+                              color: AppColors.pencil(context),
                             ),
                           ),
                         ],
@@ -102,7 +102,7 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
                         child: const Icon(
                           Icons.question_mark_rounded,
                           size: 18,
-                          color: AppColors.pencilBlack,
+                          color: AppColors.inkBlack,
                         ),
                       ),
                     ],
@@ -118,7 +118,7 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
                     padding: const EdgeInsets.all(16),
                     borderRadius: 16,
                     shadowOffset: const Offset(3.5, 3.5),
-                    backgroundColor: AppColors.surfaceLight,
+                    backgroundColor: AppColors.surfaceOf(context),
                     child: Row(
                       children: [
                         SketchCard(
@@ -127,11 +127,11 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
                           borderWidth: 2.0,
                           shadowOffset: const Offset(2.0, 2.0),
                           backgroundColor: AppColors.highlighterPink.withValues(alpha: 0.35),
-                          child: const SizedBox(
+                          child: SizedBox(
                             width: 48,
                             height: 48,
                             child: Center(
-                              child: SketchDoodleCrown(size: 26, color: AppColors.pencilBlack),
+                              child: SketchDoodleCrown(size: 26, color: AppColors.pencil(context)),
                             ),
                           ),
                         ),
@@ -145,14 +145,14 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
                                 style: GoogleFonts.patrickHand(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w700,
-                                  color: AppColors.pencilBlack,
+                                  color: AppColors.pencil(context),
                                 ),
                               ),
                               Text(
                                 'Kolay & Zor modlarda 1 vezir; Master modunda ise her renkte, satırda ve sütunda tam 2 vezir!',
                                 style: GoogleFonts.patrickHand(
                                   fontSize: 14,
-                                  color: AppColors.pencilGraphite,
+                                  color: AppColors.graphite(context),
                                   height: 1.15,
                                 ),
                               ),
@@ -185,7 +185,7 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
                         style: GoogleFonts.patrickHand(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
-                          color: AppColors.pencilGraphite,
+                          color: AppColors.graphite(context),
                           letterSpacing: 1.0,
                         ),
                       ),
@@ -263,7 +263,7 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
                             style: GoogleFonts.patrickHand(
                               fontSize: 14,
                               fontWeight: FontWeight.w700,
-                              color: AppColors.pencilGraphite,
+                              color: AppColors.graphite(context),
                               letterSpacing: 1.0,
                             ),
                           ),
@@ -274,7 +274,7 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
                         style: GoogleFonts.patrickHand(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
-                          color: AppColors.pencilGray,
+                          color: AppColors.gray(context),
                         ),
                       ),
                     ],
@@ -289,6 +289,10 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
                   child: Row(
                     children: QueensDifficulty.values.map((diff) {
                       final isSelected = diff == _activeLeaderboardTab;
+                      final tabBg = isSelected
+                          ? _getDiffColor(diff)
+                          : AppColors.surfaceOf(context);
+                      final tabTextColor = AppColors.onColor(tabBg);
                       return Expanded(
                         child: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 3),
@@ -298,9 +302,7 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
                               setState(() => _activeLeaderboardTab = diff);
                             },
                             padding: const EdgeInsets.symmetric(vertical: 8),
-                            backgroundColor: isSelected
-                                ? _getDiffColor(diff)
-                                : AppColors.surfaceLight,
+                            backgroundColor: tabBg,
                             borderRadius: 10,
                             borderWidth: isSelected ? 2.2 : 1.5,
                             shadowOffset: isSelected ? const Offset(2.5, 2.5) : const Offset(1.5, 1.5),
@@ -311,7 +313,7 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
                                 style: GoogleFonts.patrickHand(
                                   fontSize: 15,
                                   fontWeight: FontWeight.w700,
-                                  color: AppColors.pencilBlack,
+                                  color: tabTextColor,
                                 ),
                               ),
                             ),
@@ -439,115 +441,134 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
         }
       },
       backgroundColor: isSelected
-          ? Color.lerp(color, Colors.white, 0.75)!
-          : AppColors.surfaceLight,
+          ? (Theme.of(context).brightness == Brightness.dark
+              ? color
+              : Color.lerp(color, Colors.white, 0.75)!)
+          : (Theme.of(context).brightness == Brightness.dark
+              ? AppColors.surfaceDark
+              : Colors.white),
       borderRadius: 16,
       borderWidth: isSelected ? 2.6 : 2.0,
       shadowOffset: isSelected ? const Offset(3.5, 3.5) : const Offset(2.0, 2.0),
       enableHatching: isSelected,
       padding: const EdgeInsets.all(14),
-      child: Row(
-        children: [
-          // İkon Kutusu (Kolay: Tek Vezir, Zor: Tek Vezir + 3 Yıldız, Master: Çift Vezir)
-          SketchCard(
-            padding: EdgeInsets.zero,
-            borderRadius: 12,
-            borderWidth: 2.0,
-            shadowOffset: const Offset(2.0, 2.0),
-            backgroundColor: color,
-            child: SizedBox(
-              width: 50,
-              height: 50,
-              child: _buildDifficultyLogo(diff),
-            ),
-          ),
-          const SizedBox(width: 14),
-          // Bilgi Bölümü
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+      child: Builder(
+        builder: (context) {
+          final isDark = Theme.of(context).brightness == Brightness.dark;
+          final cardBg = isSelected
+              ? (isDark ? color : Color.lerp(color, Colors.white, 0.75)!)
+              : (isDark ? AppColors.surfaceDark : Colors.white);
+          final cardTextColor = AppColors.onColor(cardBg, context: context);
+          final cardDescColor = AppColors.onColorSubtitle(cardBg, context: context);
+          final btnBg = isSelected ? AppColors.sunYellow : (isDark ? color : AppColors.sunYellow);
+          final onBtnColor = AppColors.onColor(btnBg, context: context);
+
+          return Row(
+            children: [
+              // İkon Kutusu (Kolay: Tek Vezir, Zor: Tek Vezir + 3 Yıldız, Master: Çift Vezir)
+              SketchCard(
+                padding: EdgeInsets.zero,
+                borderRadius: 12,
+                borderWidth: 2.0,
+                shadowOffset: const Offset(2.0, 2.0),
+                backgroundColor: color,
+                child: SizedBox(
+                  width: 50,
+                  height: 50,
+                  child: _buildDifficultyLogo(diff),
+                ),
+              ),
+              const SizedBox(width: 14),
+              // Bilgi Bölümü
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      title,
-                      style: GoogleFonts.patrickHand(
-                        fontSize: 19,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.pencilBlack,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Flexible(
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: SketchCard(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                          backgroundColor: color.withValues(alpha: 0.35),
-                          borderRadius: 6,
-                          borderWidth: 1.2,
-                          shadowOffset: const Offset(1.0, 1.0),
-                          child: Text(
-                            badge,
-                            style: GoogleFonts.patrickHand(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.pencilBlack,
+                    Row(
+                      children: [
+                        Text(
+                          title,
+                          style: GoogleFonts.patrickHand(
+                            fontSize: 19,
+                            fontWeight: FontWeight.w700,
+                            color: cardTextColor,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Flexible(
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: SketchCard(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              backgroundColor: isDark
+                                  ? color.withValues(alpha: 0.35)
+                                  : color.withValues(alpha: 0.25),
+                              borderRadius: 6,
+                              borderWidth: 1.2,
+                              shadowOffset: const Offset(1.0, 1.0),
+                              child: Text(
+                                badge,
+                                style: GoogleFonts.patrickHand(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                  color: cardTextColor,
+                                ),
+                              ),
                             ),
                           ),
                         ),
+                      ],
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      desc,
+                      style: GoogleFonts.patrickHand(
+                        fontSize: 13,
+                        color: cardDescColor,
+                        height: 1.15,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  desc,
-                  style: GoogleFonts.patrickHand(
-                    fontSize: 13,
-                    color: AppColors.pencilGraphite,
-                    height: 1.15,
-                  ),
+              ),
+              const SizedBox(width: 8),
+              // Başla / Oyna Butonu (Organik SketchCard)
+              SketchCard(
+                onTap: () {
+                  if (isCompleted) {
+                    _showCompletedDialog(context, diff, record);
+                  } else {
+                    _launchQueens(context, diff);
+                  }
+                },
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                backgroundColor: btnBg,
+                borderRadius: 10,
+                borderWidth: 2.0,
+                shadowOffset: const Offset(2.0, 2.0),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      isCompleted ? 'BİTTİ (${record?.score ?? 0}P)' : 'OYNA',
+                      style: GoogleFonts.patrickHand(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: onBtnColor,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Icon(
+                      isCompleted ? Icons.check_circle_outline_rounded : Icons.play_arrow_rounded,
+                      size: 18,
+                      color: onBtnColor,
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 8),
-          // Başla / Oyna Butonu (Organik SketchCard)
-          SketchCard(
-            onTap: () {
-              if (isCompleted) {
-                _showCompletedDialog(context, diff, record);
-              } else {
-                _launchQueens(context, diff);
-              }
-            },
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            backgroundColor: isSelected ? color : AppColors.sunYellow,
-            borderRadius: 10,
-            borderWidth: 2.0,
-            shadowOffset: const Offset(2.0, 2.0),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  isCompleted ? 'BİTTİ (${record?.score ?? 0}P)' : 'OYNA',
-                  style: GoogleFonts.patrickHand(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.pencilBlack,
-                  ),
-                ),
-                const SizedBox(width: 4),
-                Icon(
-                  isCompleted ? Icons.check_circle_outline_rounded : Icons.play_arrow_rounded,
-                  size: 18,
-                  color: AppColors.pencilBlack,
-                ),
-              ],
-            ),
-          ),
-        ],
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -579,12 +600,12 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
                 style: GoogleFonts.patrickHand(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.pencilBlack,
+                  color: AppColors.pencil(context),
                 ),
               ),
               SketchCard(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                backgroundColor: AppColors.surfaceSecondaryLight,
+                backgroundColor: AppColors.surfaceSecondaryOf(context),
                 borderRadius: 6,
                 borderWidth: 1.2,
                 shadowOffset: const Offset(1.0, 1.0),
@@ -593,7 +614,7 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
                   style: GoogleFonts.patrickHand(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.pencilGraphite,
+                    color: AppColors.graphite(context),
                   ),
                 ),
               ),
@@ -609,7 +630,7 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
                   textAlign: TextAlign.center,
                   style: GoogleFonts.patrickHand(
                     fontSize: 16,
-                    color: AppColors.pencilGray,
+                    color: AppColors.gray(context),
                   ),
                 ),
               ),
@@ -631,7 +652,7 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                   backgroundColor: isMe
                       ? AppColors.sunYellow.withValues(alpha: 0.35)
-                      : (isTop3 ? rankColor.withValues(alpha: 0.35) : AppColors.backgroundLight),
+                      : (isTop3 ? rankColor.withValues(alpha: 0.35) : AppColors.surfaceOf(context)),
                   borderRadius: 10,
                   borderWidth: isMe ? 2.2 : 1.5,
                   shadowOffset: isMe ? const Offset(2.5, 2.5) : const Offset(2.0, 2.0),
@@ -642,7 +663,7 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
                         borderRadius: 6,
                         borderWidth: 1.2,
                         shadowOffset: const Offset(1.0, 1.0),
-                        backgroundColor: isTop3 ? rankColor : AppColors.surfaceLight,
+                        backgroundColor: isTop3 ? rankColor : AppColors.surfaceOf(context),
                         child: SizedBox(
                           width: 24,
                           height: 24,
@@ -652,7 +673,7 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
                               style: GoogleFonts.patrickHand(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w700,
-                                color: AppColors.pencilBlack,
+                                color: isTop3 ? AppColors.inkBlack : AppColors.pencil(context),
                               ),
                             ),
                           ),
@@ -665,20 +686,20 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
                           style: GoogleFonts.patrickHand(
                             fontSize: 16,
                             fontWeight: isMe ? FontWeight.w800 : FontWeight.w700,
-                            color: AppColors.pencilBlack,
+                            color: AppColors.pencil(context),
                           ),
                         ),
                       ),
                       Row(
                         children: [
-                          const Icon(Icons.timer_outlined, size: 14, color: AppColors.pencilGray),
+                          Icon(Icons.timer_outlined, size: 14, color: AppColors.gray(context)),
                           const SizedBox(width: 4),
                           Text(
                             GameDateUtils.formatGameTime(entry.bestTimeMs),
                             style: GoogleFonts.patrickHand(
                               fontSize: 15,
                               fontWeight: FontWeight.w700,
-                              color: AppColors.pencilGraphite,
+                              color: AppColors.graphite(context),
                             ),
                           ),
                         ],
@@ -695,7 +716,7 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
                           style: GoogleFonts.patrickHand(
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.pencilBlack,
+                            color: AppColors.inkBlack,
                           ),
                         ),
                       ),
@@ -713,7 +734,7 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
                     style: GoogleFonts.patrickHand(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.pencilGray,
+                      color: AppColors.gray(context),
                       letterSpacing: 4,
                     ),
                   ),
@@ -746,7 +767,7 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
                                 style: GoogleFonts.patrickHand(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w700,
-                                  color: AppColors.pencilBlack,
+                                  color: AppColors.inkBlack,
                                 ),
                               ),
                             ),
@@ -761,24 +782,24 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
                                 style: GoogleFonts.patrickHand(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w800,
-                                  color: AppColors.pencilBlack,
+                                  color: AppColors.pencil(context),
                                 ),
                               ),
                               const SizedBox(width: 4),
-                              const Icon(Icons.person_rounded, size: 14, color: AppColors.pencilBlack),
+                              Icon(Icons.person_rounded, size: 14, color: AppColors.pencil(context)),
                             ],
                           ),
                         ),
                         Row(
                           children: [
-                            const Icon(Icons.timer_outlined, size: 14, color: AppColors.pencilGray),
+                            Icon(Icons.timer_outlined, size: 14, color: AppColors.gray(context)),
                             const SizedBox(width: 4),
                             Text(
                               GameDateUtils.formatGameTime(myEntry.bestTimeMs),
                               style: GoogleFonts.patrickHand(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w700,
-                                color: AppColors.pencilGraphite,
+                                color: AppColors.graphite(context),
                               ),
                             ),
                           ],
@@ -839,7 +860,7 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
             maxWidth: 440,
           ),
           child: SketchCard(
-            backgroundColor: Colors.white,
+            backgroundColor: AppColors.surfaceOf(context),
             borderRadius: 18,
             borderWidth: 2.5,
             shadowOffset: const Offset(4.0, 4.0),
@@ -867,7 +888,7 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
                           Text(
                             '${diff.label} Seviyesi Tamamlandı!',
                             style: GoogleFonts.patrickHand(
-                              color: AppColors.pencilBlack,
+                              color: AppColors.pencil(context),
                               fontWeight: FontWeight.w700,
                               fontSize: 22,
                             ),
@@ -875,7 +896,7 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
                           Text(
                             'Bugünkü ${diff.label} seviyesi başarıyla çözüldü.',
                             style: GoogleFonts.patrickHand(
-                              color: AppColors.pencilGray,
+                              color: AppColors.gray(context),
                               fontSize: 13,
                             ),
                           ),
@@ -899,35 +920,35 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
                           borderRadius: 12,
                           borderWidth: 2.0,
                           shadowOffset: const Offset(2.5, 2.5),
-                          backgroundColor: AppColors.surfaceSecondaryLight,
+                          backgroundColor: AppColors.surfaceSecondaryOf(context),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceAround,
                             children: [
                               Column(
                                 children: [
-                                  Text('SKOR', style: GoogleFonts.patrickHand(fontSize: 12, color: AppColors.pencilGray, fontWeight: FontWeight.w700)),
-                                  Text('${record?.score ?? 0}', style: GoogleFonts.patrickHand(fontSize: 22, color: AppColors.pencilBlack, fontWeight: FontWeight.w700)),
+                                  Text('SKOR', style: GoogleFonts.patrickHand(fontSize: 12, color: AppColors.gray(context), fontWeight: FontWeight.w700)),
+                                  Text('${record?.score ?? 0}', style: GoogleFonts.patrickHand(fontSize: 22, color: AppColors.pencil(context), fontWeight: FontWeight.w700)),
                                 ],
                               ),
-                              Container(width: 1.5, height: 32, color: AppColors.pencilBlack.withValues(alpha: 0.2)),
+                              Container(width: 1.5, height: 32, color: AppColors.pencil(context).withValues(alpha: 0.2)),
                               Column(
                                 children: [
-                                  Text('SÜRE', style: GoogleFonts.patrickHand(fontSize: 12, color: AppColors.pencilGray, fontWeight: FontWeight.w700)),
+                                  Text('SÜRE', style: GoogleFonts.patrickHand(fontSize: 12, color: AppColors.gray(context), fontWeight: FontWeight.w700)),
                                   Text(
                                     GameDateUtils.formatGameTime(record?.durationMs ?? 0),
-                                    style: GoogleFonts.patrickHand(fontSize: 20, color: AppColors.pencilBlack, fontWeight: FontWeight.w700),
+                                    style: GoogleFonts.patrickHand(fontSize: 20, color: AppColors.pencil(context), fontWeight: FontWeight.w700),
                                   ),
                                 ],
                               ),
-                              Container(width: 1.5, height: 32, color: AppColors.pencilBlack.withValues(alpha: 0.2)),
+                              Container(width: 1.5, height: 32, color: AppColors.pencil(context).withValues(alpha: 0.2)),
                               Column(
                                 children: [
-                                  Text('GÜNLÜK SIRA', style: GoogleFonts.patrickHand(fontSize: 12, color: AppColors.pencilGray, fontWeight: FontWeight.w700)),
+                                  Text('GÜNLÜK SIRA', style: GoogleFonts.patrickHand(fontSize: 12, color: AppColors.gray(context), fontWeight: FontWeight.w700)),
                                   Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      Text('#${myRank ?? '-'}', style: GoogleFonts.patrickHand(fontSize: 22, color: AppColors.pencilBlack, fontWeight: FontWeight.w700)),
-                                      Text('/${entries.length}', style: GoogleFonts.patrickHand(fontSize: 13, color: AppColors.pencilGray, fontWeight: FontWeight.w600)),
+                                      Text('#${myRank ?? '-'}', style: GoogleFonts.patrickHand(fontSize: 22, color: AppColors.pencil(context), fontWeight: FontWeight.w700)),
+                                      Text('/${entries.length}', style: GoogleFonts.patrickHand(fontSize: 13, color: AppColors.gray(context), fontWeight: FontWeight.w600)),
                                     ],
                                   ),
                                 ],
@@ -941,14 +962,14 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
                           children: [
                             Row(
                               children: [
-                                const Icon(Icons.leaderboard_rounded, size: 16, color: AppColors.pencilBlack),
+                                Icon(Icons.leaderboard_rounded, size: 16, color: AppColors.pencil(context)),
                                 const SizedBox(width: 6),
                                 Text(
                                   '${diff.label.toUpperCase()} İLK 10 SIRALAMASI',
                                   style: GoogleFonts.patrickHand(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w700,
-                                    color: AppColors.pencilBlack,
+                                    color: AppColors.pencil(context),
                                     letterSpacing: 0.5,
                                   ),
                                 ),
@@ -968,7 +989,7 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
                                   style: GoogleFonts.patrickHand(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w700,
-                                    color: AppColors.pencilBlack,
+                                    color: AppColors.pencil(context),
                                   ),
                                 ),
                               ),
@@ -982,7 +1003,7 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
                               ? AppColors.sunYellow
                               : (entry.rank == 2
                                   ? const Color(0xFFE2E8F0)
-                                  : (entry.rank == 3 ? const Color(0xFFFED7AA) : AppColors.surfaceLight));
+                                  : (entry.rank == 3 ? const Color(0xFFFED7AA) : AppColors.surfaceOf(context)));
 
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 6),
@@ -993,7 +1014,7 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
                               shadowOffset: isMe ? const Offset(2.0, 2.0) : const Offset(1.0, 1.0),
                               backgroundColor: isMe
                                   ? AppColors.sunYellow.withValues(alpha: 0.35)
-                                  : (isPodium ? rankBg.withValues(alpha: 0.25) : AppColors.backgroundLight),
+                                  : (isPodium ? rankBg.withValues(alpha: 0.25) : AppColors.surfaceOf(context)),
                               child: Row(
                                 children: [
                                   SketchCard(
@@ -1011,7 +1032,7 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
                                           style: GoogleFonts.patrickHand(
                                             fontSize: 13,
                                             fontWeight: FontWeight.w700,
-                                            color: AppColors.pencilBlack,
+                                            color: isPodium ? AppColors.inkBlack : AppColors.pencil(context),
                                           ),
                                         ),
                                       ),
@@ -1024,20 +1045,20 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
                                       style: GoogleFonts.patrickHand(
                                         fontSize: 15,
                                         fontWeight: isMe ? FontWeight.w800 : FontWeight.w700,
-                                        color: AppColors.pencilBlack,
+                                        color: AppColors.pencil(context),
                                       ),
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
                                   Row(
                                     children: [
-                                      const Icon(Icons.timer_outlined, size: 12, color: AppColors.pencilGray),
+                                      Icon(Icons.timer_outlined, size: 12, color: AppColors.gray(context)),
                                       const SizedBox(width: 3),
                                       Text(
                                         GameDateUtils.formatGameTime(entry.bestTimeMs),
                                         style: GoogleFonts.patrickHand(
                                           fontSize: 13,
-                                          color: AppColors.pencilGraphite,
+                                          color: AppColors.graphite(context),
                                           fontWeight: FontWeight.w600,
                                         ),
                                       ),
@@ -1055,7 +1076,7 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
                                       style: GoogleFonts.patrickHand(
                                         fontSize: 13,
                                         fontWeight: FontWeight.w700,
-                                        color: AppColors.pencilBlack,
+                                        color: AppColors.inkBlack,
                                       ),
                                     ),
                                   ),
@@ -1073,7 +1094,7 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
                                 style: GoogleFonts.patrickHand(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w700,
-                                  color: AppColors.pencilGray,
+                                  color: AppColors.gray(context),
                                   letterSpacing: 4,
                                 ),
                               ),
@@ -1106,7 +1127,7 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
                                             style: GoogleFonts.patrickHand(
                                               fontSize: 13,
                                               fontWeight: FontWeight.w700,
-                                              color: AppColors.pencilBlack,
+                                              color: AppColors.inkBlack,
                                             ),
                                           ),
                                         ),
@@ -1121,24 +1142,24 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
                                             style: GoogleFonts.patrickHand(
                                               fontSize: 15,
                                               fontWeight: FontWeight.w800,
-                                              color: AppColors.pencilBlack,
+                                              color: AppColors.pencil(context),
                                             ),
                                             overflow: TextOverflow.ellipsis,
                                           ),
                                           const SizedBox(width: 4),
-                                          const Icon(Icons.person_rounded, size: 14, color: AppColors.pencilBlack),
+                                          Icon(Icons.person_rounded, size: 14, color: AppColors.pencil(context)),
                                         ],
                                       ),
                                     ),
                                     Row(
                                       children: [
-                                        const Icon(Icons.timer_outlined, size: 12, color: AppColors.pencilGray),
+                                        Icon(Icons.timer_outlined, size: 12, color: AppColors.gray(context)),
                                         const SizedBox(width: 3),
                                         Text(
                                           GameDateUtils.formatGameTime(myEntry.bestTimeMs),
                                           style: GoogleFonts.patrickHand(
                                             fontSize: 13,
-                                            color: AppColors.pencilGraphite,
+                                            color: AppColors.graphite(context),
                                             fontWeight: FontWeight.w600,
                                           ),
                                         ),
@@ -1156,7 +1177,7 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
                                         style: GoogleFonts.patrickHand(
                                           fontSize: 13,
                                           fontWeight: FontWeight.w700,
-                                          color: AppColors.pencilBlack,
+                                          color: AppColors.inkBlack,
                                         ),
                                       ),
                                     ),
@@ -1169,14 +1190,14 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
                         const SizedBox(height: 10),
                         Row(
                           children: [
-                            const Icon(Icons.lock_clock_rounded, size: 15, color: AppColors.pencilBlack),
+                            Icon(Icons.lock_clock_rounded, size: 15, color: AppColors.pencil(context)),
                             const SizedBox(width: 6),
                             Expanded(
                               child: Text(
                                 'Yeni bulmaca yarın saat 00:00 (UTC) sıfırlanmasında açılacak.',
                                 style: GoogleFonts.patrickHand(
                                   fontSize: 13,
-                                  color: AppColors.pencilBlack,
+                                  color: AppColors.graphite(context),
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
@@ -1194,14 +1215,14 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
                       child: SketchCard(
                         onTap: () => Navigator.pop(ctx),
                         padding: const EdgeInsets.symmetric(vertical: 8),
-                        backgroundColor: AppColors.surfaceSecondaryLight,
+                        backgroundColor: AppColors.surfaceSecondaryOf(context),
                         borderRadius: 10,
                         borderWidth: 1.8,
                         shadowOffset: const Offset(2, 2),
                         child: Center(
                           child: Text(
                             'Kapat',
-                            style: GoogleFonts.patrickHand(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.pencilBlack),
+                            style: GoogleFonts.patrickHand(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.pencil(context)),
                           ),
                         ),
                       ),
@@ -1239,7 +1260,7 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 440),
           child: SketchCard(
-            backgroundColor: Colors.white,
+            backgroundColor: AppColors.surfaceOf(context),
             borderRadius: 18,
             borderWidth: 2.5,
             shadowOffset: const Offset(4.0, 4.0),
@@ -1255,7 +1276,7 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
                     Text(
                       'Vezirler Kuralları',
                       style: GoogleFonts.patrickHand(
-                        color: AppColors.pencilBlack,
+                        color: AppColors.pencil(context),
                         fontWeight: FontWeight.w700,
                         fontSize: 24,
                       ),
@@ -1280,7 +1301,7 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
                     style: GoogleFonts.patrickHand(
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.pencilBlack,
+                      color: AppColors.pencil(context),
                       height: 1.25,
                     ),
                   ),
@@ -1299,7 +1320,7 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
                       style: GoogleFonts.patrickHand(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.pencilBlack,
+                        color: AppColors.inkBlack,
                       ),
                     ),
                   ),
@@ -1331,7 +1352,7 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
                 style: GoogleFonts.patrickHand(
                   fontWeight: FontWeight.w700,
                   fontSize: 14,
-                  color: AppColors.pencilBlack,
+                  color: AppColors.inkBlack,
                 ),
               ),
             ),
@@ -1347,14 +1368,14 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
                 style: GoogleFonts.patrickHand(
                   fontWeight: FontWeight.w700,
                   fontSize: 16,
-                  color: AppColors.pencilBlack,
+                  color: AppColors.pencil(context),
                 ),
               ),
               Text(
                 desc,
                 style: GoogleFonts.patrickHand(
                   fontSize: 13,
-                  color: AppColors.pencilGraphite,
+                  color: AppColors.graphite(context),
                   height: 1.15,
                 ),
               ),

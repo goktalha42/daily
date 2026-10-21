@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../core/services/game_stats_service.dart';
 import '../../core/services/time_sync_service.dart';
 import '../../core/services/daily_play_service.dart';
+import '../../core/services/theme_service.dart';
 import '../../core/widgets/sketch_countdown_timer.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/date_utils.dart';
@@ -37,8 +38,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
+      backgroundColor: isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
       extendBody: true,
       body: SketchPaperBackground(
         child: Stack(
@@ -62,7 +65,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 borderRadius: 18,
                 borderWidth: 2.5,
                 shadowOffset: const Offset(4, 4),
-                backgroundColor: Colors.white,
+                backgroundColor: isDark ? AppColors.surfaceDark : Colors.white,
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -129,6 +132,10 @@ class _NavTabItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final activeTextColor = isDark ? AppColors.pencilWhite : AppColors.pencilBlack;
+    final inactiveTextColor = isDark ? AppColors.pencilGraphiteDark : AppColors.pencilGraphite;
+
     if (isSelected) {
       return Expanded(
         child: SketchCard(
@@ -136,17 +143,17 @@ class _NavTabItem extends StatelessWidget {
           borderRadius: 10,
           borderWidth: 2.0,
           shadowOffset: const Offset(2.0, 2.0),
-          backgroundColor: AppColors.surfaceSecondaryLight,
+          backgroundColor: isDark ? AppColors.surfaceSecondaryDark : AppColors.surfaceSecondaryLight,
           padding: const EdgeInsets.symmetric(vertical: 6),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, color: AppColors.pencilBlack, size: 20),
+              Icon(icon, color: activeTextColor, size: 20),
               const SizedBox(width: 6),
               Text(
                 label,
                 style: GoogleFonts.patrickHand(
-                  color: AppColors.pencilBlack,
+                  color: activeTextColor,
                   fontWeight: FontWeight.w700,
                   fontSize: 16,
                 ),
@@ -166,7 +173,7 @@ class _NavTabItem extends StatelessWidget {
           child: Center(
             child: Icon(
               icon,
-              color: AppColors.pencilGraphite,
+              color: inactiveTextColor,
               size: 22,
             ),
           ),
@@ -452,7 +459,7 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
                                       style: GoogleFonts.patrickHand(
                                         fontSize: 13,
                                         fontWeight: FontWeight.w700,
-                                        color: AppColors.pencilBlack,
+                                        color: AppColors.inkBlack,
                                       ),
                                     ),
                                   ),
@@ -505,7 +512,7 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
                                             style: GoogleFonts.patrickHand(
                                               fontSize: 13,
                                               fontWeight: FontWeight.w700,
-                                              color: AppColors.pencilBlack,
+                                              color: AppColors.inkBlack,
                                             ),
                                           ),
                                         ),
@@ -555,7 +562,7 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
                                         style: GoogleFonts.patrickHand(
                                           fontSize: 13,
                                           fontWeight: FontWeight.w700,
-                                          color: AppColors.pencilBlack,
+                                          color: AppColors.inkBlack,
                                         ),
                                       ),
                                     ),
@@ -630,10 +637,10 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
                             children: [
                               Text(
                                 'Sıralama (#${myRank ?? 1})',
-                                style: GoogleFonts.patrickHand(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.pencilBlack),
+                                style: GoogleFonts.patrickHand(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.inkBlack),
                               ),
                               const SizedBox(width: 4),
-                              const Icon(Icons.arrow_forward_rounded, size: 16, color: AppColors.pencilBlack),
+                              const Icon(Icons.arrow_forward_rounded, size: 16, color: AppColors.inkBlack),
                             ],
                           ),
                         ),
@@ -693,6 +700,10 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final headerPencil = isDark ? AppColors.pencilWhite : AppColors.pencilBlack;
+    final headerGraphite = isDark ? AppColors.pencilGraphiteDark : AppColors.pencilGraphite;
+
     final activeDate = GameDateUtils.getActiveDate();
     final formattedDate = GameDateUtils.getFormattedDate(activeDate);
     final statsMap = ref.watch(gameStatsServiceProvider);
@@ -702,7 +713,7 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
     return CustomScrollView(
       physics: const BouncingScrollPhysics(),
       slivers: [
-        // 1. ÜST BAŞLIK & TARİH & YENİ GÜN BUTONU
+        // 1. ÜST BAŞLIK & TARİH & YENİ GÜN & TEMA BUTONU
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.only(left: 20, right: 20, top: 54, bottom: 12),
@@ -717,11 +728,11 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
                         Container(
                           width: 8,
                           height: 8,
-                          decoration: const BoxDecoration(
+                          decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             color: AppColors.sunYellow,
                             border: Border.fromBorderSide(
-                              BorderSide(color: AppColors.pencilBlack, width: 1.5),
+                              BorderSide(color: headerPencil, width: 1.5),
                             ),
                           ),
                         ),
@@ -731,7 +742,7 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
                           style: GoogleFonts.patrickHand(
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.pencilGraphite,
+                            color: headerGraphite,
                             letterSpacing: 1.0,
                           ),
                         ),
@@ -743,34 +754,56 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
                       style: GoogleFonts.patrickHand(
                         fontSize: 34,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.pencilBlack,
+                        color: headerPencil,
                         letterSpacing: -0.5,
                       ),
                     ),
                   ],
                 ),
-                // Fotoğraftaki Gibi Kara Kalem "Yeni Gün" Butonu
-                SketchCard(
-                  onTap: _advanceToNextDay,
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                  backgroundColor: AppColors.surfaceSecondaryLight,
-                  borderRadius: 10,
-                  borderWidth: 2.0,
-                  shadowOffset: const Offset(2.5, 2.5),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.bolt_rounded, size: 18, color: AppColors.pencilBlack),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Yeni Gün',
-                        style: GoogleFonts.patrickHand(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.pencilBlack,
-                        ),
+                Row(
+                  children: [
+                    // Hızlı Tema Değiştirici Butonu
+                    SketchCard(
+                      onTap: () {
+                        HapticFeedback.selectionClick();
+                        ref.read(themeServiceProvider.notifier).toggleTheme(context);
+                      },
+                      padding: const EdgeInsets.all(8),
+                      backgroundColor: isDark ? AppColors.surfaceSecondaryDark : AppColors.surfaceSecondaryLight,
+                      borderRadius: 10,
+                      borderWidth: 2.0,
+                      shadowOffset: const Offset(2.0, 2.0),
+                      child: Icon(
+                        isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
+                        size: 18,
+                        color: isDark ? AppColors.sunYellow : AppColors.pencilBlack,
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(width: 8),
+                    // Fotoğraftaki Gibi Kara Kalem "Yeni Gün" Butonu
+                    SketchCard(
+                      onTap: _advanceToNextDay,
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      backgroundColor: isDark ? AppColors.surfaceSecondaryDark : AppColors.surfaceSecondaryLight,
+                      borderRadius: 10,
+                      borderWidth: 2.0,
+                      shadowOffset: const Offset(2.5, 2.5),
+                      child: Row(
+                        children: [
+                          Icon(Icons.bolt_rounded, size: 18, color: headerPencil),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Yeni Gün',
+                            style: GoogleFonts.patrickHand(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: headerPencil,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -829,98 +862,98 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
                           children: [
                             Row(
                               children: [
-                                const SketchDoodleBrain(size: 18, color: AppColors.pencilBlack),
-                                const SizedBox(width: 5),
-                                Text(
-                                  'GÜNLÜK BEYİN GÜCÜ ENDEKSİ',
-                                  style: GoogleFonts.patrickHand(
-                                    color: AppColors.pencilGray,
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 2),
-                            Row(
-                              children: [
-                                Text(
-                                  'IQ $userIQ+',
-                                  style: GoogleFonts.patrickHand(
-                                    color: AppColors.pencilBlack,
-                                    fontSize: 32,
-                                    fontWeight: FontWeight.w700,
-                                    letterSpacing: -0.5,
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.highlighterCyan,
-                                    borderRadius: BorderRadius.circular(6),
-                                    border: Border.all(color: AppColors.pencilBlack, width: 1.5),
-                                  ),
-                                  child: Text(
-                                    'ZÜHTÜ SEVİYESİ',
+                                  const SketchDoodleBrain(size: 18),
+                                  const SizedBox(width: 5),
+                                  Text(
+                                    'GÜNLÜK BEYİN GÜCÜ ENDEKSİ',
                                     style: GoogleFonts.patrickHand(
-                                      color: AppColors.pencilBlack,
-                                      fontSize: 12,
+                                      color: isDark ? Colors.white : AppColors.pencilGray,
+                                      fontSize: 13,
                                       fontWeight: FontWeight.w700,
                                     ),
                                   ),
+                                ],
+                              ),
+                              const SizedBox(height: 2),
+                              Row(
+                                children: [
+                                  Text(
+                                    'IQ $userIQ+',
+                                    style: GoogleFonts.patrickHand(
+                                      color: isDark ? Colors.white : headerPencil,
+                                      fontSize: 32,
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: -0.5,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.highlighterCyan,
+                                      borderRadius: BorderRadius.circular(6),
+                                      border: Border.all(color: AppColors.pencilBlack, width: 1.5),
+                                    ),
+                                    child: Text(
+                                      'ZÜHTÜ SEVİYESİ',
+                                      style: GoogleFonts.patrickHand(
+                                        color: AppColors.pencilBlack,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Text(
+                                'Mantık reaksiyonun ortalamadan 4.8 kat daha keskin!',
+                                style: GoogleFonts.patrickHand(
+                                  color: isDark ? Colors.white : headerGraphite,
+                                  fontSize: 14,
                                 ),
-                              ],
-                            ),
-                            Text(
-                              'Mantık reaksiyonun ortalamadan 4.8 kat daha keskin!',
-                              style: GoogleFonts.patrickHand(
-                                color: AppColors.pencilGraphite,
-                                fontSize: 14,
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                      // Ateşli Seri (Fotoğraftaki gibi el çizimi alev doodle'ı)
-                      SketchPlaceholderBox(
-                        width: 72,
-                        height: 76,
-                        fillColor: AppColors.highlighterOrange,
-                        lineColor: AppColors.pencilBlack,
-                        lineWidth: 2.0,
-                        borderRadius: 12,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const SketchDoodleFlame(size: 26, color: AppColors.pencilBlack),
-                            Text(
-                              '5 GÜN',
-                              style: GoogleFonts.patrickHand(
-                                color: AppColors.pencilBlack,
-                                fontWeight: FontWeight.w700,
-                                fontSize: 15,
-                                height: 1.0,
+                        // Ateşli Seri (Fotoğraftaki gibi el çizimi alev doodle'ı)
+                        SketchPlaceholderBox(
+                          width: 72,
+                          height: 76,
+                          fillColor: AppColors.highlighterOrange,
+                          lineColor: AppColors.pencilBlack,
+                          lineWidth: 2.0,
+                          borderRadius: 12,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const SketchDoodleFlame(size: 26, color: AppColors.pencilBlack),
+                              Text(
+                                '5 GÜN',
+                                style: GoogleFonts.patrickHand(
+                                  color: AppColors.pencilBlack,
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 15,
+                                  height: 1.0,
+                                ),
                               ),
-                            ),
-                            Text(
-                              'SERİ',
-                              style: GoogleFonts.patrickHand(
-                                color: AppColors.pencilBlack,
-                                fontWeight: FontWeight.w700,
-                                fontSize: 11,
+                              Text(
+                                'SERİ',
+                                style: GoogleFonts.patrickHand(
+                                  color: AppColors.pencilBlack,
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 11,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                ],
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
-        ),
 
         SliverToBoxAdapter(
           child: Padding(
@@ -932,7 +965,7 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
                   style: GoogleFonts.patrickHand(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.pencilGraphite,
+                    color: isDark ? Colors.white : AppColors.pencilGraphite,
                     letterSpacing: 1.0,
                   ),
                 ),
@@ -992,7 +1025,10 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
                   children: [
                     Positioned.fill(
                       child: CustomPaint(
-                        painter: _LadderPathPainter(period: cardSize * 1.7),
+                        painter: _LadderPathPainter(
+                          period: cardSize * 1.7,
+                          color: isDark ? AppColors.pencilGraphiteDark : AppColors.pencilGraphite,
+                        ),
                       ),
                     ),
                     Row(
@@ -1023,7 +1059,7 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
 /// - Referans fotoğraftaki gibi sol tarafta içinde çapraz "X" olan sarı/turkuaz skeç görsel kutusu
 /// - Üst bölüm: SADECE oyunun adı (El yazısıyla büyük ve net)
 /// - Alt bölüm: Kullanıcının en son girdiği yüzdelik dilim (Fosforlu skeç etiketi)
-/// - 2.5px siyah kurşun kalem kenarlık ve sert skeç gölgesi
+/// - 2.5px siyah/beyaz kurşun kalem kenarlık ve sert skeç gölgesi
 class _GeniusGameButton extends StatefulWidget {
   final GameType game;
   final GamePerformanceData performance;
@@ -1048,8 +1084,18 @@ class _GeniusGameButtonState extends State<_GeniusGameButton> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final game = widget.game;
     final perf = widget.performance;
+
+    final cardBg = Color.lerp(
+      game.color,
+      isDark ? AppColors.surfaceDark : Colors.white,
+      isDark ? 0.68 : 0.55,
+    )!;
+
+    final cardBorder = isDark ? AppColors.pencilWhite : AppColors.pencilBlack;
+    final titleColor = isDark ? AppColors.pencilWhite : AppColors.pencilBlack;
 
     return GestureDetector(
       onTapDown: (_) => setState(() => _isPressed = true),
@@ -1064,8 +1110,8 @@ class _GeniusGameButtonState extends State<_GeniusGameButton> {
           0.0,
         ),
         child: SketchCard(
-          backgroundColor: Color.lerp(game.color, Colors.white, 0.55)!,
-          borderColor: AppColors.pencilBlack,
+          backgroundColor: cardBg,
+          borderColor: cardBorder,
           borderWidth: 2.5,
           borderRadius: 16,
           shadowOffset: _isPressed ? const Offset(1.5, 1.5) : const Offset(4.0, 4.0),
@@ -1077,7 +1123,7 @@ class _GeniusGameButtonState extends State<_GeniusGameButton> {
                 Positioned.fill(
                   child: GameBackgroundLogo(
                     gameType: game,
-                    opacity: 0.35,
+                    opacity: isDark ? 0.16 : 0.35,
                   ),
                 ),
                 if (widget.isCompleted)
@@ -1086,16 +1132,16 @@ class _GeniusGameButtonState extends State<_GeniusGameButton> {
                     right: 10,
                     child: Container(
                       padding: const EdgeInsets.all(4),
-                      decoration: const BoxDecoration(
+                      decoration: BoxDecoration(
                         color: AppColors.success,
                         shape: BoxShape.circle,
                         border: Border.fromBorderSide(
-                          BorderSide(color: AppColors.pencilBlack, width: 2.0),
+                          BorderSide(color: cardBorder, width: 2.0),
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.pencilBlack,
-                            offset: Offset(1.5, 1.5),
+                            color: isDark ? AppColors.cardShadowDark : AppColors.pencilBlack,
+                            offset: const Offset(1.5, 1.5),
                             blurRadius: 0,
                           ),
                         ],
@@ -1119,7 +1165,7 @@ class _GeniusGameButtonState extends State<_GeniusGameButton> {
                         style: GoogleFonts.patrickHand(
                           fontSize: 22,
                           fontWeight: FontWeight.w700,
-                          color: AppColors.pencilBlack,
+                          color: titleColor,
                           letterSpacing: 0.2,
                         ),
                         overflow: TextOverflow.ellipsis,
@@ -1133,16 +1179,16 @@ class _GeniusGameButtonState extends State<_GeniusGameButton> {
                                   ? (perf.percentile! <= 1
                                       ? AppColors.sunYellow
                                       : game.color)
-                                  : AppColors.surfaceSecondaryLight),
+                                  : (isDark ? AppColors.surfaceSecondaryDark : AppColors.surfaceSecondaryLight)),
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
-                            color: AppColors.pencilBlack,
+                            color: cardBorder,
                             width: 1.8,
                           ),
-                          boxShadow: const [
+                          boxShadow: [
                             BoxShadow(
-                              color: AppColors.pencilBlack,
-                              offset: Offset(1.5, 1.5),
+                              color: isDark ? AppColors.cardShadowDark : AppColors.pencilBlack,
+                              offset: const Offset(1.5, 1.5),
                               blurRadius: 0,
                             ),
                           ],
@@ -1154,7 +1200,9 @@ class _GeniusGameButtonState extends State<_GeniusGameButton> {
                           style: GoogleFonts.patrickHand(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.pencilBlack,
+                            color: (widget.isCompleted || perf.hasPlayed)
+                                ? AppColors.pencilBlack
+                                : (isDark ? AppColors.pencilWhite : AppColors.pencilBlack),
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -1171,24 +1219,27 @@ class _GeniusGameButtonState extends State<_GeniusGameButton> {
   }
 }
 
-
 /// Kartlarin arkasinda asagi dogru kivrilarak inen, icerik uzadikca uzayan
 /// el cizimi merdiven / sarmal yol. Yukseklik icerige gore otomatik olusur.
 class _LadderPathPainter extends CustomPainter {
   final double period;
-  const _LadderPathPainter({required this.period});
+  final Color? color;
+
+  const _LadderPathPainter({required this.period, this.color});
 
   @override
   void paint(Canvas canvas, Size size) {
     final cx = size.width / 2;
     final amp = size.width * 0.30;
+    final baseColor = color ?? AppColors.pencilGraphite;
+
     final strand = Paint()
-      ..color = AppColors.pencilGraphite.withValues(alpha: 0.35)
+      ..color = baseColor.withValues(alpha: 0.35)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.2
       ..strokeCap = StrokeCap.round;
     final rung = Paint()
-      ..color = AppColors.pencilGraphite.withValues(alpha: 0.22)
+      ..color = baseColor.withValues(alpha: 0.22)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.0
       ..strokeCap = StrokeCap.round;
@@ -1218,5 +1269,6 @@ class _LadderPathPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _LadderPathPainter old) => old.period != period;
+  bool shouldRepaint(covariant _LadderPathPainter old) =>
+      old.period != period || old.color != color;
 }

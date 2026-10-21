@@ -26,6 +26,8 @@ class QueensBoardPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final cellSize = size.width / gridSize;
 
+    final strokeColor = isDark ? AppColors.pencilWhite : AppColors.pencilBlack;
+
     // 1. BÖLGE ARKA PLANLARI (Fosforlu Keçeli Kalem Boyaması)
     for (int r = 0; r < gridSize; r++) {
       for (int c = 0; c < gridSize; c++) {
@@ -40,9 +42,9 @@ class QueensBoardPainter extends CustomPainter {
           cellSize,
         );
 
-        // Fosforlu pastel dolgu
+        // Fosforlu pastel dolgu (karanlık modda da canlı ama göz yormayan neon parlaklık)
         final bgPaint = Paint()
-          ..color = baseColor.withValues(alpha: 0.88)
+          ..color = isDark ? baseColor.withValues(alpha: 0.65) : baseColor.withValues(alpha: 0.88)
           ..style = PaintingStyle.fill;
         canvas.drawRect(rect, bgPaint);
 
@@ -53,7 +55,7 @@ class QueensBoardPainter extends CustomPainter {
           canvas.drawRect(rect, highlightPaint);
 
           final highlightBorder = Paint()
-            ..color = AppColors.pencilBlack
+            ..color = strokeColor
             ..strokeWidth = 2.0
             ..style = PaintingStyle.stroke;
           canvas.drawRect(rect.deflate(2), highlightBorder);
@@ -63,7 +65,7 @@ class QueensBoardPainter extends CustomPainter {
 
     // 2. İÇ İNCE IZGARA (Hafif ve doğal el taslağı çizgileri)
     final thinBorderPaint = Paint()
-      ..color = AppColors.pencilBlack.withValues(alpha: 0.15)
+      ..color = strokeColor.withValues(alpha: isDark ? 0.20 : 0.15)
       ..strokeWidth = 1.0
       ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.stroke;
@@ -100,7 +102,7 @@ class QueensBoardPainter extends CustomPainter {
 
     // 3. KALIN BÖLGE SINIRLARI (Organik Çini Mürekkebi / Kurşun Kalem Vuruşu)
     final thickBorderPaint = Paint()
-      ..color = AppColors.pencilBlack
+      ..color = strokeColor
       ..strokeWidth = 2.6
       ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.stroke;
@@ -140,7 +142,7 @@ class QueensBoardPainter extends CustomPainter {
     }
 
     // 4. TAHTA DIŞ ÇERÇEVESİ (Elle Çizilmiş Çift Vuruşlu Skeç Çerçeve)
-    _drawHandDrawnOuterFrame(canvas, size);
+    _drawHandDrawnOuterFrame(canvas, size, strokeColor);
   }
 
   /// Doğal serbest el çizgisi çizer (hafif dalgalanma + köşe taşması).
@@ -177,15 +179,15 @@ class QueensBoardPainter extends CustomPainter {
   }
 
   /// Tahtanın etrafına serbest elle çizilmiş kurşun kalem çerçevesi ve köşe taşmaları ekler.
-  void _drawHandDrawnOuterFrame(Canvas canvas, Size size) {
+  void _drawHandDrawnOuterFrame(Canvas canvas, Size size, Color strokeColor) {
     final framePaint = Paint()
-      ..color = AppColors.pencilBlack
+      ..color = strokeColor
       ..strokeWidth = 2.8
       ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.stroke;
 
     final draftPaint = Paint()
-      ..color = AppColors.pencilBlack.withValues(alpha: 0.35)
+      ..color = strokeColor.withValues(alpha: isDark ? 0.30 : 0.35)
       ..strokeWidth = 1.4
       ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.stroke;

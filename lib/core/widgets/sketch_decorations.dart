@@ -1,8 +1,10 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_colors.dart';
 
 /// Eskiz Defteri Kağıt Dokusu (Hafif kurşun kalem ızgara, sol marjin çizgisi ve kenar eskiz karalamaları)
+/// Koyu modda otomatik olarak koyu arduvaz / grafit kağıt dokusuna ve tebeşir ızgarasına geçer.
 class SketchPaperBackground extends StatelessWidget {
   final Widget child;
 
@@ -10,16 +12,33 @@ class SketchPaperBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final paperColor = isDark ? AppColors.backgroundDark : AppColors.backgroundLight;
+    final defaultText = isDark ? AppColors.inkWhite : AppColors.inkBlack;
+    final defaultSubtitle = isDark ? const Color(0xFFE2E8F0) : const Color(0xFF44403C);
+
     return Container(
-      color: AppColors.backgroundLight,
+      color: paperColor,
       child: Stack(
         children: [
           Positioned.fill(
             child: CustomPaint(
-              painter: _SketchNotebookPainter(),
+              painter: _SketchNotebookPainter(isDark: isDark),
             ),
           ),
-          child,
+          SketchSurfaceScope(
+            backgroundColor: paperColor,
+            isLightSurface: !isDark,
+            textColor: defaultText,
+            subtitleColor: defaultSubtitle,
+            child: IconTheme.merge(
+              data: IconThemeData(color: defaultText),
+              child: DefaultTextStyle.merge(
+                style: GoogleFonts.patrickHand(color: defaultText),
+                child: child,
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -27,11 +46,18 @@ class SketchPaperBackground extends StatelessWidget {
 }
 
 class _SketchNotebookPainter extends CustomPainter {
+  final bool isDark;
+
+  _SketchNotebookPainter({this.isDark = false});
+
   @override
   void paint(Canvas canvas, Size size) {
-    // 1. Defter Kareli Izgarası (hafif kurşun kalem tonu)
+    // 1. Defter Kareli Izgarası (Açık modda hafif kurşun kalem, Koyu modda hafif beyaz/gümüş tebeşir)
+    final gridColor = isDark ? Colors.white : AppColors.pencilBlack;
+    final gridAlpha = isDark ? 0.038 : 0.032;
+
     final gridPaint = Paint()
-      ..color = AppColors.pencilBlack.withValues(alpha: 0.032)
+      ..color = gridColor.withValues(alpha: gridAlpha)
       ..strokeWidth = 1.0;
 
     const double step = 28.0;
@@ -43,8 +69,11 @@ class _SketchNotebookPainter extends CustomPainter {
     }
 
     // 2. Sol Defter Kırmızı Marjin Çizgisi (hafif yamuk el çizimi havası)
+    final marginColor = isDark ? const Color(0xFFF87171) : const Color(0xFFEF4444);
+    final marginAlpha = isDark ? 0.22 : 0.14;
+
     final marginPaint = Paint()
-      ..color = const Color(0xFFEF4444).withValues(alpha: 0.14)
+      ..color = marginColor.withValues(alpha: marginAlpha)
       ..strokeWidth = 1.5;
     
     final marginPath = Path();
@@ -57,7 +86,7 @@ class _SketchNotebookPainter extends CustomPainter {
 
     // 3. Kenarlarda hafif karalama / eskiz yıldız ve ok detayları
     final doodlePaint = Paint()
-      ..color = AppColors.pencilBlack.withValues(alpha: 0.045)
+      ..color = gridColor.withValues(alpha: isDark ? 0.06 : 0.045)
       ..strokeWidth = 1.2
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
@@ -91,7 +120,53 @@ class _SketchNotebookPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _SketchNotebookPainter oldDelegate) =>
+      oldDelegate.isDark != isDark;
+}
+
+/// Kart ve zeminlerin arka plan aydınlığını (luminance) altındaki tüm çocuklara aktaran scope.
+/// Açık renkli zeminlerde (sarı, camgöbeği, pembe, açık pastel vb.) yazıları otomatik SİYAH,
+/// Koyu renkli zeminlerde (koyu arduvaz, koyu grafit, gece modu) yazıları otomatik BEYAZ yapar.
+class SketchSurfaceScope extends InheritedWidget {
+  final Color backgroundColor;
+  final bool isLightSurface;
+  final Color textColor;
+  final Color subtitleColor;
+
+  const SketchSurfaceScope({
+    super.key,
+    required this.backgroundColor,
+    required this.isLightSurface,
+    required this.textColor,
+    required this.subtitleColor,
+    required super.child,
+  });
+
+  static bool isLight(BuildContext context) {
+    final scope = context.dependOnInheritedWidgetOfExactType<SketchSurfaceScope>();
+    if (scope != null) return scope.isLightSurface;
+    return Theme.of(context).brightness == Brightness.light;
+  }
+
+  static Color textColorOf(BuildContext context, {Color? fallback}) {
+    final scope = context.dependOnInheritedWidgetOfExactType<SketchSurfaceScope>();
+    if (scope != null) return scope.textColor;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return fallback ?? (isDark ? const Color(0xFFFFFFFF) : const Color(0xFF1C1917));
+  }
+
+  static Color subtitleColorOf(BuildContext context, {Color? fallback}) {
+    final scope = context.dependOnInheritedWidgetOfExactType<SketchSurfaceScope>();
+    if (scope != null) return scope.subtitleColor;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return fallback ?? (isDark ? const Color(0xFFE2E8F0) : const Color(0xFF44403C));
+  }
+
+  @override
+  bool updateShouldNotify(SketchSurfaceScope oldWidget) =>
+      oldWidget.backgroundColor != backgroundColor ||
+      oldWidget.isLightSurface != isLightSurface ||
+      oldWidget.textColor != textColor;
 }
 
 /// Organik ve Yamuk Çizgili Kara Kalem Kart (Hand-Drawn Sketch Box)
@@ -99,10 +174,12 @@ class _SketchNotebookPainter extends CustomPainter {
 /// - Köşelerde çizgiler birbirinin üzerinden taşar (Architectural Corner Overrun).
 /// - Kurşun kalemle iki kere geçilmiş hissi veren çift vuruş detayı vardır.
 /// - Sert veya taramalı kurşun kalem gölgesi vardır.
+/// - Koyu temada otomatik olarak koyu arduvaz zemin, tebeşir/gümüş çizgi ve derin gölgeye uyarlanır.
 class SketchCard extends StatelessWidget {
   final Widget child;
-  final Color backgroundColor;
-  final Color borderColor;
+  final Color? backgroundColor;
+  final Color? borderColor;
+  final Color? shadowColor;
   final double borderWidth;
   final double borderRadius;
   final Offset shadowOffset;
@@ -113,8 +190,9 @@ class SketchCard extends StatelessWidget {
   const SketchCard({
     super.key,
     required this.child,
-    this.backgroundColor = Colors.white,
-    this.borderColor = AppColors.pencilBlack,
+    this.backgroundColor,
+    this.borderColor,
+    this.shadowColor,
     this.borderWidth = 2.2,
     this.borderRadius = 12.0,
     this.shadowOffset = const Offset(3.5, 3.5),
@@ -125,10 +203,49 @@ class SketchCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    Color resolvedBg;
+    Color resolvedBorder;
+    Color resolvedShadow;
+    bool isLightBg;
+    Color onBgTextColor;
+    Color onBgSubtitleColor;
+
+    if (!isDark) {
+      // AÇIK TEMADA: Orijinal skeç defteri ve beyaz kart tasarımı aynen korunur.
+      resolvedBg = backgroundColor ?? Colors.white;
+      resolvedBorder = borderColor ?? AppColors.pencilBlack;
+      resolvedShadow = shadowColor ?? resolvedBorder;
+      isLightBg = true;
+      onBgTextColor = AppColors.pencilBlack;
+      onBgSubtitleColor = AppColors.pencilGraphite;
+    } else {
+      // SADECE KOYU TEMA AKTİFKEN:
+      if (backgroundColor == null ||
+          backgroundColor == Colors.white ||
+          backgroundColor == AppColors.surfaceLight) {
+        resolvedBg = AppColors.surfaceDark;
+      } else if (backgroundColor == AppColors.surfaceSecondaryLight) {
+        resolvedBg = AppColors.surfaceSecondaryDark;
+      } else if (backgroundColor == AppColors.backgroundLight) {
+        resolvedBg = AppColors.backgroundDark;
+      } else {
+        resolvedBg = backgroundColor!;
+      }
+
+      isLightBg = resolvedBg.computeLuminance() > 0.35;
+      onBgTextColor = isLightBg ? AppColors.inkBlack : AppColors.inkWhite;
+      onBgSubtitleColor = isLightBg ? const Color(0xFF44403C) : const Color(0xFFE2E8F0);
+      resolvedBorder = borderColor ?? (isLightBg ? AppColors.inkBlack : AppColors.inkWhite);
+      resolvedShadow = shadowColor ?? (isLightBg ? const Color(0xFF000000) : AppColors.cardShadowDark);
+    }
+
     Widget content = CustomPaint(
       painter: _WobblySketchBoxPainter(
-        fillColor: backgroundColor,
-        strokeColor: borderColor,
+        fillColor: resolvedBg,
+        strokeColor: resolvedBorder,
+        shadowColor: resolvedShadow,
         strokeWidth: borderWidth,
         shadowOffset: shadowOffset,
         borderRadius: borderRadius,
@@ -136,7 +253,19 @@ class SketchCard extends StatelessWidget {
       ),
       child: Padding(
         padding: padding,
-        child: child,
+        child: SketchSurfaceScope(
+          backgroundColor: resolvedBg,
+          isLightSurface: isLightBg,
+          textColor: onBgTextColor,
+          subtitleColor: onBgSubtitleColor,
+          child: IconTheme.merge(
+            data: IconThemeData(color: onBgTextColor),
+            child: DefaultTextStyle.merge(
+              style: GoogleFonts.patrickHand(color: onBgTextColor),
+              child: child,
+            ),
+          ),
+        ),
       ),
     );
 
@@ -154,6 +283,7 @@ class SketchCard extends StatelessWidget {
 class _WobblySketchBoxPainter extends CustomPainter {
   final Color fillColor;
   final Color strokeColor;
+  final Color shadowColor;
   final double strokeWidth;
   final Offset shadowOffset;
   final double borderRadius;
@@ -162,6 +292,7 @@ class _WobblySketchBoxPainter extends CustomPainter {
   _WobblySketchBoxPainter({
     required this.fillColor,
     required this.strokeColor,
+    required this.shadowColor,
     required this.strokeWidth,
     required this.shadowOffset,
     required this.borderRadius,
@@ -173,14 +304,14 @@ class _WobblySketchBoxPainter extends CustomPainter {
     final w = size.width;
     final h = size.height;
 
-    // 1. GÖLGE: Sert veya taramalı kara kalem gölgesi
+    // 1. GÖLGE: Sert veya taramalı kara kalem / tebeşir gölgesi
     if (shadowOffset != Offset.zero) {
       final shadowPath = _buildWobblyPath(
         Rect.fromLTWH(shadowOffset.dx, shadowOffset.dy, w, h),
         wobbleSeed: 1.2,
       );
       final shadowPaint = Paint()
-        ..color = strokeColor
+        ..color = shadowColor
         ..style = PaintingStyle.fill;
       canvas.drawPath(shadowPath, shadowPaint);
     }
@@ -325,6 +456,7 @@ class _WobblySketchBoxPainter extends CustomPainter {
   bool shouldRepaint(covariant _WobblySketchBoxPainter oldDelegate) =>
       oldDelegate.fillColor != fillColor ||
       oldDelegate.strokeColor != strokeColor ||
+      oldDelegate.shadowColor != shadowColor ||
       oldDelegate.strokeWidth != strokeWidth ||
       oldDelegate.shadowOffset != shadowOffset ||
       oldDelegate.borderRadius != borderRadius ||
@@ -337,7 +469,7 @@ class SketchPlaceholderBox extends StatelessWidget {
   final double width;
   final double height;
   final Color fillColor;
-  final Color lineColor;
+  final Color? lineColor;
   final double lineWidth;
   final Widget? child;
   final double borderRadius;
@@ -347,7 +479,7 @@ class SketchPlaceholderBox extends StatelessWidget {
     required this.width,
     required this.height,
     this.fillColor = AppColors.sunYellow,
-    this.lineColor = AppColors.pencilBlack,
+    this.lineColor,
     this.lineWidth = 2.2,
     this.child,
     this.borderRadius = 10.0,
@@ -355,13 +487,18 @@ class SketchPlaceholderBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final resolvedLine = (lineColor == null || lineColor == AppColors.pencilBlack)
+        ? (isDark ? AppColors.pencilWhite : AppColors.pencilBlack)
+        : lineColor!;
+
     return SizedBox(
       width: width,
       height: height,
       child: CustomPaint(
         painter: _SketchPlaceholderPainter(
           fillColor: fillColor,
-          lineColor: lineColor,
+          lineColor: resolvedLine,
           lineWidth: lineWidth,
           borderRadius: borderRadius,
         ),
@@ -391,8 +528,9 @@ class _SketchPlaceholderPainter extends CustomPainter {
 
     // 1. Gölge (Organik serbest el gölgesi)
     const shadowOffset = Offset(3.0, 3.0);
+    final shadowColor = (lineColor == AppColors.pencilWhite) ? AppColors.cardShadowDark : lineColor;
     final shadowPath = _buildOrganicPath(Rect.fromLTWH(shadowOffset.dx, shadowOffset.dy, w, h), seed: 1.5);
-    canvas.drawPath(shadowPath, Paint()..color = lineColor..style = PaintingStyle.fill);
+    canvas.drawPath(shadowPath, Paint()..color = shadowColor..style = PaintingStyle.fill);
 
     // 2. Gövde Dolgusu
     final mainRect = Rect.fromLTWH(0, 0, w, h);
@@ -519,7 +657,7 @@ class _SketchPlaceholderPainter extends CustomPainter {
 class SketchCircularDoodle extends StatelessWidget {
   final double size;
   final double percentage;
-  final Color strokeColor;
+  final Color? strokeColor;
   final Color fillColor;
   final Widget? centerChild;
 
@@ -527,13 +665,16 @@ class SketchCircularDoodle extends StatelessWidget {
     super.key,
     required this.size,
     required this.percentage,
-    this.strokeColor = AppColors.pencilBlack,
+    this.strokeColor,
     this.fillColor = AppColors.highlighterCyan,
     this.centerChild,
   });
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final resolvedStroke = strokeColor ?? (isDark ? AppColors.pencilWhite : AppColors.pencilBlack);
+
     return SizedBox(
       width: size,
       height: size,
@@ -544,7 +685,7 @@ class SketchCircularDoodle extends StatelessWidget {
             size: Size(size, size),
             painter: _WobblySketchCirclePainter(
               percentage: percentage,
-              strokeColor: strokeColor,
+              strokeColor: resolvedStroke,
               fillColor: fillColor,
             ),
           ),
@@ -571,7 +712,7 @@ class _WobblySketchCirclePainter extends CustomPainter {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = size.width / 2 - 7;
 
-    // 1. Arka plan hafif açık gri karalama çemberi (iki kez geçilmiş)
+    // 1. Arka plan hafif karalama çemberi (iki kez geçilmiş)
     final bgPaint = Paint()
       ..color = strokeColor.withValues(alpha: 0.16)
       ..strokeWidth = 3.5
@@ -602,7 +743,7 @@ class _WobblySketchCirclePainter extends CustomPainter {
       progressPaint,
     );
 
-    // 3. Dış Kara Kalem Çerçevesi (Elle çizilmiş gibi hafif dalgalı)
+    // 3. Dış Kara Kalem / Tebeşir Çerçevesi (Elle çizilmiş gibi hafif dalgalı)
     final outlinePaint = Paint()
       ..color = strokeColor
       ..strokeWidth = 2.0
@@ -638,21 +779,24 @@ class _WobblySketchCirclePainter extends CustomPainter {
 /// El Çizimi Taç (Crown Doodle)
 class SketchDoodleCrown extends StatelessWidget {
   final double size;
-  final Color color;
+  final Color? color;
   final Color? fillColor;
 
   const SketchDoodleCrown({
     super.key,
     this.size = 24,
-    this.color = AppColors.pencilBlack,
+    this.color,
     this.fillColor = AppColors.sunYellow,
   });
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final resolvedColor = color ?? (isDark ? AppColors.pencilWhite : AppColors.pencilBlack);
+
     return CustomPaint(
       size: Size(size, size),
-      painter: _DoodleCrownPainter(color: color, fillColor: fillColor),
+      painter: _DoodleCrownPainter(color: resolvedColor, fillColor: fillColor),
     );
   }
 }
@@ -704,27 +848,31 @@ class _DoodleCrownPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _DoodleCrownPainter oldDelegate) =>
+      oldDelegate.color != color || oldDelegate.fillColor != fillColor;
 }
 
 /// El Çizimi Alev (Flame / Streak Doodle)
 class SketchDoodleFlame extends StatelessWidget {
   final double size;
-  final Color color;
+  final Color? color;
   final Color? fillColor;
 
   const SketchDoodleFlame({
     super.key,
     this.size = 28,
-    this.color = AppColors.pencilBlack,
+    this.color,
     this.fillColor = AppColors.highlighterOrange,
   });
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final resolvedColor = color ?? (isDark ? AppColors.pencilWhite : AppColors.pencilBlack);
+
     return CustomPaint(
       size: Size(size, size),
-      painter: _DoodleFlamePainter(color: color, fillColor: fillColor),
+      painter: _DoodleFlamePainter(color: resolvedColor, fillColor: fillColor),
     );
   }
 }
@@ -743,7 +891,7 @@ class _DoodleFlamePainter extends CustomPainter {
     final outerPath = Path();
     outerPath.moveTo(w * 0.5, h * 0.08); // Zirve
     outerPath.cubicTo(w * 0.25, h * 0.30, w * 0.08, h * 0.55, w * 0.20, h * 0.80);
-    outerPath.cubicTo(w * 0.28, h * 0.95, w * 0.72, h * 0.95, w * 0.80, h * 0.80);
+    outerPath.cubicTo(w * 0.28, h * 0.95, w * 0.75, h * 0.95, w * 0.80, h * 0.80);
     outerPath.cubicTo(w * 0.92, h * 0.55, w * 0.75, h * 0.30, w * 0.5, h * 0.08);
     outerPath.close();
 
@@ -769,27 +917,31 @@ class _DoodleFlamePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _DoodleFlamePainter oldDelegate) =>
+      oldDelegate.color != color || oldDelegate.fillColor != fillColor;
 }
 
 /// El Çizimi Beyin / Zeka (Brain Doodle)
 class SketchDoodleBrain extends StatelessWidget {
   final double size;
-  final Color color;
+  final Color? color;
   final Color? fillColor;
 
   const SketchDoodleBrain({
     super.key,
     this.size = 28,
-    this.color = AppColors.pencilBlack,
+    this.color,
     this.fillColor = AppColors.highlighterCyan,
   });
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final resolvedColor = color ?? (isDark ? AppColors.pencilWhite : AppColors.pencilBlack);
+
     return CustomPaint(
       size: Size(size, size),
-      painter: _DoodleBrainPainter(color: color, fillColor: fillColor),
+      painter: _DoodleBrainPainter(color: resolvedColor, fillColor: fillColor),
     );
   }
 }
@@ -841,27 +993,31 @@ class _DoodleBrainPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _DoodleBrainPainter oldDelegate) =>
+      oldDelegate.color != color || oldDelegate.fillColor != fillColor;
 }
 
 /// El Çizimi Kupa (Trophy Doodle)
 class SketchDoodleTrophy extends StatelessWidget {
   final double size;
-  final Color color;
+  final Color? color;
   final Color? fillColor;
 
   const SketchDoodleTrophy({
     super.key,
     this.size = 28,
-    this.color = AppColors.pencilBlack,
+    this.color,
     this.fillColor = AppColors.sunYellow,
   });
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final resolvedColor = color ?? (isDark ? AppColors.pencilWhite : AppColors.pencilBlack);
+
     return CustomPaint(
       size: Size(size, size),
-      painter: _DoodleTrophyPainter(color: color, fillColor: fillColor),
+      painter: _DoodleTrophyPainter(color: resolvedColor, fillColor: fillColor),
     );
   }
 }
@@ -914,5 +1070,52 @@ class _DoodleTrophyPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _DoodleTrophyPainter oldDelegate) =>
+      oldDelegate.color != color || oldDelegate.fillColor != fillColor;
+}
+
+/// Zühtü Temalı Merkezi Metin Bileşeni (Central Font Component)
+/// Patrick Hand fontunu tek bir noktadan yönetir; karanlık temada otomatik
+/// bembeyaz, açık temada ise kurşun kalem siyahı render eder.
+class SketchText extends StatelessWidget {
+  final String text;
+  final double fontSize;
+  final FontWeight fontWeight;
+  final Color? color;
+  final TextAlign? textAlign;
+  final TextOverflow? overflow;
+  final int? maxLines;
+  final double? letterSpacing;
+  final double? height;
+
+  const SketchText(
+    this.text, {
+    super.key,
+    this.fontSize = 16,
+    this.fontWeight = FontWeight.w600,
+    this.color,
+    this.textAlign,
+    this.overflow,
+    this.maxLines,
+    this.letterSpacing,
+    this.height,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final effectiveColor = color ?? (Theme.of(context).brightness == Brightness.dark ? Colors.white : AppColors.pencilBlack);
+    return Text(
+      text,
+      textAlign: textAlign,
+      overflow: overflow,
+      maxLines: maxLines,
+      style: GoogleFonts.patrickHand(
+        fontSize: fontSize,
+        fontWeight: fontWeight,
+        color: effectiveColor,
+        letterSpacing: letterSpacing,
+        height: height,
+      ),
+    );
+  }
 }

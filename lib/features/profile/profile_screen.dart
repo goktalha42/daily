@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/network/network_checker.dart';
 import '../../core/services/game_stats_service.dart';
+import '../../core/services/theme_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/date_utils.dart';
 import '../../core/widgets/sketch_decorations.dart';
@@ -16,6 +18,11 @@ class ProfileScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final currentThemeMode = ref.watch(themeServiceProvider);
+    final headerPencil = isDark ? AppColors.pencilWhite : AppColors.pencilBlack;
+    final headerGraphite = isDark ? AppColors.pencilGraphiteDark : AppColors.pencilGraphite;
+
     final isOnline = ref.watch(networkCheckerProvider);
     final statsMap = ref.watch(gameStatsServiceProvider);
     final statsNotifier = ref.read(gameStatsServiceProvider.notifier);
@@ -50,11 +57,11 @@ class ProfileScreen extends ConsumerWidget {
                         Container(
                           width: 8,
                           height: 8,
-                          decoration: const BoxDecoration(
+                          decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             color: AppColors.highlighterPurple,
                             border: Border.fromBorderSide(
-                              BorderSide(color: AppColors.pencilBlack, width: 1.5),
+                              BorderSide(color: headerPencil, width: 1.5),
                             ),
                           ),
                         ),
@@ -64,7 +71,7 @@ class ProfileScreen extends ConsumerWidget {
                           style: GoogleFonts.patrickHand(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.pencilGraphite,
+                            color: headerGraphite,
                             letterSpacing: 1.0,
                           ),
                         ),
@@ -76,7 +83,7 @@ class ProfileScreen extends ConsumerWidget {
                       style: GoogleFonts.patrickHand(
                         fontSize: 34,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.pencilBlack,
+                        color: headerPencil,
                         letterSpacing: -0.5,
                       ),
                     ),
@@ -89,10 +96,10 @@ class ProfileScreen extends ConsumerWidget {
                     color: AppColors.highlighterPurple,
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(color: AppColors.pencilBlack, width: 2.0),
-                    boxShadow: const [
+                    boxShadow: [
                       BoxShadow(
-                        color: AppColors.pencilBlack,
-                        offset: Offset(2.5, 2.5),
+                        color: isDark ? AppColors.cardShadowDark : AppColors.pencilBlack,
+                        offset: const Offset(2.5, 2.5),
                         blurRadius: 0,
                       ),
                     ],
@@ -132,226 +139,232 @@ class ProfileScreen extends ConsumerWidget {
                   padding: const EdgeInsets.all(18),
                   child: Column(
                     children: [
-                  Row(
-                    children: [
-                      // Sol: Fotoğraftaki Çapraz X'li Avatar Kutusu
-                      const SketchPlaceholderBox(
-                        width: 64,
-                        height: 64,
-                        fillColor: AppColors.sunYellow,
-                        lineColor: AppColors.pencilBlack,
-                        borderRadius: 12,
-                        child: Center(
-                          child: SketchDoodleCrown(
-                            size: 32,
-                            color: AppColors.pencilBlack,
+                      Row(
+                        children: [
+                          // Sol: Fotoğraftaki Çapraz X'li Avatar Kutusu
+                          const SketchPlaceholderBox(
+                            width: 64,
+                            height: 64,
+                            fillColor: AppColors.sunYellow,
+                            lineColor: AppColors.pencilBlack,
+                            borderRadius: 12,
+                            child: Center(
+                              child: SketchDoodleCrown(
+                                size: 32,
+                                color: AppColors.pencilBlack,
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
-                      const SizedBox(width: 14),
+                          const SizedBox(width: 14),
 
-                      // Kullanıcı Bilgisi
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
+                          // Kullanıcı Bilgisi
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
+                                Row(
+                                  children: [
+                                    Text(
+                                      'Zühtü #8492',
+                                      style: GoogleFonts.patrickHand(
+                                        color: headerPencil,
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.sunYellow,
+                                        borderRadius: BorderRadius.circular(4),
+                                        border: Border.all(color: AppColors.pencilBlack, width: 1.2),
+                                      ),
+                                      child: Text(
+                                        'SİZ',
+                                        style: GoogleFonts.patrickHand(
+                                          color: AppColors.pencilBlack,
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                                 Text(
-                                  'Zühtü #8492',
+                                  isOnline ? '🟢 Canlı Sıralamaya Bağlı' : '🔴 Çevrimdışı (Yerel Kayıt)',
                                   style: GoogleFonts.patrickHand(
-                                    color: AppColors.pencilBlack,
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.w700,
+                                    color: isOnline ? const Color(0xFF15803D) : const Color(0xFFB91C1C),
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
                                   ),
                                 ),
-                                const SizedBox(width: 6),
+                                const SizedBox(height: 4),
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                                   decoration: BoxDecoration(
-                                    color: AppColors.sunYellow,
-                                    borderRadius: BorderRadius.circular(4),
+                                    color: AppColors.highlighterCyan,
+                                    borderRadius: BorderRadius.circular(6),
                                     border: Border.all(color: AppColors.pencilBlack, width: 1.2),
                                   ),
                                   child: Text(
-                                    'SİZ',
+                                    '⚡ KÜRESEL İLK %1 STATÜSÜ',
                                     style: GoogleFonts.patrickHand(
                                       color: AppColors.pencilBlack,
-                                      fontSize: 11,
                                       fontWeight: FontWeight.w700,
+                                      fontSize: 11,
                                     ),
                                   ),
                                 ),
                               ],
                             ),
-                            Text(
-                              isOnline ? '🟢 Canlı Sıralamaya Bağlı' : '🔴 Çevrimdışı (Yerel Kayıt)',
-                              style: GoogleFonts.patrickHand(
-                                color: isOnline ? const Color(0xFF15803D) : const Color(0xFFB91C1C),
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+
+                      // FOTOĞRAFTAKİ EN MEŞHUR DETAY: El Çizimi %92 Çember Göstergesi & IQ
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: isDark ? AppColors.surfaceSecondaryDark : AppColors.surfaceSecondaryLight,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: headerPencil, width: 1.8),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            // Dairesel %92 Göstergesi (Tam fotoğraftaki gibi!)
+                            SketchCircularDoodle(
+                              size: 72,
+                              percentage: 92,
+                              strokeColor: headerPencil,
+                              fillColor: AppColors.highlighterCyan,
+                              centerChild: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    '%92',
+                                    style: GoogleFonts.patrickHand(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w700,
+                                      color: headerPencil,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                            const SizedBox(height: 4),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: AppColors.highlighterCyan,
-                                borderRadius: BorderRadius.circular(6),
-                                border: Border.all(color: AppColors.pencilBlack, width: 1.2),
-                              ),
-                              child: Text(
-                                '⚡ KÜRESEL İLK %1 STATÜSÜ',
-                                style: GoogleFonts.patrickHand(
-                                  color: AppColors.pencilBlack,
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 11,
+
+                            // Açıklama
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'GENEL BAŞARI & IQ ENDEKSİ',
+                                  style: GoogleFonts.patrickHand(
+                                    color: isDark ? AppColors.pencilGrayDark : AppColors.pencilGray,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                  ),
                                 ),
-                              ),
+                                Text(
+                                  'IQ $userIQ+ (Üstün Zekâ)',
+                                  style: GoogleFonts.patrickHand(
+                                    color: headerPencil,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                Text(
+                                  'Dünya ortalamasından 4.2 kat daha hızlı!',
+                                  style: GoogleFonts.patrickHand(
+                                    color: headerGraphite,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
-
-                  // FOTOĞRAFTAKİ EN MEŞHUR DETAY: El Çizimi %92 Çember Göstergesi & IQ
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: AppColors.surfaceSecondaryLight,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppColors.pencilBlack, width: 1.8),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        // Dairesel %92 Göstergesi (Tam fotoğraftaki gibi!)
-                        SketchCircularDoodle(
-                          size: 72,
-                          percentage: 92,
-                          strokeColor: AppColors.pencilBlack,
-                          fillColor: AppColors.highlighterCyan,
-                          centerChild: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                '%92',
-                                style: GoogleFonts.patrickHand(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.pencilBlack,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        // Açıklama
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'GENEL BAŞARI & IQ ENDEKSİ',
-                              style: GoogleFonts.patrickHand(
-                                color: AppColors.pencilGray,
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            Text(
-                              'IQ $userIQ+ (Üstün Zekâ)',
-                              style: GoogleFonts.patrickHand(
-                                color: AppColors.pencilBlack,
-                                fontSize: 20,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            Text(
-                              'Dünya ortalamasından 4.2 kat daha hızlı!',
-                              style: GoogleFonts.patrickHand(
-                                color: AppColors.pencilGraphite,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            // SOL KÖŞEDEKİ EINSTEIN (130+ IQ) VEYA BÜYÜK USTA ROZETİ
-              if (hasEinstein)
-                Positioned(
-                  top: -12,
-                  left: 14,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: AppColors.highlighterPurple,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: AppColors.pencilBlack, width: 2.0),
-                      boxShadow: const [
-                        BoxShadow(color: AppColors.pencilBlack, offset: Offset(2.0, 2.0)),
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text('🧠', style: TextStyle(fontSize: 14)),
-                        const SizedBox(width: 5),
-                        Text(
-                          'EINSTEIN STATÜSÜ (130+ IQ)',
-                          style: GoogleFonts.patrickHand(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.pencilBlack,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                )
-              else if (hasGrandmaster)
-                Positioned(
-                  top: -12,
-                  left: 14,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: AppColors.sunYellow,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: AppColors.pencilBlack, width: 2.0),
-                      boxShadow: const [
-                        BoxShadow(color: AppColors.pencilBlack, offset: Offset(2.0, 2.0)),
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text('💡', style: TextStyle(fontSize: 14)),
-                        const SizedBox(width: 5),
-                        Text(
-                          'BÜYÜK USTA (120+ IQ)',
-                          style: GoogleFonts.patrickHand(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.pencilBlack,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
                 ),
-            ],
+                // SOL KÖŞEDEKİ EINSTEIN (130+ IQ) VEYA BÜYÜK USTA ROZETİ
+                if (hasEinstein)
+                  Positioned(
+                    top: -12,
+                    left: 14,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: AppColors.highlighterPurple,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: AppColors.pencilBlack, width: 2.0),
+                        boxShadow: [
+                          BoxShadow(
+                            color: isDark ? AppColors.cardShadowDark : AppColors.pencilBlack,
+                            offset: const Offset(2.0, 2.0),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text('🧠', style: TextStyle(fontSize: 14)),
+                          const SizedBox(width: 5),
+                          Text(
+                            'EINSTEIN STATÜSÜ (130+ IQ)',
+                            style: GoogleFonts.patrickHand(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.pencilBlack,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                else if (hasGrandmaster)
+                  Positioned(
+                    top: -12,
+                    left: 14,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: AppColors.sunYellow,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: AppColors.pencilBlack, width: 2.0),
+                        boxShadow: [
+                          BoxShadow(
+                            color: isDark ? AppColors.cardShadowDark : AppColors.pencilBlack,
+                            offset: const Offset(2.0, 2.0),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text('💡', style: TextStyle(fontSize: 14)),
+                          const SizedBox(width: 5),
+                          Text(
+                            'BÜYÜK USTA (120+ IQ)',
+                            style: GoogleFonts.patrickHand(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.pencilBlack,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
-      ),
 
         // 3. LIG ÖZET KARTI
         SliverToBoxAdapter(
@@ -453,7 +466,7 @@ class ProfileScreen extends ConsumerWidget {
                   style: GoogleFonts.patrickHand(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.pencilGraphite,
+                    color: headerGraphite,
                     letterSpacing: 1.0,
                   ),
                 ),
@@ -472,93 +485,98 @@ class ProfileScreen extends ConsumerWidget {
                 final perf = statsMap[game] ??
                     GamePerformanceData(
                       gameType: game,
+                      totalGamesPlayed: 0,
                       bestScore: 0,
                       bestDurationMs: 0,
-                      totalGamesPlayed: 0,
-                      geniusTitle: 'Zühtü Ustası',
+                      geniusTitle: 'Zühtü Çırağı',
                     );
 
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: AppColors.pencilBlack, width: 2.0),
-                      boxShadow: const [
-                        BoxShadow(
-                          color: AppColors.pencilBlack,
-                          offset: Offset(2.5, 2.5),
-                          blurRadius: 0,
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: isDark ? AppColors.surfaceDark : Colors.white,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: headerPencil, width: 2.0),
+                    boxShadow: [
+                      BoxShadow(
+                        color: isDark ? AppColors.cardShadowDark : AppColors.pencilBlack,
+                        offset: const Offset(2.5, 2.5),
+                        blurRadius: 0,
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      // Sol Renk İkonu
+                      Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: game.color,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: AppColors.pencilBlack, width: 1.8),
                         ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        // Fotoğraftaki gibi çapraz X'li skeç oyun kutusu
-                        SketchPlaceholderBox(
-                          width: 44,
-                          height: 44,
-                          fillColor: game.color,
-                          lineColor: AppColors.pencilBlack,
-                          borderRadius: 8,
-                          child: Icon(game.icon, color: AppColors.pencilBlack, size: 22),
-                        ),
-                        const SizedBox(width: 12),
+                        child: Icon(game.icon, color: AppColors.pencilBlack, size: 24),
+                      ),
+                      const SizedBox(width: 12),
 
-                        // Oyun Adı ve Durum
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                game.title,
-                                style: GoogleFonts.patrickHand(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.pencilBlack,
-                                ),
+                      // Oyun ve Skor Detayı
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              game.title,
+                              style: GoogleFonts.patrickHand(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                                color: headerPencil,
                               ),
-                              Text(
-                                perf.hasPlayed
-                                    ? 'En İyi: ${GameDateUtils.formatGameTime(perf.bestDurationMs)} • ${perf.bestScore} Puan'
-                                    : 'Henüz bugün çözülmedi',
-                                style: GoogleFonts.patrickHand(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.pencilGray,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        // Skeç Yüzdelik Rozeti
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: perf.hasPlayed
-                                ? (perf.percentile! <= 1
-                                    ? AppColors.sunYellow
-                                    : game.color)
-                                : AppColors.surfaceSecondaryLight,
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(color: AppColors.pencilBlack, width: 1.5),
-                          ),
-                          child: Text(
-                            perf.hasPlayed
-                                ? (perf.percentile! <= 1 ? '👑 %1' : '%${perf.percentile}')
-                                : 'HEDEF %1',
-                            style: GoogleFonts.patrickHand(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.pencilBlack,
                             ),
+                            Text(
+                              perf.hasPlayed
+                                  ? 'En İyi: ${GameDateUtils.formatGameTime(perf.bestDurationMs)} • ${perf.bestScore} Puan'
+                                  : 'Henüz bugün çözülmedi',
+                              style: GoogleFonts.patrickHand(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: isDark ? AppColors.pencilGrayDark : AppColors.pencilGray,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // Skeç Yüzdelik Rozeti
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: perf.hasPlayed
+                              ? (perf.percentile! <= 1
+                                  ? AppColors.sunYellow
+                                  : game.color)
+                              : (isDark ? AppColors.surfaceSecondaryDark : AppColors.surfaceSecondaryLight),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(
+                            color: isDark ? AppColors.pencilWhite : AppColors.pencilBlack,
+                            width: 1.5,
                           ),
                         ),
-                      ],
-                    ),
+                        child: Text(
+                          perf.hasPlayed
+                              ? (perf.percentile! <= 1 ? '👑 %1' : '%${perf.percentile}')
+                              : 'HEDEF %1',
+                          style: GoogleFonts.patrickHand(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: (perf.hasPlayed)
+                                ? AppColors.pencilBlack
+                                : (isDark ? AppColors.pencilWhite : AppColors.pencilBlack),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 );
               },
@@ -578,7 +596,7 @@ class ProfileScreen extends ConsumerWidget {
                   style: GoogleFonts.patrickHand(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.pencilGraphite,
+                    color: headerGraphite,
                     letterSpacing: 1.0,
                   ),
                 ),
@@ -629,34 +647,91 @@ class ProfileScreen extends ConsumerWidget {
           ),
         ),
 
-        // 7. BİLGİLENDİRME & SİSTEM NOTU
+        // 7. TEMA SEÇİMİ (AÇIK / KOYU / SİSTEM)
         SliverToBoxAdapter(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            padding: const EdgeInsets.only(left: 24, right: 24, top: 8, bottom: 8),
+            child: Row(
+              children: [
+                Text(
+                  'GÖRÜNÜM VE TEMA AYARI',
+                  style: GoogleFonts.patrickHand(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: headerGraphite,
+                    letterSpacing: 1.0,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+            child: SketchCard(
+              borderRadius: 14,
+              borderWidth: 2.0,
+              shadowOffset: const Offset(3.0, 3.0),
+              backgroundColor: isDark ? AppColors.surfaceDark : Colors.white,
+              padding: const EdgeInsets.all(6),
+              child: Row(
+                children: [
+                  _ThemeModeChip(
+                    title: 'Sistem',
+                    icon: Icons.brightness_auto_rounded,
+                    isSelected: currentThemeMode == ThemeMode.system,
+                    onTap: () => ref.read(themeServiceProvider.notifier).setThemeMode(ThemeMode.system),
+                  ),
+                  const SizedBox(width: 6),
+                  _ThemeModeChip(
+                    title: 'Açık',
+                    icon: Icons.light_mode_rounded,
+                    isSelected: currentThemeMode == ThemeMode.light,
+                    onTap: () => ref.read(themeServiceProvider.notifier).setThemeMode(ThemeMode.light),
+                  ),
+                  const SizedBox(width: 6),
+                  _ThemeModeChip(
+                    title: 'Koyu',
+                    icon: Icons.dark_mode_rounded,
+                    isSelected: currentThemeMode == ThemeMode.dark,
+                    onTap: () => ref.read(themeServiceProvider.notifier).setThemeMode(ThemeMode.dark),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+
+        // 8. BİLGİLENDİRME & SİSTEM NOTU
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             child: Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: isDark ? AppColors.surfaceDark : Colors.white,
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: AppColors.pencilBlack, width: 2.0),
-                boxShadow: const [
+                border: Border.all(color: headerPencil, width: 2.0),
+                boxShadow: [
                   BoxShadow(
-                    color: AppColors.pencilBlack,
-                    offset: Offset(2.5, 2.5),
+                    color: isDark ? AppColors.cardShadowDark : AppColors.pencilBlack,
+                    offset: const Offset(2.5, 2.5),
                     blurRadius: 0,
                   ),
                 ],
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.info_outline_rounded, color: AppColors.pencilBlack, size: 22),
+                  Icon(Icons.info_outline_rounded, color: headerPencil, size: 22),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
                       'Tüm oyunların seviyeleri her gece 00:00\'da yenilenir. Günlük serinizi korumak için her gün en az 1 oyun tamamlayın.',
                       style: GoogleFonts.patrickHand(
                         fontSize: 14,
-                        color: AppColors.pencilGraphite,
+                        color: headerGraphite,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -671,6 +746,84 @@ class ProfileScreen extends ConsumerWidget {
           child: SizedBox(height: 120), // Floating nav bar için pay
         ),
       ],
+    );
+  }
+}
+
+class _ThemeModeChip extends StatelessWidget {
+  final String title;
+  final IconData icon;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _ThemeModeChip({
+    required this.title,
+    required this.icon,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    if (isSelected) {
+      return Expanded(
+        child: SketchCard(
+          borderRadius: 10,
+          borderWidth: 1.8,
+          shadowOffset: const Offset(1.5, 1.5),
+          backgroundColor: AppColors.sunYellow,
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 16, color: AppColors.pencilBlack),
+              const SizedBox(width: 6),
+              Text(
+                title,
+                style: GoogleFonts.patrickHand(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.pencilBlack,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Expanded(
+      child: InkWell(
+        borderRadius: BorderRadius.circular(10),
+        onTap: () {
+          HapticFeedback.selectionClick();
+          onTap();
+        },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: 16,
+                color: isDark ? AppColors.pencilGraphiteDark : AppColors.pencilGraphite,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                title,
+                style: GoogleFonts.patrickHand(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: isDark ? AppColors.pencilWhite : AppColors.pencilBlack,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -692,6 +845,11 @@ class _SketchMetricBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final pencilColor = isDark ? AppColors.pencilWhite : AppColors.pencilBlack;
+    final graphiteColor = isDark ? AppColors.pencilGraphiteDark : AppColors.pencilGraphite;
+    final grayColor = isDark ? AppColors.pencilGrayDark : AppColors.pencilGray;
+
     return SketchCard(
       padding: const EdgeInsets.all(14),
       borderRadius: 14,
@@ -715,7 +873,7 @@ class _SketchMetricBox extends StatelessWidget {
             style: GoogleFonts.patrickHand(
               fontSize: 12,
               fontWeight: FontWeight.w700,
-              color: AppColors.pencilGray,
+              color: grayColor,
               letterSpacing: 0.6,
             ),
           ),
@@ -724,7 +882,7 @@ class _SketchMetricBox extends StatelessWidget {
             style: GoogleFonts.patrickHand(
               fontSize: 22,
               fontWeight: FontWeight.w700,
-              color: AppColors.pencilBlack,
+              color: pencilColor,
             ),
           ),
           Text(
@@ -732,7 +890,7 @@ class _SketchMetricBox extends StatelessWidget {
             style: GoogleFonts.patrickHand(
               fontSize: 13,
               fontWeight: FontWeight.w600,
-              color: AppColors.pencilGraphite,
+              color: graphiteColor,
             ),
           ),
         ],
@@ -758,22 +916,30 @@ class _SketchBadgeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardBorder = isDark ? AppColors.pencilWhite : AppColors.pencilBlack;
+    final cardBg = isUnlocked
+        ? (isDark ? AppColors.surfaceDark : Colors.white)
+        : (isDark ? AppColors.surfaceSecondaryDark : AppColors.surfaceSecondaryLight);
+    final titleColor = isDark ? AppColors.pencilWhite : AppColors.pencilBlack;
+    final descColor = isDark ? AppColors.pencilGrayDark : AppColors.pencilGray;
+
     return Container(
       width: 130,
       margin: const EdgeInsets.only(right: 12),
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: isUnlocked ? Colors.white : AppColors.surfaceSecondaryLight,
+        color: cardBg,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: AppColors.pencilBlack,
+          color: cardBorder,
           width: 1.8,
         ),
         boxShadow: isUnlocked
-            ? const [
+            ? [
                 BoxShadow(
-                  color: AppColors.pencilBlack,
-                  offset: Offset(2, 2),
+                  color: isDark ? AppColors.cardShadowDark : AppColors.pencilBlack,
+                  offset: const Offset(2, 2),
                   blurRadius: 0,
                 ),
               ]
@@ -791,7 +957,7 @@ class _SketchBadgeCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: isUnlocked ? fillColor : Colors.transparent,
                   borderRadius: BorderRadius.circular(6),
-                  border: Border.all(color: AppColors.pencilBlack, width: 1.2),
+                  border: Border.all(color: cardBorder, width: 1.2),
                 ),
                 child: Icon(icon, color: AppColors.pencilBlack, size: 18),
               ),
@@ -808,7 +974,7 @@ class _SketchBadgeCard extends StatelessWidget {
             style: GoogleFonts.patrickHand(
               fontSize: 15,
               fontWeight: FontWeight.w700,
-              color: AppColors.pencilBlack,
+              color: titleColor,
             ),
           ),
           Text(
@@ -816,7 +982,7 @@ class _SketchBadgeCard extends StatelessWidget {
             style: GoogleFonts.patrickHand(
               fontSize: 11,
               fontWeight: FontWeight.w600,
-              color: AppColors.pencilGray,
+              color: descColor,
             ),
           ),
         ],
@@ -824,5 +990,3 @@ class _SketchBadgeCard extends StatelessWidget {
     );
   }
 }
-
-

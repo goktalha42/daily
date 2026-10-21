@@ -39,6 +39,8 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
     final isUserInTop10 = top10.any((e) => e.userId == 'user_local');
     final showUserBottomRow = myEntry != null && !isUserInTop10;
 
+    final isDark = AppColors.isDark(context);
+
     return CustomScrollView(
       physics: const BouncingScrollPhysics(),
       slivers: [
@@ -57,11 +59,11 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                         Container(
                           width: 8,
                           height: 8,
-                          decoration: const BoxDecoration(
+                          decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             color: AppColors.sunYellow,
                             border: Border.fromBorderSide(
-                              BorderSide(color: AppColors.pencilBlack, width: 1.5),
+                              BorderSide(color: AppColors.pencil(context), width: 1.5),
                             ),
                           ),
                         ),
@@ -71,7 +73,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                           style: GoogleFonts.patrickHand(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.pencilGraphite,
+                            color: AppColors.graphite(context),
                             letterSpacing: 1.0,
                           ),
                         ),
@@ -83,7 +85,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                       style: GoogleFonts.patrickHand(
                         fontSize: 34,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.pencilBlack,
+                        color: AppColors.pencil(context),
                         letterSpacing: -0.5,
                       ),
                     ),
@@ -124,7 +126,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
               borderRadius: 14,
               borderWidth: 2.0,
               shadowOffset: const Offset(3.0, 3.0),
-              backgroundColor: Colors.white,
+              backgroundColor: AppColors.surfaceOf(context),
               padding: const EdgeInsets.all(4),
               child: Row(
                 children: LeaderboardTimeframe.values.map((tf) {
@@ -143,7 +145,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                                 style: GoogleFonts.patrickHand(
                                   fontSize: 15,
                                   fontWeight: FontWeight.w700,
-                                  color: AppColors.pencilBlack,
+                                  color: AppColors.inkBlack,
                                 ),
                               ),
                             ),
@@ -161,7 +163,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                                   style: GoogleFonts.patrickHand(
                                     fontSize: 15,
                                     fontWeight: FontWeight.w700,
-                                    color: AppColors.pencilBlack,
+                                    color: AppColors.pencil(context),
                                   ),
                                 ),
                               ),
@@ -187,6 +189,8 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
               itemBuilder: (context, index) {
                 final game = GameType.values[index];
                 final isSelected = _selectedGame == game;
+                final itemBg = isSelected ? game.color : AppColors.surfaceOf(context);
+                final itemTextColor = isSelected ? AppColors.onColor(game.color) : AppColors.pencil(context);
 
                 return SketchCard(
                   onTap: () {
@@ -196,14 +200,14 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                   borderRadius: 10,
                   borderWidth: isSelected ? 2.2 : 1.6,
                   shadowOffset: isSelected ? const Offset(2.5, 2.5) : const Offset(1.5, 1.5),
-                  backgroundColor: isSelected ? game.color : Colors.white,
+                  backgroundColor: itemBg,
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                   child: Row(
                     children: [
                       Icon(
                         game.icon,
                         size: 18,
-                        color: AppColors.pencilBlack,
+                        color: itemTextColor,
                       ),
                       const SizedBox(width: 6),
                       Text(
@@ -211,7 +215,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                         style: GoogleFonts.patrickHand(
                           fontSize: 15,
                           fontWeight: FontWeight.w700,
-                          color: AppColors.pencilBlack,
+                          color: itemTextColor,
                         ),
                       ),
                     ],
@@ -237,6 +241,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                       setState(() => _selectedQueensDifficulty = null);
                     },
                   ),
+<<<<<<< HEAD
                   const SizedBox(width: 6),
                   _buildQueensDifficultyChip(
                     label: 'Kolay',
@@ -263,6 +268,34 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                       HapticFeedback.selectionClick();
                       setState(() => _selectedQueensDifficulty = 'master');
                     },
+=======
+                  const SizedBox(height: 6),
+                  SketchCard(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    backgroundColor: AppColors.queensGame.withValues(alpha: isDark ? 0.25 : 0.18),
+                    borderRadius: 10,
+                    borderWidth: 1.6,
+                    shadowOffset: const Offset(1.5, 1.5),
+                    child: Row(
+                      children: [
+                        Icon(Icons.info_outline_rounded, size: 16, color: AppColors.pencil(context)),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            _selectedQueensDifficulty == null
+                                ? '👑 Vezirler Toplam Puanı = Kolay + Zor + Master seviyelerinin toplamıdır. Tekil sıralama görmek için yukarıdaki butonlara basabilirsiniz.'
+                                : '👑 Vezirler ${_selectedQueensDifficulty!.toUpperCase()} seviyesi tekil sıralaması listeleniyor.',
+                            style: GoogleFonts.patrickHand(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.pencil(context),
+                              height: 1.15,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+>>>>>>> fac90c7 (Dark Theme Desteği)
                   ),
                 ],
               ),
@@ -285,14 +318,14 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                   SketchPlaceholderBox(
                     width: 48,
                     height: 48,
-                    fillColor: myRank != null ? _selectedGame.color : AppColors.surfaceSecondaryLight,
-                    lineColor: AppColors.pencilBlack,
+                    fillColor: myRank != null ? _selectedGame.color : AppColors.surfaceSecondaryOf(context),
+                    lineColor: AppColors.pencil(context),
                     borderRadius: 8,
                     child: Center(
                       child: Text(
                         myRank != null ? '#$myRank' : '-',
                         style: GoogleFonts.patrickHand(
-                          color: AppColors.pencilBlack,
+                          color: myRank != null ? AppColors.pencilBlack : AppColors.pencil(context),
                           fontWeight: FontWeight.w700,
                           fontSize: 19,
                         ),
@@ -309,13 +342,13 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                             Text(
                               'SİZİN SIRALAMANIZ',
                               style: GoogleFonts.patrickHand(
-                                color: AppColors.pencilGray,
+                                color: AppColors.gray(context),
                                 fontSize: 12,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
                             const SizedBox(width: 6),
-                            const SketchDoodleCrown(size: 14, color: AppColors.pencilBlack),
+                            SketchDoodleCrown(size: 14, color: AppColors.pencil(context)),
                           ],
                         ),
                         Text(
@@ -325,7 +358,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                                   : (myRank <= 3 ? 'Podyumdasınız! 🏆' : 'Zirve %$topPercentile Dilimindesiniz'))
                               : 'Henüz Skorunuz Yok',
                           style: GoogleFonts.patrickHand(
-                            color: AppColors.pencilBlack,
+                            color: AppColors.pencil(context),
                             fontSize: 17,
                             fontWeight: FontWeight.w700,
                           ),
@@ -341,7 +374,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                                           : 'Bir üst sıra (#${myEntry.rank - 1}) için daha iyi süre gerekiyor!')))
                               : 'Bu kategoride henüz oyun oynamadınız.',
                           style: GoogleFonts.patrickHand(
-                            color: AppColors.pencilGraphite,
+                            color: AppColors.graphite(context),
                             fontSize: 13,
                           ),
                         ),
@@ -397,14 +430,14 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const SketchDoodleTrophy(size: 20, color: AppColors.pencilBlack),
+                        SketchDoodleTrophy(size: 20, color: AppColors.pencil(context)),
                         const SizedBox(width: 6),
                         Text(
                           'ŞAMPİYONLAR KÜRSÜSÜ',
                           style: GoogleFonts.patrickHand(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.pencilBlack,
+                            color: AppColors.pencil(context),
                             letterSpacing: 1.0,
                           ),
                         ),
@@ -418,7 +451,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                         _SketchPodiumPillar(
                           entry: entries[1],
                           rank: 2,
-                          fillColor: const Color(0xFFE2E8F0),
+                          fillColor: isDark ? const Color(0xFF3B4252) : const Color(0xFFE2E8F0),
                           pillarHeight: 80,
                           crownWidget: const Text('🥈', style: TextStyle(fontSize: 18)),
                         ),
@@ -457,7 +490,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                   style: GoogleFonts.patrickHand(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.pencilGraphite,
+                    color: AppColors.graphite(context),
                     letterSpacing: 0.8,
                   ),
                 ),
@@ -466,7 +499,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                   style: GoogleFonts.patrickHand(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.pencilGray,
+                    color: AppColors.gray(context),
                   ),
                 ),
               ],
@@ -483,7 +516,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                     child: Text(
                       'Bu dönem için henüz skor bulunmuyor.',
                       style: GoogleFonts.patrickHand(
-                        color: AppColors.pencilGray,
+                        color: AppColors.gray(context),
                         fontWeight: FontWeight.w600,
                         fontSize: 16,
                       ),
@@ -528,7 +561,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
             width: 36,
             height: 1.5,
             decoration: BoxDecoration(
-              color: AppColors.pencilBlack.withValues(alpha: 0.25),
+              color: AppColors.pencil(context).withValues(alpha: 0.25),
               borderRadius: BorderRadius.circular(1),
             ),
           ),
@@ -539,7 +572,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
               style: GoogleFonts.patrickHand(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
-                color: AppColors.pencilGray,
+                color: AppColors.gray(context),
                 letterSpacing: 3,
               ),
             ),
@@ -548,7 +581,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
             width: 36,
             height: 1.5,
             decoration: BoxDecoration(
-              color: AppColors.pencilBlack.withValues(alpha: 0.25),
+              color: AppColors.pencil(context).withValues(alpha: 0.25),
               borderRadius: BorderRadius.circular(1),
             ),
           ),
@@ -558,6 +591,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
   }
 
   Widget _buildEntryCard(LeaderboardEntry entry, {required bool isMe}) {
+    final isDark = AppColors.isDark(context);
     final isTop3 = entry.rank <= 3;
     final detailText = _selectedGame == GameType.queens && _timeframe == LeaderboardTimeframe.daily
         ? '${entry.gamesPlayed}/3 Seviye • Süre: ${GameDateUtils.formatGameTime(entry.bestTimeMs)}'
@@ -572,8 +606,8 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
         borderWidth: isMe ? 2.4 : 1.8,
         shadowOffset: isMe ? const Offset(3.5, 3.5) : const Offset(2.0, 2.0),
         backgroundColor: isMe
-            ? AppColors.sunYellow.withValues(alpha: 0.35)
-            : Colors.white,
+            ? (isDark ? AppColors.sunYellow.withValues(alpha: 0.22) : AppColors.sunYellow.withValues(alpha: 0.35))
+            : AppColors.surfaceOf(context),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         child: Row(
           children: [
@@ -585,7 +619,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
               padding: EdgeInsets.zero,
               backgroundColor: isTop3
                   ? AppColors.sunYellow
-                  : (isMe ? AppColors.sunYellow : AppColors.surfaceSecondaryLight),
+                  : (isMe ? AppColors.sunYellow : AppColors.surfaceSecondaryOf(context)),
               child: SizedBox(
                 width: 32,
                 height: 32,
@@ -595,7 +629,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                     style: GoogleFonts.patrickHand(
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.pencilBlack,
+                      color: (isTop3 || isMe) ? AppColors.pencilBlack : AppColors.pencil(context),
                     ),
                   ),
                 ),
@@ -616,14 +650,14 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                           style: GoogleFonts.patrickHand(
                             fontSize: 17,
                             fontWeight: isMe ? FontWeight.w800 : FontWeight.w700,
-                            color: AppColors.pencilBlack,
+                            color: AppColors.pencil(context),
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
                       if (entry.rank == 1) ...[
                         const SizedBox(width: 4),
-                        const Icon(Icons.star_rounded, size: 16, color: AppColors.pencilBlack),
+                        const Icon(Icons.star_rounded, size: 16, color: AppColors.sunYellow),
                       ],
                       if (_selectedGame == GameType.queens &&
                           _timeframe == LeaderboardTimeframe.daily &&
@@ -640,7 +674,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                             style: GoogleFonts.patrickHand(
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
-                              color: AppColors.pencilBlack,
+                              color: AppColors.pencil(context),
                             ),
                           ),
                         ),
@@ -652,7 +686,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                     style: GoogleFonts.patrickHand(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.pencilGray,
+                      color: AppColors.gray(context),
                     ),
                   ),
                 ],
@@ -668,7 +702,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                   style: GoogleFonts.patrickHand(
                     fontSize: 19,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.pencilBlack,
+                    color: AppColors.pencil(context),
                   ),
                 ),
                 Text(
@@ -676,7 +710,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                   style: GoogleFonts.patrickHand(
                     fontSize: 10,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.pencilGray,
+                    color: AppColors.gray(context),
                   ),
                 ),
               ],
@@ -699,7 +733,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
           borderRadius: 8,
           borderWidth: isSelected ? 2.0 : 1.4,
           shadowOffset: isSelected ? const Offset(1.8, 1.8) : const Offset(1.0, 1.0),
-          backgroundColor: isSelected ? AppColors.sunYellow : Colors.white,
+          backgroundColor: isSelected ? AppColors.sunYellow : AppColors.surfaceOf(context),
           padding: const EdgeInsets.symmetric(vertical: 5),
           child: Center(
             child: Text(
@@ -707,7 +741,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
               style: GoogleFonts.patrickHand(
                 fontSize: 13,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-                color: AppColors.pencilBlack,
+                color: isSelected ? AppColors.inkBlack : AppColors.pencil(context),
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -754,7 +788,7 @@ class _SketchPodiumPillar extends StatelessWidget {
             style: GoogleFonts.patrickHand(
               fontWeight: FontWeight.w700,
               fontSize: isFirst ? 14 : 12,
-              color: AppColors.pencilBlack,
+              color: AppColors.pencil(context),
             ),
             overflow: TextOverflow.ellipsis,
           ),
@@ -764,7 +798,7 @@ class _SketchPodiumPillar extends StatelessWidget {
         Text(
           '${entry.totalScore} P',
           style: GoogleFonts.patrickHand(
-            color: AppColors.pencilBlack,
+            color: AppColors.pencil(context),
             fontWeight: FontWeight.w700,
             fontSize: 12,
           ),
@@ -788,7 +822,7 @@ class _SketchPodiumPillar extends StatelessWidget {
                 style: GoogleFonts.patrickHand(
                   fontSize: isFirst ? 30 : 24,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.pencilBlack,
+                  color: AppColors.onColor(fillColor),
                 ),
               ),
             ),

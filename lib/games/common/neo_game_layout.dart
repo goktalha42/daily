@@ -5,7 +5,7 @@ import '../../core/widgets/sketch_decorations.dart';
 import 'base_game.dart';
 
 /// Zühtü oyun ekranı iskeleti (Kara Kalem Eskiz Defteri dili).
-/// Kağıt zemin + kalın siyah konturlu, blur'suz gölgeli üst çubuk.
+/// Kağıt zemin + kalın konturlu, blur'suz gölgeli üst çubuk.
 class NeoGameLayout extends StatelessWidget {
   final GameType gameType;
   final String levelId;
@@ -24,8 +24,14 @@ class NeoGameLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final topBarBg = isDark ? AppColors.surfaceDark : Colors.white;
+    final pencilColor = isDark ? AppColors.pencilWhite : AppColors.pencilBlack;
+    final shadowColor = isDark ? AppColors.cardShadowDark : AppColors.pencilBlack;
+    final subtitleColor = isDark ? AppColors.pencilGraphiteDark : AppColors.pencilGraphite;
+
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
+      backgroundColor: isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
       body: SketchPaperBackground(
         child: SafeArea(
           child: Column(
@@ -34,13 +40,13 @@ class NeoGameLayout extends StatelessWidget {
                 margin: const EdgeInsets.fromLTRB(20, 12, 24, 12),
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: topBarBg,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppColors.pencilBlack, width: 2.5),
-                  boxShadow: const [
+                  border: Border.all(color: pencilColor, width: 2.5),
+                  boxShadow: [
                     BoxShadow(
-                      color: AppColors.pencilBlack,
-                      offset: Offset(4, 4),
+                      color: shadowColor,
+                      offset: const Offset(4, 4),
                       blurRadius: 0,
                     ),
                   ],
@@ -50,7 +56,7 @@ class NeoGameLayout extends StatelessWidget {
                   children: [
                     IconButton(
                       icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-                      color: AppColors.pencilBlack,
+                      color: pencilColor,
                       onPressed: () => Navigator.pop(context),
                     ),
                     Column(
@@ -71,14 +77,14 @@ class NeoGameLayout extends StatelessWidget {
                         const SizedBox(height: 2),
                         Text(
                           'Bölüm #$levelId',
-                          style: AppTextStyles.bodyMedium(AppColors.pencilGraphite)
+                          style: AppTextStyles.bodyMedium(subtitleColor)
                               .copyWith(fontSize: 12),
                         ),
                       ],
                     ),
                     IconButton(
                       icon: const Icon(Icons.refresh_rounded, size: 22),
-                      color: AppColors.pencilBlack,
+                      color: pencilColor,
                       onPressed: onRestart,
                     ),
                   ],

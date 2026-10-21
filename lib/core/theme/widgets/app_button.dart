@@ -29,20 +29,34 @@ class _AppButtonState extends State<AppButton> {
 
   @override
   Widget build(BuildContext context) {
-    final bgColor = widget.isPrimary ? AppColors.sunYellow : Colors.white;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final bgColor = widget.isPrimary
+        ? AppColors.sunYellow
+        : (isDark ? AppColors.surfaceDark : Colors.white);
+
+    final textColor = widget.isPrimary
+        ? AppColors.pencilBlack
+        : (isDark ? AppColors.pencilWhite : AppColors.pencilBlack);
+
+    final borderColor = widget.isPrimary
+        ? (isDark ? AppColors.pencilWhite : AppColors.pencilBlack)
+        : (isDark ? AppColors.pencilWhite : AppColors.pencilBlack);
+
+    final shadowColor = isDark ? AppColors.cardShadowDark : AppColors.pencilBlack;
 
     Widget buttonChild = Row(
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         if (widget.icon != null) ...[
-          Icon(widget.icon, size: 20, color: AppColors.pencilBlack),
+          Icon(widget.icon, size: 20, color: textColor),
           const SizedBox(width: AppSpacing.sm),
         ],
         Text(
           widget.text,
           style: GoogleFonts.patrickHand(
-            color: AppColors.pencilBlack,
+            color: textColor,
             fontSize: 18,
             fontWeight: FontWeight.w700,
           ),
@@ -69,10 +83,10 @@ class _AppButtonState extends State<AppButton> {
           decoration: BoxDecoration(
             color: bgColor,
             borderRadius: BorderRadius.circular(AppSpacing.borderRadiusMd),
-            border: Border.all(color: AppColors.pencilBlack, width: 2.2),
+            border: Border.all(color: borderColor, width: 2.2),
             boxShadow: [
               BoxShadow(
-                color: AppColors.pencilBlack,
+                color: shadowColor,
                 blurRadius: 0,
                 offset: _isPressed ? const Offset(1.5, 1.5) : const Offset(3.0, 3.0),
               ),

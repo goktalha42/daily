@@ -36,6 +36,14 @@ class AppTheme {
           side: const BorderSide(color: AppColors.pencilBlack, width: 2.0),
         ),
       ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: AppColors.surfaceLight,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+          side: const BorderSide(color: AppColors.pencilBlack, width: 2.2),
+        ),
+      ),
       appBarTheme: AppBarTheme(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -59,6 +67,64 @@ class AppTheme {
     );
   }
 
-  /// Zühtü kara kalem skeç teması tek ve karakteristiktir; koyu tema modu da bu temayı baz alır.
-  static ThemeData get darkTheme => lightTheme;
+  /// Zühtü Kara Tahta & Koyu Grafit Skeç Teması
+  /// Doğal koyu arduvaz kağıdı, tebeşir/gümüş çizgiler ve canlı fosforlu kalem vurguları.
+  static ThemeData get darkTheme {
+    return ThemeData(
+      brightness: Brightness.dark,
+      scaffoldBackgroundColor: AppColors.backgroundDark,
+      colorScheme: const ColorScheme.dark(
+        primary: AppColors.pencilWhite,
+        secondary: AppColors.highlighterCyan,
+        surface: AppColors.surfaceDark,
+        error: AppColors.error,
+      ),
+      textTheme: TextTheme(
+        displayLarge: AppTextStyles.displayLarge(AppColors.pencilWhite),
+        headlineLarge: AppTextStyles.headlineLarge(AppColors.pencilWhite),
+        headlineMedium: AppTextStyles.headlineMedium(AppColors.pencilWhite),
+        titleLarge: AppTextStyles.titleLarge(AppColors.pencilWhite),
+        titleMedium: AppTextStyles.titleMedium(AppColors.pencilWhite),
+        bodyLarge: AppTextStyles.bodyLarge(AppColors.pencilWhite),
+        bodyMedium: AppTextStyles.bodyMedium(AppColors.pencilGraphiteDark),
+        labelLarge: AppTextStyles.labelLarge(AppColors.pencilWhite),
+      ),
+      cardTheme: CardThemeData(
+        color: AppColors.surfaceDark,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: const BorderSide(color: AppColors.pencilWhite, width: 2.0),
+        ),
+      ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: AppColors.surfaceDark,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+          side: const BorderSide(color: AppColors.pencilWhite, width: 2.2),
+        ),
+      ),
+      appBarTheme: AppBarTheme(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: true,
+        iconTheme: const IconThemeData(color: AppColors.pencilWhite),
+        titleTextStyle: AppTextStyles.titleLarge(AppColors.pencilWhite),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.sunYellow,
+          foregroundColor: AppColors.pencilBlack,
+          elevation: 0,
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+            side: const BorderSide(color: AppColors.pencilWhite, width: 2.0),
+          ),
+          textStyle: AppTextStyles.labelLarge(AppColors.pencilBlack),
+        ),
+      ),
+    );
+  }
 }

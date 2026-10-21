@@ -260,6 +260,13 @@ class _BadgeShowcaseSectionState extends ConsumerState<BadgeShowcaseSection> {
     required bool isSelected,
     required VoidCallback onTap,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final chipBg = isSelected
+        ? AppColors.sunYellow
+        : (isDark ? AppColors.surfaceDark : Colors.white);
+    final chipTextColor = isSelected ? AppColors.inkBlack : AppColors.pencil(context);
+    final borderColor = isSelected ? AppColors.inkBlack : AppColors.pencil(context);
+
     return GestureDetector(
       onTap: () {
         HapticFeedback.selectionClick();
@@ -268,11 +275,11 @@ class _BadgeShowcaseSectionState extends ConsumerState<BadgeShowcaseSection> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.sunYellow : Colors.white,
+          color: chipBg,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: AppColors.pencilBlack, width: isSelected ? 1.8 : 1.2),
+          border: Border.all(color: borderColor, width: isSelected ? 1.8 : 1.2),
           boxShadow: isSelected
-              ? const [BoxShadow(color: AppColors.pencilBlack, offset: Offset(1.5, 1.5))]
+              ? const [BoxShadow(color: AppColors.inkBlack, offset: Offset(1.5, 1.5))]
               : null,
         ),
         child: Text(
@@ -280,7 +287,7 @@ class _BadgeShowcaseSectionState extends ConsumerState<BadgeShowcaseSection> {
           style: GoogleFonts.patrickHand(
             fontSize: 13,
             fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-            color: AppColors.pencilBlack,
+            color: chipTextColor,
           ),
         ),
       ),
@@ -293,6 +300,13 @@ class _BadgeShowcaseSectionState extends ConsumerState<BadgeShowcaseSection> {
     required VoidCallback onTap,
     int? currentStreak,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final chipBg = isSelected
+        ? AppColors.accentCyan
+        : (isDark ? AppColors.surfaceSecondaryDark : AppColors.surfaceSecondaryLight);
+    final chipTextColor = isSelected ? AppColors.inkBlack : AppColors.pencil(context);
+    final borderColor = isSelected ? AppColors.inkBlack : AppColors.pencil(context);
+
     return GestureDetector(
       onTap: () {
         HapticFeedback.selectionClick();
@@ -301,16 +315,16 @@ class _BadgeShowcaseSectionState extends ConsumerState<BadgeShowcaseSection> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.accentCyan : AppColors.surfaceSecondaryLight,
+          color: chipBg,
           borderRadius: BorderRadius.circular(6),
-          border: Border.all(color: AppColors.pencilBlack, width: 1.2),
+          border: Border.all(color: borderColor, width: 1.2),
         ),
         child: Text(
           currentStreak != null && currentStreak > 0 ? '$label (🔥$currentStreak)' : label,
           style: GoogleFonts.patrickHand(
             fontSize: 12,
             fontWeight: FontWeight.w700,
-            color: AppColors.pencilBlack,
+            color: chipTextColor,
           ),
         ),
       ),
