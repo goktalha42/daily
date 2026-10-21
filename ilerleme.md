@@ -105,3 +105,12 @@ lib/
   - Yükselme / Güvenli / Düşme bölge etiketleri
   - Ana navigasyon çubuğuna "Lig" sekmesi eklendi (4 sekme)
   - Profil ekranına lig özet kartı entegre edildi
+- [x] Steam Tarzı Rozetler ve Kemerler Sistemi (`badges_screen.dart`, `badge_showcase_section.dart`)
+  - Profil kısmındaki uzun ve hantal liste kaldırılarak yerine kompakt, estetik "Başarı & Prestij Vitrini" yerleştirildi
+  - Profil vitrininden Şampiyonluk Kemerleri ve Rozet Koleksiyonu için iki ayrı geçiş noktası sağlandı
+  - Steam seviye halkası (Level Ring), dinamik XP ilerleme barı ve seviye unvanları ("Zihin Çırağı" → "Efsanevi Deha")
+  - Şampiyonluk Kemerleri Odası (10 adet süreli/dinamik kemer vitrini, kalan süre geri sayımı ve koşul kartları)
+  - 103 kalıcı rozet için Steam tarzı rozet kartları, canlı/kilitli amblemler, hedef ilerleme çubukları
+  - Kategori filtreleri (Oyun Ustalığı, Zeka & Başarı, Seriler - oyun seçici ile)
+  - Arama çubuğu ve Durum filtresi (Hepsi / Açılanlar / Kilitliler)
+  - Steam Başarım Pop-up/Modalı (Büyük madalya, unvan, kazanma şartı ve tarih bilgisi)
