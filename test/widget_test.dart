@@ -14,7 +14,7 @@ void main() {
     // Initial pump without letting timer fail test
     await tester.pump(const Duration(milliseconds: 100));
 
-    expect(find.text('Zeka Arenası'), findsOneWidget);
+    expect(find.text('Zühtü Arenası'), findsOneWidget);
     expect(find.byType(HomeScreen), findsOneWidget);
   });
 }

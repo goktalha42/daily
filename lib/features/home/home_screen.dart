@@ -23,6 +23,7 @@ import '../../games/patches/patches_screen.dart';
 import '../leaderboard/leaderboard_screen.dart';
 import '../leaderboard/leaderboard_service.dart';
 import '../profile/profile_screen.dart';
+import '../league/league_screen.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -47,6 +48,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               children: const [
                 _GeniusLobbyTab(),
                 LeaderboardScreen(),
+                LeagueScreen(),
                 ProfileScreen(),
               ],
             ),
@@ -84,12 +86,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       },
                     ),
                     _NavTabItem(
-                      icon: Icons.person_rounded,
-                      label: 'Profil',
+                      icon: Icons.workspace_premium_rounded,
+                      label: 'Lig',
                       isSelected: _bottomNavIndex == 2,
                       onTap: () {
                         HapticFeedback.selectionClick();
                         setState(() => _bottomNavIndex = 2);
+                      },
+                    ),
+                    _NavTabItem(
+                      icon: Icons.person_rounded,
+                      label: 'Profil',
+                      isSelected: _bottomNavIndex == 3,
+                      onTap: () {
+                        HapticFeedback.selectionClick();
+                        setState(() => _bottomNavIndex = 3);
                       },
                     ),
                   ],
@@ -728,7 +739,7 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'Zeka Arenası',
+                      'Zühtü Arenası',
                       style: GoogleFonts.patrickHand(
                         fontSize: 34,
                         fontWeight: FontWeight.w700,

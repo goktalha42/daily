@@ -97,3 +97,11 @@ lib/
 - [x] Vezirler Master (9x9, 2 Vezir) %100 insan aklıyla çözülebilirlik kuralı (`deductive.isSolvable`) ve çok katmanlı eğitici ipucu sistemi
 - [x] Gerçekçi ve mücadeleci Liderlik Tablosu puan simülasyonu (Oyunların 2000 taban puanına tam uyumlu elit rekabet eğrisi)
 - [x] `flutter analyze` 0 hata ve `flutter test` 76 testin tamamının başarıyla geçmesi
+- [x] Duolingo tarzı Haftalık Lig Sistemi (`league_service.dart`, `league_screen.dart`)
+  - 10 lig kademesi: Taş → Bronz → Gümüş → Altın → Safir → Yakut → Elmas → Ametist → Zümrüt → Muhteşem
+  - 42 oyunculuk lig grupları (1 kullanıcı + 41 bot)
+  - Haftalık toplam puan sıralaması (Pazartesi sıfırlanır, Pazar bitiş)
+  - İlk 10 yükselir / Son 10 düşer kuralı
+  - Yükselme / Güvenli / Düşme bölge etiketleri
+  - Ana navigasyon çubuğuna "Lig" sekmesi eklendi (4 sekme)
+  - Profil ekranına lig özet kartı entegre edildi

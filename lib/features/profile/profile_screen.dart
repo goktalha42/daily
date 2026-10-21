@@ -9,6 +9,7 @@ import '../../core/widgets/sketch_decorations.dart';
 import '../../games/common/base_game.dart';
 import 'widgets/badge_showcase_section.dart';
 import '../../core/services/badge_service.dart';
+import '../league/league_screen.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -352,7 +353,30 @@ class ProfileScreen extends ConsumerWidget {
         ),
       ),
 
-        // 3. KARA KALEM İSTATİSTİK 4'LÜ IZGARASI
+        // 3. LIG ÖZET KARTI
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 4),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'LIG DURUMU',
+                  style: GoogleFonts.patrickHand(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.pencilGraphite,
+                    letterSpacing: 1.0,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                const LeagueProfileCard(),
+              ],
+            ),
+          ),
+        ),
+
+        // 4. KARA KALEM İSTATİSTİK 4'LÜ IZGARASI
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
