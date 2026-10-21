@@ -40,6 +40,12 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen>
       CurvedAnimation(parent: _animController, curve: Curves.easeOutCubic),
     );
     _animController.forward();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        ref.read(leagueServiceProvider.notifier).checkWeekTransition();
+      }
+    });
   }
 
   @override
@@ -64,13 +70,27 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen>
         child: CustomScrollView(
           physics: const BouncingScrollPhysics(),
           slivers: [
+            // ─── 0. BEKLEYEN LİG ATLAYIŞ/DÜŞÜŞ TEBRİK BANNERI ───────────
+            if (league.pendingPromotion != null || league.pendingRelegation != null)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 50, 20, 0),
+                  child: _SketchLeagueTransitionBanner(
+                    league: league,
+                    onDismiss: () {
+                      ref.read(leagueServiceProvider.notifier).clearPendingLeagueChange();
+                    },
+                  ),
+                ),
+              ),
+
             // ─── 1. ÜST BAŞLIK & SKEÇ LİG ROZETİ ─────────────────────────
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.only(
+                padding: EdgeInsets.only(
                   left: 20,
                   right: 20,
-                  top: 54,
+                  top: (league.pendingPromotion != null || league.pendingRelegation != null) ? 14 : 54,
                   bottom: 8,
                 ),
                 child: Row(
@@ -1587,6 +1607,107 @@ class _SketchMiniBadge extends StatelessWidget {
           fontWeight: FontWeight.w700,
           color: contentColor,
         ),
+      ),
+    );
+  }
+}
+
+// ============================================================================
+// 8. LİG GEÇİŞ KUTLAMA / BİLDİRİM BANNERI (Hand-Drawn Transition Banner)
+// ============================================================================
+
+class _SketchLeagueTransitionBanner extends StatelessWidget {
+  final LeagueState league;
+  final VoidCallback onDismiss;
+
+  const _SketchLeagueTransitionBanner({
+    required this.league,
+    required this.onDismiss,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isPromotion = league.pendingPromotion != null;
+    final level = league.currentLevel;
+
+    final bgColor = isPromotion ? const Color(0xFFDCFCE7) : AppColors.errorBgLight;
+    final title = isPromotion
+        ? 'TEBRİKLER! BİR ÜST LİGE YÜKSELDİN! 🎉'
+        : 'DİKKAT! BİR ALT LİGE GERİLEDİN ⚠️';
+    final desc = isPromotion
+        ? 'Geçen haftayı ilk 10 sırada tamamlayarak ${level.emoji} ${level.displayName} Ligine terfi ettin!'
+        : 'Geçen haftayı son 10 sırada bitirdiğin için ${level.emoji} ${level.displayName} Ligine geriledin. Bu hafta puanları topla ve geri dön!';
+
+    return SketchCard(
+      enableHatching: true,
+      backgroundColor: bgColor,
+      borderColor: AppColors.pencilBlack,
+      borderWidth: 2.4,
+      borderRadius: 14,
+      shadowOffset: const Offset(3.5, 3.5),
+      padding: const EdgeInsets.all(14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              if (isPromotion)
+                const SketchDoodleCrown(
+                  size: 26,
+                  color: AppColors.pencilBlack,
+                  fillColor: AppColors.sunYellow,
+                )
+              else
+                const Icon(
+                  Icons.warning_amber_rounded,
+                  size: 26,
+                  color: AppColors.error,
+                ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  title,
+                  style: GoogleFonts.patrickHand(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.pencilBlack,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            desc,
+            style: GoogleFonts.patrickHand(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: AppColors.pencilGraphite,
+              height: 1.25,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Align(
+            alignment: Alignment.centerRight,
+            child: SketchCard(
+              onTap: onDismiss,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+              borderRadius: 8,
+              borderWidth: 1.8,
+              shadowOffset: const Offset(1.5, 1.5),
+              backgroundColor: isPromotion ? AppColors.sunYellow : Colors.white,
+              child: Text(
+                isPromotion ? 'Harika! 🚀' : 'Anladım 👍',
+                style: GoogleFonts.patrickHand(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.pencilBlack,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

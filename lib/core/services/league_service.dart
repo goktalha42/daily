@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../core/utils/date_utils.dart';
 import '../../features/leaderboard/leaderboard_service.dart';
 import '../../games/common/base_game.dart';
 
@@ -289,10 +290,10 @@ class LeagueNotifier extends StateNotifier<LeagueState> {
     _initLeague();
   }
 
-  static String _currentWeekId() {
-    final now = DateTime.now();
-    final weekNumber = _isoWeekNumber(now);
-    return '${now.year}-W${weekNumber.toString().padLeft(2, '0')}';
+  static String _currentWeekId([DateTime? date]) {
+    final active = date ?? GameDateUtils.getActiveDate();
+    final weekNumber = _isoWeekNumber(active);
+    return '${active.year}-W${weekNumber.toString().padLeft(2, '0')}';
   }
 
   static int _isoWeekNumber(DateTime date) {
@@ -450,12 +451,20 @@ class LeagueNotifier extends StateNotifier<LeagueState> {
 
   List<LeaguePlayer> _generateBotPlayers(
       LeagueLevel level, Random rng, int minScore, int maxScore) {
+    final active = GameDateUtils.getActiveDate();
+    // Haftanın ilerleyişine göre bot skorlarını dinamik ölçekle (Pzt: %25 -> Paz: %100)
+    // Böylece Pazartesi yeni haftaya geçildiğinde botların puanları da sıfırlanıp baştan başlar!
+    final double dayFactor = (active.weekday / 7.0).clamp(0.25, 1.0);
+    final currentMin = (minScore * dayFactor).round();
+    final currentMax = (maxScore * dayFactor).round();
+
     final names = _botNamesForLevel(level);
     final count = leagueSize - 1;
     return List.generate(count, (i) {
       final baseName = names[i % names.length];
       final suffix = rng.nextInt(9000) + 1000;
-      final score = minScore + rng.nextInt(maxScore - minScore);
+      final range = max(10, currentMax - currentMin);
+      final score = currentMin + rng.nextInt(range);
       return LeaguePlayer(
         userId: 'bot_${level.index}_$i',
         userName: '${baseName}_$suffix',
@@ -496,10 +505,46 @@ class LeagueNotifier extends StateNotifier<LeagueState> {
     return _allBotNames;
   }
 
+  /// Gün değişimi veya yeni haftaya geçiş kontrolü
+  Future<void> checkWeekTransition() async {
+    final currentWeekId = _currentWeekId();
+    if (state.weekId != currentWeekId && state.weekId.isNotEmpty) {
+      // Önceki haftanın sıralaması:
+      final lastRank = state.userRank;
+      LeagueLevel newLevel = state.currentLevel;
+      LeagueLevel? pendingPromotion;
+      LeagueLevel? pendingRelegation;
+
+      if (lastRank <= promotionCount && !state.currentLevel.isMax) {
+        newLevel = state.currentLevel.next ?? state.currentLevel;
+        pendingPromotion = newLevel;
+      } else if (lastRank > leagueSize - relegationCount && !state.currentLevel.isMin) {
+        newLevel = state.currentLevel.previous ?? state.currentLevel;
+        pendingRelegation = newLevel;
+      }
+
+      // Yeni hafta için botları ve kullanıcı puanını yeni haftaya göre kur
+      final players = _buildLeaguePlayers(newLevel, currentWeekId);
+
+      state = LeagueState(
+        currentLevel: newLevel,
+        players: players,
+        weekId: currentWeekId,
+        pendingPromotion: pendingPromotion,
+        pendingRelegation: pendingRelegation,
+      );
+
+      await _saveState();
+    } else {
+      await refreshAfterGame();
+    }
+  }
+
   /// Oyun bitişinde ligi yenile
   Future<void> refreshAfterGame() async {
-    final players = _buildLeaguePlayers(state.currentLevel, state.weekId);
-    state = state.copyWith(players: players);
+    final currentWeekId = _currentWeekId();
+    final players = _buildLeaguePlayers(state.currentLevel, currentWeekId);
+    state = state.copyWith(players: players, weekId: currentWeekId);
     await _saveState();
   }
 
@@ -528,8 +573,9 @@ class LeagueNotifier extends StateNotifier<LeagueState> {
 // ============================================================================
 
 String leagueDaysRemaining() {
-  final now = DateTime.now();
-  final sunday = now.add(Duration(days: 7 - now.weekday));
+  final now = GameDateUtils.getActiveDate();
+  final daysUntilSunday = 7 - now.weekday;
+  final sunday = now.add(Duration(days: daysUntilSunday));
   final endOfWeek =
       DateTime(sunday.year, sunday.month, sunday.day, 23, 59, 59);
   final diff = endOfWeek.difference(now);

@@ -25,6 +25,7 @@ import '../leaderboard/leaderboard_screen.dart';
 import '../leaderboard/leaderboard_service.dart';
 import '../profile/profile_screen.dart';
 import '../league/league_screen.dart';
+import '../../core/services/league_service.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -199,6 +200,9 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
       GameDateUtils.advanceToNextDay();
       ref.read(timeSyncServiceProvider).advanceDay();
     });
+    // Lig servisindeki hafta kontrolünü ve lig atlama durumunu güncelle
+    ref.read(leagueServiceProvider.notifier).checkWeekTransition();
+
     // Ekran sarsıntısı ve dopamin kutlaması
     ScreenShake.shake(context, intensity: 12.0);
     GeniusConfettiOverlay.explode(context);

@@ -71,26 +71,9 @@ class LeaderboardService extends ChangeNotifier {
       GameType.patches,
     ];
 
-    // Geçmiş günler simülasyon haritası:
-    // Haftalık: 1..6 gün önce
-    // Aylık: 7..29 gün aralığından örnekleme (11 gün)
-    // Genel (Tüm Zamanlar): 32..95 gün aralığından örnekleme (10 gün)
-    const weeklyDays = [1, 2, 3, 4, 5, 6];
-    const monthlyExtraDays = [8, 10, 12, 14, 16, 18, 21, 23, 25, 27, 29];
-    const allTimeExtraDays = [33, 38, 43, 49, 55, 62, 70, 78, 86, 95];
-
     for (int i = 0; i < _seedUserNames.length; i++) {
       final name = _seedUserNames[i];
       final userId = 'mock_user_$i';
-
-      // Katılım sıklığı dilimleri:
-      // Tier 1 (ilk 25): %90 katılım, neredeyse her gün oynar
-      // Tier 2 (25..65): %75 katılım
-      // Tier 3 (65..115): %50 katılım
-      // Tier 4 (115..150): %30 katılım
-      final double weeklyRate = i < 25 ? 0.90 : (i < 65 ? 0.75 : (i < 115 ? 0.50 : 0.30));
-      final double monthlyRate = i < 25 ? 0.85 : (i < 65 ? 0.70 : (i < 115 ? 0.45 : 0.25));
-      final double allTimeRate = i < 25 ? 0.85 : (i < 65 ? 0.65 : (i < 115 ? 0.40 : 0.20));
 
       // --- 1. BUGÜN (GÜNLÜK) OYUNLARI ---
       // A) VEZİRLER (Queens)
@@ -224,148 +207,168 @@ class LeaderboardService extends ChangeNotifier {
         );
       }
 
-      // --- 2. GEÇMİŞ GÜNLER SİMÜLASYONU (HAFTALIK, AYLIK, GENEL) ---
-      void seedPastDays(List<int> daysList, double participationRate, String prefix) {
-        for (final dayBack in daysList) {
-          final roll = ((i * 37 + dayBack * 19) % 100) / 100.0;
-          if (roll > participationRate) continue;
+      // --- 2. EKİM AYININ TAMAMI (1-31 EKİM 2026) VE GEÇMİŞ GÜNLER SİMÜLASYONU ---
+      // Kullanıcı "Yeni Gün" diyerek Ekim ayı içinde istediği güne gittiğinde,
+      // o günün skorbordunda 150 oyuncunun gerçekçi sonuçları hazır bulunur.
+      for (int day = 1; day <= 31; day++) {
+        final date = DateTime(2026, 10, day, 12, 0);
+        final levelId = DateFormat('yyyy-MM-dd').format(date);
 
-          final pastDate = activeDate.subtract(Duration(days: dayBack));
-          final pastLevelId = DateFormat('yyyy-MM-dd').format(pastDate);
+        // Eğer bu gün zaten "bugün" (activeDate) ise, bugün verileri yukarıda eklendiği için atla
+        if (activeDate.year == 2026 && activeDate.month == 10 && activeDate.day == day) {
+          continue;
+        }
 
-          // Queens Kolay
-          final pPlaysKolay = i < 80 || (i % 2 == 0);
-          if (pPlaysKolay) {
-            final pKolayDur = (12500 + i * 380 + ((i * 17 + dayBack * 71) % 260)).round();
-            final pKolaySec = (pKolayDur / 1000).ceil();
-            final pExcessMoves = _excess((i - 20) ~/ 15);
-            final pKolayScore = (900 - pKolaySec * 2 - pExcessMoves * 2).clamp(400, 880);
-            _resultsStore.add(
-              GameResult(
-                id: 'queens_kolay_${userId}_${prefix}_d$dayBack',
-                gameType: GameType.queens,
-                levelId: pastLevelId,
-                userId: userId,
-                userName: name,
-                durationMs: pKolayDur,
-                moveCount: 18 + pExcessMoves,
-                score: pKolayScore,
-                completedAt: pastDate.add(Duration(hours: 9 + (i * 5) % 13, minutes: (i * 11) % 60)),
-                difficulty: 'kolay',
-              ),
-            );
+        // Günlük katılım oranları (Tier 1 her gün katılır, diğerleri dönüşümlü)
+        final dailyRoll = ((i * 37 + day * 19) % 100);
+        final bool userPlaysToday = i < 40 ? true : (i < 90 ? dailyRoll < 85 : dailyRoll < 65);
+        if (!userPlaysToday) continue;
+
+        // A) Queens Kolay
+        final pKolayDur = (12300 + i * 370 + ((i * 17 + day * 71) % 260)).round();
+        final pKolaySec = (pKolayDur / 1000).ceil();
+        final pExcessMoves = _excess((i - 20) ~/ 15);
+        final pKolayScore = (900 - pKolaySec * 2 - pExcessMoves * 2).clamp(400, 880);
+        _resultsStore.add(
+          GameResult(
+            id: 'queens_kolay_${userId}_oct_d$day',
+            gameType: GameType.queens,
+            levelId: levelId,
+            userId: userId,
+            userName: name,
+            durationMs: pKolayDur,
+            moveCount: 18 + pExcessMoves,
+            score: pKolayScore,
+            completedAt: date.add(Duration(hours: 8 + (i * 5) % 13, minutes: (i * 11) % 60)),
+            difficulty: 'kolay',
+          ),
+        );
+
+        // Queens Zor (İlk 100 ve belirli günlerde katılanlar)
+        final bool playsZor = i < 30 || (i < 100 && (i + day) % 3 != 0);
+        if (playsZor) {
+          final pZorDur = (24500 + i * 590 + ((i * 19 + day * 53) % 340)).round();
+          final pZorSec = (pZorDur / 1000).ceil();
+          final pExcessMoves = _excess((i - 15) ~/ 10);
+          final pZorScore = (1200 - pZorSec * 2 - pExcessMoves * 2).clamp(500, 1160);
+          _resultsStore.add(
+            GameResult(
+              id: 'queens_zor_${userId}_oct_d$day',
+              gameType: GameType.queens,
+              levelId: levelId,
+              userId: userId,
+              userName: name,
+              durationMs: pZorDur,
+              moveCount: 24 + pExcessMoves,
+              score: pZorScore,
+              completedAt: date.add(Duration(hours: 9 + (i * 5) % 12, minutes: (i * 13) % 60)),
+              difficulty: 'zor',
+            ),
+          );
+        }
+
+        // Queens Master (Elit ilk 50)
+        final bool playsMaster = i < 15 || (i < 50 && (i + day) % 2 == 0);
+        if (playsMaster) {
+          final pMasterDur = (18500 + i * 930 + ((i * 23 + day * 47) % 390)).round();
+          final pMasterSec = (pMasterDur / 1000).ceil();
+          final pExcessMoves = _excess((i - 10) ~/ 6);
+          final pMasterScore = (1350 - pMasterSec * 2 - pExcessMoves * 2).clamp(600, 1315);
+          _resultsStore.add(
+            GameResult(
+              id: 'queens_master_${userId}_oct_d$day',
+              gameType: GameType.queens,
+              levelId: levelId,
+              userId: userId,
+              userName: name,
+              durationMs: pMasterDur,
+              moveCount: 54 + pExcessMoves,
+              score: pMasterScore,
+              completedAt: date.add(Duration(hours: 10 + (i * 5) % 11, minutes: (i * 17) % 60)),
+              difficulty: 'master',
+            ),
+          );
+        }
+
+        // B) Diğer Oyunlar (Pinpoint, Crossclimb, Tango, ZipPath, Patches)
+        for (final game in allOtherGames) {
+          // Her oyuna %80 katılım
+          if ((i * 7 + day * 3 + game.index * 11) % 10 >= 8) continue;
+
+          final duration = (13200 + i * 430 + ((i * 29 + day * 37 + game.index * 83) % 310)).round();
+          final sec = (duration / 1000).ceil();
+
+          int score;
+          int moveCount = 10;
+          switch (game) {
+            case GameType.pinpoint:
+              final clues = i < 15 ? 1 : (i < 55 ? 2 : (i < 105 ? 3 : 4));
+              final wrong = i < 25 ? 0 : (i < 80 ? 1 : 2);
+              score = (2000 - clues * 250 - wrong * 100 - sec * 5).clamp(200, 1920);
+              moveCount = clues + wrong;
+              break;
+            case GameType.crossclimb:
+              final wrong = i < 30 ? 0 : (i < 90 ? 1 : 2);
+              score = (2000 - sec * 6 - wrong * 50).clamp(200, 1920);
+              moveCount = 5 + wrong;
+              break;
+            case GameType.tango:
+              final excessMoves = _excess((i - 20) ~/ 12);
+              score = (2000 - sec * 10 - excessMoves * 4).clamp(200, 1910);
+              moveCount = 22 + excessMoves;
+              break;
+            case GameType.zipPath:
+              score = (2000 - sec * 10).clamp(200, 1920);
+              moveCount = 1;
+              break;
+            case GameType.patches:
+              final excessRects = _excess((i - 25) ~/ 14);
+              score = (2000 - sec * 10 - excessRects * 5).clamp(200, 1910);
+              moveCount = 7 + excessRects;
+              break;
+            default:
+              score = (2000 - sec * 10).clamp(200, 1920);
           }
 
-          // Queens Zor
-          final pPlaysZor = i < 22 || (i % 3 == 0 && i < 75);
-          if (pPlaysZor && (i + dayBack) % 4 != 0) {
-            final pZorDur = (25000 + i * 600 + ((i * 19 + dayBack * 53) % 340)).round();
-            final pZorSec = (pZorDur / 1000).ceil();
-            final pExcessMoves = _excess((i - 15) ~/ 10);
-            final pZorScore = (1200 - pZorSec * 2 - pExcessMoves * 2).clamp(500, 1160);
-            _resultsStore.add(
-              GameResult(
-                id: 'queens_zor_${userId}_${prefix}_d$dayBack',
-                gameType: GameType.queens,
-                levelId: pastLevelId,
-                userId: userId,
-                userName: name,
-                durationMs: pZorDur,
-                moveCount: 24 + pExcessMoves,
-                score: pZorScore,
-                completedAt: pastDate.add(Duration(hours: 10 + (i * 5) % 12, minutes: (i * 13) % 60)),
-                difficulty: 'zor',
-              ),
-            );
-          }
-
-          // Queens Master (Sadece elit oyuncular)
-          final pPlaysMaster = i < 12 || (i % 7 == 0 && i < 50);
-          if (pPlaysMaster && (i + dayBack) % 3 != 0) {
-            final pMasterDur = (19000 + i * 950 + ((i * 23 + dayBack * 47) % 390)).round();
-            final pMasterSec = (pMasterDur / 1000).ceil();
-            final pExcessMoves = _excess((i - 10) ~/ 6);
-            final pMasterScore = (1350 - pMasterSec * 2 - pExcessMoves * 2).clamp(600, 1315);
-            _resultsStore.add(
-              GameResult(
-                id: 'queens_master_${userId}_${prefix}_d$dayBack',
-                gameType: GameType.queens,
-                levelId: pastLevelId,
-                userId: userId,
-                userName: name,
-                durationMs: pMasterDur,
-                moveCount: 54 + pExcessMoves,
-                score: pMasterScore,
-                completedAt: pastDate.add(Duration(hours: 11 + (i * 5) % 11, minutes: (i * 17) % 60)),
-                difficulty: 'master',
-              ),
-            );
-          }
-
-          // Diğer tüm oyunlar
-          for (final game in allOtherGames) {
-            if ((i + dayBack * 3 + game.index * 7) % 5 == 0) continue;
-
-            final duration = (13500 + i * 440 + ((i * 29 + dayBack * 37 + game.index * 83) % 320)).round();
-            final sec = (duration / 1000).ceil();
-
-            int score;
-            int moveCount = 10;
-            switch (game) {
-              case GameType.pinpoint:
-                final clues = i < 15 ? 1 : (i < 55 ? 2 : (i < 105 ? 3 : 4));
-                final wrong = i < 25 ? 0 : (i < 80 ? 1 : 2);
-                score = (2000 - clues * 250 - wrong * 100 - sec * 5).clamp(200, 1920);
-                moveCount = clues + wrong;
-                break;
-              case GameType.crossclimb:
-                final wrong = i < 30 ? 0 : (i < 90 ? 1 : 2);
-                score = (2000 - sec * 6 - wrong * 50).clamp(200, 1920);
-                moveCount = 5 + wrong;
-                break;
-              case GameType.tango:
-                final excessMoves = _excess((i - 20) ~/ 12);
-                score = (2000 - sec * 10 - excessMoves * 4).clamp(200, 1910);
-                moveCount = 22 + excessMoves;
-                break;
-              case GameType.zipPath:
-                score = (2000 - sec * 10).clamp(200, 1920);
-                moveCount = 1;
-                break;
-              case GameType.patches:
-                final excessRects = _excess((i - 25) ~/ 14);
-                score = (2000 - sec * 10 - excessRects * 5).clamp(200, 1910);
-                moveCount = 7 + excessRects;
-                break;
-              default:
-                score = (2000 - sec * 10).clamp(200, 1920);
-            }
-
-            _resultsStore.add(
-              GameResult(
-                id: '${game.id}_${userId}_${prefix}_d$dayBack',
-                gameType: game,
-                levelId: pastLevelId,
-                userId: userId,
-                userName: name,
-                durationMs: duration,
-                moveCount: moveCount,
-                score: score,
-                completedAt: pastDate.add(Duration(hours: 8 + (i * 3 + game.index * 5) % 14, minutes: (i * 7) % 60)),
-              ),
-            );
-          }
+          _resultsStore.add(
+            GameResult(
+              id: '${game.id}_${userId}_oct_d$day',
+              gameType: game,
+              levelId: levelId,
+              userId: userId,
+              userName: name,
+              durationMs: duration,
+              moveCount: moveCount,
+              score: score,
+              completedAt: date.add(Duration(hours: 8 + (i * 3 + game.index * 5) % 14, minutes: (i * 7) % 60)),
+            ),
+          );
         }
       }
 
-      // Haftalık geçmiş (Son 6 gün) -> Haftalık Liderlik Tablosunu oluşturur
-      seedPastDays(weeklyDays, weeklyRate, 'w');
+      // --- 3. EYLÜL AYI GEÇMİŞİ (Genel sıralama ve tüm zamanlar birikimi için) ---
+      for (final dayBack in [35, 45, 55, 65, 80, 95]) {
+        final pastDate = activeDate.subtract(Duration(days: dayBack));
+        final pastLevelId = DateFormat('yyyy-MM-dd').format(pastDate);
 
-      // Aylık geçmiş (Son 7..29 gün) -> Aylık Liderlik Tablosunu güçlendirir
-      seedPastDays(monthlyExtraDays, monthlyRate, 'm');
-
-      // Genel geçmiş (33..95 gün) -> Genel (Tüm Zamanlar) Liderlik Tablosunu zenginleştirir
-      seedPastDays(allTimeExtraDays, allTimeRate, 'all');
+        for (final game in GameType.values) {
+          if ((i * 3 + dayBack * 7 + game.index * 11) % 10 >= 8) continue;
+          _resultsStore.add(
+            GameResult(
+              id: '${game.id}_${userId}_hist_d$dayBack',
+              gameType: game,
+              levelId: pastLevelId,
+              userId: userId,
+              userName: name,
+              durationMs: 14000 + i * 400,
+              moveCount: 15,
+              score: (1900 - i * 8).clamp(300, 1850),
+              completedAt: pastDate,
+              difficulty: game == GameType.queens ? 'kolay' : null,
+            ),
+          );
+        }
+      }
     }
   }
 
@@ -439,6 +442,8 @@ class LeaderboardService extends ChangeNotifier {
       if (r.gameType != gameType) return false;
       if (difficulty != null && r.difficulty != difficulty) return false;
 
+      final endOfActiveDay = DateTime(activeDate.year, activeDate.month, activeDate.day, 23, 59, 59);
+
       if (timeframe == LeaderboardTimeframe.daily) {
         if (levelId != null) {
           return r.levelId == levelId;
@@ -448,11 +453,15 @@ class LeaderboardService extends ChangeNotifier {
                 r.completedAt.month == activeDate.month &&
                 r.completedAt.day == activeDate.day);
       } else if (timeframe == LeaderboardTimeframe.weekly) {
-        return r.completedAt.isAfter(activeDate.subtract(const Duration(days: 7)));
+        // TAKVİM HAFTASI: Pazartesi 00:00:00'dan aktif gün sonuna (23:59:59) kadar
+        final weekStart = GameDateUtils.getStartOfWeek(activeDate);
+        return !r.completedAt.isBefore(weekStart) && !r.completedAt.isAfter(endOfActiveDay);
       } else if (timeframe == LeaderboardTimeframe.monthly) {
-        return r.completedAt.isAfter(activeDate.subtract(const Duration(days: 30)));
+        // TAKVİM AYI: Ayın 1'i 00:00:00'dan aktif gün sonuna (23:59:59) kadar
+        final monthStart = GameDateUtils.getStartOfMonth(activeDate);
+        return !r.completedAt.isBefore(monthStart) && !r.completedAt.isAfter(endOfActiveDay);
       }
-      return true; // allTime
+      return !r.completedAt.isAfter(endOfActiveDay); // allTime
     }).toList();
 
     // 2. Kullanıcı bazında topla

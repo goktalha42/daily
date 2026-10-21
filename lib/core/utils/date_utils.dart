@@ -58,4 +58,17 @@ class GameDateUtils {
     final tenths = ((totalMilliseconds % 1000) ~/ 100).toString();
     return '$minutes:$seconds.$tenths';
   }
+
+  /// Aktif tarihin ait olduğu takvim haftasının başlangıcı (Pazartesi 00:00:00)
+  static DateTime getStartOfWeek([DateTime? date]) {
+    final target = date ?? getActiveDate();
+    final monday = target.subtract(Duration(days: target.weekday - 1));
+    return DateTime(monday.year, monday.month, monday.day, 0, 0, 0);
+  }
+
+  /// Aktif tarihin ait olduğu takvim ayının başlangıcı (Ayın 1'i 00:00:00)
+  static DateTime getStartOfMonth([DateTime? date]) {
+    final target = date ?? getActiveDate();
+    return DateTime(target.year, target.month, 1, 0, 0, 0);
+  }
 }
