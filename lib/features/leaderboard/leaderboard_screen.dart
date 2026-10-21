@@ -231,74 +231,42 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-              child: Column(
+              child: Row(
                 children: [
-                  // Zorluk Filtre Çipleri
-                  Row(
-                    children: [
-                      _buildQueensDifficultyChip(
-                        label: 'Toplam Puan',
-                        isSelected: _selectedQueensDifficulty == null,
-                        onTap: () {
-                          HapticFeedback.selectionClick();
-                          setState(() => _selectedQueensDifficulty = null);
-                        },
-                      ),
-                      const SizedBox(width: 6),
-                      _buildQueensDifficultyChip(
-                        label: 'Kolay',
-                        isSelected: _selectedQueensDifficulty == 'kolay',
-                        onTap: () {
-                          HapticFeedback.selectionClick();
-                          setState(() => _selectedQueensDifficulty = 'kolay');
-                        },
-                      ),
-                      const SizedBox(width: 6),
-                      _buildQueensDifficultyChip(
-                        label: 'Zor',
-                        isSelected: _selectedQueensDifficulty == 'zor',
-                        onTap: () {
-                          HapticFeedback.selectionClick();
-                          setState(() => _selectedQueensDifficulty = 'zor');
-                        },
-                      ),
-                      const SizedBox(width: 6),
-                      _buildQueensDifficultyChip(
-                        label: 'Master',
-                        isSelected: _selectedQueensDifficulty == 'master',
-                        onTap: () {
-                          HapticFeedback.selectionClick();
-                          setState(() => _selectedQueensDifficulty = 'master');
-                        },
-                      ),
-                    ],
+                  _buildQueensDifficultyChip(
+                    label: 'Toplam Puan',
+                    isSelected: _selectedQueensDifficulty == null,
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      setState(() => _selectedQueensDifficulty = null);
+                    },
                   ),
-                  const SizedBox(height: 6),
-                  SketchCard(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    backgroundColor: AppColors.queensGame.withValues(alpha: isDark ? 0.25 : 0.18),
-                    borderRadius: 10,
-                    borderWidth: 1.6,
-                    shadowOffset: const Offset(1.5, 1.5),
-                    child: Row(
-                      children: [
-                        Icon(Icons.info_outline_rounded, size: 16, color: AppColors.pencil(context)),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            _selectedQueensDifficulty == null
-                                ? '👑 Vezirler Toplam Puanı = Kolay + Zor + Master seviyelerinin toplamıdır. Tekil sıralama görmek için yukarıdaki butonlara basabilirsiniz.'
-                                : '👑 Vezirler ${_selectedQueensDifficulty!.toUpperCase()} seviyesi tekil sıralaması listeleniyor.',
-                            style: GoogleFonts.patrickHand(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.pencil(context),
-                              height: 1.15,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                  const SizedBox(width: 6),
+                  _buildQueensDifficultyChip(
+                    label: 'Kolay',
+                    isSelected: _selectedQueensDifficulty == 'kolay',
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      setState(() => _selectedQueensDifficulty = 'kolay');
+                    },
+                  ),
+                  const SizedBox(width: 6),
+                  _buildQueensDifficultyChip(
+                    label: 'Zor',
+                    isSelected: _selectedQueensDifficulty == 'zor',
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      setState(() => _selectedQueensDifficulty = 'zor');
+                    },
+                  ),
+                  const SizedBox(width: 6),
+                  _buildQueensDifficultyChip(
+                    label: 'Master',
+                    isSelected: _selectedQueensDifficulty == 'master',
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      setState(() => _selectedQueensDifficulty = 'master');
+                    },
                   ),
                 ],
               ),
