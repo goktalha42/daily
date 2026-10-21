@@ -226,49 +226,53 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
           ),
         ),
 
-        // 3.1. VEZİRLER ZORLUK SEÇİCİ
+        // 3.1. VEZİRLER ZORLUK SEÇİCİ & BİLGİ BANTLIĞI
         if (_selectedGame == GameType.queens)
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-              child: Row(
+              child: Column(
                 children: [
-                  _buildQueensDifficultyChip(
-                    label: 'Toplam Puan',
-                    isSelected: _selectedQueensDifficulty == null,
-                    onTap: () {
-                      HapticFeedback.selectionClick();
-                      setState(() => _selectedQueensDifficulty = null);
-                    },
+                  // Zorluk Filtre Çipleri
+                  Row(
+                    children: [
+                      _buildQueensDifficultyChip(
+                        label: 'Toplam Puan',
+                        isSelected: _selectedQueensDifficulty == null,
+                        onTap: () {
+                          HapticFeedback.selectionClick();
+                          setState(() => _selectedQueensDifficulty = null);
+                        },
+                      ),
+                      const SizedBox(width: 6),
+                      _buildQueensDifficultyChip(
+                        label: 'Kolay',
+                        isSelected: _selectedQueensDifficulty == 'kolay',
+                        onTap: () {
+                          HapticFeedback.selectionClick();
+                          setState(() => _selectedQueensDifficulty = 'kolay');
+                        },
+                      ),
+                      const SizedBox(width: 6),
+                      _buildQueensDifficultyChip(
+                        label: 'Zor',
+                        isSelected: _selectedQueensDifficulty == 'zor',
+                        onTap: () {
+                          HapticFeedback.selectionClick();
+                          setState(() => _selectedQueensDifficulty = 'zor');
+                        },
+                      ),
+                      const SizedBox(width: 6),
+                      _buildQueensDifficultyChip(
+                        label: 'Master',
+                        isSelected: _selectedQueensDifficulty == 'master',
+                        onTap: () {
+                          HapticFeedback.selectionClick();
+                          setState(() => _selectedQueensDifficulty = 'master');
+                        },
+                      ),
+                    ],
                   ),
-<<<<<<< HEAD
-                  const SizedBox(width: 6),
-                  _buildQueensDifficultyChip(
-                    label: 'Kolay',
-                    isSelected: _selectedQueensDifficulty == 'kolay',
-                    onTap: () {
-                      HapticFeedback.selectionClick();
-                      setState(() => _selectedQueensDifficulty = 'kolay');
-                    },
-                  ),
-                  const SizedBox(width: 6),
-                  _buildQueensDifficultyChip(
-                    label: 'Zor',
-                    isSelected: _selectedQueensDifficulty == 'zor',
-                    onTap: () {
-                      HapticFeedback.selectionClick();
-                      setState(() => _selectedQueensDifficulty = 'zor');
-                    },
-                  ),
-                  const SizedBox(width: 6),
-                  _buildQueensDifficultyChip(
-                    label: 'Master',
-                    isSelected: _selectedQueensDifficulty == 'master',
-                    onTap: () {
-                      HapticFeedback.selectionClick();
-                      setState(() => _selectedQueensDifficulty = 'master');
-                    },
-=======
                   const SizedBox(height: 6),
                   SketchCard(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -295,7 +299,6 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                         ),
                       ],
                     ),
->>>>>>> fac90c7 (Dark Theme Desteği)
                   ),
                 ],
               ),

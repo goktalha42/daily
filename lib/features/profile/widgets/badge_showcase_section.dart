@@ -51,21 +51,27 @@ class _BadgeShowcaseSectionState extends ConsumerState<BadgeShowcaseSection> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  const Icon(Icons.emoji_events_rounded, size: 20, color: AppColors.sunYellow),
-                  const SizedBox(width: 6),
-                  Text(
-                    'ROZETLER & ŞAMPİYONLUK KEMERLERİ',
-                    style: GoogleFonts.patrickHand(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.pencilGraphite,
-                      letterSpacing: 0.8,
+              Expanded(
+                child: Row(
+                  children: [
+                    const Icon(Icons.emoji_events_rounded, size: 20, color: AppColors.sunYellow),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        'ROZETLER & ŞAMPİYONLUK KEMERLERİ',
+                        style: GoogleFonts.patrickHand(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.pencilGraphite,
+                          letterSpacing: 0.8,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
+              const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(

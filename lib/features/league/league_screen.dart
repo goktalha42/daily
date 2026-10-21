@@ -85,12 +85,12 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen>
                             Container(
                               width: 8,
                               height: 8,
-                              decoration: const BoxDecoration(
+                              decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 color: AppColors.sunYellow,
                                 border: Border.fromBorderSide(
                                   BorderSide(
-                                    color: AppColors.pencilBlack,
+                                    color: AppColors.pencil(context),
                                     width: 1.5,
                                   ),
                                 ),
@@ -102,7 +102,7 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen>
                               style: GoogleFonts.patrickHand(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w700,
-                                color: AppColors.pencilGraphite,
+                                color: AppColors.graphite(context),
                                 letterSpacing: 1.0,
                               ),
                             ),
@@ -114,7 +114,7 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen>
                           style: GoogleFonts.patrickHand(
                             fontSize: 34,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.pencilBlack,
+                            color: AppColors.pencil(context),
                             letterSpacing: -0.5,
                           ),
                         ),
@@ -163,14 +163,14 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen>
                       style: GoogleFonts.patrickHand(
                         fontSize: 19,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.pencilBlack,
+                        color: AppColors.pencil(context),
                       ),
                     ),
                     const Spacer(),
                     // El çizimi oyuncu adedi etiketi
                     _SketchMiniBadge(
                       text: '${league.players.length} Yarışmacı',
-                      backgroundColor: AppColors.surfaceSecondaryLight,
+                      backgroundColor: AppColors.surfaceSecondaryOf(context),
                     ),
                   ],
                 ),
@@ -197,9 +197,9 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen>
 
                   Widget? zoneHeader;
                   if (index == 10) {
-                    zoneHeader = const _SketchZoneDivider(
+                    zoneHeader = _SketchZoneDivider(
                       label: '— GÜVENLİ BÖLGE • BU LİGDE KALINIR',
-                      color: AppColors.pencilGray,
+                      color: AppColors.gray(context),
                       isPromotion: false,
                     );
                   } else if (index == 32) {
@@ -277,7 +277,7 @@ class _SketchLeagueTopBadge extends StatelessWidget {
             style: GoogleFonts.patrickHand(
               fontSize: 14,
               fontWeight: FontWeight.w700,
-              color: AppColors.pencilBlack,
+              color: AppColors.inkBlack,
               letterSpacing: 0.5,
             ),
           ),
@@ -312,7 +312,9 @@ class _SketchLeagueJourneyStepper extends StatelessWidget {
           child: Center(
             child: CustomPaint(
               size: const Size(12, 4),
-              painter: _DoodleArrowConnectorPainter(),
+              painter: _DoodleArrowConnectorPainter(
+                color: AppColors.graphite(context),
+              ),
             ),
           ),
         ),
@@ -345,17 +347,19 @@ class _SketchLeagueStepItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     final bgColor = isCurrent
         ? AppColors.sunYellow
         : isCompleted
-            ? AppColors.surfaceSecondaryLight
-            : Colors.white;
+            ? (isDark ? AppColors.surfaceSecondaryDark : AppColors.surfaceSecondaryLight)
+            : (isDark ? AppColors.surfaceDark : Colors.white);
 
     final borderColor = isCurrent
-        ? AppColors.pencilBlack
+        ? (isDark ? AppColors.sunYellow : AppColors.pencilBlack)
         : isCompleted
-            ? AppColors.pencilGraphite
-            : AppColors.pencilLight;
+            ? (isDark ? AppColors.pencilWhite.withValues(alpha: 0.6) : AppColors.pencilGraphite)
+            : (isDark ? AppColors.pencilWhite.withValues(alpha: 0.25) : AppColors.pencilLight);
 
     return SketchCard(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -371,7 +375,7 @@ class _SketchLeagueStepItem extends StatelessWidget {
             level.emoji,
             style: TextStyle(
               fontSize: 16,
-              color: isCompleted || isCurrent ? null : Colors.black45,
+              color: isCompleted || isCurrent ? null : (isDark ? Colors.white38 : Colors.black45),
             ),
           ),
           const SizedBox(width: 5),
@@ -385,10 +389,10 @@ class _SketchLeagueStepItem extends StatelessWidget {
                   fontSize: 12,
                   fontWeight: isCurrent ? FontWeight.w700 : FontWeight.w600,
                   color: isCurrent
-                      ? AppColors.pencilBlack
+                      ? AppColors.inkBlack
                       : isCompleted
-                          ? AppColors.pencilGraphite
-                          : AppColors.pencilGray,
+                          ? AppColors.pencil(context)
+                          : AppColors.gray(context),
                 ),
               ),
               if (isCurrent)
@@ -397,7 +401,7 @@ class _SketchLeagueStepItem extends StatelessWidget {
                   style: GoogleFonts.patrickHand(
                     fontSize: 9,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.pencilBlack,
+                    color: AppColors.inkBlack,
                     letterSpacing: 0.3,
                   ),
                 )
@@ -416,7 +420,7 @@ class _SketchLeagueStepItem extends StatelessWidget {
                   style: GoogleFonts.patrickHand(
                     fontSize: 9,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.pencilLight,
+                    color: AppColors.gray(context),
                   ),
                 ),
             ],
@@ -428,10 +432,14 @@ class _SketchLeagueStepItem extends StatelessWidget {
 }
 
 class _DoodleArrowConnectorPainter extends CustomPainter {
+  final Color? color;
+
+  _DoodleArrowConnectorPainter({this.color});
+
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = AppColors.pencilGraphite.withValues(alpha: 0.5)
+      ..color = (color ?? AppColors.pencilGraphite).withValues(alpha: 0.5)
       ..strokeWidth = 1.4
       ..strokeCap = StrokeCap.round;
 
@@ -465,6 +473,7 @@ class _SketchMainLeagueCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final level = league.currentLevel;
     final zone = league.userZone;
     final rank = league.userRank;
@@ -481,10 +490,10 @@ class _SketchMainLeagueCard extends StatelessWidget {
         noteDesc = league.pointsSafetyMargin > 0
             ? '11. sıradaki rakibinden ${league.pointsSafetyMargin} LP öndesin. Pozisyonunu koru!'
             : 'İlk 10 sıradasın! Haftayı burada tamamlarsan üst lige çıkacaksın.';
-        noteBg = const Color(0xFFDCFCE7);
-        noteIcon = const SketchDoodleCrown(
+        noteBg = isDark ? const Color(0xFF064E3B).withValues(alpha: 0.45) : const Color(0xFFDCFCE7);
+        noteIcon = SketchDoodleCrown(
           size: 24,
-          color: AppColors.pencilBlack,
+          color: isDark ? AppColors.pencilWhite : AppColors.pencilBlack,
           fillColor: AppColors.sunYellow,
         );
         break;
@@ -494,17 +503,17 @@ class _SketchMainLeagueCard extends StatelessWidget {
         noteDesc = pts > 0
             ? 'Yükselme potasına girmek için $pts LP daha kazanmalısın!'
             : 'Ligde kalmayı garantiledin. Şimdi üst sıralara oynama zamanı!';
-        noteBg = AppColors.surfaceSecondaryLight;
-        noteIcon = const Icon(
+        noteBg = AppColors.surfaceSecondaryOf(context);
+        noteIcon = Icon(
           Icons.shield_outlined,
           size: 22,
-          color: AppColors.pencilBlack,
+          color: AppColors.pencil(context),
         );
         break;
       case LeagueZone.relegation:
         noteTitle = 'Düşme Tehlikesi! ⚠️';
         noteDesc = 'Son 10 sıradasın! Bir alt lige gerilememek için hemen oyun oyna!';
-        noteBg = AppColors.errorBgLight;
+        noteBg = isDark ? const Color(0xFF7F1D1D).withValues(alpha: 0.45) : AppColors.errorBgLight;
         noteIcon = const Icon(
           Icons.warning_amber_rounded,
           size: 24,
@@ -518,7 +527,7 @@ class _SketchMainLeagueCard extends StatelessWidget {
       borderRadius: 16,
       borderWidth: 2.5,
       shadowOffset: const Offset(3.5, 3.5),
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.surfaceOf(context),
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -531,7 +540,7 @@ class _SketchMainLeagueCard extends StatelessWidget {
                 width: 58,
                 height: 58,
                 fillColor: AppColors.sunYellow,
-                lineColor: AppColors.pencilBlack,
+                lineColor: AppColors.pencil(context),
                 borderRadius: 10,
                 child: Text(
                   level.emoji,
@@ -552,7 +561,7 @@ class _SketchMainLeagueCard extends StatelessWidget {
                             style: GoogleFonts.patrickHand(
                               fontSize: 22,
                               fontWeight: FontWeight.w700,
-                              color: AppColors.pencilBlack,
+                              color: AppColors.pencil(context),
                             ),
                           ),
                         ),
@@ -569,7 +578,7 @@ class _SketchMainLeagueCard extends StatelessWidget {
                       style: GoogleFonts.patrickHand(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.pencilGraphite,
+                        color: AppColors.graphite(context),
                       ),
                     ),
                     if (!level.isMax && level.next != null)
@@ -578,7 +587,7 @@ class _SketchMainLeagueCard extends StatelessWidget {
                         style: GoogleFonts.patrickHand(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
-                          color: AppColors.pencilGray,
+                          color: AppColors.gray(context),
                         ),
                       ),
                   ],
@@ -618,6 +627,7 @@ class _SketchHandDrawnProgressBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final players = league.players;
     if (players.isEmpty) return const SizedBox.shrink();
 
@@ -644,14 +654,14 @@ class _SketchHandDrawnProgressBar extends StatelessWidget {
           children: [
             Row(
               children: [
-                const Icon(Icons.show_chart_rounded, size: 16, color: AppColors.pencilBlack),
+                Icon(Icons.show_chart_rounded, size: 16, color: AppColors.pencil(context)),
                 const SizedBox(width: 4),
                 Text(
                   'Haftalık İlerleme Skalan',
                   style: GoogleFonts.patrickHand(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.pencilBlack,
+                    color: AppColors.pencil(context),
                   ),
                 ),
               ],
@@ -661,7 +671,7 @@ class _SketchHandDrawnProgressBar extends StatelessWidget {
               style: GoogleFonts.patrickHand(
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
-                color: AppColors.pencilGraphite,
+                color: AppColors.graphite(context),
               ),
             ),
           ],
@@ -676,7 +686,8 @@ class _SketchHandDrawnProgressBar extends StatelessWidget {
               progress: progress,
               promotionMark: promotionMark,
               fillColor: AppColors.sunYellow,
-              strokeColor: AppColors.pencilBlack,
+              strokeColor: AppColors.pencil(context),
+              barBackgroundColor: isDark ? AppColors.surfaceSecondaryDark : AppColors.surfaceSecondaryLight,
               markColor: AppColors.success,
             ),
             child: const SizedBox.expand(),
@@ -693,7 +704,7 @@ class _SketchHandDrawnProgressBar extends StatelessWidget {
               '0 LP',
               style: GoogleFonts.patrickHand(
                 fontSize: 11,
-                color: AppColors.pencilGray,
+                color: AppColors.gray(context),
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -713,7 +724,7 @@ class _SketchHandDrawnProgressBar extends StatelessWidget {
                   style: GoogleFonts.patrickHand(
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.successDark,
+                    color: isDark ? AppColors.success : AppColors.successDark,
                   ),
                 ),
               ],
@@ -722,7 +733,7 @@ class _SketchHandDrawnProgressBar extends StatelessWidget {
               'Zirve: $maxScore LP',
               style: GoogleFonts.patrickHand(
                 fontSize: 11,
-                color: AppColors.pencilGray,
+                color: AppColors.gray(context),
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -738,6 +749,7 @@ class _WobblySketchProgressBarPainter extends CustomPainter {
   final double promotionMark;
   final Color fillColor;
   final Color strokeColor;
+  final Color barBackgroundColor;
   final Color markColor;
 
   _WobblySketchProgressBarPainter({
@@ -745,6 +757,7 @@ class _WobblySketchProgressBarPainter extends CustomPainter {
     required this.promotionMark,
     required this.fillColor,
     required this.strokeColor,
+    required this.barBackgroundColor,
     required this.markColor,
   });
 
@@ -764,13 +777,13 @@ class _WobblySketchProgressBarPainter extends CustomPainter {
         ..style = PaintingStyle.fill,
     );
 
-    // 2. Boş çubuk gövdesi (kağıt beyazı / hafif bej)
+    // 2. Boş çubuk gövdesi (kağıt beyazı / hafif bej veya koyu arduvaz)
     final mainRect = Rect.fromLTWH(0, 0, w, h);
     final mainPath = _buildWobblyRect(mainRect, wobbleSeed: 0.0);
     canvas.drawPath(
       mainPath,
       Paint()
-        ..color = AppColors.surfaceSecondaryLight
+        ..color = barBackgroundColor
         ..style = PaintingStyle.fill,
     );
 
@@ -869,6 +882,7 @@ class _WobblySketchProgressBarPainter extends CustomPainter {
       oldDelegate.promotionMark != promotionMark ||
       oldDelegate.fillColor != fillColor ||
       oldDelegate.strokeColor != strokeColor ||
+      oldDelegate.barBackgroundColor != barBackgroundColor ||
       oldDelegate.markColor != markColor;
 }
 
@@ -891,6 +905,10 @@ class _SketchHandDrawnNoteBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isLightBg = backgroundColor.computeLuminance() > 0.35;
+    final titleColor = isLightBg ? AppColors.inkBlack : AppColors.inkWhite;
+    final descColor = isLightBg ? const Color(0xFF44403C) : const Color(0xFFE2E8F0);
+
     return SketchCard(
       borderRadius: 10,
       borderWidth: 1.8,
@@ -914,7 +932,7 @@ class _SketchHandDrawnNoteBox extends StatelessWidget {
                   style: GoogleFonts.patrickHand(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.pencilBlack,
+                    color: titleColor,
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -923,7 +941,7 @@ class _SketchHandDrawnNoteBox extends StatelessWidget {
                   style: GoogleFonts.patrickHand(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.pencilGraphite,
+                    color: descColor,
                     height: 1.25,
                   ),
                 ),
@@ -951,17 +969,17 @@ class _SketchCountdownRow extends StatelessWidget {
       borderRadius: 11,
       borderWidth: 1.8,
       shadowOffset: const Offset(2.0, 2.0),
-      backgroundColor: AppColors.surfaceSecondaryLight,
+      backgroundColor: AppColors.surfaceSecondaryOf(context),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.hourglass_bottom_rounded,
                 size: 18,
-                color: AppColors.pencilBlack,
+                color: AppColors.pencil(context),
               ),
               const SizedBox(width: 6),
               Text(
@@ -969,7 +987,7 @@ class _SketchCountdownRow extends StatelessWidget {
                 style: GoogleFonts.patrickHand(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.pencilGraphite,
+                  color: AppColors.graphite(context),
                 ),
               ),
             ],
@@ -1001,6 +1019,11 @@ class _SketchZoneDivider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardBg = isPromotion
+        ? (isDark ? const Color(0xFF064E3B).withValues(alpha: 0.5) : const Color(0xFFDCFCE7))
+        : AppColors.surfaceOf(context);
+
     return Row(
       children: [
         Expanded(
@@ -1015,14 +1038,14 @@ class _SketchZoneDivider extends StatelessWidget {
           borderRadius: 8,
           borderWidth: 1.6,
           shadowOffset: const Offset(1.5, 1.5),
-          backgroundColor: isPromotion ? const Color(0xFFDCFCE7) : Colors.white,
+          backgroundColor: cardBg,
           borderColor: color,
           child: Text(
             label,
             style: GoogleFonts.patrickHand(
               fontSize: 12,
               fontWeight: FontWeight.w700,
-              color: color,
+              color: isPromotion && isDark ? AppColors.success : color,
               letterSpacing: 0.4,
             ),
           ),
@@ -1085,6 +1108,7 @@ class _SketchPlayerRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final rank = player.rank;
     final isUser = player.isUser;
     final isTop3 = rank <= 3;
@@ -1097,29 +1121,37 @@ class _SketchPlayerRow extends StatelessWidget {
     double borderWidth;
     Offset shadowOffset;
 
+    final basePencil = AppColors.pencil(context);
+
     if (isUser) {
-      cardBg = AppColors.surfaceSecondaryLight;
-      borderColor = AppColors.pencilBlack;
+      cardBg = isDark
+          ? AppColors.sunYellow.withValues(alpha: 0.22)
+          : AppColors.sunYellow.withValues(alpha: 0.28);
+      borderColor = isDark ? AppColors.sunYellow : basePencil;
       borderWidth = 2.4;
       shadowOffset = const Offset(3.0, 3.0);
     } else if (isTop3) {
-      cardBg = Colors.white;
-      borderColor = AppColors.pencilBlack;
+      cardBg = AppColors.surfaceOf(context);
+      borderColor = basePencil;
       borderWidth = 2.0;
       shadowOffset = const Offset(2.0, 2.0);
     } else if (isPromotion) {
-      cardBg = const Color(0xFFF0FDF4); // Çok hafif yeşil kağıt
-      borderColor = AppColors.pencilBlack.withValues(alpha: 0.5);
+      cardBg = isDark
+          ? const Color(0xFF064E3B).withValues(alpha: 0.28)
+          : const Color(0xFFF0FDF4); // Çok hafif yeşil kağıt
+      borderColor = basePencil.withValues(alpha: isDark ? 0.6 : 0.5);
       borderWidth = 1.6;
       shadowOffset = const Offset(1.5, 1.5);
     } else if (isRelegation) {
-      cardBg = const Color(0xFFFFF1F2); // Çok hafif kırmızımtırak kağıt
-      borderColor = AppColors.pencilBlack.withValues(alpha: 0.45);
+      cardBg = isDark
+          ? const Color(0xFF7F1D1D).withValues(alpha: 0.25)
+          : const Color(0xFFFFF1F2); // Çok hafif kırmızımtırak kağıt
+      borderColor = basePencil.withValues(alpha: isDark ? 0.55 : 0.45);
       borderWidth = 1.5;
       shadowOffset = const Offset(1.5, 1.5);
     } else {
-      cardBg = Colors.white;
-      borderColor = AppColors.pencilBlack.withValues(alpha: 0.4);
+      cardBg = AppColors.surfaceOf(context);
+      borderColor = basePencil.withValues(alpha: isDark ? 0.5 : 0.4);
       borderWidth = 1.4;
       shadowOffset = const Offset(1.5, 1.5);
     }
@@ -1138,7 +1170,7 @@ class _SketchPlayerRow extends StatelessWidget {
       child: Row(
         children: [
           // ─── 1. SIRA NUMARASI & DOODLE İKONU ────────────────────────
-          _buildRankWidget(rank),
+          _buildRankWidget(context, rank),
 
           const SizedBox(width: 8),
 
@@ -1154,8 +1186,8 @@ class _SketchPlayerRow extends StatelessWidget {
                         : rank == 2
                             ? const Color(0xFFCBD5E1)
                             : const Color(0xFFFED7AA))
-                    : AppColors.surfaceSecondaryLight,
-            lineColor: AppColors.pencilBlack,
+                    : AppColors.surfaceSecondaryOf(context),
+            lineColor: basePencil,
             lineWidth: 1.6,
             borderRadius: 7,
             child: Text(
@@ -1179,13 +1211,13 @@ class _SketchPlayerRow extends StatelessWidget {
                       fontWeight: isUser || isTop3
                           ? FontWeight.w700
                           : FontWeight.w600,
-                      color: AppColors.pencilBlack,
+                      color: AppColors.pencil(context),
                     ),
                   ),
                 ),
                 if (isUser) ...[
                   const SizedBox(width: 6),
-                  _SketchMiniBadge(
+                  const _SketchMiniBadge(
                     text: 'SİZ',
                     backgroundColor: AppColors.sunYellow,
                   ),
@@ -1204,11 +1236,9 @@ class _SketchPlayerRow extends StatelessWidget {
                 style: GoogleFonts.patrickHand(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
-                  color: isUser
-                      ? AppColors.pencilBlack
-                      : isTop3
-                          ? AppColors.pencilBlack
-                          : AppColors.pencilGraphite,
+                  color: (isUser || isTop3)
+                      ? AppColors.pencil(context)
+                      : AppColors.graphite(context),
                 ),
               ),
               if (isPromotion && !isTop3)
@@ -1217,7 +1247,7 @@ class _SketchPlayerRow extends StatelessWidget {
                   style: GoogleFonts.patrickHand(
                     fontSize: 10,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.successDark,
+                    color: isDark ? AppColors.success : AppColors.successDark,
                   ),
                 )
               else if (isRelegation)
@@ -1236,16 +1266,18 @@ class _SketchPlayerRow extends StatelessWidget {
     );
   }
 
-  Widget _buildRankWidget(int rank) {
+  Widget _buildRankWidget(BuildContext context, int rank) {
+    final pencilColor = AppColors.pencil(context);
+
     if (rank == 1) {
-      return const SizedBox(
+      return SizedBox(
         width: 32,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             SketchDoodleCrown(
               size: 16,
-              color: AppColors.pencilBlack,
+              color: pencilColor,
               fillColor: AppColors.sunYellow,
             ),
             Text(
@@ -1254,22 +1286,22 @@ class _SketchPlayerRow extends StatelessWidget {
                 fontFamily: 'PatrickHand',
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
-                color: AppColors.pencilBlack,
+                color: pencilColor,
               ),
             ),
           ],
         ),
       );
     } else if (rank == 2) {
-      return const SizedBox(
+      return SizedBox(
         width: 32,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             SketchDoodleTrophy(
               size: 16,
-              color: AppColors.pencilBlack,
-              fillColor: Color(0xFFCBD5E1),
+              color: pencilColor,
+              fillColor: const Color(0xFFCBD5E1),
             ),
             Text(
               '#2',
@@ -1277,22 +1309,22 @@ class _SketchPlayerRow extends StatelessWidget {
                 fontFamily: 'PatrickHand',
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
-                color: AppColors.pencilBlack,
+                color: pencilColor,
               ),
             ),
           ],
         ),
       );
     } else if (rank == 3) {
-      return const SizedBox(
+      return SizedBox(
         width: 32,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             SketchDoodleTrophy(
               size: 16,
-              color: AppColors.pencilBlack,
-              fillColor: Color(0xFFFED7AA),
+              color: pencilColor,
+              fillColor: const Color(0xFFFED7AA),
             ),
             Text(
               '#3',
@@ -1300,7 +1332,7 @@ class _SketchPlayerRow extends StatelessWidget {
                 fontFamily: 'PatrickHand',
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
-                color: AppColors.pencilBlack,
+                color: pencilColor,
               ),
             ),
           ],
@@ -1308,6 +1340,7 @@ class _SketchPlayerRow extends StatelessWidget {
       );
     }
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return SizedBox(
       width: 32,
       child: Center(
@@ -1317,10 +1350,10 @@ class _SketchPlayerRow extends StatelessWidget {
             fontSize: 14,
             fontWeight: FontWeight.w700,
             color: rank <= 10
-                ? AppColors.successDark
+                ? (isDark ? AppColors.success : AppColors.successDark)
                 : rank > 32
                     ? AppColors.error
-                    : AppColors.pencilGray,
+                    : AppColors.gray(context),
           ),
         ),
       ),
@@ -1354,6 +1387,7 @@ class LeagueProfileCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final league = ref.watch(leagueServiceProvider);
     final level = league.currentLevel;
     final zone = league.userZone;
@@ -1367,17 +1401,21 @@ class LeagueProfileCard extends ConsumerWidget {
     switch (zone) {
       case LeagueZone.promotion:
         zonePillText = '↑ YÜKSELME POTASINDA';
-        zonePillBg = const Color(0xFFDCFCE7);
-        zonePillColor = AppColors.successDark;
+        zonePillBg = isDark
+            ? const Color(0xFF064E3B).withValues(alpha: 0.45)
+            : const Color(0xFFDCFCE7);
+        zonePillColor = isDark ? AppColors.success : AppColors.successDark;
         break;
       case LeagueZone.safe:
         zonePillText = '— GÜVENLİ BÖLGE';
-        zonePillBg = AppColors.surfaceSecondaryLight;
-        zonePillColor = AppColors.pencilGraphite;
+        zonePillBg = AppColors.surfaceSecondaryOf(context);
+        zonePillColor = AppColors.graphite(context);
         break;
       case LeagueZone.relegation:
         zonePillText = '↓ DÜŞME TEHLİKESİ';
-        zonePillBg = AppColors.errorBgLight;
+        zonePillBg = isDark
+            ? const Color(0xFF7F1D1D).withValues(alpha: 0.45)
+            : AppColors.errorBgLight;
         zonePillColor = AppColors.error;
         break;
     }
@@ -1388,7 +1426,7 @@ class LeagueProfileCard extends ConsumerWidget {
       borderWidth: 2.4,
       borderRadius: 16,
       shadowOffset: const Offset(3.5, 3.5),
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.surfaceOf(context),
       padding: const EdgeInsets.all(15),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1400,7 +1438,7 @@ class LeagueProfileCard extends ConsumerWidget {
                 width: 48,
                 height: 48,
                 fillColor: AppColors.sunYellow,
-                lineColor: AppColors.pencilBlack,
+                lineColor: AppColors.pencil(context),
                 borderRadius: 8,
                 child: Text(
                   level.emoji,
@@ -1420,7 +1458,7 @@ class LeagueProfileCard extends ConsumerWidget {
                           style: GoogleFonts.patrickHand(
                             fontSize: 19,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.pencilBlack,
+                            color: AppColors.pencil(context),
                           ),
                         ),
                         SketchCard(
@@ -1449,7 +1487,7 @@ class LeagueProfileCard extends ConsumerWidget {
                       'Sıralaman: #$rank · $score LP',
                       style: GoogleFonts.patrickHand(
                         fontSize: 14,
-                        color: AppColors.pencilGraphite,
+                        color: AppColors.graphite(context),
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -1472,17 +1510,17 @@ class LeagueProfileCard extends ConsumerWidget {
             children: [
               Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.hourglass_bottom_rounded,
                     size: 14,
-                    color: AppColors.pencilGray,
+                    color: AppColors.gray(context),
                   ),
                   const SizedBox(width: 4),
                   Text(
                     '${leagueDaysRemaining()} kaldı',
                     style: GoogleFonts.patrickHand(
                       fontSize: 12,
-                      color: AppColors.pencilGray,
+                      color: AppColors.gray(context),
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -1493,7 +1531,7 @@ class LeagueProfileCard extends ConsumerWidget {
                   'İlk 10 → ${level.next!.displayName} Ligi',
                   style: GoogleFonts.patrickHand(
                     fontSize: 12,
-                    color: AppColors.pencilGray,
+                    color: AppColors.gray(context),
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -1520,16 +1558,24 @@ class _SketchMiniBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isLightBg = backgroundColor.computeLuminance() > 0.35;
+    final contentColor = isLightBg ? AppColors.inkBlack : AppColors.inkWhite;
+    final borderColor = isLightBg
+        ? AppColors.pencilBlack
+        : (isDark ? AppColors.pencilWhite.withValues(alpha: 0.5) : AppColors.pencilBlack);
+    final shadowColor = isDark ? Colors.black.withValues(alpha: 0.6) : AppColors.pencilBlack;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: BorderRadius.circular(5),
-        border: Border.all(color: AppColors.pencilBlack, width: 1.2),
-        boxShadow: const [
+        border: Border.all(color: borderColor, width: 1.2),
+        boxShadow: [
           BoxShadow(
-            color: AppColors.pencilBlack,
-            offset: Offset(1.5, 1.5),
+            color: shadowColor,
+            offset: const Offset(1.5, 1.5),
             blurRadius: 0,
           ),
         ],
@@ -1539,7 +1585,7 @@ class _SketchMiniBadge extends StatelessWidget {
         style: GoogleFonts.patrickHand(
           fontSize: 11,
           fontWeight: FontWeight.w700,
-          color: AppColors.pencilBlack,
+          color: contentColor,
         ),
       ),
     );
