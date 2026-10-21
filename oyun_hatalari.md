@@ -7,10 +7,8 @@ Rozet ve Kemerler:
 Rozetler ve kemer sistemi, profil kısmında çok kötü duruyor, oradan rozetlere ve kemerlere ayrı geçiş olacak. steamde ki gibi rozetler ekranı olabilir.
 
 Lig sistemi:
-duolingo lig sistemi tarzında ligler olacak. belirli dereceler üst lige çıkaca, belirli dereceler alt lige düşecek.
 
 Ana sayfa:
-
 
 Sıralama sayfası:
 
