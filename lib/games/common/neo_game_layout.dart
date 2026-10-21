@@ -67,11 +67,11 @@ class NeoGameLayout extends StatelessWidget {
                           decoration: BoxDecoration(
                             color: gameType.color,
                             borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: AppColors.pencilBlack, width: 2),
+                            border: Border.all(color: isDark ? Colors.white : AppColors.pencilBlack, width: 2),
                           ),
                           child: Text(
                             gameType.title,
-                            style: AppTextStyles.titleMedium(AppColors.pencilBlack),
+                            style: AppTextStyles.titleMedium(AppColors.onColor(gameType.color, context: context)),
                           ),
                         ),
                         const SizedBox(height: 2),

@@ -290,13 +290,14 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> with Widget
   }
 
   void _showHelpDialog() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: Colors.white,
+        backgroundColor: isDark ? AppColors.surfaceDark : Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(18),
-          side: const BorderSide(color: AppColors.pencilBlack, width: 2.5),
+          side: BorderSide(color: isDark ? Colors.white : AppColors.pencilBlack, width: 2.5),
         ),
         title: Row(
           children: [
@@ -305,7 +306,7 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> with Widget
             Text(
               'Kelime Tırmanışı: Nasıl Oynanır?',
               style: GoogleFonts.patrickHand(
-                color: AppColors.pencilBlack,
+                color: isDark ? Colors.white : AppColors.pencilBlack,
                 fontWeight: FontWeight.w700,
                 fontSize: 24,
               ),
@@ -320,18 +321,21 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> with Widget
               '1',
               'Aşağıdan Yukarı Tırman',
               'Oyun en alttaki başlangıç kelimesinden başlar ve yukarıya zirveye doğru tırmanır.',
+              isDark,
             ),
             const SizedBox(height: 8),
             _buildRuleCard(
               '2',
               'Sadece 1 Harf Değişir',
               'Her basamakta önceki kelimeden tam olarak 1 harf değişerek yeni kelime oluşur.',
+              isDark,
             ),
             const SizedBox(height: 8),
             _buildRuleCard(
               '3',
               'Eksik Harfe Dokun ve Yaz',
               'Ayrı bir kutu yok! Doğrudan basamaktaki sarı eksik harf kutusuna dokunup doğru harfi yaz.',
+              isDark,
             ),
           ],
         ),
@@ -361,13 +365,13 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> with Widget
     );
   }
 
-  Widget _buildRuleCard(String number, String title, String desc) {
+  Widget _buildRuleCard(String number, String title, String desc, bool isDark) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
-        color: AppColors.backgroundLight,
+        color: isDark ? AppColors.surfaceSecondaryDark : AppColors.backgroundLight,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.pencilBlack, width: 1.8),
+        border: Border.all(color: isDark ? Colors.white38 : AppColors.pencilBlack, width: 1.8),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -379,13 +383,13 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> with Widget
             decoration: BoxDecoration(
               color: AppColors.skyBlue,
               shape: BoxShape.circle,
-              border: Border.all(color: AppColors.pencilBlack, width: 1.5),
+              border: Border.all(color: isDark ? Colors.white : AppColors.pencilBlack, width: 1.5),
             ),
             child: Text(
               number,
               style: GoogleFonts.patrickHand(
                 fontWeight: FontWeight.w700,
-                color: AppColors.pencilBlack,
+                color: AppColors.inkBlack,
                 fontSize: 14,
               ),
             ),
@@ -400,14 +404,14 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> with Widget
                   style: GoogleFonts.patrickHand(
                     fontWeight: FontWeight.w700,
                     fontSize: 16,
-                    color: AppColors.pencilBlack,
+                    color: isDark ? Colors.white : AppColors.pencilBlack,
                   ),
                 ),
                 Text(
                   desc,
                   style: GoogleFonts.patrickHand(
                     fontSize: 14,
-                    color: AppColors.pencilGraphite,
+                    color: isDark ? AppColors.pencilLightDark : AppColors.pencilGraphite,
                     height: 1.15,
                   ),
                 ),
@@ -421,8 +425,10 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> with Widget
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
+      backgroundColor: isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
       body: SketchPaperBackground(
         child: SafeArea(
           child: Column(
@@ -438,7 +444,7 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> with Widget
                       borderRadius: 10,
                       shadowOffset: const Offset(2.5, 2.5),
                       onTap: () => Navigator.pop(context),
-                      child: const Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: AppColors.pencilBlack),
+                      child: Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: isDark ? Colors.white : AppColors.pencilBlack),
                     ),
 
                     SketchCard(
@@ -448,7 +454,7 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> with Widget
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.stairs_rounded, size: 18, color: AppColors.pencilBlack),
+                          Icon(Icons.stairs_rounded, size: 18, color: isDark ? Colors.white : AppColors.pencilBlack),
                           const SizedBox(width: 6),
                           Column(
                             mainAxisSize: MainAxisSize.min,
@@ -458,23 +464,23 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> with Widget
                                 style: GoogleFonts.patrickHand(
                                   fontSize: 17,
                                   fontWeight: FontWeight.w700,
-                                  color: AppColors.pencilBlack,
+                                  color: isDark ? Colors.white : AppColors.pencilBlack,
                                   height: 1.1,
                                 ),
                               ),
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
                                 decoration: BoxDecoration(
-                                  color: AppColors.skyBlue.withValues(alpha: 0.35),
+                                  color: AppColors.skyBlue.withValues(alpha: isDark ? 0.25 : 0.35),
                                   borderRadius: BorderRadius.circular(6),
-                                  border: Border.all(color: AppColors.pencilBlack, width: 1.2),
+                                  border: Border.all(color: isDark ? Colors.white38 : AppColors.pencilBlack, width: 1.2),
                                 ),
                                 child: Text(
                                   '🧗 Aşağıdan Yukarı Zirveye',
                                   style: GoogleFonts.patrickHand(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w700,
-                                    color: AppColors.pencilBlack,
+                                    color: isDark ? Colors.white : AppColors.pencilBlack,
                                   ),
                                 ),
                               ),
@@ -494,7 +500,7 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> with Widget
                           shadowOffset: const Offset(2, 2),
                           child: Row(
                             children: [
-                              const Icon(Icons.timer_outlined, size: 15, color: AppColors.pencilBlack),
+                              Icon(Icons.timer_outlined, size: 15, color: isDark ? Colors.white : AppColors.pencilBlack),
                               const SizedBox(width: 4),
                               SizedBox(
                                 width: 50,
@@ -504,7 +510,7 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> with Widget
                                     style: GoogleFonts.patrickHand(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w700,
-                                      color: AppColors.pencilBlack,
+                                      color: isDark ? Colors.white : AppColors.pencilBlack,
                                     ),
                                   ),
                                 ),
@@ -544,7 +550,7 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> with Widget
                           Icon(
                             _isSolved ? Icons.emoji_events_rounded : Icons.hiking_rounded,
                             size: 20,
-                            color: _isSolved ? AppColors.sunYellow : AppColors.pencilBlack,
+                            color: _isSolved ? AppColors.sunYellow : (isDark ? Colors.white : AppColors.pencilBlack),
                           ),
                           const SizedBox(width: 6),
                           Text(
@@ -554,7 +560,7 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> with Widget
                             style: GoogleFonts.patrickHand(
                               fontSize: 18,
                               fontWeight: FontWeight.w700,
-                              color: AppColors.pencilBlack,
+                              color: isDark ? Colors.white : AppColors.pencilBlack,
                             ),
                           ),
                         ],
@@ -570,7 +576,7 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> with Widget
                           } else if (isCurrent) {
                             bgColor = AppColors.sunYellow;
                           } else {
-                            bgColor = AppColors.surfaceSecondaryLight;
+                            bgColor = isDark ? AppColors.surfaceSecondaryDark : AppColors.surfaceSecondaryLight;
                           }
 
                           return AnimatedContainer(
@@ -582,14 +588,14 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> with Widget
                               color: bgColor,
                               shape: BoxShape.circle,
                               border: Border.all(
-                                color: AppColors.pencilBlack,
+                                color: isDark ? (isCompleted || isCurrent ? Colors.white : Colors.white24) : AppColors.pencilBlack,
                                 width: isCompleted || isCurrent ? 2.0 : 1.2,
                               ),
                               boxShadow: isCompleted || isCurrent
-                                  ? const [
+                                  ? [
                                       BoxShadow(
-                                        color: AppColors.pencilBlack,
-                                        offset: Offset(1, 1),
+                                        color: isDark ? Colors.black.withValues(alpha: 0.5) : AppColors.pencilBlack,
+                                        offset: const Offset(1, 1),
                                         blurRadius: 0,
                                       ),
                                     ]
@@ -601,7 +607,7 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> with Widget
                                 style: GoogleFonts.patrickHand(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w700,
-                                  color: isCompleted || isCurrent ? AppColors.pencilBlack : AppColors.pencilLight,
+                                  color: isCompleted || isCurrent ? AppColors.inkBlack : (isDark ? AppColors.pencilLightDark : AppColors.pencilLight),
                                 ),
                               ),
                             ),
@@ -633,8 +639,8 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> with Widget
                           children: [
                             // 1. En Üst Basamaktan Başlayarak Geriye Doğru Sıralama (Zirve En Üstte!)
                             for (int i = _level.steps.length - 1; i >= 0; i--) ...[
-                              _buildStepTile(i),
-                              _buildLadderConnector(),
+                              _buildStepTile(i, isDark),
+                              _buildLadderConnector(isDark),
                             ],
 
                             // En Altta: 🚩 BAŞLANGIÇ KELİMESİ KARTI
@@ -646,6 +652,7 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> with Widget
                               highlightIndex: -1,
                               isStartWord: true,
                               stepIndex: -1,
+                              isDark: isDark,
                             ),
                           ],
                         ),
@@ -661,13 +668,13 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> with Widget
     );
   }
 
-  Widget _buildStepTile(int stepIdx) {
+  Widget _buildStepTile(int stepIdx, bool isDark) {
     final isCompleted = _userWords[stepIdx].isNotEmpty;
     final isCurrent = stepIdx == _currentStepIndex && !_isSolved;
     final step = _level.steps[stepIdx];
 
     if (isCurrent) {
-      return _buildActiveLadderTile(stepIdx);
+      return _buildActiveLadderTile(stepIdx, isDark);
     }
 
     return _buildWordTile(
@@ -678,15 +685,16 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> with Widget
       highlightIndex: -1,
       isStartWord: false,
       stepIndex: stepIdx,
+      isDark: isDark,
     );
   }
 
-  Widget _buildActiveLadderTile(int stepIdx) {
+  Widget _buildActiveLadderTile(int stepIdx, bool isDark) {
     final step = _level.steps[stepIdx];
     final prevWord = _getPreviousWord();
 
     return SketchCard(
-      backgroundColor: Colors.white,
+      backgroundColor: isDark ? AppColors.surfaceDark : Colors.white,
       borderRadius: 14,
       borderWidth: 2.4,
       shadowOffset: const Offset(3.5, 3.5),
@@ -708,7 +716,7 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> with Widget
                     style: GoogleFonts.patrickHand(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.pencilBlack,
+                      color: isDark ? Colors.white : AppColors.pencilBlack,
                     ),
                   ),
                 ],
@@ -724,7 +732,7 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> with Widget
                   style: GoogleFonts.patrickHand(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.pencilBlack,
+                    color: AppColors.inkBlack,
                   ),
                 ),
               ),
@@ -736,9 +744,9 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> with Widget
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: AppColors.backgroundLight,
+              color: isDark ? AppColors.surfaceSecondaryDark : AppColors.backgroundLight,
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: AppColors.pencilBlack, width: 1.5),
+              border: Border.all(color: isDark ? Colors.white38 : AppColors.pencilBlack, width: 1.5),
             ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -751,7 +759,7 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> with Widget
                     style: GoogleFonts.patrickHand(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.pencilBlack,
+                      color: isDark ? Colors.white : AppColors.pencilBlack,
                       height: 1.2,
                     ),
                   ),
@@ -779,13 +787,13 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> with Widget
                       color: _currentInputChar.isNotEmpty ? AppColors.sunYellow : const Color(0xFFFEF3C7),
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
-                        color: AppColors.pencilBlack,
+                        color: isDark ? Colors.white : AppColors.pencilBlack,
                         width: 2.2,
                       ),
-                      boxShadow: const [
+                      boxShadow: [
                         BoxShadow(
-                          color: AppColors.pencilBlack,
-                          offset: Offset(2.0, 2.0),
+                          color: isDark ? Colors.black.withValues(alpha: 0.5) : AppColors.pencilBlack,
+                          offset: const Offset(2.0, 2.0),
                           blurRadius: 0,
                         ),
                       ],
@@ -801,9 +809,9 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> with Widget
                         style: GoogleFonts.patrickHand(
                           fontSize: 22,
                           fontWeight: FontWeight.w700,
-                          color: AppColors.pencilBlack,
+                          color: AppColors.inkBlack,
                         ),
-                        cursorColor: AppColors.pencilBlack,
+                        cursorColor: AppColors.inkBlack,
                         decoration: InputDecoration(
                           border: InputBorder.none,
                           counterText: '',
@@ -828,16 +836,16 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> with Widget
                   width: 34,
                   height: 38,
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: isDark ? AppColors.surfaceSecondaryDark : Colors.white,
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
-                      color: AppColors.pencilBlack,
+                      color: isDark ? Colors.white38 : AppColors.pencilBlack,
                       width: 1.5,
                     ),
-                    boxShadow: const [
+                    boxShadow: [
                       BoxShadow(
-                        color: AppColors.pencilBlack,
-                        offset: Offset(1.0, 1.0),
+                        color: isDark ? Colors.black.withValues(alpha: 0.5) : AppColors.pencilBlack,
+                        offset: const Offset(1.0, 1.0),
                         blurRadius: 0,
                       ),
                     ],
@@ -848,7 +856,7 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> with Widget
                       style: GoogleFonts.patrickHand(
                         fontSize: 19,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.pencilBlack,
+                        color: isDark ? Colors.white : AppColors.pencilBlack,
                       ),
                     ),
                   ),
@@ -863,7 +871,7 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> with Widget
             children: [
               if (_currentInputChar.isNotEmpty) ...[
                 SketchCard(
-                  backgroundColor: AppColors.surfaceSecondaryLight,
+                  backgroundColor: isDark ? AppColors.surfaceSecondaryDark : AppColors.surfaceSecondaryLight,
                   borderRadius: 10,
                   borderWidth: 1.8,
                   shadowOffset: const Offset(1.5, 1.5),
@@ -872,7 +880,7 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> with Widget
                     _inputController.clear();
                     _requestKeyboardFocus();
                   },
-                  child: const Icon(Icons.backspace_outlined, size: 18, color: AppColors.pencilBlack),
+                  child: Icon(Icons.backspace_outlined, size: 18, color: isDark ? Colors.white : AppColors.pencilBlack),
                 ),
                 const SizedBox(width: 8),
               ],
@@ -880,7 +888,7 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> with Widget
                 child: SketchCard(
                   backgroundColor: _currentInputChar.isNotEmpty
                       ? AppColors.sunYellow
-                      : AppColors.surfaceSecondaryLight,
+                      : (isDark ? AppColors.surfaceSecondaryDark : AppColors.surfaceSecondaryLight),
                   borderRadius: 10,
                   shadowOffset: _currentInputChar.isNotEmpty ? const Offset(2.0, 2.0) : Offset.zero,
                   borderWidth: 1.8,
@@ -894,7 +902,7 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> with Widget
                       Icon(
                         _currentInputChar.isNotEmpty ? Icons.arrow_upward_rounded : Icons.keyboard_rounded,
                         size: 18,
-                        color: _currentInputChar.isNotEmpty ? AppColors.pencilBlack : AppColors.pencilGraphite,
+                        color: _currentInputChar.isNotEmpty ? AppColors.inkBlack : (isDark ? AppColors.pencilLightDark : AppColors.pencilGraphite),
                       ),
                       const SizedBox(width: 6),
                       Text(
@@ -904,7 +912,7 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> with Widget
                         style: GoogleFonts.patrickHand(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
-                          color: _currentInputChar.isNotEmpty ? AppColors.pencilBlack : AppColors.pencilGraphite,
+                          color: _currentInputChar.isNotEmpty ? AppColors.inkBlack : (isDark ? AppColors.pencilLightDark : AppColors.pencilGraphite),
                         ),
                       ),
                     ],
@@ -918,7 +926,7 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> with Widget
           if (_errorMsg != null) ...[
             const SizedBox(height: 8),
             SketchCard(
-              backgroundColor: AppColors.errorBgLight,
+              backgroundColor: isDark ? AppColors.errorBgDark : AppColors.errorBgLight,
               borderRadius: 8,
               shadowOffset: const Offset(1.5, 1.5),
               borderWidth: 1.6,
@@ -946,7 +954,7 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> with Widget
     );
   }
 
-  Widget _buildLadderConnector() {
+  Widget _buildLadderConnector(bool isDark) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 3),
       child: Row(
@@ -955,15 +963,15 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> with Widget
           Container(
             width: 2,
             height: 10,
-            color: AppColors.pencilBlack,
+            color: isDark ? Colors.white38 : AppColors.pencilBlack,
           ),
           const SizedBox(width: 8),
-          const Icon(Icons.arrow_upward_rounded, size: 16, color: AppColors.pencilBlack),
+          Icon(Icons.arrow_upward_rounded, size: 16, color: isDark ? Colors.white70 : AppColors.pencilBlack),
           const SizedBox(width: 8),
           Container(
             width: 2,
             height: 10,
-            color: AppColors.pencilBlack,
+            color: isDark ? Colors.white38 : AppColors.pencilBlack,
           ),
         ],
       ),
@@ -978,16 +986,17 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> with Widget
     required int highlightIndex,
     required bool isStartWord,
     required int stepIndex,
+    required bool isDark,
   }) {
     Color cardBg;
     if (isStartWord) {
-      cardBg = const Color(0xFFFBF8F0);
+      cardBg = isDark ? AppColors.surfaceSecondaryDark : const Color(0xFFFBF8F0);
     } else if (isCompleted) {
-      cardBg = const Color(0xFFECFDF5);
+      cardBg = isDark ? const Color(0xFF064E3B).withValues(alpha: 0.35) : const Color(0xFFECFDF5);
     } else if (isCurrent) {
-      cardBg = Colors.white;
+      cardBg = isDark ? AppColors.surfaceDark : Colors.white;
     } else {
-      cardBg = AppColors.surfaceSecondaryLight.withValues(alpha: 0.40);
+      cardBg = isDark ? AppColors.surfaceSecondaryDark.withValues(alpha: 0.3) : AppColors.surfaceSecondaryLight.withValues(alpha: 0.40);
     }
 
     final prevWord = isCurrent ? _getPreviousWord() : '';
@@ -1015,7 +1024,7 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> with Widget
                   const Icon(Icons.check_circle_rounded, size: 18, color: Color(0xFF059669)),
                   const SizedBox(width: 6),
                 ] else if (isCurrent) ...[
-                  const Icon(Icons.play_arrow_rounded, size: 18, color: AppColors.pencilBlack),
+                  Icon(Icons.play_arrow_rounded, size: 18, color: isDark ? Colors.white : AppColors.pencilBlack),
                   const SizedBox(width: 4),
                 ],
                 Text(
@@ -1023,7 +1032,7 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> with Widget
                   style: GoogleFonts.patrickHand(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
-                    color: isCurrent || isCompleted || isStartWord ? AppColors.pencilBlack : AppColors.pencilLight,
+                    color: isCurrent || isCompleted || isStartWord ? (isDark ? Colors.white : AppColors.pencilBlack) : (isDark ? AppColors.pencilLightDark : AppColors.pencilLight),
                   ),
                 ),
               ],
@@ -1049,9 +1058,9 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> with Widget
                 if (isChangedSlot && isCurrent) {
                   boxBg = AppColors.sunYellow;
                 } else if (isCompleted || isStartWord) {
-                  boxBg = Colors.white;
+                  boxBg = isDark ? AppColors.surfaceDark : Colors.white;
                 } else {
-                  boxBg = AppColors.surfaceSecondaryLight;
+                  boxBg = isDark ? AppColors.surfaceSecondaryDark : AppColors.surfaceSecondaryLight;
                 }
 
                 // Tamamen El Çizimi SketchCard Harf Kutuları!
@@ -1078,9 +1087,9 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> with Widget
                             style: GoogleFonts.patrickHand(
                               fontSize: 22,
                               fontWeight: FontWeight.w700,
-                              color: isChangedSlot || isCompleted || isStartWord
-                                  ? AppColors.pencilBlack
-                                  : AppColors.pencilLight,
+                              color: isChangedSlot && isCurrent
+                                  ? AppColors.inkBlack
+                                  : (isCompleted || isStartWord ? (isDark ? Colors.white : AppColors.pencilBlack) : (isDark ? AppColors.pencilLightDark : AppColors.pencilLight)),
                             ),
                           ),
                         ),

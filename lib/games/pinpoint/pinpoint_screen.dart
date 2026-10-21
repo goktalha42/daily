@@ -270,13 +270,14 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> with WidgetsBin
   }
 
   void _showHelpDialog() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: Colors.white,
+        backgroundColor: isDark ? AppColors.surfaceDark : Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(18),
-          side: const BorderSide(color: AppColors.pencilBlack, width: 2.5),
+          side: BorderSide(color: isDark ? Colors.white : AppColors.pencilBlack, width: 2.5),
         ),
         title: Row(
           children: [
@@ -285,7 +286,7 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> with WidgetsBin
             Text(
               'Kelime İzleri: Nasıl Oynanır?',
               style: GoogleFonts.patrickHand(
-                color: AppColors.pencilBlack,
+                color: isDark ? Colors.white : AppColors.pencilBlack,
                 fontWeight: FontWeight.w700,
                 fontSize: 24,
               ),
@@ -300,18 +301,21 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> with WidgetsBin
               '1',
               'Ortak Kavramı Bul',
               'Açılan ipuçları tek bir gizli anahtar kelimeye veya kavrama işaret eder.',
+              isDark,
             ),
             const SizedBox(height: 8),
             _buildRuleCard(
               '2',
               'Az İpucu = Yüksek Puan',
               'Ne kadar az ipucuyla doğru kelimeyi tahmin edersen o kadar çok puan kazanırsın!',
+              isDark,
             ),
             const SizedBox(height: 8),
             _buildRuleCard(
               '3',
               'Doğrudan Kutulara Yaz',
               'Ayrı bir yazı kutusu arama, doğrudan kelime kutularına dokunup tahminini yaz!',
+              isDark,
             ),
           ],
         ),
@@ -341,13 +345,13 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> with WidgetsBin
     );
   }
 
-  Widget _buildRuleCard(String number, String title, String desc) {
+  Widget _buildRuleCard(String number, String title, String desc, bool isDark) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
-        color: AppColors.backgroundLight,
+        color: isDark ? AppColors.surfaceSecondaryDark : AppColors.backgroundLight,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.pencilBlack, width: 1.8),
+        border: Border.all(color: isDark ? Colors.white38 : AppColors.pencilBlack, width: 1.8),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -359,13 +363,13 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> with WidgetsBin
             decoration: BoxDecoration(
               color: AppColors.skyBlue,
               shape: BoxShape.circle,
-              border: Border.all(color: AppColors.pencilBlack, width: 1.5),
+              border: Border.all(color: isDark ? Colors.white : AppColors.pencilBlack, width: 1.5),
             ),
             child: Text(
               number,
               style: GoogleFonts.patrickHand(
                 fontWeight: FontWeight.w700,
-                color: AppColors.pencilBlack,
+                color: AppColors.inkBlack,
                 fontSize: 14,
               ),
             ),
@@ -380,14 +384,14 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> with WidgetsBin
                   style: GoogleFonts.patrickHand(
                     fontWeight: FontWeight.w700,
                     fontSize: 16,
-                    color: AppColors.pencilBlack,
+                    color: isDark ? Colors.white : AppColors.pencilBlack,
                   ),
                 ),
                 Text(
                   desc,
                   style: GoogleFonts.patrickHand(
                     fontSize: 14,
-                    color: AppColors.pencilGraphite,
+                    color: isDark ? AppColors.pencilLightDark : AppColors.pencilGraphite,
                     height: 1.15,
                   ),
                 ),
@@ -401,10 +405,11 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> with WidgetsBin
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final targetLength = _level.targetWord.length;
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
+      backgroundColor: isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
       body: SketchPaperBackground(
         child: SafeArea(
           child: Column(
@@ -421,7 +426,7 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> with WidgetsBin
                       borderRadius: 10,
                       shadowOffset: const Offset(2.5, 2.5),
                       onTap: () => Navigator.pop(context),
-                      child: const Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: AppColors.pencilBlack),
+                      child: Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: isDark ? Colors.white : AppColors.pencilBlack),
                     ),
 
                     // Oyun Başlığı ve Rozet
@@ -432,7 +437,7 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> with WidgetsBin
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.psychology_alt_rounded, size: 18, color: AppColors.pencilBlack),
+                          Icon(Icons.psychology_alt_rounded, size: 18, color: isDark ? Colors.white : AppColors.pencilBlack),
                           const SizedBox(width: 6),
                           Column(
                             mainAxisSize: MainAxisSize.min,
@@ -442,23 +447,23 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> with WidgetsBin
                                 style: GoogleFonts.patrickHand(
                                   fontSize: 17,
                                   fontWeight: FontWeight.w700,
-                                  color: AppColors.pencilBlack,
+                                  color: isDark ? Colors.white : AppColors.pencilBlack,
                                   height: 1.1,
                                 ),
                               ),
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
                                 decoration: BoxDecoration(
-                                  color: AppColors.sunYellow.withValues(alpha: 0.35),
+                                  color: AppColors.sunYellow.withValues(alpha: isDark ? 0.25 : 0.35),
                                   borderRadius: BorderRadius.circular(6),
-                                  border: Border.all(color: AppColors.pencilBlack, width: 1.2),
+                                  border: Border.all(color: isDark ? Colors.white38 : AppColors.pencilBlack, width: 1.2),
                                 ),
                                 child: Text(
                                   '🔍 5 İpucu Tek Anlam',
                                   style: GoogleFonts.patrickHand(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w700,
-                                    color: AppColors.pencilBlack,
+                                    color: isDark ? Colors.white : AppColors.pencilBlack,
                                   ),
                                 ),
                               ),
@@ -478,7 +483,7 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> with WidgetsBin
                           shadowOffset: const Offset(2, 2),
                           child: Row(
                             children: [
-                              const Icon(Icons.timer_outlined, size: 15, color: AppColors.pencilBlack),
+                              Icon(Icons.timer_outlined, size: 15, color: isDark ? Colors.white : AppColors.pencilBlack),
                               const SizedBox(width: 4),
                               SizedBox(
                                 width: 50,
@@ -488,7 +493,7 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> with WidgetsBin
                                     style: GoogleFonts.patrickHand(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w700,
-                                      color: AppColors.pencilBlack,
+                                      color: isDark ? Colors.white : AppColors.pencilBlack,
                                     ),
                                   ),
                                 ),
@@ -532,7 +537,7 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> with WidgetsBin
                             style: GoogleFonts.patrickHand(
                               fontSize: 18,
                               fontWeight: FontWeight.w700,
-                              color: AppColors.pencilBlack,
+                              color: isDark ? Colors.white : AppColors.pencilBlack,
                             ),
                           ),
                         ],
@@ -548,17 +553,17 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> with WidgetsBin
                             width: 24,
                             height: 24,
                             decoration: BoxDecoration(
-                              color: isRevealed ? color : AppColors.surfaceSecondaryLight,
+                              color: isRevealed ? color : (isDark ? AppColors.surfaceSecondaryDark : AppColors.surfaceSecondaryLight),
                               shape: BoxShape.circle,
                               border: Border.all(
-                                color: AppColors.pencilBlack,
+                                color: isDark ? (isRevealed ? Colors.white : Colors.white24) : AppColors.pencilBlack,
                                 width: isRevealed ? 2.0 : 1.2,
                               ),
                               boxShadow: isRevealed
-                                  ? const [
+                                  ? [
                                       BoxShadow(
-                                        color: AppColors.pencilBlack,
-                                        offset: Offset(1, 1),
+                                        color: isDark ? Colors.black.withValues(alpha: 0.5) : AppColors.pencilBlack,
+                                        offset: const Offset(1, 1),
                                         blurRadius: 0,
                                       ),
                                     ]
@@ -570,7 +575,7 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> with WidgetsBin
                                 style: GoogleFonts.patrickHand(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w700,
-                                  color: isRevealed ? AppColors.pencilBlack : AppColors.pencilLight,
+                                  color: isRevealed ? AppColors.onColor(color, context: context) : (isDark ? AppColors.pencilLightDark : AppColors.pencilLight),
                                 ),
                               ),
                             ),
@@ -600,7 +605,7 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> with WidgetsBin
                         child: Column(
                           children: [
                             for (int i = 0; i < _level.clues.length; i++) ...[
-                              _buildClueItem(i),
+                              _buildClueItem(i, isDark),
                               if (i < _level.clues.length - 1) const SizedBox(height: 8),
                             ],
                             if (_revealedClues < _level.clues.length && !_isSolved) ...[
@@ -615,14 +620,14 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> with WidgetsBin
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    const Icon(Icons.add_circle_outline_rounded, size: 18, color: AppColors.pencilBlack),
+                                    const Icon(Icons.add_circle_outline_rounded, size: 18, color: AppColors.inkBlack),
                                     const SizedBox(width: 6),
                                     Text(
                                       'Sonraki İpucunu Aç (${_level.clues.length - _revealedClues} kaldı)',
                                       style: GoogleFonts.patrickHand(
                                         fontSize: 16,
                                         fontWeight: FontWeight.w700,
-                                        color: AppColors.pencilBlack,
+                                        color: AppColors.inkBlack,
                                       ),
                                     ),
                                   ],
@@ -636,7 +641,6 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> with WidgetsBin
                       const SizedBox(height: 14),
 
                       // 4. HEDEF KELİME KUTULARI (Kullanıcı Doğrudan Buraya Yazar!)
-                      // Arka planda gizli input focus'u tutar, kutulara dokunulduğunda klavye açılır
                       GestureDetector(
                         onTap: () {
                           if (!_isSolved) {
@@ -644,7 +648,7 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> with WidgetsBin
                           }
                         },
                         child: SketchCard(
-                          backgroundColor: Colors.white,
+                          backgroundColor: isDark ? AppColors.surfaceDark : Colors.white,
                           borderRadius: 14,
                           shadowOffset: const Offset(3.5, 3.5),
                           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
@@ -658,7 +662,7 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> with WidgetsBin
                                       Icon(
                                         _isSolved ? Icons.celebration_rounded : Icons.edit_note_rounded,
                                         size: 18,
-                                        color: _isSolved ? const Color(0xFF059669) : AppColors.pencilGraphite,
+                                        color: _isSolved ? const Color(0xFF10B981) : (isDark ? Colors.white70 : AppColors.pencilGraphite),
                                       ),
                                       const SizedBox(width: 6),
                                       Text(
@@ -666,7 +670,7 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> with WidgetsBin
                                         style: GoogleFonts.patrickHand(
                                           fontSize: 16,
                                           fontWeight: FontWeight.w700,
-                                          color: _isSolved ? const Color(0xFF059669) : AppColors.pencilBlack,
+                                          color: _isSolved ? const Color(0xFF10B981) : (isDark ? Colors.white : AppColors.pencilBlack),
                                         ),
                                       ),
                                     ],
@@ -675,16 +679,16 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> with WidgetsBin
                                     Container(
                                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                                       decoration: BoxDecoration(
-                                        color: AppColors.skyBlue.withValues(alpha: 0.2),
+                                        color: AppColors.skyBlue.withValues(alpha: isDark ? 0.25 : 0.2),
                                         borderRadius: BorderRadius.circular(6),
-                                        border: Border.all(color: AppColors.pencilBlack, width: 1.2),
+                                        border: Border.all(color: isDark ? Colors.white38 : AppColors.pencilBlack, width: 1.2),
                                       ),
                                       child: Text(
                                         '${_currentInputText.length} / $targetLength',
                                         style: GoogleFonts.patrickHand(
                                           fontSize: 14,
                                           fontWeight: FontWeight.w700,
-                                          color: AppColors.pencilBlack,
+                                          color: isDark ? Colors.white : AppColors.pencilBlack,
                                         ),
                                       ),
                                     ),
@@ -712,11 +716,11 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> with WidgetsBin
                                     if (_isSolved) {
                                       boxBg = const Color(0xFF34D399); // Ferah pastel nane
                                     } else if (hasLetter) {
-                                      boxBg = AppColors.sunYellow.withValues(alpha: 0.3);
+                                      boxBg = AppColors.sunYellow.withValues(alpha: isDark ? 0.35 : 0.3);
                                     } else if (isCurrentCaret) {
-                                      boxBg = AppColors.skyBlue.withValues(alpha: 0.25);
+                                      boxBg = AppColors.skyBlue.withValues(alpha: isDark ? 0.35 : 0.25);
                                     } else {
-                                      boxBg = AppColors.backgroundLight;
+                                      boxBg = isDark ? AppColors.surfaceSecondaryDark : AppColors.backgroundLight;
                                     }
 
                                     return Padding(
@@ -738,7 +742,7 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> with WidgetsBin
                                               style: GoogleFonts.patrickHand(
                                                 fontSize: 28,
                                                 fontWeight: FontWeight.w700,
-                                                color: AppColors.pencilBlack,
+                                                color: _isSolved ? AppColors.inkBlack : (isDark ? Colors.white : AppColors.pencilBlack),
                                               ),
                                             ),
                                           ),
@@ -755,7 +759,7 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> with WidgetsBin
                                   'Harflere dokun ve doğrudan tahminini yaz',
                                   style: GoogleFonts.patrickHand(
                                     fontSize: 13,
-                                    color: AppColors.pencilLight,
+                                    color: isDark ? AppColors.pencilLightDark : AppColors.pencilLight,
                                   ),
                                 ),
                               ],
@@ -789,7 +793,7 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> with WidgetsBin
                         SketchCard(
                           backgroundColor: _currentInputText.isNotEmpty
                               ? AppColors.sunYellow
-                              : AppColors.surfaceSecondaryLight,
+                              : (isDark ? AppColors.surfaceSecondaryDark : AppColors.surfaceSecondaryLight),
                           borderRadius: 14,
                           shadowOffset: _currentInputText.isNotEmpty ? const Offset(3, 3) : Offset.zero,
                           borderWidth: 2.2,
@@ -801,7 +805,7 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> with WidgetsBin
                               Icon(
                                 Icons.check_circle_outline_rounded,
                                 size: 22,
-                                color: _currentInputText.isNotEmpty ? AppColors.pencilBlack : AppColors.pencilLight,
+                                color: _currentInputText.isNotEmpty ? AppColors.inkBlack : (isDark ? AppColors.pencilLightDark : AppColors.pencilLight),
                               ),
                               const SizedBox(width: 8),
                               Text(
@@ -809,7 +813,7 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> with WidgetsBin
                                 style: GoogleFonts.patrickHand(
                                   fontSize: 20,
                                   fontWeight: FontWeight.w700,
-                                  color: _currentInputText.isNotEmpty ? AppColors.pencilBlack : AppColors.pencilLight,
+                                  color: _currentInputText.isNotEmpty ? AppColors.inkBlack : (isDark ? AppColors.pencilLightDark : AppColors.pencilLight),
                                 ),
                               ),
                             ],
@@ -821,7 +825,7 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> with WidgetsBin
                       if (_errorMessage != null) ...[
                         const SizedBox(height: 10),
                         SketchCard(
-                          backgroundColor: AppColors.errorBgLight,
+                          backgroundColor: isDark ? AppColors.errorBgDark : AppColors.errorBgLight,
                           borderRadius: 10,
                           shadowOffset: const Offset(2, 2),
                           borderWidth: 1.8,
@@ -850,14 +854,14 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> with WidgetsBin
                         const SizedBox(height: 14),
                         Row(
                           children: [
-                            const Icon(Icons.edit_off_rounded, size: 16, color: AppColors.pencilGray),
+                            Icon(Icons.edit_off_rounded, size: 16, color: isDark ? AppColors.pencilLightDark : AppColors.pencilGray),
                             const SizedBox(width: 6),
                             Text(
                               'YANLIŞ KARALAMALAR:',
                               style: GoogleFonts.patrickHand(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w700,
-                                color: AppColors.pencilGray,
+                                color: isDark ? AppColors.pencilLightDark : AppColors.pencilGray,
                               ),
                             ),
                           ],
@@ -868,7 +872,7 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> with WidgetsBin
                           runSpacing: 8,
                           children: _wrongGuesses.map((guess) {
                             return SketchCard(
-                              backgroundColor: Colors.white,
+                              backgroundColor: isDark ? AppColors.surfaceDark : Colors.white,
                               borderRadius: 8,
                               shadowOffset: const Offset(1.5, 1.5),
                               borderWidth: 1.5,
@@ -878,7 +882,7 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> with WidgetsBin
                                 style: GoogleFonts.patrickHand(
                                   fontSize: 15,
                                   fontWeight: FontWeight.w700,
-                                  color: AppColors.pencilGray,
+                                  color: isDark ? AppColors.pencilLightDark : AppColors.pencilGray,
                                   decoration: TextDecoration.lineThrough,
                                   decorationColor: AppColors.error,
                                   decorationThickness: 2.5,
@@ -901,13 +905,15 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> with WidgetsBin
     );
   }
 
-  Widget _buildClueItem(int index) {
+  Widget _buildClueItem(int index, bool isDark) {
     final isRevealed = index < _revealedClues;
     final clueText = _level.clues[index];
     final badgeColor = _clueBadgeColors[index % _clueBadgeColors.length];
 
     return SketchCard(
-      backgroundColor: isRevealed ? Colors.white : AppColors.surfaceSecondaryLight.withValues(alpha: 0.5),
+      backgroundColor: isRevealed
+          ? (isDark ? AppColors.surfaceDark : Colors.white)
+          : (isDark ? AppColors.surfaceSecondaryDark.withValues(alpha: 0.4) : AppColors.surfaceSecondaryLight.withValues(alpha: 0.5)),
       borderRadius: 12,
       shadowOffset: isRevealed ? const Offset(2.2, 2.2) : Offset.zero,
       borderWidth: isRevealed ? 2.0 : 1.2,
@@ -920,17 +926,17 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> with WidgetsBin
             height: 28,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: isRevealed ? badgeColor : AppColors.surfaceSecondaryLight,
+              color: isRevealed ? badgeColor : (isDark ? AppColors.surfaceSecondaryDark : AppColors.surfaceSecondaryLight),
               shape: BoxShape.circle,
               border: Border.all(
-                color: AppColors.pencilBlack,
+                color: isDark ? (isRevealed ? Colors.white : Colors.white24) : AppColors.pencilBlack,
                 width: 1.8,
               ),
               boxShadow: isRevealed
-                  ? const [
+                  ? [
                       BoxShadow(
-                        color: AppColors.pencilBlack,
-                        offset: Offset(1, 1),
+                        color: isDark ? Colors.black.withValues(alpha: 0.5) : AppColors.pencilBlack,
+                        offset: const Offset(1, 1),
                         blurRadius: 0,
                       ),
                     ]
@@ -941,7 +947,7 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> with WidgetsBin
               style: GoogleFonts.patrickHand(
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
-                color: isRevealed ? AppColors.pencilBlack : AppColors.pencilLight,
+                color: isRevealed ? AppColors.onColor(badgeColor, context: context) : (isDark ? AppColors.pencilLightDark : AppColors.pencilLight),
               ),
             ),
           ),
@@ -953,7 +959,7 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> with WidgetsBin
               style: GoogleFonts.patrickHand(
                 fontSize: 19,
                 fontWeight: isRevealed ? FontWeight.w700 : FontWeight.w600,
-                color: isRevealed ? AppColors.pencilBlack : AppColors.pencilLight,
+                color: isRevealed ? (isDark ? Colors.white : AppColors.pencilBlack) : (isDark ? AppColors.pencilLightDark : AppColors.pencilLight),
                 letterSpacing: isRevealed ? 0.3 : 0.0,
               ),
             ),

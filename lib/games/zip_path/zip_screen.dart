@@ -300,13 +300,14 @@ class _ZipScreenState extends ConsumerState<ZipScreen> with WidgetsBindingObserv
   }
 
   void _showHelpDialog() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: Colors.white,
+        backgroundColor: isDark ? AppColors.surfaceDark : Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(18),
-          side: const BorderSide(color: AppColors.pencilBlack, width: 2.5),
+          side: BorderSide(color: isDark ? Colors.white : AppColors.pencilBlack, width: 2.5),
         ),
         title: Row(
           children: [
@@ -315,7 +316,7 @@ class _ZipScreenState extends ConsumerState<ZipScreen> with WidgetsBindingObserv
             Text(
               'Sayı Yolu: Nasıl Oynanır?',
               style: GoogleFonts.patrickHand(
-                color: AppColors.pencilBlack,
+                color: isDark ? Colors.white : AppColors.pencilBlack,
                 fontWeight: FontWeight.w700,
                 fontSize: 24,
               ),
@@ -330,30 +331,35 @@ class _ZipScreenState extends ConsumerState<ZipScreen> with WidgetsBindingObserv
               '1',
               '1 Numaradan Başla',
               'Yol 1 numaralı başlangıç rozetinden başlamalıdır.',
+              isDark,
             ),
             const SizedBox(height: 8),
             _buildRuleCard(
               '2',
               'Sayıları Sırayla Bağla',
               '1 ➔ 2 ➔ 3... şeklinde sırayı atlamadan Bitiş Bayrağına kadar bağla.',
+              isDark,
             ),
             const SizedBox(height: 8),
             _buildRuleCard(
               '3',
               'Komşu Adımlar',
               'Yol yalnızca yatay ve dikey komşu kareler üzerinden ilerleyebilir.',
+              isDark,
             ),
             const SizedBox(height: 8),
             _buildRuleCard(
               '4',
               'Tüm Kareleri Gez',
               'Tahtadaki istisnasız tüm kareler tek bir zincirle tam bir kez gezilmelidir.',
+              isDark,
             ),
             const SizedBox(height: 8),
             _buildRuleCard(
               '5',
               'Hatlar ve Çitler',
-              'Kareler arasındaki kalın siyah hatların üzerinden geçilemez, etrafından dolanmalısın.',
+              'Kareler arasındaki kalın engellerin üzerinden geçilemez, etrafından dolanmalısın.',
+              isDark,
             ),
           ],
         ),
@@ -383,13 +389,13 @@ class _ZipScreenState extends ConsumerState<ZipScreen> with WidgetsBindingObserv
     );
   }
 
-  Widget _buildRuleCard(String number, String title, String desc) {
+  Widget _buildRuleCard(String number, String title, String desc, bool isDark) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
-        color: AppColors.backgroundLight,
+        color: isDark ? AppColors.surfaceSecondaryDark : AppColors.backgroundLight,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.pencilBlack, width: 1.8),
+        border: Border.all(color: isDark ? Colors.white38 : AppColors.pencilBlack, width: 1.8),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -401,13 +407,13 @@ class _ZipScreenState extends ConsumerState<ZipScreen> with WidgetsBindingObserv
             decoration: BoxDecoration(
               color: AppColors.skyBlue,
               shape: BoxShape.circle,
-              border: Border.all(color: AppColors.pencilBlack, width: 1.5),
+              border: Border.all(color: isDark ? Colors.white : AppColors.pencilBlack, width: 1.5),
             ),
             child: Text(
               number,
               style: GoogleFonts.patrickHand(
                 fontWeight: FontWeight.w700,
-                color: AppColors.pencilBlack,
+                color: AppColors.inkBlack,
                 fontSize: 14,
               ),
             ),
@@ -422,14 +428,14 @@ class _ZipScreenState extends ConsumerState<ZipScreen> with WidgetsBindingObserv
                   style: GoogleFonts.patrickHand(
                     fontWeight: FontWeight.w700,
                     fontSize: 16,
-                    color: AppColors.pencilBlack,
+                    color: isDark ? Colors.white : AppColors.pencilBlack,
                   ),
                 ),
                 Text(
                   desc,
                   style: GoogleFonts.patrickHand(
                     fontSize: 14,
-                    color: AppColors.pencilGraphite,
+                    color: isDark ? AppColors.pencilLightDark : AppColors.pencilGraphite,
                     height: 1.15,
                   ),
                 ),
@@ -443,12 +449,13 @@ class _ZipScreenState extends ConsumerState<ZipScreen> with WidgetsBindingObserv
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final nextTarget = _getNextTargetNumber();
     final maxNumber = _level.numberPoints.values.reduce((a, b) => a > b ? a : b);
     final totalCells = _level.gridSize * _level.gridSize;
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
+      backgroundColor: isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
       body: SketchPaperBackground(
         child: SafeArea(
           child: Column(
@@ -464,7 +471,7 @@ class _ZipScreenState extends ConsumerState<ZipScreen> with WidgetsBindingObserv
                       borderRadius: 10,
                       shadowOffset: const Offset(2.5, 2.5),
                       onTap: () => Navigator.pop(context),
-                      child: const Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: AppColors.pencilBlack),
+                      child: Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: isDark ? Colors.white : AppColors.pencilBlack),
                     ),
 
                     SketchCard(
@@ -474,7 +481,7 @@ class _ZipScreenState extends ConsumerState<ZipScreen> with WidgetsBindingObserv
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.alt_route_rounded, size: 18, color: AppColors.pencilBlack),
+                          Icon(Icons.alt_route_rounded, size: 18, color: isDark ? Colors.white : AppColors.pencilBlack),
                           const SizedBox(width: 6),
                           Column(
                             mainAxisSize: MainAxisSize.min,
@@ -484,23 +491,23 @@ class _ZipScreenState extends ConsumerState<ZipScreen> with WidgetsBindingObserv
                                 style: GoogleFonts.patrickHand(
                                   fontSize: 17,
                                   fontWeight: FontWeight.w700,
-                                  color: AppColors.pencilBlack,
+                                  color: isDark ? Colors.white : AppColors.pencilBlack,
                                   height: 1.1,
                                 ),
                               ),
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
                                 decoration: BoxDecoration(
-                                  color: AppColors.skyBlue.withValues(alpha: 0.35),
+                                  color: AppColors.skyBlue.withValues(alpha: isDark ? 0.25 : 0.35),
                                   borderRadius: BorderRadius.circular(6),
-                                  border: Border.all(color: AppColors.pencilBlack, width: 1.2),
+                                  border: Border.all(color: isDark ? Colors.white38 : AppColors.pencilBlack, width: 1.2),
                                 ),
                                 child: Text(
                                   '⚡ Tüm Kareleri Dolaş',
                                   style: GoogleFonts.patrickHand(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w700,
-                                    color: AppColors.pencilBlack,
+                                    color: isDark ? Colors.white : AppColors.pencilBlack,
                                   ),
                                 ),
                               ),
@@ -520,7 +527,7 @@ class _ZipScreenState extends ConsumerState<ZipScreen> with WidgetsBindingObserv
                           shadowOffset: const Offset(2, 2),
                           child: Row(
                             children: [
-                              const Icon(Icons.timer_outlined, size: 15, color: AppColors.pencilBlack),
+                              Icon(Icons.timer_outlined, size: 15, color: isDark ? Colors.white : AppColors.pencilBlack),
                               const SizedBox(width: 4),
                               SizedBox(
                                 width: 50,
@@ -530,7 +537,7 @@ class _ZipScreenState extends ConsumerState<ZipScreen> with WidgetsBindingObserv
                                     style: GoogleFonts.patrickHand(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w700,
-                                      color: AppColors.pencilBlack,
+                                      color: isDark ? Colors.white : AppColors.pencilBlack,
                                     ),
                                   ),
                                 ),
@@ -568,20 +575,20 @@ class _ZipScreenState extends ConsumerState<ZipScreen> with WidgetsBindingObserv
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
-                          color: AppColors.skyBlue.withValues(alpha: 0.25),
+                          color: AppColors.skyBlue.withValues(alpha: isDark ? 0.25 : 0.25),
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: AppColors.pencilBlack, width: 1.5),
+                          border: Border.all(color: isDark ? Colors.white38 : AppColors.pencilBlack, width: 1.5),
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.directions_walk_rounded, size: 16, color: AppColors.pencilBlack),
+                            Icon(Icons.directions_walk_rounded, size: 16, color: isDark ? Colors.white : AppColors.pencilBlack),
                             const SizedBox(width: 4),
                             Text(
                               'Kare: ${_path.length} / $totalCells',
                               style: GoogleFonts.patrickHand(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w700,
-                                color: AppColors.pencilBlack,
+                                color: isDark ? Colors.white : AppColors.pencilBlack,
                               ),
                             ),
                           ],
@@ -595,11 +602,11 @@ class _ZipScreenState extends ConsumerState<ZipScreen> with WidgetsBindingObserv
                               ? const Color(0xFF34D399)
                               : AppColors.sunYellow,
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: AppColors.pencilBlack, width: 1.5),
+                          border: Border.all(color: isDark ? Colors.white38 : AppColors.pencilBlack, width: 1.5),
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.flag_rounded, size: 16, color: AppColors.pencilBlack),
+                            const Icon(Icons.flag_rounded, size: 16, color: AppColors.inkBlack),
                             const SizedBox(width: 4),
                             Text(
                               (nextTarget > maxNumber && _path.length == totalCells)
@@ -608,7 +615,7 @@ class _ZipScreenState extends ConsumerState<ZipScreen> with WidgetsBindingObserv
                               style: GoogleFonts.patrickHand(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w700,
-                                color: AppColors.pencilBlack,
+                                color: AppColors.inkBlack,
                               ),
                             ),
                           ],
@@ -662,9 +669,9 @@ class _ZipScreenState extends ConsumerState<ZipScreen> with WidgetsBindingObserv
 
                                       Color cellBg;
                                       if (inPath) {
-                                        cellBg = AppColors.skyBlue.withValues(alpha: 0.22);
+                                        cellBg = AppColors.skyBlue.withValues(alpha: isDark ? 0.35 : 0.22);
                                       } else {
-                                        cellBg = Colors.white;
+                                        cellBg = isDark ? AppColors.surfaceDark : Colors.white;
                                       }
 
                                       return Padding(
@@ -685,6 +692,7 @@ class _ZipScreenState extends ConsumerState<ZipScreen> with WidgetsBindingObserv
                                                         number: numVal,
                                                         maxNumber: maxNumber,
                                                         inPath: inPath,
+                                                        isDark: isDark,
                                                       ),
                                                       child: Center(
                                                         child: Padding(
@@ -696,7 +704,9 @@ class _ZipScreenState extends ConsumerState<ZipScreen> with WidgetsBindingObserv
                                                             style: GoogleFonts.patrickHand(
                                                               fontSize: numVal == maxNumber ? 20 : 23,
                                                               fontWeight: FontWeight.w700,
-                                                              color: AppColors.pencilBlack,
+                                                              color: (numVal == 1 || numVal == maxNumber || inPath)
+                                                                  ? AppColors.inkBlack
+                                                                  : (isDark ? Colors.white : AppColors.pencilBlack),
                                                             ),
                                                           ),
                                                         ),
@@ -707,8 +717,8 @@ class _ZipScreenState extends ConsumerState<ZipScreen> with WidgetsBindingObserv
                                                     ? Container(
                                                         width: 7,
                                                         height: 7,
-                                                        decoration: const BoxDecoration(
-                                                          color: AppColors.pencilBlack,
+                                                        decoration: BoxDecoration(
+                                                          color: isDark ? Colors.white : AppColors.pencilBlack,
                                                           shape: BoxShape.circle,
                                                         ),
                                                       )
@@ -727,6 +737,7 @@ class _ZipScreenState extends ConsumerState<ZipScreen> with WidgetsBindingObserv
                                           path: _path,
                                           gridSize: _level.gridSize,
                                           cellSize: cellSize,
+                                          isDark: isDark,
                                         ),
                                       ),
                                     ),
@@ -741,6 +752,7 @@ class _ZipScreenState extends ConsumerState<ZipScreen> with WidgetsBindingObserv
                                             edgeWalls: _level.edgeWalls,
                                             gridSize: _level.gridSize,
                                             cellSize: cellSize,
+                                            isDark: isDark,
                                           ),
                                         ),
                                       ),
@@ -765,7 +777,9 @@ class _ZipScreenState extends ConsumerState<ZipScreen> with WidgetsBindingObserv
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     SketchCard(
-                      backgroundColor: _path.isNotEmpty ? Colors.white : AppColors.surfaceSecondaryLight,
+                      backgroundColor: _path.isNotEmpty
+                          ? (isDark ? AppColors.surfaceDark : Colors.white)
+                          : (isDark ? AppColors.surfaceSecondaryDark : AppColors.surfaceSecondaryLight),
                       borderRadius: 12,
                       shadowOffset: _path.isNotEmpty ? const Offset(2.5, 2.5) : Offset.zero,
                       borderWidth: 2.0,
@@ -776,7 +790,7 @@ class _ZipScreenState extends ConsumerState<ZipScreen> with WidgetsBindingObserv
                           Icon(
                             Icons.undo_rounded,
                             size: 18,
-                            color: _path.isNotEmpty ? AppColors.pencilBlack : AppColors.pencilLight,
+                            color: _path.isNotEmpty ? (isDark ? Colors.white : AppColors.pencilBlack) : (isDark ? AppColors.pencilLightDark : AppColors.pencilLight),
                           ),
                           const SizedBox(width: 6),
                           Text(
@@ -784,7 +798,7 @@ class _ZipScreenState extends ConsumerState<ZipScreen> with WidgetsBindingObserv
                             style: GoogleFonts.patrickHand(
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
-                              color: _path.isNotEmpty ? AppColors.pencilBlack : AppColors.pencilLight,
+                              color: _path.isNotEmpty ? (isDark ? Colors.white : AppColors.pencilBlack) : (isDark ? AppColors.pencilLightDark : AppColors.pencilLight),
                             ),
                           ),
                         ],
@@ -794,7 +808,7 @@ class _ZipScreenState extends ConsumerState<ZipScreen> with WidgetsBindingObserv
                     const SizedBox(width: 16),
 
                     SketchCard(
-                      backgroundColor: _path.isNotEmpty ? AppColors.sunYellow : AppColors.surfaceSecondaryLight,
+                      backgroundColor: _path.isNotEmpty ? AppColors.sunYellow : (isDark ? AppColors.surfaceSecondaryDark : AppColors.surfaceSecondaryLight),
                       borderRadius: 12,
                       shadowOffset: _path.isNotEmpty ? const Offset(2.5, 2.5) : Offset.zero,
                       borderWidth: 2.0,
@@ -805,7 +819,7 @@ class _ZipScreenState extends ConsumerState<ZipScreen> with WidgetsBindingObserv
                           Icon(
                             Icons.restart_alt_rounded,
                             size: 18,
-                            color: _path.isNotEmpty ? AppColors.pencilBlack : AppColors.pencilLight,
+                            color: _path.isNotEmpty ? AppColors.inkBlack : (isDark ? AppColors.pencilLightDark : AppColors.pencilLight),
                           ),
                           const SizedBox(width: 6),
                           Text(
@@ -813,7 +827,7 @@ class _ZipScreenState extends ConsumerState<ZipScreen> with WidgetsBindingObserv
                             style: GoogleFonts.patrickHand(
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
-                              color: _path.isNotEmpty ? AppColors.pencilBlack : AppColors.pencilLight,
+                              color: _path.isNotEmpty ? AppColors.inkBlack : (isDark ? AppColors.pencilLightDark : AppColors.pencilLight),
                             ),
                           ),
                         ],
@@ -837,11 +851,13 @@ class _OrganicZipNodePainter extends CustomPainter {
   final int number;
   final int maxNumber;
   final bool inPath;
+  final bool isDark;
 
   _OrganicZipNodePainter({
     required this.number,
     required this.maxNumber,
     required this.inPath,
+    required this.isDark,
   });
 
   @override
@@ -852,14 +868,14 @@ class _OrganicZipNodePainter extends CustomPainter {
     final r = w * 0.40;
 
     final pen = Paint()
-      ..color = AppColors.pencilBlack
+      ..color = isDark ? Colors.white : AppColors.pencilBlack
       ..strokeWidth = 2.2
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
 
     final draft = Paint()
-      ..color = AppColors.pencilBlack.withValues(alpha: 0.35)
+      ..color = (isDark ? Colors.white : AppColors.pencilBlack).withValues(alpha: 0.35)
       ..strokeWidth = 1.3
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
@@ -867,11 +883,11 @@ class _OrganicZipNodePainter extends CustomPainter {
     // Renk Belirleme
     Color fillColor;
     if (number == 1) {
-      fillColor = inPath ? const Color(0xFF34D399) : const Color(0xFFA7F3D0); // Başlangıç yeşili
+      fillColor = inPath ? const Color(0xFF34D399) : (isDark ? const Color(0xFF065F46) : const Color(0xFFA7F3D0)); // Başlangıç yeşili
     } else if (number == maxNumber) {
-      fillColor = inPath ? const Color(0xFFFB7185) : const Color(0xFFFECDD3); // Bitiş mercan kırmızısı
+      fillColor = inPath ? const Color(0xFFFB7185) : (isDark ? const Color(0xFF881337) : const Color(0xFFFECDD3)); // Bitiş mercan kırmızısı
     } else {
-      fillColor = inPath ? AppColors.sunYellow : AppColors.surfaceSecondaryLight;
+      fillColor = inPath ? AppColors.sunYellow : (isDark ? AppColors.surfaceSecondaryDark : AppColors.surfaceSecondaryLight);
     }
 
     final fillPaint = Paint()..color = fillColor..style = PaintingStyle.fill;
@@ -922,7 +938,7 @@ class _OrganicZipNodePainter extends CustomPainter {
       flagBanner.lineTo(center.dx + r * 0.75, center.dy - r * 1.25);
       flagBanner.lineTo(center.dx + r * 0.20, center.dy - r * 1.05);
       flagBanner.close();
-      canvas.drawPath(flagBanner, Paint()..color = AppColors.pencilBlack..style = PaintingStyle.fill);
+      canvas.drawPath(flagBanner, Paint()..color = (isDark ? Colors.white : AppColors.pencilBlack)..style = PaintingStyle.fill);
     }
   }
 
@@ -930,7 +946,8 @@ class _OrganicZipNodePainter extends CustomPainter {
   bool shouldRepaint(covariant _OrganicZipNodePainter oldDelegate) {
     return oldDelegate.number != number ||
         oldDelegate.maxNumber != maxNumber ||
-        oldDelegate.inPath != inPath;
+        oldDelegate.inPath != inPath ||
+        oldDelegate.isDark != isDark;
   }
 }
 
@@ -938,11 +955,13 @@ class _ZipPathOverlayPainter extends CustomPainter {
   final List<Point> path;
   final int gridSize;
   final double cellSize;
+  final bool isDark;
 
   _ZipPathOverlayPainter({
     required this.path,
     required this.gridSize,
     required this.cellSize,
+    required this.isDark,
   });
 
   @override
@@ -950,7 +969,7 @@ class _ZipPathOverlayPainter extends CustomPainter {
     if (path.length < 2) return;
 
     final linePaint = Paint()
-      ..color = AppColors.pencilBlack.withValues(alpha: 0.75)
+      ..color = isDark ? const Color(0xFF38BDF8) : AppColors.pencilBlack.withValues(alpha: 0.75)
       ..strokeWidth = 4.5
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
@@ -975,7 +994,7 @@ class _ZipPathOverlayPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _ZipPathOverlayPainter oldDelegate) {
-    return oldDelegate.path.length != path.length;
+    return oldDelegate.path.length != path.length || oldDelegate.isDark != isDark;
   }
 }
 
@@ -984,11 +1003,13 @@ class _ZipEdgeWallsPainter extends CustomPainter {
   final Set<ZipEdgeWall> edgeWalls;
   final int gridSize;
   final double cellSize;
+  final bool isDark;
 
   _ZipEdgeWallsPainter({
     required this.edgeWalls,
     required this.gridSize,
     required this.cellSize,
+    required this.isDark,
   });
 
   @override
@@ -997,32 +1018,32 @@ class _ZipEdgeWallsPainter extends CustomPainter {
 
     // 1. Gölge / Derinlik boyası
     final shadowPaint = Paint()
-      ..color = AppColors.pencilBlack.withValues(alpha: 0.35)
+      ..color = (isDark ? Colors.black : AppColors.pencilBlack).withValues(alpha: 0.35)
       ..strokeWidth = 6.5
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
 
-    // 2. Ana Duvar / Çit boyası (Kalın ve net siyah hat)
+    // 2. Ana Duvar / Çit boyası (Kalın ve net hat; dark modda canlı amber/sarı çit)
     final wallPaint = Paint()
-      ..color = AppColors.pencilBlack
+      ..color = isDark ? const Color(0xFFFDE047) : AppColors.pencilBlack
       ..strokeWidth = 6.0
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
 
     // 3. Dikine Engel Tırnakları (Çit / Duvar deseni)
     final tickPaint = Paint()
-      ..color = AppColors.pencilBlack
+      ..color = isDark ? const Color(0xFFFDE047) : AppColors.pencilBlack
       ..strokeWidth = 2.4
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
 
     // 4. Uç Direkler / Perçinler
     final postOuterPaint = Paint()
-      ..color = AppColors.pencilBlack
+      ..color = isDark ? const Color(0xFFFDE047) : AppColors.pencilBlack
       ..style = PaintingStyle.fill;
 
     final postInnerPaint = Paint()
-      ..color = AppColors.backgroundLight
+      ..color = isDark ? AppColors.surfaceDark : AppColors.backgroundLight
       ..style = PaintingStyle.fill;
 
     for (final wall in edgeWalls) {
@@ -1076,6 +1097,8 @@ class _ZipEdgeWallsPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _ZipEdgeWallsPainter oldDelegate) {
-    return oldDelegate.edgeWalls != edgeWalls || oldDelegate.cellSize != cellSize;
+    return oldDelegate.edgeWalls != edgeWalls ||
+        oldDelegate.cellSize != cellSize ||
+        oldDelegate.isDark != isDark;
   }
 }

@@ -498,13 +498,15 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
   void _clearBoard() {
     if (_isSolved) return;
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: Colors.white,
+        backgroundColor: isDark ? AppColors.surfaceDark : Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: AppColors.pencilBlack, width: 2.5),
+          side: BorderSide(color: isDark ? Colors.white : AppColors.pencilBlack, width: 2.5),
         ),
         title: Row(
           children: [
@@ -513,7 +515,7 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
             Text(
               'Tahtayı Sıfırla',
               style: GoogleFonts.patrickHand(
-                color: AppColors.pencilBlack,
+                color: isDark ? Colors.white : AppColors.pencilBlack,
                 fontWeight: FontWeight.w700,
                 fontSize: 24,
               ),
@@ -523,7 +525,7 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
         content: Text(
           'Tüm yerleştirdiğiniz vezir ve işaretler silinecek. Devam etmek istiyor musun?',
           style: GoogleFonts.patrickHand(
-            color: AppColors.pencilGraphite,
+            color: isDark ? AppColors.pencilGrayDark : AppColors.pencilGraphite,
             fontSize: 18,
           ),
         ),
@@ -534,7 +536,7 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
               'Vazgeç',
               style: GoogleFonts.patrickHand(
                 fontSize: 18,
-                color: AppColors.pencilGraphite,
+                color: isDark ? AppColors.pencilGrayDark : AppColors.pencilGraphite,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -546,7 +548,7 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
-                side: const BorderSide(color: AppColors.pencilBlack, width: 2.0),
+                side: BorderSide(color: isDark ? Colors.white : AppColors.pencilBlack, width: 2.0),
               ),
             ),
             onPressed: () {
@@ -579,32 +581,34 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
 
   void _showHelpDialog() {
     final isMaster = _level.queensPerUnit == 2;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: Colors.white,
+        backgroundColor: isDark ? AppColors.surfaceDark : Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(18),
-          side: const BorderSide(color: AppColors.pencilBlack, width: 2.5),
+          side: BorderSide(color: isDark ? Colors.white : AppColors.pencilBlack, width: 2.5),
         ),
         title: Row(
           children: [
             isMaster
-                ? const Row(
+                ? Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      SketchDoodleCrown(size: 20, color: AppColors.pencilBlack, fillColor: AppColors.sunYellow),
-                      SizedBox(width: 3),
-                      SketchDoodleCrown(size: 20, color: AppColors.pencilBlack, fillColor: AppColors.sunYellow),
+                      SketchDoodleCrown(size: 20, color: isDark ? Colors.white : AppColors.pencilBlack, fillColor: AppColors.sunYellow),
+                      const SizedBox(width: 3),
+                      SketchDoodleCrown(size: 20, color: isDark ? Colors.white : AppColors.pencilBlack, fillColor: AppColors.sunYellow),
                     ],
                   )
-                : const SketchDoodleCrown(size: 24, color: AppColors.pencilBlack, fillColor: AppColors.sunYellow),
+                : SketchDoodleCrown(size: 24, color: isDark ? Colors.white : AppColors.pencilBlack, fillColor: AppColors.sunYellow),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
                 isMaster ? 'Master Seviye: Çift Vezir' : 'Vezirler: Nasıl Oynanır?',
                 style: GoogleFonts.patrickHand(
-                  color: AppColors.pencilBlack,
+                  color: isDark ? Colors.white : AppColors.pencilBlack,
                   fontWeight: FontWeight.w700,
                   fontSize: isMaster ? 21 : 23,
                 ),
@@ -622,6 +626,7 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
               isMaster
                   ? 'Her satırda ve her sütunda tam 2 vezir bulunmalıdır.'
                   : 'Her satırda ve her sütunda tam 1 vezir bulunmalıdır.',
+              isDark,
             ),
             const SizedBox(height: 8),
             _buildRuleCard(
@@ -630,6 +635,7 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
               isMaster
                   ? 'Kalın skeç çizgileriyle ayrılmış her renkli bölgede tam 2 vezir olmalıdır.'
                   : 'Kalın skeç çizgileriyle ayrılmış her renkli bölgede tam 1 vezir olmalıdır.',
+              isDark,
             ),
             const SizedBox(height: 8),
             _buildRuleCard(
@@ -638,17 +644,18 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
               isMaster
                   ? 'Hiçbir vezir birbirine çapraz, yatay veya dikey temas edemez (aynı satır/sütundaki vezirler de dahil!).'
                   : 'Hiçbir vezir birbirine çapraz, yatay veya dikey temas edemez.',
+              isDark,
             ),
             const SizedBox(height: 12),
             SketchCard(
               padding: const EdgeInsets.all(10),
-              backgroundColor: AppColors.accentCyan.withValues(alpha: 0.25),
+              backgroundColor: AppColors.accentCyan.withValues(alpha: isDark ? 0.35 : 0.25),
               borderRadius: 12,
               borderWidth: 1.8,
               shadowOffset: const Offset(2, 2),
               child: Row(
                 children: [
-                  const Icon(Icons.touch_app_rounded, size: 20, color: AppColors.pencilBlack),
+                  Icon(Icons.touch_app_rounded, size: 20, color: isDark ? Colors.white : AppColors.pencilBlack),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -658,7 +665,7 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
                       style: GoogleFonts.patrickHand(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.pencilBlack,
+                        color: isDark ? Colors.white : AppColors.pencilBlack,
                         height: 1.25,
                       ),
                     ),
@@ -694,10 +701,10 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
     );
   }
 
-  Widget _buildRuleCard(String number, String title, String desc) {
+  Widget _buildRuleCard(String number, String title, String desc, bool isDark) {
     return SketchCard(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      backgroundColor: AppColors.backgroundLight,
+      backgroundColor: isDark ? AppColors.surfaceSecondaryDark : AppColors.backgroundLight,
       borderRadius: 12,
       borderWidth: 1.8,
       shadowOffset: const Offset(2, 2),
@@ -719,7 +726,7 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
                   style: GoogleFonts.patrickHand(
                     fontWeight: FontWeight.w700,
                     fontSize: 15,
-                    color: AppColors.pencilBlack,
+                    color: AppColors.inkBlack,
                   ),
                 ),
               ),
@@ -735,14 +742,14 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
                   style: GoogleFonts.patrickHand(
                     fontWeight: FontWeight.w700,
                     fontSize: 16,
-                    color: AppColors.pencilBlack,
+                    color: isDark ? Colors.white : AppColors.pencilBlack,
                   ),
                 ),
                 Text(
                   desc,
                   style: GoogleFonts.patrickHand(
                     fontSize: 14,
-                    color: AppColors.pencilGraphite,
+                    color: isDark ? AppColors.pencilGrayDark : AppColors.pencilGraphite,
                     height: 1.15,
                   ),
                 ),
@@ -1562,9 +1569,11 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
   Widget build(BuildContext context) {
     final cooldown = _getHintCooldown();
     final isHintReady = cooldown == 0;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final pencilColor = AppColors.pencil(context);
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
+      backgroundColor: isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
       body: SketchPaperBackground(
         child: SafeArea(
           child: Stack(
@@ -1584,7 +1593,7 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
                           borderRadius: 10,
                           shadowOffset: const Offset(2.5, 2.5),
                           onTap: () => Navigator.pop(context),
-                          child: const Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: AppColors.pencilBlack),
+                          child: Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: pencilColor),
                         ),
 
                         // Süre & Yardım
@@ -1597,7 +1606,7 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
                               shadowOffset: const Offset(2, 2),
                               child: Row(
                                 children: [
-                                  const Icon(Icons.timer_outlined, size: 15, color: AppColors.pencilBlack),
+                                  Icon(Icons.timer_outlined, size: 15, color: pencilColor),
                                   const SizedBox(width: 4),
                                   SizedBox(
                                     width: 50,
@@ -1607,7 +1616,7 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
                                         style: GoogleFonts.patrickHand(
                                           fontSize: 16,
                                           fontWeight: FontWeight.w700,
-                                          color: AppColors.pencilBlack,
+                                          color: pencilColor,
                                         ),
                                       ),
                                     ),
@@ -1647,7 +1656,7 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
                             style: GoogleFonts.patrickHand(
                               fontSize: 18,
                               fontWeight: FontWeight.w700,
-                              color: AppColors.pencilBlack,
+                              color: pencilColor,
                             ),
                           ),
                           const SizedBox(width: 8),
@@ -1671,7 +1680,9 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
                                         borderRadius: _level.totalQueens > 9 ? 4 : 6,
                                         borderWidth: isPlaced ? 1.6 : 1.0,
                                         shadowOffset: isPlaced ? const Offset(1.0, 1.0) : const Offset(0.6, 0.6),
-                                        backgroundColor: isPlaced ? AppColors.sunYellow : AppColors.surfaceSecondaryLight,
+                                        backgroundColor: isPlaced
+                                            ? AppColors.sunYellow
+                                            : (isDark ? AppColors.surfaceSecondaryDark : AppColors.surfaceSecondaryLight),
                                         child: SizedBox(
                                           width: cardSize,
                                           height: cardSize,
@@ -1679,7 +1690,9 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
                                             child: Icon(
                                               Icons.castle_rounded,
                                               size: iconSize,
-                                              color: isPlaced ? AppColors.pencilBlack : AppColors.pencilLight,
+                                              color: isPlaced
+                                                  ? AppColors.inkBlack
+                                                  : (isDark ? AppColors.pencilWhite.withValues(alpha: 0.4) : AppColors.pencilLight),
                                             ),
                                           ),
                                         ),
@@ -1728,7 +1741,7 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
                                               regionMap: _level.regionMap,
                                               grid: _grid,
                                               palette: _sketchRegionColors,
-                                              isDark: Theme.of(context).brightness == Brightness.dark,
+                                              isDark: isDark,
                                             ),
                                           ),
                                         ),
@@ -1747,7 +1760,7 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
                                               final cell = _grid[r][c];
 
                                               return Center(
-                                                child: _buildCellContent(cell),
+                                                child: _buildCellContent(cell, isDark),
                                               );
                                             },
                                           ),
@@ -1781,13 +1794,25 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
                             label: 'Geri Al',
                             onTap: _history.isNotEmpty && !_isSolved ? _undoMove : null,
                           ),
-                          Container(width: 2, height: 26, color: AppColors.pencilBlack.withValues(alpha: 0.2)),
+                          Container(
+                            width: 2,
+                            height: 26,
+                            color: isDark
+                                ? AppColors.pencilWhite.withValues(alpha: 0.2)
+                                : AppColors.pencilBlack.withValues(alpha: 0.2),
+                          ),
                           _OrganicSketchActionButton(
                             icon: Icons.refresh_rounded,
                             label: 'Sıfırla',
                             onTap: !_isSolved ? _clearBoard : null,
                           ),
-                          Container(width: 2, height: 26, color: AppColors.pencilBlack.withValues(alpha: 0.2)),
+                          Container(
+                            width: 2,
+                            height: 26,
+                            color: isDark
+                                ? AppColors.pencilWhite.withValues(alpha: 0.2)
+                                : AppColors.pencilBlack.withValues(alpha: 0.2),
+                          ),
                           _OrganicSketchActionButton(
                             icon: isHintReady ? Icons.lightbulb_rounded : Icons.hourglass_bottom_rounded,
                             label: isHintReady ? 'İpucu' : '$cooldown s',
@@ -1802,13 +1827,13 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
                 ],
               ),
 
-              // 2. YÜZEN İPUCU & UYARI KARTI (Tahtanın Boyutunu ve Yerini Kesinlikle Değiştirmez!)
+              // 2. YÜZEN İPUCU & UYARI KARTI
               if (_activeHintMessage != null)
                 Positioned(
                   left: 16,
                   right: 16,
                   bottom: 74,
-                  child: _buildHintInfoCard(),
+                  child: _buildHintInfoCard(isDark),
                 ),
             ],
           ),
@@ -1817,7 +1842,7 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
     );
   }
 
-  Widget _buildHintInfoCard() {
+  Widget _buildHintInfoCard(bool isDark) {
     if (_activeHintMessage == null) return const SizedBox.shrink();
 
     final isWarning = _activeHintIsWarning;
@@ -1827,8 +1852,12 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
       borderRadius: 14,
       borderWidth: 2.2,
       shadowOffset: const Offset(3.5, 3.5),
-      backgroundColor: isWarning ? AppColors.errorBgLight : AppColors.surfaceLight,
-      borderColor: isWarning ? AppColors.error : AppColors.pencilBlack,
+      backgroundColor: isWarning
+          ? (isDark ? const Color(0xFF7F1D1D).withValues(alpha: 0.4) : AppColors.errorBgLight)
+          : (isDark ? AppColors.surfaceDark : AppColors.surfaceLight),
+      borderColor: isWarning
+          ? AppColors.error
+          : (isDark ? Colors.white.withValues(alpha: 0.8) : AppColors.pencilBlack),
       enableHatching: true,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1842,11 +1871,13 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
             backgroundColor: isWarning
                 ? AppColors.highlighterPink.withValues(alpha: 0.4)
                 : AppColors.sunYellow,
-            borderColor: isWarning ? AppColors.error : AppColors.pencilBlack,
+            borderColor: isWarning
+                ? AppColors.error
+                : (isDark ? Colors.white : AppColors.pencilBlack),
             child: Icon(
               isWarning ? Icons.warning_amber_rounded : Icons.lightbulb_rounded,
               size: 20,
-              color: isWarning ? AppColors.error : AppColors.pencilBlack,
+              color: isWarning ? AppColors.error : AppColors.inkBlack,
             ),
           ),
           const SizedBox(width: 10),
@@ -1861,14 +1892,16 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
                     style: GoogleFonts.patrickHand(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
-                      color: isWarning ? AppColors.error : AppColors.pencilBlack,
+                      color: isWarning
+                          ? AppColors.error
+                          : (isDark ? Colors.white : AppColors.pencilBlack),
                     ),
                   ),
                 Text(
                   _activeHintMessage!,
                   style: GoogleFonts.patrickHand(
                     fontSize: 14,
-                    color: AppColors.pencilBlack,
+                    color: isDark ? AppColors.pencilWhite : AppColors.pencilBlack,
                     height: 1.2,
                   ),
                 ),
@@ -1882,26 +1915,26 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
             borderRadius: 8,
             borderWidth: 1.4,
             shadowOffset: const Offset(1.5, 1.5),
-            backgroundColor: AppColors.surfaceSecondaryLight,
+            backgroundColor: isDark ? AppColors.surfaceSecondaryDark : AppColors.surfaceSecondaryLight,
             onTap: () {
               setState(() {
                 _activeHintMessage = null;
                 _clearHighlights();
               });
             },
-            child: const Icon(Icons.close_rounded, size: 16, color: AppColors.pencilBlack),
+            child: Icon(Icons.close_rounded, size: 16, color: isDark ? Colors.white : AppColors.pencilBlack),
           ),
         ],
       ),
     ).animate().slideY(begin: 0.15, end: 0, duration: 180.ms, curve: Curves.easeOutBack).fadeIn(duration: 120.ms);
   }
 
-  Widget _buildCellContent(QueensCell cell) {
+  Widget _buildCellContent(QueensCell cell, bool isDark) {
     if (cell.content == CellContent.queen) {
       final crownSize = _level.gridSize >= 9 ? 24.0 : (_level.gridSize >= 8 ? 28.0 : 34.0);
       return CustomPaint(
         size: Size(crownSize, crownSize),
-        painter: _OrganicDrawnCrownPainter(isConflict: cell.isConflict),
+        painter: _OrganicDrawnCrownPainter(isConflict: cell.isConflict, isDark: isDark),
       )
           .animate()
           .scale(duration: 200.ms, curve: Curves.easeOutBack)
@@ -1910,7 +1943,7 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
       final crossSize = _level.gridSize >= 9 ? 16.0 : (_level.gridSize >= 8 ? 18.0 : 22.0);
       return CustomPaint(
         size: Size(crossSize, crossSize),
-        painter: _OrganicDrawnCrossPainter(),
+        painter: _OrganicDrawnCrossPainter(isDark: isDark),
       ).animate().scale(duration: 100.ms);
     }
     return const SizedBox.shrink();
@@ -1921,8 +1954,9 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
 /// Çatışma / Hata anında: Kırmızı Çatlamış Taç (Cracked Crown)
 class _OrganicDrawnCrownPainter extends CustomPainter {
   final bool isConflict;
+  final bool isDark;
 
-  _OrganicDrawnCrownPainter({required this.isConflict});
+  _OrganicDrawnCrownPainter({required this.isConflict, this.isDark = false});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -1930,18 +1964,25 @@ class _OrganicDrawnCrownPainter extends CustomPainter {
     final h = size.height;
 
     final fillPaint = Paint()
-      ..color = isConflict ? AppColors.error : AppColors.sunYellow
+      ..color = isConflict
+          ? (isDark ? const Color(0xFF7F1D1D) : AppColors.error)
+          : AppColors.sunYellow
       ..style = PaintingStyle.fill;
 
     final penPaint = Paint()
-      ..color = AppColors.pencilBlack
+      ..color = isConflict
+          ? AppColors.error
+          : (isDark ? const Color(0xFFFFFBEB) : AppColors.pencilBlack)
       ..strokeWidth = 2.4
       ..style = PaintingStyle.stroke
       ..strokeJoin = StrokeJoin.round
       ..strokeCap = StrokeCap.round;
 
     final draftPaint = Paint()
-      ..color = AppColors.pencilBlack.withValues(alpha: 0.35)
+      ..color = (isConflict
+              ? AppColors.error
+              : (isDark ? const Color(0xFFFFFBEB) : AppColors.pencilBlack))
+          .withValues(alpha: 0.35)
       ..strokeWidth = 1.3
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
@@ -1977,7 +2018,7 @@ class _OrganicDrawnCrownPainter extends CustomPainter {
     );
 
     final dotPaint = Paint()
-      ..color = AppColors.pencilBlack
+      ..color = const Color(0xFF1C1917)
       ..style = PaintingStyle.fill;
 
     canvas.drawCircle(Offset(w * 0.08, h * 0.32), 2.2, dotPaint);
@@ -1987,13 +2028,13 @@ class _OrganicDrawnCrownPainter extends CustomPainter {
     // KURAL İHLALİ / HATA: KIRMIZI ÇATLAYAN TAÇ ÇİZGİLERİ (CRACKED CROWN)
     if (isConflict) {
       final crackPaint = Paint()
-        ..color = AppColors.pencilBlack
+        ..color = isDark ? Colors.white : AppColors.pencilBlack
         ..strokeWidth = 2.4
         ..strokeJoin = StrokeJoin.round
         ..strokeCap = StrokeCap.round
         ..style = PaintingStyle.stroke;
 
-      // 1. Ana Zikzak Çatlak Hattı (Tepe noktasından aşağıya doğru inen derin yarık)
+      // 1. Ana Zikzak Çatlak Hattı
       final mainCrack = Path();
       mainCrack.moveTo(w * 0.50, h * 0.18);
       mainCrack.lineTo(w * 0.44, h * 0.34);
@@ -2021,9 +2062,9 @@ class _OrganicDrawnCrownPainter extends CustomPainter {
         crackPaint..strokeWidth = 2.0,
       );
 
-      // 4. Kırık / Kıymık Eskiz Çizgileri (Havada uçuşan minik taç parçacıkları)
+      // 4. Kırık / Kıymık Eskiz Çizgileri
       final splinterPaint = Paint()
-        ..color = AppColors.pencilBlack
+        ..color = isDark ? Colors.white : AppColors.pencilBlack
         ..strokeWidth = 1.5
         ..strokeCap = StrokeCap.round;
       canvas.drawLine(Offset(w * 0.36, h * 0.22), Offset(w * 0.32, h * 0.26), splinterPaint);
@@ -2033,20 +2074,25 @@ class _OrganicDrawnCrownPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _OrganicDrawnCrownPainter oldDelegate) => oldDelegate.isConflict != isConflict;
+  bool shouldRepaint(covariant _OrganicDrawnCrownPainter oldDelegate) =>
+      oldDelegate.isConflict != isConflict || oldDelegate.isDark != isDark;
 }
 
 /// Kurşun Kalemle Hızlıca Karalanmış Organik Çarpı (✖)
 class _OrganicDrawnCrossPainter extends CustomPainter {
+  final bool isDark;
+
+  const _OrganicDrawnCrossPainter({this.isDark = false});
+
   @override
   void paint(Canvas canvas, Size size) {
     final pen = Paint()
-      ..color = AppColors.pencilBlack.withValues(alpha: 0.85)
+      ..color = (isDark ? Colors.white : AppColors.pencilBlack).withValues(alpha: 0.90)
       ..strokeWidth = 2.4
       ..strokeCap = StrokeCap.round;
 
     final draft = Paint()
-      ..color = AppColors.pencilBlack.withValues(alpha: 0.35)
+      ..color = (isDark ? Colors.white : AppColors.pencilBlack).withValues(alpha: 0.35)
       ..strokeWidth = 1.2
       ..strokeCap = StrokeCap.round;
 
@@ -2069,7 +2115,8 @@ class _OrganicDrawnCrossPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _OrganicDrawnCrossPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _OrganicDrawnCrossPainter oldDelegate) =>
+      oldDelegate.isDark != isDark;
 }
 
 /// Alt Çubuk İçin Organik Skeç Aksiyon Butonu
@@ -2091,7 +2138,9 @@ class _OrganicSketchActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isEnabled = onTap != null;
-    final color = isEnabled ? AppColors.pencilBlack : AppColors.pencilLight;
+    final color = isEnabled
+        ? (isActive ? AppColors.inkBlack : AppColors.pencil(context))
+        : AppColors.pencilLight;
 
     if (isActive) {
       return SketchCard(

@@ -63,6 +63,9 @@ class _GeniusWinDialogState extends State<GeniusWinDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : AppColors.pencilBlack;
+
     final stats = widget.statsResult;
     final int currentIQ = stats?.currentIQ ?? 115;
     final int percentile = stats?.percentile ??
@@ -81,7 +84,8 @@ class _GeniusWinDialogState extends State<GeniusWinDialog> {
       insetPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 20),
       child: SingleChildScrollView(
         child: SketchCard(
-          backgroundColor: Colors.white,
+          backgroundColor: isDark ? AppColors.surfaceDark : Colors.white,
+          borderColor: isDark ? Colors.white : AppColors.pencilBlack,
           borderRadius: 22,
           borderWidth: 2.8,
           shadowOffset: const Offset(5.5, 5.5),
@@ -92,13 +96,14 @@ class _GeniusWinDialogState extends State<GeniusWinDialog> {
               // El Çizimi Eskiz Zafer Rozeti
               SketchCard(
                 backgroundColor: AppColors.sunYellow,
+                borderColor: isDark ? Colors.white : AppColors.pencilBlack,
                 borderRadius: 45,
                 borderWidth: 2.5,
                 shadowOffset: const Offset(3, 3),
                 padding: const EdgeInsets.all(14),
                 child: const Icon(
                   Icons.emoji_events_rounded,
-                  color: AppColors.pencilBlack,
+                  color: AppColors.inkBlack,
                   size: 40,
                 ),
               )
@@ -114,7 +119,7 @@ class _GeniusWinDialogState extends State<GeniusWinDialog> {
                 style: GoogleFonts.patrickHand(
                   fontSize: 26,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.pencilBlack,
+                  color: textColor,
                 ),
                 textAlign: TextAlign.center,
               ).animate().scale(duration: 300.ms),
@@ -123,7 +128,8 @@ class _GeniusWinDialogState extends State<GeniusWinDialog> {
 
               // Yüzdelik Dilim Vurgusu
               SketchCard(
-                backgroundColor: AppColors.highlighterPink,
+                backgroundColor: isDark ? const Color(0xFF9D174D) : AppColors.highlighterPink,
+                borderColor: isDark ? Colors.white38 : AppColors.pencilBlack,
                 borderRadius: 10,
                 borderWidth: 1.8,
                 shadowOffset: const Offset(2, 2),
@@ -131,7 +137,7 @@ class _GeniusWinDialogState extends State<GeniusWinDialog> {
                 child: Text(
                   '$percentileBadgeText 🏆',
                   style: GoogleFonts.patrickHand(
-                    color: AppColors.pencilBlack,
+                    color: isDark ? Colors.white : AppColors.pencilBlack,
                     fontWeight: FontWeight.w700,
                     fontSize: 15,
                   ),
@@ -145,13 +151,15 @@ class _GeniusWinDialogState extends State<GeniusWinDialog> {
                 milestone: activeMilestone,
                 currentIQ: currentIQ,
                 isNewMilestone: isNewMilestone,
+                isDark: isDark,
               ),
 
               const SizedBox(height: 14),
 
               // İstatistikler Kutusu (Organik SketchCard)
               SketchCard(
-                backgroundColor: AppColors.backgroundLight,
+                backgroundColor: isDark ? AppColors.surfaceSecondaryDark : AppColors.backgroundLight,
+                borderColor: isDark ? Colors.white38 : AppColors.pencilBlack,
                 borderRadius: 16,
                 borderWidth: 2.0,
                 shadowOffset: const Offset(3, 3),
@@ -163,27 +171,31 @@ class _GeniusWinDialogState extends State<GeniusWinDialog> {
                       label: 'Zeka Endeksi (IQ)',
                       value: '$currentIQ IQ • $geniusTitle',
                       badgeColor: AppColors.highlighterPurple,
+                      isDark: isDark,
                     ),
-                    const Divider(height: 14, color: AppColors.pencilBlack, thickness: 1.2),
+                    Divider(height: 14, color: isDark ? Colors.white24 : AppColors.pencilBlack, thickness: 1.2),
                     _SketchStatRow(
                       icon: Icons.timer_outlined,
                       label: 'Çözüm Süresi',
                       value: GameDateUtils.formatGameTime(widget.result.durationMs),
                       badgeColor: AppColors.skyBlue,
+                      isDark: isDark,
                     ),
-                    const Divider(height: 14, color: AppColors.pencilBlack, thickness: 1.2),
+                    Divider(height: 14, color: isDark ? Colors.white24 : AppColors.pencilBlack, thickness: 1.2),
                     _SketchStatRow(
                       icon: Icons.touch_app_rounded,
                       label: 'Hamle Sayısı',
                       value: '${widget.result.moveCount} Hamle',
                       badgeColor: AppColors.highlighterOrange,
+                      isDark: isDark,
                     ),
-                    const Divider(height: 14, color: AppColors.pencilBlack, thickness: 1.2),
+                    Divider(height: 14, color: isDark ? Colors.white24 : AppColors.pencilBlack, thickness: 1.2),
                     _SketchStatRow(
                       icon: Icons.military_tech_rounded,
                       label: 'Kazanılan Puan',
                       value: '+${widget.result.score} P',
                       badgeColor: const Color(0xFF34D399),
+                      isDark: isDark,
                     ),
                   ],
                 ),
@@ -191,35 +203,74 @@ class _GeniusWinDialogState extends State<GeniusWinDialog> {
 
               const SizedBox(height: 18),
 
-              // Lobiye Dön Butonu
-              SketchCard(
-                backgroundColor: AppColors.sunYellow,
-                borderRadius: 14,
-                borderWidth: 2.2,
-                shadowOffset: const Offset(3.5, 3.5),
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                onTap: () {
-                  HapticFeedback.lightImpact();
-                  Navigator.pop(context);
-                  Navigator.pop(context);
-                },
-                child: Center(
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.home_rounded, size: 20, color: AppColors.pencilBlack),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Lobiye Dön',
-                        style: GoogleFonts.patrickHand(
-                          color: AppColors.pencilBlack,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 20,
+              // Aksiyon Butonları (Lobiye Dön & Tekrar Oyna)
+              Row(
+                children: [
+                  Expanded(
+                    child: SketchCard(
+                      backgroundColor: isDark ? AppColors.surfaceSecondaryDark : Colors.white,
+                      borderColor: isDark ? Colors.white38 : AppColors.pencilBlack,
+                      borderRadius: 14,
+                      borderWidth: 2.0,
+                      shadowOffset: const Offset(2.5, 2.5),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        Navigator.pop(context);
+                        Navigator.pop(context);
+                      },
+                      child: Center(
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.home_rounded, size: 19, color: textColor),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Lobiye Dön',
+                              style: GoogleFonts.patrickHand(
+                                color: textColor,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 18,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ],
+                    ),
                   ),
-                ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: SketchCard(
+                      backgroundColor: AppColors.sunYellow,
+                      borderColor: isDark ? Colors.white : AppColors.pencilBlack,
+                      borderRadius: 14,
+                      borderWidth: 2.2,
+                      shadowOffset: const Offset(2.5, 2.5),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      onTap: () {
+                        HapticFeedback.mediumImpact();
+                        widget.onRestart();
+                      },
+                      child: Center(
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.replay_rounded, size: 19, color: AppColors.inkBlack),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Tekrar Oyna',
+                              style: GoogleFonts.patrickHand(
+                                color: AppColors.inkBlack,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 18,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -232,11 +283,17 @@ class _GeniusWinDialogState extends State<GeniusWinDialog> {
     required IQMilestone milestone,
     required int currentIQ,
     required bool isNewMilestone,
+    required bool isDark,
   }) {
     final double targetPercent = (milestone.betterThanPercent / 100.0).clamp(0.05, 1.0);
+    final textColor = isDark ? Colors.white : AppColors.pencilBlack;
+    final secondaryTextColor = isDark ? AppColors.pencilLightDark : AppColors.pencilGraphite;
 
     return SketchCard(
-      backgroundColor: isNewMilestone ? const Color(0xFFFFFBEB) : Colors.white,
+      backgroundColor: isNewMilestone
+          ? (isDark ? const Color(0xFF451A03).withValues(alpha: 0.6) : const Color(0xFFFFFBEB))
+          : (isDark ? AppColors.surfaceSecondaryDark : Colors.white),
+      borderColor: isDark ? (isNewMilestone ? AppColors.sunYellow : Colors.white38) : AppColors.pencilBlack,
       borderRadius: 14,
       borderWidth: isNewMilestone ? 2.4 : 1.8,
       shadowOffset: const Offset(2.5, 2.5),
@@ -262,7 +319,7 @@ class _GeniusWinDialogState extends State<GeniusWinDialog> {
                           style: GoogleFonts.patrickHand(
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.pencilGraphite,
+                            color: secondaryTextColor,
                             letterSpacing: 0.5,
                           ),
                         ),
@@ -271,7 +328,7 @@ class _GeniusWinDialogState extends State<GeniusWinDialog> {
                           style: GoogleFonts.patrickHand(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
-                            color: isNewMilestone ? AppColors.sunYellow : AppColors.pencilBlack,
+                            color: isNewMilestone ? AppColors.sunYellow : textColor,
                           ),
                         ),
                       ],
@@ -281,7 +338,7 @@ class _GeniusWinDialogState extends State<GeniusWinDialog> {
                       style: GoogleFonts.patrickHand(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.pencilBlack,
+                        color: textColor,
                         height: 1.15,
                       ),
                     ),
@@ -299,9 +356,9 @@ class _GeniusWinDialogState extends State<GeniusWinDialog> {
                 child: Container(
                   height: 18,
                   decoration: BoxDecoration(
-                    color: AppColors.backgroundLight,
+                    color: isDark ? AppColors.surfaceDark : AppColors.backgroundLight,
                     borderRadius: BorderRadius.circular(9),
-                    border: Border.all(color: AppColors.pencilBlack, width: 1.6),
+                    border: Border.all(color: isDark ? Colors.white38 : AppColors.pencilBlack, width: 1.6),
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(7),
@@ -314,10 +371,10 @@ class _GeniusWinDialogState extends State<GeniusWinDialog> {
                           alignment: Alignment.centerLeft,
                           widthFactor: value,
                           child: Container(
-                            decoration: const BoxDecoration(
+                            decoration: BoxDecoration(
                               color: AppColors.sunYellow,
                               border: Border(
-                                right: BorderSide(color: AppColors.pencilBlack, width: 1.8),
+                                right: BorderSide(color: isDark ? Colors.white70 : AppColors.pencilBlack, width: 1.8),
                               ),
                             ),
                           ),
@@ -333,7 +390,7 @@ class _GeniusWinDialogState extends State<GeniusWinDialog> {
                 style: GoogleFonts.patrickHand(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.pencilBlack,
+                  color: textColor,
                 ),
               ),
             ],
@@ -349,16 +406,21 @@ class _SketchStatRow extends StatelessWidget {
   final String label;
   final String value;
   final Color badgeColor;
+  final bool isDark;
 
   const _SketchStatRow({
     required this.icon,
     required this.label,
     required this.value,
     required this.badgeColor,
+    required this.isDark,
   });
 
   @override
   Widget build(BuildContext context) {
+    final textColor = isDark ? Colors.white : AppColors.pencilBlack;
+    final labelColor = isDark ? AppColors.pencilLightDark : AppColors.pencilBlack;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -370,10 +432,10 @@ class _SketchStatRow extends StatelessWidget {
               decoration: BoxDecoration(
                 color: badgeColor,
                 shape: BoxShape.circle,
-                border: Border.all(color: AppColors.pencilBlack, width: 1.6),
+                border: Border.all(color: isDark ? Colors.white38 : AppColors.pencilBlack, width: 1.6),
               ),
               child: Center(
-                child: Icon(icon, color: AppColors.pencilBlack, size: 16),
+                child: Icon(icon, color: AppColors.inkBlack, size: 16),
               ),
             ),
             const SizedBox(width: 8),
@@ -382,7 +444,7 @@ class _SketchStatRow extends StatelessWidget {
               style: GoogleFonts.patrickHand(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
-                color: AppColors.pencilBlack,
+                color: labelColor,
               ),
             ),
           ],
@@ -392,7 +454,7 @@ class _SketchStatRow extends StatelessWidget {
           style: GoogleFonts.patrickHand(
             fontSize: 17,
             fontWeight: FontWeight.w700,
-            color: AppColors.pencilBlack,
+            color: textColor,
           ),
         ),
       ],

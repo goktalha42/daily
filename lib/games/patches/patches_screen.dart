@@ -256,13 +256,15 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> with WidgetsBindi
   void _resetBoard() {
     if (_isSolved || _userRects.isEmpty) return;
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: Colors.white,
+        backgroundColor: isDark ? AppColors.surfaceDark : Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: AppColors.pencilBlack, width: 2.5),
+          side: BorderSide(color: isDark ? Colors.white : AppColors.pencilBlack, width: 2.5),
         ),
         title: Row(
           children: [
@@ -271,7 +273,7 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> with WidgetsBindi
             Text(
               'Tahtayı Sıfırla',
               style: GoogleFonts.patrickHand(
-                color: AppColors.pencilBlack,
+                color: isDark ? Colors.white : AppColors.pencilBlack,
                 fontWeight: FontWeight.w700,
                 fontSize: 24,
               ),
@@ -281,7 +283,7 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> with WidgetsBindi
         content: Text(
           'Çizdiğin tüm alanlar ve dikdörtgenler silinecek. Devam etmek istiyor musun?',
           style: GoogleFonts.patrickHand(
-            color: AppColors.pencilGraphite,
+            color: isDark ? AppColors.pencilGrayDark : AppColors.pencilGraphite,
             fontSize: 18,
           ),
         ),
@@ -292,7 +294,7 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> with WidgetsBindi
               'Vazgeç',
               style: GoogleFonts.patrickHand(
                 fontSize: 18,
-                color: AppColors.pencilGraphite,
+                color: isDark ? AppColors.pencilGrayDark : AppColors.pencilGraphite,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -304,7 +306,7 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> with WidgetsBindi
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
-                side: const BorderSide(color: AppColors.pencilBlack, width: 2.0),
+                side: BorderSide(color: isDark ? Colors.white : AppColors.pencilBlack, width: 2.0),
               ),
             ),
             onPressed: () {
@@ -395,13 +397,15 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> with WidgetsBindi
   }
 
   void _showHelpDialog() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: Colors.white,
+        backgroundColor: isDark ? AppColors.surfaceDark : Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(18),
-          side: const BorderSide(color: AppColors.pencilBlack, width: 2.5),
+          side: BorderSide(color: isDark ? Colors.white : AppColors.pencilBlack, width: 2.5),
         ),
         title: Row(
           children: [
@@ -410,7 +414,7 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> with WidgetsBindi
             Text(
               'Alan Bölme: Nasıl Oynanır?',
               style: GoogleFonts.patrickHand(
-                color: AppColors.pencilBlack,
+                color: isDark ? Colors.white : AppColors.pencilBlack,
                 fontWeight: FontWeight.w700,
                 fontSize: 24,
               ),
@@ -425,18 +429,21 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> with WidgetsBindi
               '1',
               'Sayı = Alan Kutucuğu',
               'Rozetteki sayı, kaplayacağın dikdörtgenin kaç kutucuktan oluşacağını belirtir.',
+              isDark,
             ),
             const SizedBox(height: 8),
             _buildRuleCard(
               '2',
               'Şekil Simgelerine Dikkat',
               'Kare simgesi ➔ Kare (2x2 vb.)\nUzun simgesi ➔ Dikey Dikdörtgen\nGeniş simgesi ➔ Yatay Dikdörtgen\nYıldız simgesi ➔ Herhangi biri serbest!',
+              isDark,
             ),
             const SizedBox(height: 8),
             _buildRuleCard(
               '3',
               'Boşluk & Çakışma Yok',
               'Tüm ızgara üst üste binmeyen alanlarla eksiksiz kaplanmalıdır.',
+              isDark,
             ),
           ],
         ),
@@ -466,13 +473,13 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> with WidgetsBindi
     );
   }
 
-  Widget _buildRuleCard(String number, String title, String desc) {
+  Widget _buildRuleCard(String number, String title, String desc, bool isDark) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
-        color: AppColors.backgroundLight,
+        color: isDark ? AppColors.surfaceSecondaryDark : AppColors.backgroundLight,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.pencilBlack, width: 1.8),
+        border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.7) : AppColors.pencilBlack, width: 1.8),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -490,7 +497,7 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> with WidgetsBindi
               number,
               style: GoogleFonts.patrickHand(
                 fontWeight: FontWeight.w700,
-                color: AppColors.pencilBlack,
+                color: AppColors.inkBlack,
                 fontSize: 14,
               ),
             ),
@@ -505,14 +512,14 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> with WidgetsBindi
                   style: GoogleFonts.patrickHand(
                     fontWeight: FontWeight.w700,
                     fontSize: 16,
-                    color: AppColors.pencilBlack,
+                    color: isDark ? Colors.white : AppColors.pencilBlack,
                   ),
                 ),
                 Text(
                   desc,
                   style: GoogleFonts.patrickHand(
                     fontSize: 14,
-                    color: AppColors.pencilGraphite,
+                    color: isDark ? AppColors.pencilGrayDark : AppColors.pencilGraphite,
                     height: 1.15,
                   ),
                 ),
@@ -526,6 +533,9 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> with WidgetsBindi
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final pencilColor = AppColors.pencil(context);
+
     int coveredArea = 0;
     for (final rect in _userRects) {
       coveredArea += rect.area;
@@ -533,7 +543,7 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> with WidgetsBindi
     final totalArea = _level.gridSize * _level.gridSize;
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
+      backgroundColor: isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
       body: SketchPaperBackground(
         child: SafeArea(
           child: Column(
@@ -549,7 +559,7 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> with WidgetsBindi
                       borderRadius: 10,
                       shadowOffset: const Offset(2.5, 2.5),
                       onTap: () => Navigator.pop(context),
-                      child: const Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: AppColors.pencilBlack),
+                      child: Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: pencilColor),
                     ),
 
                     SketchCard(
@@ -559,7 +569,7 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> with WidgetsBindi
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.dashboard_customize_rounded, size: 18, color: AppColors.pencilBlack),
+                          Icon(Icons.dashboard_customize_rounded, size: 18, color: pencilColor),
                           const SizedBox(width: 6),
                           Column(
                             mainAxisSize: MainAxisSize.min,
@@ -569,23 +579,26 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> with WidgetsBindi
                                 style: GoogleFonts.patrickHand(
                                   fontSize: 17,
                                   fontWeight: FontWeight.w700,
-                                  color: AppColors.pencilBlack,
+                                  color: pencilColor,
                                   height: 1.1,
                                 ),
                               ),
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
                                 decoration: BoxDecoration(
-                                  color: AppColors.skyBlue.withValues(alpha: 0.35),
+                                  color: AppColors.skyBlue.withValues(alpha: isDark ? 0.35 : 0.25),
                                   borderRadius: BorderRadius.circular(6),
-                                  border: Border.all(color: AppColors.pencilBlack, width: 1.2),
+                                  border: Border.all(
+                                    color: isDark ? Colors.white.withValues(alpha: 0.7) : AppColors.pencilBlack,
+                                    width: 1.2,
+                                  ),
                                 ),
                                 child: Text(
                                   '🧩 Şekil ve Alan Rozetleri',
                                   style: GoogleFonts.patrickHand(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w700,
-                                    color: AppColors.pencilBlack,
+                                    color: pencilColor,
                                   ),
                                 ),
                               ),
@@ -605,7 +618,7 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> with WidgetsBindi
                           shadowOffset: const Offset(2, 2),
                           child: Row(
                             children: [
-                              const Icon(Icons.timer_outlined, size: 15, color: AppColors.pencilBlack),
+                              Icon(Icons.timer_outlined, size: 15, color: pencilColor),
                               const SizedBox(width: 4),
                               SizedBox(
                                 width: 50,
@@ -615,7 +628,7 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> with WidgetsBindi
                                     style: GoogleFonts.patrickHand(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w700,
-                                      color: AppColors.pencilBlack,
+                                      color: pencilColor,
                                     ),
                                   ),
                                 ),
@@ -640,7 +653,7 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> with WidgetsBindi
 
               const SizedBox(height: 6),
 
-              // 2. İLERLEME VE ŞEKİL LEJANDI (image.png Standart Rehberi)
+              // 2. İLERLEME VE ŞEKİL LEJANDI
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: SketchCard(
@@ -657,12 +670,15 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> with WidgetsBindi
                             width: 12,
                             height: 12,
                             decoration: BoxDecoration(
-                              color: AppColors.surfaceSecondaryLight,
-                              border: Border.all(color: AppColors.pencilBlack, width: 1.5),
+                              color: isDark ? AppColors.surfaceSecondaryDark : AppColors.surfaceSecondaryLight,
+                              border: Border.all(
+                                color: isDark ? Colors.white.withValues(alpha: 0.8) : AppColors.pencilBlack,
+                                width: 1.5,
+                              ),
                             ),
                           ),
                           const SizedBox(width: 4),
-                          Text('Kare', style: GoogleFonts.patrickHand(fontSize: 13, fontWeight: FontWeight.w700)),
+                          Text('Kare', style: GoogleFonts.patrickHand(fontSize: 13, fontWeight: FontWeight.w700, color: pencilColor)),
                         ],
                       ),
                       // Uzun Simgesi
@@ -672,12 +688,15 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> with WidgetsBindi
                             width: 9,
                             height: 14,
                             decoration: BoxDecoration(
-                              color: AppColors.surfaceSecondaryLight,
-                              border: Border.all(color: AppColors.pencilBlack, width: 1.5),
+                              color: isDark ? AppColors.surfaceSecondaryDark : AppColors.surfaceSecondaryLight,
+                              border: Border.all(
+                                color: isDark ? Colors.white.withValues(alpha: 0.8) : AppColors.pencilBlack,
+                                width: 1.5,
+                              ),
                             ),
                           ),
                           const SizedBox(width: 4),
-                          Text('Uzun', style: GoogleFonts.patrickHand(fontSize: 13, fontWeight: FontWeight.w700)),
+                          Text('Uzun', style: GoogleFonts.patrickHand(fontSize: 13, fontWeight: FontWeight.w700, color: pencilColor)),
                         ],
                       ),
                       // Geniş Simgesi
@@ -687,20 +706,23 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> with WidgetsBindi
                             width: 14,
                             height: 9,
                             decoration: BoxDecoration(
-                              color: AppColors.surfaceSecondaryLight,
-                              border: Border.all(color: AppColors.pencilBlack, width: 1.5),
+                              color: isDark ? AppColors.surfaceSecondaryDark : AppColors.surfaceSecondaryLight,
+                              border: Border.all(
+                                color: isDark ? Colors.white.withValues(alpha: 0.8) : AppColors.pencilBlack,
+                                width: 1.5,
+                              ),
                             ),
                           ),
                           const SizedBox(width: 4),
-                          Text('Geniş', style: GoogleFonts.patrickHand(fontSize: 13, fontWeight: FontWeight.w700)),
+                          Text('Geniş', style: GoogleFonts.patrickHand(fontSize: 13, fontWeight: FontWeight.w700, color: pencilColor)),
                         ],
                       ),
                       // Herhangi Biri
                       Row(
                         children: [
-                          const Icon(Icons.auto_awesome_rounded, size: 13, color: AppColors.pencilBlack),
+                          Icon(Icons.auto_awesome_rounded, size: 13, color: pencilColor),
                           const SizedBox(width: 3),
-                          Text('Serbest', style: GoogleFonts.patrickHand(fontSize: 13, fontWeight: FontWeight.w700)),
+                          Text('Serbest', style: GoogleFonts.patrickHand(fontSize: 13, fontWeight: FontWeight.w700, color: pencilColor)),
                         ],
                       ),
                     ],
@@ -724,28 +746,42 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> with WidgetsBindi
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
                         decoration: BoxDecoration(
                           color: coveredArea == totalArea
-                              ? const Color(0xFF34D399).withValues(alpha: 0.35)
-                              : AppColors.sunYellow.withValues(alpha: 0.25),
+                              ? const Color(0xFF34D399).withValues(alpha: isDark ? 0.35 : 0.25)
+                              : AppColors.sunYellow.withValues(alpha: isDark ? 0.35 : 0.25),
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: AppColors.pencilBlack, width: 1.5),
+                          border: Border.all(
+                            color: isDark ? Colors.white.withValues(alpha: 0.8) : AppColors.pencilBlack,
+                            width: 1.5,
+                          ),
                         ),
                         child: Text(
                           'Alan: $coveredArea / $totalArea',
-                          style: GoogleFonts.patrickHand(fontSize: 14, fontWeight: FontWeight.w700),
+                          style: GoogleFonts.patrickHand(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: pencilColor,
+                          ),
                         ),
                       ),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
                         decoration: BoxDecoration(
                           color: _userRects.length == _level.clues.length
-                              ? const Color(0xFF34D399).withValues(alpha: 0.35)
-                              : AppColors.skyBlue.withValues(alpha: 0.25),
+                              ? const Color(0xFF34D399).withValues(alpha: isDark ? 0.35 : 0.25)
+                              : AppColors.skyBlue.withValues(alpha: isDark ? 0.35 : 0.25),
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: AppColors.pencilBlack, width: 1.5),
+                          border: Border.all(
+                            color: isDark ? Colors.white.withValues(alpha: 0.8) : AppColors.pencilBlack,
+                            width: 1.5,
+                          ),
                         ),
                         child: Text(
                           'Blok: ${_userRects.length} / ${_level.clues.length}',
-                          style: GoogleFonts.patrickHand(fontSize: 14, fontWeight: FontWeight.w700),
+                          style: GoogleFonts.patrickHand(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: pencilColor,
+                          ),
                         ),
                       ),
                     ],
@@ -788,7 +824,7 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> with WidgetsBindi
                               onPointerUp: (e) => _onPointerUp(e, boardSize),
                               child: Stack(
                                 children: [
-                                  // 1. Zemin Izgarası
+                                  // 1. Zemin Izgarası - ORGANİK EL ÇİZİMİ KUTULAR (SKETCH CARD) & DİNAMİK RENK
                                   GridView.builder(
                                     physics: const NeverScrollableScrollPhysics(),
                                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -796,15 +832,50 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> with WidgetsBindi
                                     ),
                                     itemCount: _level.gridSize * _level.gridSize,
                                     itemBuilder: (context, index) {
-                                      return Container(
-                                        margin: const EdgeInsets.all(1.5),
-                                        decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          borderRadius: BorderRadius.circular(6),
-                                          border: Border.all(
-                                            color: AppColors.pencilLight.withValues(alpha: 0.4),
-                                            width: 1.0,
-                                          ),
+                                      final r = index ~/ _level.gridSize;
+                                      final c = index % _level.gridSize;
+
+                                      // Hücre bir dikdörtgenin içinde mi?
+                                      PatchRect? coveredRect;
+                                      for (final rect in _userRects) {
+                                        if (rect.contains(r, c)) {
+                                          coveredRect = rect;
+                                          break;
+                                        }
+                                      }
+
+                                      final bool isPreview = dragPreviewRect != null && dragPreviewRect.contains(r, c);
+
+                                      Color cellBg;
+                                      Color cellBorderColor;
+                                      if (isPreview) {
+                                        cellBg = AppColors.skyBlue.withValues(alpha: isDark ? 0.40 : 0.28);
+                                        cellBorderColor = isDark ? const Color(0xFF38BDF8) : AppColors.skyBlue;
+                                      } else if (coveredRect != null) {
+                                        final rectColor = _getRectColor(coveredRect);
+                                        cellBg = rectColor.withValues(alpha: isDark ? 0.35 : 0.25);
+                                        cellBorderColor = isDark
+                                            ? Colors.white.withValues(alpha: 0.6)
+                                            : AppColors.pencilBlack.withValues(alpha: 0.65);
+                                      } else {
+                                        cellBg = isDark ? AppColors.surfaceDark : Colors.white;
+                                        cellBorderColor = isDark
+                                            ? AppColors.pencilWhite.withValues(alpha: 0.22)
+                                            : AppColors.pencilLight.withValues(alpha: 0.45);
+                                      }
+
+                                      return Padding(
+                                        padding: const EdgeInsets.all(1.5),
+                                        child: SketchCard(
+                                          padding: EdgeInsets.zero,
+                                          borderRadius: 8,
+                                          borderWidth: 1.4,
+                                          shadowOffset: (coveredRect != null || isPreview)
+                                              ? const Offset(1.5, 1.5)
+                                              : const Offset(0.8, 0.8),
+                                          backgroundColor: cellBg,
+                                          borderColor: cellBorderColor,
+                                          child: const SizedBox.expand(),
                                         ),
                                       );
                                     },
@@ -829,15 +900,18 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> with WidgetsBindi
                                         padding: EdgeInsets.zero,
                                         borderRadius: 10,
                                         borderWidth: 2.2,
-                                        borderColor: isValid ? AppColors.pencilBlack : AppColors.error,
+                                        borderColor: isValid
+                                            ? (isDark ? Colors.white : AppColors.pencilBlack)
+                                            : AppColors.error,
                                         shadowOffset: isValid ? const Offset(2.2, 2.2) : const Offset(1.5, 1.5),
-                                        backgroundColor: color.withValues(alpha: 0.35),
+                                        backgroundColor: color.withValues(alpha: isDark ? 0.38 : 0.28),
                                         child: ClipRRect(
                                           borderRadius: BorderRadius.circular(8),
                                           child: CustomPaint(
                                             painter: _CrumpledPaperPainter(
                                               seed: rect.topRow * 37 + rect.leftCol * 13 + rect.width * 7 + rect.height * 3,
                                               isValid: isValid,
+                                              isDark: isDark,
                                             ),
                                             child: const SizedBox.expand(),
                                           ),
@@ -857,25 +931,28 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> with WidgetsBindi
                                         padding: EdgeInsets.zero,
                                         borderRadius: 10,
                                         borderWidth: 2.4,
-                                        backgroundColor: AppColors.skyBlue.withValues(alpha: 0.22),
+                                        borderColor: isDark ? const Color(0xFF38BDF8) : AppColors.skyBlue,
+                                        backgroundColor: AppColors.skyBlue.withValues(alpha: isDark ? 0.32 : 0.22),
                                         child: ClipRRect(
                                           borderRadius: BorderRadius.circular(8),
                                           child: CustomPaint(
                                             painter: _CrumpledPaperPainter(
                                               seed: dragPreviewRect.topRow * 37 + dragPreviewRect.leftCol * 13 + dragPreviewRect.width * 7,
                                               isValid: true,
+                                              isDark: isDark,
                                             ),
                                             child: Center(
                                               child: SketchCard(
                                                 borderRadius: 8,
                                                 borderWidth: 1.5,
+                                                backgroundColor: isDark ? AppColors.surfaceSecondaryDark : Colors.white,
                                                 padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                                                 child: Text(
                                                   '${dragPreviewRect.width}×${dragPreviewRect.height} = ${dragPreviewRect.area}',
                                                   style: GoogleFonts.patrickHand(
                                                     fontSize: 14,
                                                     fontWeight: FontWeight.w700,
-                                                    color: AppColors.pencilBlack,
+                                                    color: pencilColor,
                                                   ),
                                                 ),
                                               ),
@@ -886,7 +963,7 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> with WidgetsBindi
                                     ),
                                   ],
 
-                                  // 4. Sabit Sayı Boncukları (Vezirler Tacı Tasarım Dilinde Rozetler!)
+                                  // 4. Sabit Sayı Boncukları (Rozetler)
                                   ..._level.clues.asMap().entries.map((entry) {
                                     final clueIdx = entry.key;
                                     final clue = entry.value;
@@ -907,6 +984,7 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> with WidgetsBindi
                                             painter: _OrganicPatchesCluePainter(
                                               color: beadColor,
                                               shapeType: clue.shapeType,
+                                              isDark: isDark,
                                             ),
                                             child: Center(
                                               child: Column(
@@ -917,12 +995,12 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> with WidgetsBindi
                                                     style: GoogleFonts.patrickHand(
                                                       fontSize: 19,
                                                       fontWeight: FontWeight.w700,
-                                                      color: AppColors.pencilBlack,
+                                                      color: AppColors.onColor(beadColor, context: context),
                                                       height: 1.0,
                                                     ),
                                                   ),
                                                   const SizedBox(height: 1),
-                                                  _buildShapeMiniIcon(clue.shapeType),
+                                                  _buildShapeMiniIcon(clue.shapeType, isDark),
                                                 ],
                                               ),
                                             ),
@@ -951,7 +1029,9 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> with WidgetsBindi
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     SketchCard(
-                      backgroundColor: _userRects.isNotEmpty ? Colors.white : AppColors.surfaceSecondaryLight,
+                      backgroundColor: _userRects.isNotEmpty
+                          ? (isDark ? AppColors.surfaceSecondaryDark : Colors.white)
+                          : (isDark ? const Color(0xFF1E2025) : AppColors.surfaceSecondaryLight),
                       borderRadius: 12,
                       shadowOffset: _userRects.isNotEmpty ? const Offset(2.5, 2.5) : Offset.zero,
                       borderWidth: 2.0,
@@ -962,7 +1042,7 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> with WidgetsBindi
                           Icon(
                             Icons.undo_rounded,
                             size: 18,
-                            color: _userRects.isNotEmpty ? AppColors.pencilBlack : AppColors.pencilLight,
+                            color: _userRects.isNotEmpty ? pencilColor : AppColors.pencilLight,
                           ),
                           const SizedBox(width: 6),
                           Text(
@@ -970,7 +1050,7 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> with WidgetsBindi
                             style: GoogleFonts.patrickHand(
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
-                              color: _userRects.isNotEmpty ? AppColors.pencilBlack : AppColors.pencilLight,
+                              color: _userRects.isNotEmpty ? pencilColor : AppColors.pencilLight,
                             ),
                           ),
                         ],
@@ -980,7 +1060,9 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> with WidgetsBindi
                     const SizedBox(width: 16),
 
                     SketchCard(
-                      backgroundColor: _userRects.isNotEmpty ? AppColors.sunYellow : AppColors.surfaceSecondaryLight,
+                      backgroundColor: _userRects.isNotEmpty
+                          ? AppColors.sunYellow
+                          : (isDark ? const Color(0xFF1E2025) : AppColors.surfaceSecondaryLight),
                       borderRadius: 12,
                       shadowOffset: _userRects.isNotEmpty ? const Offset(2.5, 2.5) : Offset.zero,
                       borderWidth: 2.0,
@@ -991,7 +1073,7 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> with WidgetsBindi
                           Icon(
                             Icons.restart_alt_rounded,
                             size: 18,
-                            color: _userRects.isNotEmpty ? AppColors.pencilBlack : AppColors.pencilLight,
+                            color: _userRects.isNotEmpty ? AppColors.inkBlack : AppColors.pencilLight,
                           ),
                           const SizedBox(width: 6),
                           Text(
@@ -999,7 +1081,7 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> with WidgetsBindi
                             style: GoogleFonts.patrickHand(
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
-                              color: _userRects.isNotEmpty ? AppColors.pencilBlack : AppColors.pencilLight,
+                              color: _userRects.isNotEmpty ? AppColors.inkBlack : AppColors.pencilLight,
                             ),
                           ),
                         ],
@@ -1017,15 +1099,17 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> with WidgetsBindi
     );
   }
 
-  Widget _buildShapeMiniIcon(PatchShapeType shapeType) {
+  Widget _buildShapeMiniIcon(PatchShapeType shapeType, bool isDark) {
+    final borderColor = isDark ? Colors.white : AppColors.pencilBlack;
+    final bg = isDark ? AppColors.surfaceSecondaryDark : Colors.white;
     switch (shapeType) {
       case PatchShapeType.square:
         return Container(
           width: 8,
           height: 8,
           decoration: BoxDecoration(
-            color: Colors.white,
-            border: Border.all(color: AppColors.pencilBlack, width: 1.2),
+            color: bg,
+            border: Border.all(color: borderColor, width: 1.2),
           ),
         );
       case PatchShapeType.tall:
@@ -1033,8 +1117,8 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> with WidgetsBindi
           width: 6,
           height: 10,
           decoration: BoxDecoration(
-            color: Colors.white,
-            border: Border.all(color: AppColors.pencilBlack, width: 1.2),
+            color: bg,
+            border: Border.all(color: borderColor, width: 1.2),
           ),
         );
       case PatchShapeType.wide:
@@ -1042,15 +1126,15 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> with WidgetsBindi
           width: 10,
           height: 6,
           decoration: BoxDecoration(
-            color: Colors.white,
-            border: Border.all(color: AppColors.pencilBlack, width: 1.2),
+            color: bg,
+            border: Border.all(color: borderColor, width: 1.2),
           ),
         );
       case PatchShapeType.any:
-        return const Icon(
+        return Icon(
           Icons.auto_awesome_rounded,
           size: 9,
-          color: AppColors.pencilBlack,
+          color: borderColor,
         );
     }
   }
@@ -1060,10 +1144,12 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> with WidgetsBindi
 class _OrganicPatchesCluePainter extends CustomPainter {
   final Color color;
   final PatchShapeType shapeType;
+  final bool isDark;
 
   _OrganicPatchesCluePainter({
     required this.color,
     required this.shapeType,
+    this.isDark = false,
   });
 
   @override
@@ -1074,14 +1160,14 @@ class _OrganicPatchesCluePainter extends CustomPainter {
     final r = w * 0.42;
 
     final pen = Paint()
-      ..color = AppColors.pencilBlack
+      ..color = isDark ? Colors.white : AppColors.pencilBlack
       ..strokeWidth = 2.2
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
 
     final draft = Paint()
-      ..color = AppColors.pencilBlack.withValues(alpha: 0.35)
+      ..color = (isDark ? Colors.white : AppColors.pencilBlack).withValues(alpha: 0.35)
       ..strokeWidth = 1.3
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
@@ -1112,7 +1198,9 @@ class _OrganicPatchesCluePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _OrganicPatchesCluePainter oldDelegate) {
-    return oldDelegate.color != color || oldDelegate.shapeType != shapeType;
+    return oldDelegate.color != color ||
+        oldDelegate.shapeType != shapeType ||
+        oldDelegate.isDark != isDark;
   }
 }
 
@@ -1120,10 +1208,12 @@ class _OrganicPatchesCluePainter extends CustomPainter {
 class _CrumpledPaperPainter extends CustomPainter {
   final int seed;
   final bool isValid;
+  final bool isDark;
 
   const _CrumpledPaperPainter({
     required this.seed,
     this.isValid = true,
+    this.isDark = false,
   });
 
   @override
@@ -1140,8 +1230,14 @@ class _CrumpledPaperPainter extends CustomPainter {
       return (state & 0x7FFFFFFF) / 0x7FFFFFFF;
     }
 
-    final mainLineColor = (isValid ? AppColors.pencilBlack : AppColors.error).withValues(alpha: 0.28);
-    final subLineColor = (isValid ? AppColors.pencilGraphite : AppColors.error).withValues(alpha: 0.18);
+    final mainLineColor = (isValid
+            ? (isDark ? Colors.white : AppColors.pencilBlack)
+            : AppColors.error)
+        .withValues(alpha: isDark ? 0.35 : 0.28);
+    final subLineColor = (isValid
+            ? (isDark ? AppColors.pencilGrayDark : AppColors.pencilGraphite)
+            : AppColors.error)
+        .withValues(alpha: isDark ? 0.25 : 0.18);
     final shadeColor = Colors.black.withValues(alpha: 0.04);
     final lightColor = Colors.white.withValues(alpha: 0.08);
 
@@ -1259,7 +1355,9 @@ class _CrumpledPaperPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _CrumpledPaperPainter oldDelegate) {
-    return oldDelegate.seed != seed || oldDelegate.isValid != isValid;
+    return oldDelegate.seed != seed ||
+        oldDelegate.isValid != isValid ||
+        oldDelegate.isDark != isDark;
   }
 }
 
