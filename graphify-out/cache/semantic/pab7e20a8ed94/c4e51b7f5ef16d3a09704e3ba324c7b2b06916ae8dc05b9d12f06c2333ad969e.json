@@ -1,0 +1,1 @@
+{"nodes": [{"id": "doc_windows_cmakelists", "label": "CMakeLists.txt", "file_type": "document", "source_file": "windows/CMakeLists.txt", "source_location": null, "source_url": null, "captured_at": null, "author": null, "contributor": null, "rationale": "Build configuration / platform runner file: CMakeLists.txt"}], "edges": [], "hyperedges": []}
