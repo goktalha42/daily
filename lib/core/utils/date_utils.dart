@@ -2,23 +2,31 @@ import 'package:intl/intl.dart';
 
 class GameDateUtils {
   static int _dayOffset = 0;
+  static DateTime? _customDate;
 
   /// Gün simülatörü için gün ötelemesini döndürür
   static int get dayOffset => _dayOffset;
+
+  /// Testler veya simülasyonlar için sabit bir referans tarihi belirler
+  static void setCustomDate(DateTime? date) {
+    _customDate = date;
+  }
 
   /// Gün ötelemesini bir gün ileri alır
   static void advanceToNextDay() {
     _dayOffset++;
   }
 
-  /// Gün ötelemesini sıfırlar
+  /// Gün ötelemesini ve özel tarihi sıfırlar
   static void resetDayOffset() {
     _dayOffset = 0;
+    _customDate = null;
   }
 
-  /// Mevcut aktif tarihi (gün ötelemesi uygulanmış) döner
+  /// Mevcut aktif tarihi (özel tarih ve gün ötelemesi uygulanmış) döner
   static DateTime getActiveDate() {
-    return DateTime.now().add(Duration(days: _dayOffset));
+    final base = _customDate ?? DateTime.now();
+    return base.add(Duration(days: _dayOffset));
   }
 
   /// Returns today's level ID format, e.g. "2026-08-20"

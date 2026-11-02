@@ -5,6 +5,14 @@ import 'package:daily_games/core/services/daily_play_service.dart';
 import 'package:daily_games/core/utils/date_utils.dart';
 
 void main() {
+  setUp(() {
+    GameDateUtils.resetDayOffset();
+  });
+
+  tearDown(() {
+    GameDateUtils.resetDayOffset();
+  });
+
   group('LeaderboardService 150 Oyuncu & Kurallar Testi', () {
     test('150 Farklı kullanıcı başarıyla seed edilir ve günlük liderlikte yer alır', () {
       final service = LeaderboardService();
@@ -140,6 +148,8 @@ void main() {
     });
 
     test('Bütün oyunlar için Haftalık, Aylık ve Genel sıralamalarda puanlar zamanla birikir ve artar', () {
+      // Çoklu gün birikimini test etmek için ayın ve haftanın ilerlemiş olduğu bir referans tarihi (25 Ekim 2026 Pazar) kullanılır
+      GameDateUtils.setCustomDate(DateTime(2026, 10, 25, 14, 0));
       final service = LeaderboardService();
 
       for (final game in GameType.values) {
