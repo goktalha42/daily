@@ -2,13 +2,15 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../core/network/api_client.dart';
 import '../../core/services/daily_play_service.dart';
 import '../../core/utils/date_utils.dart';
 import '../../games/common/base_game.dart';
 
 final leaderboardServiceProvider =
     ChangeNotifierProvider<LeaderboardService>((ref) {
-  final service = LeaderboardService();
+  final apiClient = ref.watch(apiClientProvider);
+  final service = LeaderboardService(apiClient: apiClient);
   ref.listen<DailyPlayState>(dailyPlayServiceProvider, (prev, next) {
     service.syncWithDailyPlay(next);
   });
@@ -17,7 +19,12 @@ final leaderboardServiceProvider =
 });
 
 class LeaderboardService extends ChangeNotifier {
+  final ApiClient? apiClient;
   final List<GameResult> _resultsStore = [];
+  bool _isSyncingWithServer = false;
+
+  bool get isSyncingWithServer => _isSyncingWithServer;
+  bool get isServerConnected => apiClient?.isServerOnline ?? false;
 
   // 150 Özgün ve Gerçekçi Türk Oyuncu İsmi
   static const List<String> _seedUserNames = [
@@ -55,8 +62,19 @@ class LeaderboardService extends ChangeNotifier {
 
   static int _excess(int value) => value > 0 ? value : 0;
 
-  LeaderboardService() {
+  LeaderboardService({this.apiClient}) {
     _seedMockData();
+    if (apiClient != null) {
+      _initServerSync();
+    }
+  }
+
+  Future<void> _initServerSync() async {
+    final ok = await apiClient!.checkConnectionAndTimeSync();
+    if (ok) {
+      await apiClient!.ensureAuthenticated();
+      notifyListeners();
+    }
   }
 
   void _seedMockData() {
@@ -404,6 +422,17 @@ class LeaderboardService extends ChangeNotifier {
         _resultsStore.add(result);
         changed = true;
       }
+
+      // Sunucuya asenkron skor iletimi
+      if (apiClient != null) {
+        apiClient!.submitGameScore(
+          gameType: record.gameType,
+          dateId: record.dateId,
+          score: record.score,
+          durationMs: record.durationMs,
+          difficulty: record.subKey,
+        );
+      }
     }
 
     if (changed) {
@@ -425,7 +454,78 @@ class LeaderboardService extends ChangeNotifier {
     } else {
       _resultsStore.add(result);
     }
+
+    // Kullanıcı skoru ise sunucuya da gönder
+    if (apiClient != null && result.userId == 'user_local') {
+      apiClient!.submitGameScore(
+        gameType: result.gameType,
+        dateId: result.levelId,
+        score: result.score,
+        durationMs: result.durationMs,
+        difficulty: result.difficulty,
+        moveCount: result.moveCount,
+      );
+    }
+
     notifyListeners();
+  }
+
+  /// Canlı sunucudan liderlik tablosunu çekerek yerel hafızaya aktarır
+  Future<void> refreshFromServer({
+    required GameType gameType,
+    required LeaderboardTimeframe timeframe,
+    String? difficulty,
+    String? levelId,
+  }) async {
+    if (apiClient == null) return;
+    _isSyncingWithServer = true;
+    notifyListeners();
+
+    try {
+      final remoteEntries = await apiClient!.fetchLeaderboard(
+        gameType: gameType,
+        timeframe: timeframe,
+        difficulty: difficulty,
+        dateId: levelId,
+      );
+
+      if (remoteEntries != null && remoteEntries.isNotEmpty) {
+        final targetLevelId = levelId ?? GameDateUtils.getTodayLevelId();
+        for (final entry in remoteEntries) {
+          if (entry.userId.startsWith('server_player_')) {
+            final idx = _resultsStore.indexWhere((r) =>
+                r.userId == entry.userId &&
+                r.gameType == gameType &&
+                r.levelId == targetLevelId &&
+                r.difficulty == difficulty);
+
+            final result = GameResult(
+              id: 'remote_${entry.userId}_${gameType.id}_${difficulty ?? "main"}_$targetLevelId',
+              gameType: gameType,
+              levelId: targetLevelId,
+              userId: entry.userId,
+              userName: entry.userName,
+              durationMs: entry.bestTimeMs,
+              moveCount: 10,
+              score: entry.totalScore,
+              completedAt: DateTime.now(),
+              difficulty: difficulty,
+            );
+
+            if (idx >= 0) {
+              _resultsStore[idx] = result;
+            } else {
+              _resultsStore.add(result);
+            }
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('[LeaderboardService] refreshFromServer hatası: $e');
+    } finally {
+      _isSyncingWithServer = false;
+      notifyListeners();
+    }
   }
 
   List<LeaderboardEntry> getLeaderboard({

@@ -21,6 +21,22 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
   String? _selectedQueensDifficulty; // null = Toplam Puan
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _triggerRefresh();
+    });
+  }
+
+  void _triggerRefresh() {
+    ref.read(leaderboardServiceProvider).refreshFromServer(
+      gameType: _selectedGame,
+      timeframe: _timeframe,
+      difficulty: _selectedGame == GameType.queens ? _selectedQueensDifficulty : null,
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     final service = ref.watch(leaderboardServiceProvider);
     final entries = service.getLeaderboard(
@@ -40,45 +56,56 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
     final showUserBottomRow = myEntry != null && !isUserInTop10;
 
     final isDark = AppColors.isDark(context);
+    final isConnected = service.isServerConnected;
 
-    return CustomScrollView(
-      physics: const BouncingScrollPhysics(),
-      slivers: [
-        // 1. ÜST BAŞLIK & DÖNEM BİLGİSİ
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.only(left: 20, right: 20, top: 54, bottom: 12),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          width: 8,
-                          height: 8,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: AppColors.sunYellow,
-                            border: Border.fromBorderSide(
-                              BorderSide(color: AppColors.pencil(context), width: 1.5),
+    return RefreshIndicator(
+      color: AppColors.sunYellow,
+      backgroundColor: isDark ? AppColors.cardBgDark : Colors.white,
+      onRefresh: () async {
+        await ref.read(leaderboardServiceProvider).refreshFromServer(
+          gameType: _selectedGame,
+          timeframe: _timeframe,
+          difficulty: _selectedGame == GameType.queens ? _selectedQueensDifficulty : null,
+        );
+      },
+      child: CustomScrollView(
+        physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+        slivers: [
+          // 1. ÜST BAŞLIK & DÖNEM BİLGİSİ
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.only(left: 20, right: 20, top: 54, bottom: 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            width: 8,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: isConnected ? const Color(0xFF2E7D32) : AppColors.sunYellow,
+                              border: Border.fromBorderSide(
+                                BorderSide(color: AppColors.pencil(context), width: 1.5),
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          'GLOBAL ARENA • GÜNCEL',
-                          style: GoogleFonts.patrickHand(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.graphite(context),
-                            letterSpacing: 1.0,
+                          const SizedBox(width: 6),
+                          Text(
+                            isConnected ? 'CANLI SUNUCU • ÇEVRİMİÇİ' : 'GLOBAL ARENA • GÜNCEL',
+                            style: GoogleFonts.patrickHand(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: isConnected ? const Color(0xFF2E7D32) : AppColors.graphite(context),
+                              letterSpacing: 1.0,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
+                        ],
+                      ),
                     const SizedBox(height: 2),
                     Text(
                       'Zeka Sıralaması',
@@ -519,6 +546,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
           child: SizedBox(height: 120), // Floating nav bar için pay
         ),
       ],
+      ),
     );
   }
 

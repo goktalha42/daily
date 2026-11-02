@@ -114,3 +114,11 @@ lib/
   - Kategori filtreleri (Oyun Ustalığı, Zeka & Başarı, Seriler - oyun seçici ile)
   - Arama çubuğu ve Durum filtresi (Hepsi / Açılanlar / Kilitliler)
   - Steam Başarım Pop-up/Modalı (Büyük madalya, unvan, kazanma şartı ve tarih bilgisi)
+- [x] Çoklu Cihaz / Canlı Online Backend Mimarisi (`server/`, `api_client.dart`)
+  - Laravel 11 REST API altyapısı kuruldu (`POST /api/v1/auth/guest`, `GET /api/v1/time`, `POST /api/v1/games/submit`, `GET /api/v1/leaderboard`)
+  - 150 bot oyuncu ve gerçekçi puanları veritabanına otomatik seed edildi (`RealisticBotSeeder`)
+  - `ApiClient` ile Flutter tarafı bağlandı; sunucu koparsa kesintisiz yerel çalışma (offline fallback) sağlandı
+  - Sıralama ekranına canlı sunucu rozeti (`CANLI SUNUCU • ÇEVRİMİÇİ`) ve aşağı çekip yenileme (Pull-to-Refresh) eklendi
+  - İki farklı telefonun aynı sıralamada canlı yarışması test edilip doğrulandı
+  - Evdeki ana bilgisayar ve VPS kurulumu için `VPS_KURULUMU_VE_DURUM.md` kılavuzu hazırlandı
+

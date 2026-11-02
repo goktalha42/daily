@@ -53,3 +53,12 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Backend Server
+/server/vendor/
+/server/.env
+/server/.env.backup
+/server/.env.production
+/server/database/*.sqlite
+/server/database/*.sqlite-journal
+/server/storage/logs/*.log
