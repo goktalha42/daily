@@ -6,11 +6,13 @@ import '../../core/network/api_client.dart';
 import '../../core/services/daily_play_service.dart';
 import '../../core/utils/date_utils.dart';
 import '../../games/common/base_game.dart';
+import '../../core/services/user_nickname_provider.dart';
 
 final leaderboardServiceProvider =
     ChangeNotifierProvider<LeaderboardService>((ref) {
   final apiClient = ref.watch(apiClientProvider);
-  final service = LeaderboardService(apiClient: apiClient);
+  final userNickname = ref.watch(userNicknameProvider);
+  final service = LeaderboardService(apiClient: apiClient, userNickname: userNickname);
   ref.listen<DailyPlayState>(dailyPlayServiceProvider, (prev, next) {
     service.syncWithDailyPlay(next);
   });
@@ -20,6 +22,7 @@ final leaderboardServiceProvider =
 
 class LeaderboardService extends ChangeNotifier {
   final ApiClient? apiClient;
+  final String userNickname;
   final List<GameResult> _resultsStore = [];
   bool _isSyncingWithServer = false;
 
@@ -62,7 +65,7 @@ class LeaderboardService extends ChangeNotifier {
 
   static int _excess(int value) => value > 0 ? value : 0;
 
-  LeaderboardService({this.apiClient}) {
+  LeaderboardService({this.apiClient, this.userNickname = 'Oyuncu'}) {
     _seedMockData();
     if (apiClient != null) {
       _initServerSync();
@@ -404,7 +407,7 @@ class LeaderboardService extends ChangeNotifier {
         gameType: record.gameType,
         levelId: record.dateId,
         userId: 'user_local',
-        userName: 'Oyuncu',
+        userName: userNickname,
         durationMs: record.durationMs,
         moveCount: 10,
         score: record.score,

@@ -98,4 +98,57 @@ class ApiTest extends TestCase
                 'leaderboard',
             ]);
     }
+
+    public function test_nickname_uniqueness_and_case_insensitivity(): void
+    {
+        // 1. Cihaz A "Talha" ismini kaydeder
+        $resA = $this->postJson('/api/v1/auth/set-nickname', [
+            'device_id' => 'device-user-a',
+            'nickname' => 'Talha',
+        ]);
+        $resA->assertStatus(200)
+            ->assertJson([
+                'status' => 'success',
+                'player' => [
+                    'nickname' => 'Talha',
+                ],
+            ]);
+
+        // 2. Cihaz B aynı ismi küçük harfle ("talha") almaya çalışır -> 422 dönmeli
+        $resB = $this->postJson('/api/v1/auth/set-nickname', [
+            'device_id' => 'device-user-b',
+            'nickname' => 'talha',
+        ]);
+        $resB->assertStatus(422);
+
+        // 3. Cihaz C aynı ismi büyük harfle ("TALHA") almaya çalışır -> 422 dönmeli
+        $resC = $this->postJson('/api/v1/auth/set-nickname', [
+            'device_id' => 'device-user-c',
+            'nickname' => 'TALHA',
+        ]);
+        $resC->assertStatus(422);
+
+        // 4. check-nickname sorgusu "talha" için available: false dönmeli
+        $checkTaken = $this->getJson('/api/v1/auth/check-nickname?nickname=TaLhA');
+        $checkTaken->assertStatus(200)
+            ->assertJson([
+                'status' => 'taken',
+                'available' => false,
+            ]);
+
+        // 5. Cihaz D farklı bir isim ("Ahmet") seçer -> başarılı olmalı
+        $resD = $this->postJson('/api/v1/auth/set-nickname', [
+            'device_id' => 'device-user-d',
+            'nickname' => 'Ahmet',
+        ]);
+        $resD->assertStatus(200);
+
+        // 6. check-nickname boşta olan bir isim için available: true dönmeli
+        $checkFree = $this->getJson('/api/v1/auth/check-nickname?nickname=Mehmet_99');
+        $checkFree->assertStatus(200)
+            ->assertJson([
+                'status' => 'available',
+                'available' => true,
+            ]);
+    }
 }

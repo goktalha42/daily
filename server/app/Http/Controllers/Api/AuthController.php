@@ -10,19 +10,151 @@ use Illuminate\Http\Request;
 class AuthController extends Controller
 {
     /**
+     * İsim kullanılabilirlik kontrolü (Büyük/küçük harf duyarsız).
+     */
+    public function checkNickname(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'nickname' => ['required', 'string', 'min:3', 'max:20', 'regex:/^[\p{L}\p{N}_]{3,20}$/u'],
+            'device_id' => 'nullable|string',
+        ], [
+            'nickname.regex' => 'İsim yalnızca harf, rakam ve alt çizgi içerebilir; boşluk veya özel karakter içeremez.',
+            'nickname.min' => 'İsim en az 3 karakter olmalıdır.',
+            'nickname.max' => 'İsim en fazla 20 karakter olabilir.',
+        ]);
+
+        $nickname = trim($validated['nickname']);
+        $norm = Player::normalizeNickname($nickname);
+        $deviceId = $validated['device_id'] ?? $request->header('X-Device-Id');
+
+        $query = Player::where('normalized_nickname', $norm);
+        if ($deviceId) {
+            $query->where('device_id', '!=', $deviceId);
+        }
+
+        $exists = $query->exists();
+
+        if ($exists) {
+            return response()->json([
+                'status' => 'taken',
+                'available' => false,
+                'message' => 'Bu isim ("' . $nickname . '") zaten alınmış. Lütfen başka bir isim seçin.',
+            ]);
+        }
+
+        return response()->json([
+            'status' => 'available',
+            'available' => true,
+            'message' => 'Bu isim kullanılabilir!',
+        ]);
+    }
+
+    /**
+     * Cihaz için zorunlu benzersiz takma ad belirler ve kaydeder.
+     */
+    public function setNickname(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'device_id' => 'required|string|min:4|max:128',
+            'nickname' => ['required', 'string', 'min:3', 'max:20', 'regex:/^[\p{L}\p{N}_]{3,20}$/u'],
+            'avatar_id' => 'nullable|string|max:50',
+        ], [
+            'nickname.regex' => 'İsim yalnızca harf, rakam ve alt çizgi içerebilir; boşluk veya özel karakter içeremez.',
+            'nickname.min' => 'İsim en az 3 karakter olmalıdır.',
+            'nickname.max' => 'İsim en fazla 20 karakter olabilir.',
+        ]);
+
+        $deviceId = $validated['device_id'];
+        $nickname = trim($validated['nickname']);
+        $norm = Player::normalizeNickname($nickname);
+        $avatarId = $validated['avatar_id'] ?? null;
+
+        // Başka bir oyuncuda bu normalize isim var mı kontrol et
+        $isTaken = Player::where('normalized_nickname', $norm)
+            ->where('device_id', '!=', $deviceId)
+            ->exists();
+
+        if ($isTaken) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Bu isim ("' . $nickname . '") zaten başka bir oyuncu tarafından kullanılıyor.',
+                'errors' => [
+                    'nickname' => ['Bu isim zaten alınmış. Büyük/küçük harf fark etmeksizin tüm isimler tekildir.'],
+                ],
+            ], 422);
+        }
+
+        $player = Player::where('device_id', $deviceId)->first();
+
+        if (!$player) {
+            $player = Player::create([
+                'device_id' => $deviceId,
+                'nickname' => $nickname,
+                'normalized_nickname' => $norm,
+                'avatar_id' => $avatarId ?? 'avatar_default',
+                'is_bot' => false,
+                'league_tier' => 'stone',
+                'last_active_at' => now(),
+            ]);
+        } else {
+            $player->update([
+                'nickname' => $nickname,
+                'normalized_nickname' => $norm,
+                'avatar_id' => $avatarId ?? $player->avatar_id,
+                'last_active_at' => now(),
+            ]);
+        }
+
+        // Taze token üret
+        $player->tokens()->delete();
+        $token = $player->createToken('guest_token')->plainTextToken;
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Kullanıcı adı başarıyla kaydedildi.',
+            'token' => $token,
+            'player' => [
+                'id' => $player->id,
+                'device_id' => $player->device_id,
+                'nickname' => $player->nickname,
+                'avatar_id' => $player->avatar_id,
+                'league_tier' => $player->league_tier,
+                'created_at' => $player->created_at?->toIso8601String(),
+            ],
+        ]);
+    }
+
+    /**
      * Cihaz UUID'si ile hızlı anonim misafir oturumu açar veya mevcut oyuncuyu getirir.
      */
     public function guest(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'device_id' => 'required|string|min:4|max:128',
-            'nickname' => 'nullable|string|max:50',
+            'nickname' => ['nullable', 'string', 'min:3', 'max:20', 'regex:/^[\p{L}\p{N}_]{3,20}$/u'],
             'avatar_id' => 'nullable|string|max:50',
         ]);
 
         $deviceId = $validated['device_id'];
-        $nickname = $validated['nickname'] ?? null;
+        $nickname = isset($validated['nickname']) ? trim($validated['nickname']) : null;
         $avatarId = $validated['avatar_id'] ?? null;
+
+        if ($nickname) {
+            $norm = Player::normalizeNickname($nickname);
+            $isTaken = Player::where('normalized_nickname', $norm)
+                ->where('device_id', '!=', $deviceId)
+                ->exists();
+
+            if ($isTaken) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Bu isim ("' . $nickname . '") zaten başka bir oyuncu tarafından kullanılıyor.',
+                    'errors' => [
+                        'nickname' => ['Bu isim zaten alınmış.'],
+                    ],
+                ], 422);
+            }
+        }
 
         $player = Player::where('device_id', $deviceId)->first();
 
@@ -31,6 +163,7 @@ class AuthController extends Controller
             $player = Player::create([
                 'device_id' => $deviceId,
                 'nickname' => $defaultName,
+                'normalized_nickname' => Player::normalizeNickname($defaultName),
                 'avatar_id' => $avatarId ?? 'avatar_default',
                 'is_bot' => false,
                 'league_tier' => 'stone',
@@ -40,6 +173,7 @@ class AuthController extends Controller
             $updates = ['last_active_at' => now()];
             if ($nickname && $player->nickname !== $nickname) {
                 $updates['nickname'] = $nickname;
+                $updates['normalized_nickname'] = Player::normalizeNickname($nickname);
             }
             if ($avatarId && $player->avatar_id !== $avatarId) {
                 $updates['avatar_id'] = $avatarId;
@@ -82,11 +216,39 @@ class AuthController extends Controller
         }
 
         $validated = $request->validate([
-            'nickname' => 'nullable|string|min:2|max:30',
+            'nickname' => ['nullable', 'string', 'min:3', 'max:20', 'regex:/^[\p{L}\p{N}_]{3,20}$/u'],
             'avatar_id' => 'nullable|string|max:50',
+        ], [
+            'nickname.regex' => 'İsim yalnızca harf, rakam ve alt çizgi içerebilir; boşluk veya özel karakter içeremez.',
         ]);
 
-        $player->update(array_filter($validated));
+        if (isset($validated['nickname'])) {
+            $nickname = trim($validated['nickname']);
+            $norm = Player::normalizeNickname($nickname);
+
+            $isTaken = Player::where('normalized_nickname', $norm)
+                ->where('id', '!=', $player->id)
+                ->exists();
+
+            if ($isTaken) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Bu isim ("' . $nickname . '") zaten başka bir oyuncu tarafından kullanılıyor.',
+                    'errors' => [
+                        'nickname' => ['Bu isim zaten alınmış.'],
+                    ],
+                ], 422);
+            }
+
+            $player->nickname = $nickname;
+            $player->normalized_nickname = $norm;
+        }
+
+        if (isset($validated['avatar_id'])) {
+            $player->avatar_id = $validated['avatar_id'];
+        }
+
+        $player->save();
 
         return response()->json([
             'status' => 'success',

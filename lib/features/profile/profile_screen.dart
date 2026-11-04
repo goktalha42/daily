@@ -12,6 +12,8 @@ import '../../games/common/base_game.dart';
 import 'widgets/badge_showcase_section.dart';
 import '../../core/services/badge_service.dart';
 import '../league/league_screen.dart';
+import '../../core/services/user_nickname_provider.dart';
+import '../../core/widgets/nickname_prompt_dialog.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -24,6 +26,7 @@ class ProfileScreen extends ConsumerWidget {
     final headerGraphite = isDark ? AppColors.pencilGraphiteDark : AppColors.pencilGraphite;
 
     final isOnline = ref.watch(networkCheckerProvider);
+    final userNickname = ref.watch(userNicknameProvider);
     final statsMap = ref.watch(gameStatsServiceProvider);
     final statsNotifier = ref.read(gameStatsServiceProvider.notifier);
     final userIQ = statsNotifier.getOverallIQ();
@@ -164,12 +167,33 @@ class ProfileScreen extends ConsumerWidget {
                               children: [
                                 Row(
                                   children: [
-                                    Text(
-                                      'Zühtü #8492',
-                                      style: GoogleFonts.patrickHand(
-                                        color: headerPencil,
-                                        fontSize: 22,
-                                        fontWeight: FontWeight.w700,
+                                    Flexible(
+                                      child: Text(
+                                        userNickname,
+                                        style: GoogleFonts.patrickHand(
+                                          color: headerPencil,
+                                          fontSize: 22,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    GestureDetector(
+                                      onTap: () {
+                                        showDialog(
+                                          context: context,
+                                          builder: (ctx) => const NicknamePromptDialog(isEditing: true),
+                                        );
+                                      },
+                                      child: Container(
+                                        padding: const EdgeInsets.all(4),
+                                        decoration: BoxDecoration(
+                                          color: isDark ? AppColors.surfaceSecondaryDark : Colors.grey.shade200,
+                                          borderRadius: BorderRadius.circular(6),
+                                          border: Border.all(color: headerPencil, width: 1.0),
+                                        ),
+                                        child: Icon(Icons.edit, size: 14, color: headerPencil),
                                       ),
                                     ),
                                     const SizedBox(width: 6),

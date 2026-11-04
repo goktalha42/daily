@@ -6,7 +6,9 @@ use App\Http\Controllers\Api\LeaderboardController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
-    // 1. Cihaz / Misafir Girişi ve Profil
+    // 1. Cihaz / Misafir Girişi, Zorunlu Benzersiz İsim ve Profil
+    Route::get('/auth/check-nickname', [AuthController::class, 'checkNickname']);
+    Route::post('/auth/set-nickname', [AuthController::class, 'setNickname']);
     Route::post('/auth/guest', [AuthController::class, 'guest']);
     Route::post('/auth/profile', [AuthController::class, 'updateProfile']);
 

@@ -26,6 +26,8 @@ import '../leaderboard/leaderboard_service.dart';
 import '../profile/profile_screen.dart';
 import '../league/league_screen.dart';
 import '../../core/services/league_service.dart';
+import '../../core/network/api_client.dart';
+import '../../core/widgets/nickname_prompt_dialog.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -36,6 +38,26 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   int _bottomNavIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkMandatoryNickname();
+    });
+  }
+
+  Future<void> _checkMandatoryNickname() async {
+    final apiClient = ref.read(apiClientProvider);
+    final hasNick = await apiClient.hasNickname();
+    if (!hasNick && mounted) {
+      await showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) => const NicknamePromptDialog(),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

@@ -24,15 +24,116 @@ class ApiClient {
   static const String _serverUrlKey = 'zuhtu_custom_server_url';
   static const String _deviceIdKey = 'zuhtu_device_uuid';
   static const String _authTokenKey = 'zuhtu_auth_token';
+  static const String _nicknameKey = 'zuhtu_user_nickname';
 
   String? _cachedBaseUrl;
   String? _deviceId;
   String? _authToken;
+  String? _cachedNickname;
   bool _isOnlineServerReachable = false;
 
   bool get isServerOnline => _isOnlineServerReachable;
 
   ApiClient({required this.timeSync});
+
+  /// Kayıtlı takma adı döner
+  Future<String?> getNickname() async {
+    if (_cachedNickname != null) return _cachedNickname;
+    final prefs = await SharedPreferences.getInstance();
+    _cachedNickname = prefs.getString(_nicknameKey);
+    return _cachedNickname;
+  }
+
+  /// Takma adın daha önce seçilip seçilmediğini kontrol eder
+  Future<bool> hasNickname() async {
+    final nick = await getNickname();
+    return nick != null && nick.trim().isNotEmpty;
+  }
+
+  /// İsim kullanılabilirlik kontrolü (Büyük/küçük harf duyarsız kontrol)
+  Future<Map<String, dynamic>> checkNicknameAvailability(String nickname) async {
+    try {
+      final baseUrl = await getBaseUrl();
+      final deviceId = await getDeviceId();
+      final uri = Uri.parse('$baseUrl/auth/check-nickname').replace(
+        queryParameters: {
+          'nickname': nickname.trim(),
+          'device_id': deviceId,
+        },
+      );
+
+      final res = await _client.get(
+        uri,
+        headers: {'Accept': 'application/json'},
+      ).timeout(const Duration(seconds: 4));
+
+      final data = jsonDecode(res.body);
+      if (res.statusCode == 200) {
+        return {
+          'available': data['available'] == true,
+          'message': data['message'] ?? '',
+        };
+      } else {
+        return {
+          'available': false,
+          'message': data['message'] ?? 'Bu isim kullanılamaz.',
+        };
+      }
+    } catch (e) {
+      debugPrint('[ApiClient] checkNickname hatası: $e');
+      return {
+        'available': false,
+        'message': 'Sunucuyla bağlantı kurulamadı. İnternet bağlantını kontrol et.',
+      };
+    }
+  }
+
+  /// Sunucuya zorunlu ve benzersiz takma adı kaydeder
+  Future<Map<String, dynamic>> registerNickname(String nickname) async {
+    try {
+      final baseUrl = await getBaseUrl();
+      final deviceId = await getDeviceId();
+      final url = Uri.parse('$baseUrl/auth/set-nickname');
+
+      final res = await _client.post(
+        url,
+        headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
+        body: jsonEncode({
+          'device_id': deviceId,
+          'nickname': nickname.trim(),
+        }),
+      ).timeout(const Duration(seconds: 5));
+
+      final data = jsonDecode(res.body);
+      if (res.statusCode == 200 && data['status'] == 'success') {
+        final token = data['token'] as String?;
+        final prefs = await SharedPreferences.getInstance();
+        if (token != null) {
+          _authToken = token;
+          await prefs.setString(_authTokenKey, token);
+        }
+        _cachedNickname = nickname.trim();
+        await prefs.setString(_nicknameKey, _cachedNickname!);
+
+        return {
+          'success': true,
+          'message': data['message'] ?? 'Kullanıcı adı başarıyla kaydedildi.',
+        };
+      } else {
+        final message = data['message'] ?? 'Bu isim alınamadı.';
+        return {
+          'success': false,
+          'message': message,
+        };
+      }
+    } catch (e) {
+      debugPrint('[ApiClient] registerNickname hatası: $e');
+      return {
+        'success': false,
+        'message': 'Sunucuya ulaşılamadı. Lütfen internet bağlantını kontrol et.',
+      };
+    }
+  }
 
   /// Akıllı varsayılan sunucu URL'i belirler
   Future<String> getBaseUrl() async {
@@ -105,6 +206,7 @@ class ApiClient {
     try {
       final baseUrl = await getBaseUrl();
       final deviceId = await getDeviceId();
+      final nick = nickname ?? await getNickname();
       final url = Uri.parse('$baseUrl/auth/guest');
 
       final res = await _client.post(
@@ -112,7 +214,7 @@ class ApiClient {
         headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
         body: jsonEncode({
           'device_id': deviceId,
-          'nickname': ?nickname,
+          'nickname': ?nick,
         }),
       ).timeout(const Duration(seconds: 4));
 

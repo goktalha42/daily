@@ -57,6 +57,7 @@ class RealisticBotSeeder extends Seeder
                     ['device_id' => $deviceId],
                     [
                         'nickname' => $name,
+                        'normalized_nickname' => Player::normalizeNickname($name),
                         'is_bot' => true,
                         'avatar_id' => 'avatar_' . ($i % 12 + 1),
                         'league_tier' => $i < 10 ? 'emerald' : ($i < 30 ? 'gold' : ($i < 70 ? 'silver' : 'stone')),
