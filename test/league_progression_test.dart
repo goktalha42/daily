@@ -21,8 +21,8 @@ void main() {
       final notifier = LeagueNotifier(leaderboard);
       await Future.delayed(const Duration(milliseconds: 100));
 
-      // Başlangıçta Taş ligi
-      expect(notifier.state.currentLevel, equals(LeagueLevel.stone));
+      // Başlangıçta Demir ligi
+      expect(notifier.state.currentLevel, equals(LeagueLevel.iron));
 
       // Kullanıcının sırasını ilk 5'e sokacak şekilde state simüle et
       notifier.state = notifier.state.copyWith(
@@ -39,7 +39,7 @@ void main() {
       // Hafta geçişini tetikle
       await notifier.checkWeekTransition();
 
-      // Kullanıcı Taş Liginden Bronz Ligine terfi etmeli
+      // Kullanıcı Demir Liginden Bronz Ligine terfi etmeli
       expect(notifier.state.currentLevel, equals(LeagueLevel.bronze));
       expect(notifier.state.pendingPromotion, equals(LeagueLevel.bronze));
     });

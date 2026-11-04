@@ -1,133 +1,137 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../core/network/api_client.dart';
+import '../../core/services/daily_play_service.dart';
+import '../../core/services/user_nickname_provider.dart';
 import '../../core/utils/date_utils.dart';
 import '../../features/leaderboard/leaderboard_service.dart';
 import '../../games/common/base_game.dart';
 
 // ============================================================================
-// LIG SEVİYELERİ (10 Kademe — Taş → Muhteşem)
+// LIG SEVİYELERİ (10 Kademe — Demir → Şampiyonluk)
 // ============================================================================
 
 enum LeagueLevel {
-  stone,
-  bronze,
-  silver,
-  gold,
-  sapphire,
-  ruby,
-  diamond,
-  amethyst,
-  emerald,
-  legendary,
+  iron,       // 1. Demir
+  bronze,     // 2. Bronz
+  silver,     // 3. Gümüş
+  gold,       // 4. Altın
+  platinum,   // 5. Platin
+  emerald,    // 6. Zümrüt
+  diamond,    // 7. Elmas
+  master,     // 8. Ustalık
+  grandmaster,// 9. Üstatlık
+  champion,   // 10. Şampiyonluk
 }
 
 extension LeagueLevelExt on LeagueLevel {
   String get displayName {
     switch (this) {
-      case LeagueLevel.stone:
-        return 'Taş';
+      case LeagueLevel.iron:
+        return 'Demir';
       case LeagueLevel.bronze:
         return 'Bronz';
       case LeagueLevel.silver:
         return 'Gümüş';
       case LeagueLevel.gold:
         return 'Altın';
-      case LeagueLevel.sapphire:
-        return 'Safir';
-      case LeagueLevel.ruby:
-        return 'Yakut';
-      case LeagueLevel.diamond:
-        return 'Elmas';
-      case LeagueLevel.amethyst:
-        return 'Ametist';
+      case LeagueLevel.platinum:
+        return 'Platin';
       case LeagueLevel.emerald:
         return 'Zümrüt';
-      case LeagueLevel.legendary:
-        return 'Muhteşem';
+      case LeagueLevel.diamond:
+        return 'Elmas';
+      case LeagueLevel.master:
+        return 'Ustalık';
+      case LeagueLevel.grandmaster:
+        return 'Üstatlık';
+      case LeagueLevel.champion:
+        return 'Şampiyonluk';
     }
   }
 
   String get emoji {
     switch (this) {
-      case LeagueLevel.stone:
-        return '🪨';
+      case LeagueLevel.iron:
+        return '⛓️';
       case LeagueLevel.bronze:
         return '🥉';
       case LeagueLevel.silver:
         return '🥈';
       case LeagueLevel.gold:
         return '🥇';
-      case LeagueLevel.sapphire:
-        return '💙';
-      case LeagueLevel.ruby:
-        return '♦️';
-      case LeagueLevel.diamond:
-        return '💎';
-      case LeagueLevel.amethyst:
-        return '🔮';
+      case LeagueLevel.platinum:
+        return '💠';
       case LeagueLevel.emerald:
         return '💚';
-      case LeagueLevel.legendary:
+      case LeagueLevel.diamond:
+        return '💎';
+      case LeagueLevel.master:
+        return '🔮';
+      case LeagueLevel.grandmaster:
+        return '🦅';
+      case LeagueLevel.champion:
         return '👑';
     }
   }
 
   Color get primaryColor {
     switch (this) {
-      case LeagueLevel.stone:
-        return const Color(0xFF78716C);
+      case LeagueLevel.iron:
+        return const Color(0xFF64748B);
       case LeagueLevel.bronze:
         return const Color(0xFFCD7F32);
       case LeagueLevel.silver:
         return const Color(0xFF94A3B8);
       case LeagueLevel.gold:
         return const Color(0xFFF59E0B);
-      case LeagueLevel.sapphire:
-        return const Color(0xFF38BDF8);
-      case LeagueLevel.ruby:
-        return const Color(0xFFEF4444);
-      case LeagueLevel.diamond:
-        return const Color(0xFF67E8F9);
-      case LeagueLevel.amethyst:
-        return const Color(0xFFC4B5FD);
+      case LeagueLevel.platinum:
+        return const Color(0xFF06B6D4);
       case LeagueLevel.emerald:
         return const Color(0xFF10B981);
-      case LeagueLevel.legendary:
-        return const Color(0xFFF59E0B);
+      case LeagueLevel.diamond:
+        return const Color(0xFF38BDF8);
+      case LeagueLevel.master:
+        return const Color(0xFF8B5CF6);
+      case LeagueLevel.grandmaster:
+        return const Color(0xFFDC2626);
+      case LeagueLevel.champion:
+        return const Color(0xFFD97706);
     }
   }
 
   Color get bgColor {
     switch (this) {
-      case LeagueLevel.stone:
-        return const Color(0xFFF5F5F4);
+      case LeagueLevel.iron:
+        return const Color(0xFFF1F5F9);
       case LeagueLevel.bronze:
         return const Color(0xFFFEF3C7);
       case LeagueLevel.silver:
         return const Color(0xFFF1F5F9);
       case LeagueLevel.gold:
         return const Color(0xFFFFFBEB);
-      case LeagueLevel.sapphire:
-        return const Color(0xFFF0F9FF);
-      case LeagueLevel.ruby:
-        return const Color(0xFFFEF2F2);
-      case LeagueLevel.diamond:
+      case LeagueLevel.platinum:
         return const Color(0xFFECFEFF);
-      case LeagueLevel.amethyst:
-        return const Color(0xFFF5F3FF);
       case LeagueLevel.emerald:
         return const Color(0xFFECFDF5);
-      case LeagueLevel.legendary:
+      case LeagueLevel.diamond:
+        return const Color(0xFFF0F9FF);
+      case LeagueLevel.master:
+        return const Color(0xFFF5F3FF);
+      case LeagueLevel.grandmaster:
+        return const Color(0xFFFEF2F2);
+      case LeagueLevel.champion:
         return const Color(0xFFFFFBEB);
     }
   }
 
-  bool get isMax => this == LeagueLevel.legendary;
-  bool get isMin => this == LeagueLevel.stone;
+  bool get isMax => this == LeagueLevel.champion;
+  bool get isMin => this == LeagueLevel.iron;
 
   LeagueLevel? get next {
     final idx = LeagueLevel.values.indexOf(this);
@@ -176,6 +180,22 @@ class LeaguePlayer {
       isUser: isUser ?? this.isUser,
     );
   }
+
+  Map<String, dynamic> toJson() => {
+        'userId': userId,
+        'userName': userName,
+        'weeklyScore': weeklyScore,
+        'rank': rank,
+        'isUser': isUser,
+      };
+
+  factory LeaguePlayer.fromJson(Map<String, dynamic> json) => LeaguePlayer(
+        userId: json['userId'] as String? ?? '',
+        userName: json['userName'] as String? ?? '',
+        weeklyScore: json['weeklyScore'] as int? ?? 0,
+        rank: json['rank'] as int? ?? 0,
+        isUser: json['isUser'] as bool? ?? false,
+      );
 }
 
 // ============================================================================
@@ -194,6 +214,7 @@ class LeagueState {
   final String weekId;
   final LeagueLevel? pendingPromotion;
   final LeagueLevel? pendingRelegation;
+  final bool isSyncing;
 
   const LeagueState({
     required this.currentLevel,
@@ -201,6 +222,7 @@ class LeagueState {
     required this.weekId,
     this.pendingPromotion,
     this.pendingRelegation,
+    this.isSyncing = false,
   });
 
   LeaguePlayer? get userPlayer {
@@ -245,13 +267,15 @@ class LeagueState {
     String? weekId,
     LeagueLevel? pendingPromotion,
     LeagueLevel? pendingRelegation,
+    bool? isSyncing,
   }) {
     return LeagueState(
       currentLevel: currentLevel ?? this.currentLevel,
       players: players ?? this.players,
       weekId: weekId ?? this.weekId,
-      pendingPromotion: pendingPromotion,
-      pendingRelegation: pendingRelegation,
+      pendingPromotion: pendingPromotion ?? this.pendingPromotion,
+      pendingRelegation: pendingRelegation ?? this.pendingRelegation,
+      isSyncing: isSyncing ?? this.isSyncing,
     );
   }
 
@@ -260,6 +284,7 @@ class LeagueState {
         'weekId': weekId,
         if (pendingPromotion != null) 'pendingPromotion': pendingPromotion!.index,
         if (pendingRelegation != null) 'pendingRelegation': pendingRelegation!.index,
+        'players': players.map((p) => p.toJson()).toList(),
       };
 }
 
@@ -270,20 +295,43 @@ class LeagueState {
 final leagueServiceProvider =
     StateNotifierProvider<LeagueNotifier, LeagueState>((ref) {
   final leaderboard = ref.watch(leaderboardServiceProvider);
-  return LeagueNotifier(leaderboard);
+  final apiClient = ref.watch(apiClientProvider);
+  final userNickname = ref.watch(userNicknameProvider);
+  final dailyPlay = ref.watch(dailyPlayServiceProvider);
+
+  final notifier = LeagueNotifier(
+    leaderboard,
+    apiClient,
+    userNickname,
+    dailyPlay,
+  );
+
+  // Oyun tamamlandığında lig puanını anında yenile
+  ref.listen<DailyPlayState>(dailyPlayServiceProvider, (prev, next) {
+    notifier.refreshAfterGame(next);
+  });
+
+  return notifier;
 });
 
 class LeagueNotifier extends StateNotifier<LeagueState> {
-  static const _prefKey = 'zuhtu_league_state_v1';
+  static const _prefKey = 'zuhtu_league_state_v2';
   static const int leagueSize = 42;
   static const int promotionCount = 10;
   static const int relegationCount = 10;
 
-  final LeaderboardService _leaderboard;
+  final LeaderboardService? leaderboard;
+  final ApiClient? apiClient;
+  final String userNickname;
+  DailyPlayState? dailyPlay;
 
-  LeagueNotifier(this._leaderboard)
-      : super(LeagueState(
-          currentLevel: LeagueLevel.stone,
+  LeagueNotifier([
+    this.leaderboard,
+    this.apiClient,
+    this.userNickname = 'Oyuncu',
+    this.dailyPlay,
+  ]) : super(LeagueState(
+          currentLevel: LeagueLevel.iron,
           players: [],
           weekId: _currentWeekId(),
         )) {
@@ -309,15 +357,18 @@ class LeagueNotifier extends StateNotifier<LeagueState> {
       final raw = prefs.getString(_prefKey);
       final currentWeekId = _currentWeekId();
 
-      LeagueLevel savedLevel = LeagueLevel.stone;
+      LeagueLevel savedLevel = LeagueLevel.iron;
       LeagueLevel? pendingPromotion;
       LeagueLevel? pendingRelegation;
+      List<LeaguePlayer> savedPlayers = [];
 
       if (raw != null) {
         final decoded = jsonDecode(raw) as Map<String, dynamic>;
         final savedWeekId = decoded['weekId'] as String? ?? '';
-        savedLevel =
-            LeagueLevel.values[(decoded['currentLevel'] as int?) ?? 0];
+        final levelIndex = (decoded['currentLevel'] as int?) ?? 0;
+        savedLevel = levelIndex < LeagueLevel.values.length
+            ? LeagueLevel.values[levelIndex]
+            : LeagueLevel.iron;
 
         if (savedWeekId != currentWeekId) {
           // Yeni hafta: Önceki hafta sonuçlarına göre lig atla/düş
@@ -339,10 +390,17 @@ class LeagueNotifier extends StateNotifier<LeagueState> {
           pendingRelegation = decoded['pendingRelegation'] != null
               ? LeagueLevel.values[decoded['pendingRelegation'] as int]
               : null;
+          if (decoded['players'] is List) {
+            savedPlayers = (decoded['players'] as List)
+                .map((p) => LeaguePlayer.fromJson(p as Map<String, dynamic>))
+                .toList();
+          }
         }
       }
 
-      final players = _buildLeaguePlayers(savedLevel, currentWeekId);
+      final players = savedPlayers.isNotEmpty && savedPlayers.length == leagueSize
+          ? savedPlayers
+          : _buildLeaguePlayers(savedLevel, currentWeekId);
 
       state = LeagueState(
         currentLevel: savedLevel,
@@ -353,21 +411,168 @@ class LeagueNotifier extends StateNotifier<LeagueState> {
       );
 
       await _saveState();
+
+      // Canlı sunucudan en güncel haftalık sıralamayı arka planda çek
+      fetchLiveLeagueData();
     } catch (_) {
       final players =
-          _buildLeaguePlayers(LeagueLevel.stone, _currentWeekId());
+          _buildLeaguePlayers(LeagueLevel.iron, _currentWeekId());
       state = LeagueState(
-        currentLevel: LeagueLevel.stone,
+        currentLevel: LeagueLevel.iron,
         players: players,
         weekId: _currentWeekId(),
       );
     }
   }
 
-  /// Haftalık liderlik tablosundan kullanıcı puanını çeker + bot oyuncuları üretir
+  /// Kullanıcının bu haftaki toplam puanını yerel kayıtlardan ve liderlik tablosundan hesaplar
+  int _calculateUserWeeklyScore([DailyPlayState? playState]) {
+    int total = 0;
+    final ps = playState ?? dailyPlay;
+    if (ps != null) {
+      final activeDate = GameDateUtils.getActiveDate();
+      final weekStart = GameDateUtils.getStartOfWeek(activeDate);
+      final endOfWeek = DateTime(activeDate.year, activeDate.month, activeDate.day, 23, 59, 59);
+
+      for (final record in ps.records.values) {
+        if (!record.completedAt.isBefore(weekStart) && !record.completedAt.isAfter(endOfWeek)) {
+          total += record.score;
+        }
+      }
+    }
+
+    if (leaderboard != null) {
+      int lbTotal = 0;
+      try {
+        for (final game in GameType.values) {
+          final entries = leaderboard!.getLeaderboard(
+            gameType: game,
+            timeframe: LeaderboardTimeframe.weekly,
+          );
+          final userEntries =
+              entries.where((e) => e.userId == 'user_local').toList();
+          if (userEntries.isNotEmpty) {
+            lbTotal += userEntries.first.totalScore;
+          }
+        }
+      } catch (_) {}
+      if (lbTotal > total) total = lbTotal;
+    }
+
+    return total;
+  }
+
+  /// Canlı sunucudaki tüm haftalık oyun skorlarını çekip birleştirir
+  Future<void> fetchLiveLeagueData() async {
+    if (apiClient == null) return;
+
+    state = state.copyWith(isSyncing: true);
+
+    try {
+      final currentWeekId = _currentWeekId();
+      final level = state.currentLevel;
+
+      // 1. Canlı sunucudan tüm oyunların haftalık sıralamalarını paralel çek
+      final Map<String, int> playerTotalScores = {};
+      final Map<String, String> playerDisplayNames = {};
+
+      final games = [
+        GameType.queens,
+        GameType.pinpoint,
+        GameType.crossclimb,
+        GameType.tango,
+        GameType.zipPath,
+        GameType.patches,
+      ];
+
+      final results = await Future.wait(
+        games.map((g) => apiClient!.fetchLeaderboard(
+              gameType: g,
+              timeframe: LeaderboardTimeframe.weekly,
+            )),
+      );
+
+      for (final list in results) {
+        if (list == null) continue;
+        for (final entry in list) {
+          final normalizedName = entry.userName.trim().toLowerCase();
+          playerTotalScores[normalizedName] =
+              (playerTotalScores[normalizedName] ?? 0) + entry.totalScore;
+          playerDisplayNames[normalizedName] = entry.userName.trim();
+        }
+      }
+
+      // 2. Kullanıcının haftalık puanını belirle
+      final userNick = userNickname.trim().isEmpty ? 'Sen' : userNickname.trim();
+      final normalizedUserNick = userNick.toLowerCase();
+      final localScore = _calculateUserWeeklyScore();
+      final serverScore = playerTotalScores[normalizedUserNick] ?? 0;
+      final effectiveUserScore = max(localScore, serverScore);
+
+      // Kullanıcıyı sunucu toplamından çıkar (ayrı ekleyeceğiz)
+      playerTotalScores.remove(normalizedUserNick);
+
+      // 3. Gerçek canlı sunucu oyuncuları
+      final realPlayers = <LeaguePlayer>[];
+      playerTotalScores.forEach((normNick, score) {
+        realPlayers.add(
+          LeaguePlayer(
+            userId: 'server_$normNick',
+            userName: playerDisplayNames[normNick] ?? normNick,
+            weeklyScore: score,
+            rank: 0,
+            isUser: false,
+          ),
+        );
+      });
+
+      // 4. Kalan kontenjanı lig seviyesine uygun botlarla doldur (toplam 41 diğer oyuncu)
+      final neededBots = max(0, (leagueSize - 1) - realPlayers.length);
+      final (int botMin, int botMax) = _botScoreRange(level);
+      final rng = Random(_weekSeed(currentWeekId, level));
+      final bots = _generateBotPlayers(level, rng, botMin, botMax, count: neededBots);
+
+      final allPlayers = [
+        LeaguePlayer(
+          userId: 'user_local',
+          userName: userNick,
+          weeklyScore: effectiveUserScore,
+          rank: 0,
+          isUser: true,
+        ),
+        ...realPlayers,
+        ...bots,
+      ];
+
+      allPlayers.sort((a, b) {
+        if (b.weeklyScore != a.weeklyScore) {
+          return b.weeklyScore.compareTo(a.weeklyScore);
+        }
+        return a.userName.compareTo(b.userName);
+      });
+
+      final ranked = List.generate(allPlayers.length, (i) {
+        return allPlayers[i].copyWith(rank: i + 1);
+      });
+
+      state = state.copyWith(
+        players: ranked,
+        weekId: currentWeekId,
+        isSyncing: false,
+      );
+
+      await _saveState();
+    } catch (e) {
+      debugPrint('[LeagueService] Canlı lig verisi çekme hatası (Local korundu): $e');
+      state = state.copyWith(isSyncing: false);
+    }
+  }
+
+  /// Yerel lig oyuncuları tablosunu kurar
   List<LeaguePlayer> _buildLeaguePlayers(
       LeagueLevel level, String weekId) {
-    int userScore = _getUserWeeklyScore();
+    int userScore = _calculateUserWeeklyScore();
+    final userNick = userNickname.trim().isEmpty ? 'Sen' : userNickname.trim();
 
     final (int botMin, int botMax) = _botScoreRange(level);
     final rng = Random(_weekSeed(weekId, level));
@@ -376,7 +581,7 @@ class LeagueNotifier extends StateNotifier<LeagueState> {
     final allPlayers = [
       LeaguePlayer(
         userId: 'user_local',
-        userName: 'Sen',
+        userName: userNick,
         weeklyScore: userScore,
         rank: 0,
         isUser: true,
@@ -396,26 +601,6 @@ class LeagueNotifier extends StateNotifier<LeagueState> {
     });
   }
 
-  int _getUserWeeklyScore() {
-    try {
-      int total = 0;
-      for (final game in GameType.values) {
-        final entries = _leaderboard.getLeaderboard(
-          gameType: game,
-          timeframe: LeaderboardTimeframe.weekly,
-        );
-        final userEntries =
-            entries.where((e) => e.userId == 'user_local').toList();
-        if (userEntries.isNotEmpty) {
-          total += userEntries.first.totalScore;
-        }
-      }
-      return total;
-    } catch (_) {
-      return 0;
-    }
-  }
-
   int _weekSeed(String weekId, LeagueLevel level) {
     int seed = 0;
     for (final ch in weekId.codeUnits) {
@@ -426,40 +611,39 @@ class LeagueNotifier extends StateNotifier<LeagueState> {
 
   (int, int) _botScoreRange(LeagueLevel level) {
     switch (level) {
-      case LeagueLevel.stone:
-        return (200, 4000);
+      case LeagueLevel.iron:
+        return (200, 3500);
       case LeagueLevel.bronze:
-        return (1500, 6000);
+        return (1500, 5500);
       case LeagueLevel.silver:
-        return (3000, 9000);
+        return (3000, 8000);
       case LeagueLevel.gold:
-        return (5000, 13000);
-      case LeagueLevel.sapphire:
-        return (7000, 17000);
-      case LeagueLevel.ruby:
-        return (10000, 22000);
-      case LeagueLevel.diamond:
-        return (14000, 28000);
-      case LeagueLevel.amethyst:
-        return (18000, 34000);
+        return (5000, 11500);
+      case LeagueLevel.platinum:
+        return (7000, 15000);
       case LeagueLevel.emerald:
+        return (10000, 20000);
+      case LeagueLevel.diamond:
+        return (14000, 26000);
+      case LeagueLevel.master:
+        return (18000, 33000);
+      case LeagueLevel.grandmaster:
         return (24000, 42000);
-      case LeagueLevel.legendary:
+      case LeagueLevel.champion:
         return (32000, 55000);
     }
   }
 
   List<LeaguePlayer> _generateBotPlayers(
-      LeagueLevel level, Random rng, int minScore, int maxScore) {
+      LeagueLevel level, Random rng, int minScore, int maxScore,
+      {int count = leagueSize - 1}) {
+    if (count <= 0) return [];
     final active = GameDateUtils.getActiveDate();
-    // Haftanın ilerleyişine göre bot skorlarını dinamik ölçekle (Pzt: %25 -> Paz: %100)
-    // Böylece Pazartesi yeni haftaya geçildiğinde botların puanları da sıfırlanıp baştan başlar!
     final double dayFactor = (active.weekday / 7.0).clamp(0.25, 1.0);
     final currentMin = (minScore * dayFactor).round();
     final currentMax = (maxScore * dayFactor).round();
 
     final names = _botNamesForLevel(level);
-    final count = leagueSize - 1;
     return List.generate(count, (i) {
       final baseName = names[i % names.length];
       final suffix = rng.nextInt(9000) + 1000;
@@ -485,7 +669,7 @@ class LeagueNotifier extends StateNotifier<LeagueState> {
     'MantıkUstası', 'Analist99', 'KomboBeyni', 'SatranççıRuhu',
     'PerfektSkor', 'AceDetektif', 'BeyazKalem', 'GrafikUsta',
     'RakamKıran', 'TartışmazZeka', 'ŞampiyonRuhu', 'HızlıKalem',
-    'GüçlüSkor', 'ElitOyuncu', 'GünPuanı', 'TaşUyandı',
+    'GüçlüSkor', 'ElitOyuncu', 'GünPuanı', 'DemirYürek',
     'BronzKral', 'GümüşYıldız',
   ];
 
@@ -498,7 +682,7 @@ class LeagueNotifier extends StateNotifier<LeagueState> {
     }
     if (level.index >= 4) {
       return [
-        'DiamondZeka', 'SafirUsta', 'YakutBeyin', 'LigEfsanesi',
+        'DiamondZeka', 'SafirUsta', 'ZümrütBeyin', 'LigEfsanesi',
         'ŞampiyonYolu', 'StratejiKral', 'ZirveYıldız', 'ElitSkor'
       ];
     }
@@ -509,7 +693,6 @@ class LeagueNotifier extends StateNotifier<LeagueState> {
   Future<void> checkWeekTransition() async {
     final currentWeekId = _currentWeekId();
     if (state.weekId != currentWeekId && state.weekId.isNotEmpty) {
-      // Önceki haftanın sıralaması:
       final lastRank = state.userRank;
       LeagueLevel newLevel = state.currentLevel;
       LeagueLevel? pendingPromotion;
@@ -523,7 +706,6 @@ class LeagueNotifier extends StateNotifier<LeagueState> {
         pendingRelegation = newLevel;
       }
 
-      // Yeni hafta için botları ve kullanıcı puanını yeni haftaya göre kur
       final players = _buildLeaguePlayers(newLevel, currentWeekId);
 
       state = LeagueState(
@@ -535,25 +717,50 @@ class LeagueNotifier extends StateNotifier<LeagueState> {
       );
 
       await _saveState();
+      fetchLiveLeagueData();
     } else {
-      await refreshAfterGame();
+      await fetchLiveLeagueData();
     }
   }
 
-  /// Oyun bitişinde ligi yenile
-  Future<void> refreshAfterGame() async {
+  /// Oyun bitişinde ligi hemen yenile
+  Future<void> refreshAfterGame([DailyPlayState? updatedDailyPlay]) async {
+    if (updatedDailyPlay != null) {
+      dailyPlay = updatedDailyPlay;
+    }
     final currentWeekId = _currentWeekId();
-    final players = _buildLeaguePlayers(state.currentLevel, currentWeekId);
-    state = state.copyWith(players: players, weekId: currentWeekId);
+    final updatedScore = _calculateUserWeeklyScore();
+
+    // Kullanıcının puanını mevcut oyuncu listesinde hemen güncelle
+    final currentPlayers = List<LeaguePlayer>.from(state.players);
+    final userIdx = currentPlayers.indexWhere((p) => p.isUser);
+    if (userIdx != -1) {
+      currentPlayers[userIdx] = currentPlayers[userIdx].copyWith(
+        weeklyScore: max(currentPlayers[userIdx].weeklyScore, updatedScore),
+      );
+      currentPlayers.sort((a, b) {
+        if (b.weeklyScore != a.weeklyScore) {
+          return b.weeklyScore.compareTo(a.weeklyScore);
+        }
+        return a.userName.compareTo(b.userName);
+      });
+      final ranked = List.generate(currentPlayers.length, (i) {
+        return currentPlayers[i].copyWith(rank: i + 1);
+      });
+      state = state.copyWith(players: ranked, weekId: currentWeekId);
+    }
+
     await _saveState();
+
+    // Arka planda sunucudan da en son verileri çekip güncelle
+    fetchLiveLeagueData();
   }
 
   /// Bekleyen yükselme/düşme bildirimini temizle
   Future<void> clearPendingLeagueChange() async {
-    state = LeagueState(
-      currentLevel: state.currentLevel,
-      players: state.players,
-      weekId: state.weekId,
+    state = state.copyWith(
+      pendingPromotion: null,
+      pendingRelegation: null,
     );
     await _saveState();
   }

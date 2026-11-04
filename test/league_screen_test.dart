@@ -45,11 +45,11 @@ void main() {
 
   test('LeagueLevel enum has 10 tiers with proper emoji and names', () {
     expect(LeagueLevel.values.length, 10);
-    expect(LeagueLevel.stone.displayName, 'Taş');
-    expect(LeagueLevel.legendary.displayName, 'Muhteşem');
-    expect(LeagueLevel.stone.isMin, true);
-    expect(LeagueLevel.legendary.isMax, true);
-    expect(LeagueLevel.stone.next, LeagueLevel.bronze);
-    expect(LeagueLevel.legendary.previous, LeagueLevel.emerald);
+    expect(LeagueLevel.iron.displayName, 'Demir');
+    expect(LeagueLevel.champion.displayName, 'Şampiyonluk');
+    expect(LeagueLevel.iron.isMin, true);
+    expect(LeagueLevel.champion.isMax, true);
+    expect(LeagueLevel.iron.next, LeagueLevel.bronze);
+    expect(LeagueLevel.champion.previous, LeagueLevel.grandmaster);
   });
 }

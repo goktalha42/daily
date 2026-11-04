@@ -20,4 +20,7 @@ Route::prefix('v1')->group(function () {
 
     // 4. Liderlik Tablosu (Günlük, Haftalık, Aylık, Genel)
     Route::get('/leaderboard', [LeaderboardController::class, 'index']);
+
+    // 5. Haftalık Genel Lig Sıralaması (Tüm oyunların bu haftaki puanları)
+    Route::get('/league', [LeaderboardController::class, 'league']);
 });

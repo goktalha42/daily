@@ -59,6 +59,8 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen>
     final league = ref.watch(leagueServiceProvider);
     final level = league.currentLevel;
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return FadeTransition(
       opacity: _fadeAnim,
       child: AnimatedBuilder(
@@ -67,72 +69,84 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen>
           offset: Offset(0, _slideAnim.value),
           child: child,
         ),
-        child: CustomScrollView(
-          physics: const BouncingScrollPhysics(),
-          slivers: [
-            // ─── 0. BEKLEYEN LİG ATLAYIŞ/DÜŞÜŞ TEBRİK BANNERI ───────────
-            if (league.pendingPromotion != null || league.pendingRelegation != null)
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 50, 20, 0),
-                  child: _SketchLeagueTransitionBanner(
-                    league: league,
-                    onDismiss: () {
-                      ref.read(leagueServiceProvider.notifier).clearPendingLeagueChange();
-                    },
+        child: RefreshIndicator(
+          color: AppColors.sunYellow,
+          backgroundColor: isDark ? AppColors.surfaceDark : Colors.white,
+          onRefresh: () async {
+            await ref.read(leagueServiceProvider.notifier).fetchLiveLeagueData();
+          },
+          child: CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+            slivers: [
+              // ─── 0. BEKLEYEN LİG ATLAYIŞ/DÜŞÜŞ TEBRİK BANNERI ───────────
+              if (league.pendingPromotion != null || league.pendingRelegation != null)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 50, 20, 0),
+                    child: _SketchLeagueTransitionBanner(
+                      league: league,
+                      onDismiss: () {
+                        ref.read(leagueServiceProvider.notifier).clearPendingLeagueChange();
+                      },
+                    ),
                   ),
                 ),
-              ),
 
-            // ─── 1. ÜST BAŞLIK & SKEÇ LİG ROZETİ ─────────────────────────
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.only(
-                  left: 20,
-                  right: 20,
-                  top: (league.pendingPromotion != null || league.pendingRelegation != null) ? 14 : 54,
-                  bottom: 8,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Container(
-                              width: 8,
-                              height: 8,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: AppColors.sunYellow,
-                                border: Border.fromBorderSide(
-                                  BorderSide(
-                                    color: AppColors.pencil(context),
-                                    width: 1.5,
+              // ─── 1. ÜST BAŞLIK & SKEÇ LİG ROZETİ ─────────────────────────
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    left: 20,
+                    right: 20,
+                    top: (league.pendingPromotion != null || league.pendingRelegation != null) ? 14 : 54,
+                    bottom: 8,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                width: 8,
+                                height: 8,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: league.isSyncing
+                                      ? AppColors.sunYellow
+                                      : const Color(0xFF2E7D32),
+                                  border: Border.fromBorderSide(
+                                    BorderSide(
+                                      color: AppColors.pencil(context),
+                                      width: 1.5,
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              'HAFTALIK LİG ARENASI • REKABET',
-                              style: GoogleFonts.patrickHand(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.graphite(context),
-                                letterSpacing: 1.0,
+                              const SizedBox(width: 6),
+                              Text(
+                                league.isSyncing
+                                    ? 'GÜNCELLENİYOR...'
+                                    : 'CANLI SUNUCU • HAFTALIK LİG',
+                                style: GoogleFonts.patrickHand(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                  color: league.isSyncing
+                                      ? AppColors.graphite(context)
+                                      : const Color(0xFF2E7D32),
+                                  letterSpacing: 1.0,
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Lig Tablosu',
-                          style: GoogleFonts.patrickHand(
-                            fontSize: 34,
+                            ],
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Lig Tablosu',
+                            style: GoogleFonts.patrickHand(
+                              fontSize: 34,
                             fontWeight: FontWeight.w700,
                             color: AppColors.pencil(context),
                             letterSpacing: -0.5,
@@ -263,8 +277,9 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen>
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }
 
 // ============================================================================

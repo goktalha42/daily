@@ -46,10 +46,12 @@ class BadgeNotifier extends StateNotifier<Map<String, UserBadge>> {
   /// Belirtilen rozeti kullanıcıya verir veya süreli rozetin geçerliliğini yeniler.
   /// Eğer rozet ilk defa açıldıysa true döner.
   Future<bool> awardBadge(String badgeId) async {
-    final badgeDef = DailyBadge.allBadges.firstWhere(
-      (b) => b.id == badgeId,
-      orElse: () => throw ArgumentError('Bilinmeyen rozet: $badgeId'),
-    );
+    DailyBadge? badgeDef;
+    try {
+      badgeDef = DailyBadge.allBadges.firstWhere((b) => b.id == badgeId);
+    } catch (_) {
+      return false;
+    }
 
     final now = DateTime.now();
     final DateTime? expires = (badgeDef.isTemporary && badgeDef.validityDays > 0)
@@ -175,21 +177,11 @@ class BadgeNotifier extends StateNotifier<Map<String, UserBadge>> {
       }
     }
 
-    // 11. SERİ ROZETLERİ (Her oyun için ayrı ve genel seri)
+    // 11. SERİ ROZETLERİ (Genel zihin serisi)
     if (dailyPlayState != null) {
-      final gameStreak = dailyPlayState.getMaxStreak(gameType);
       final allStreak = dailyPlayState.getMaxStreak(null);
 
       for (final tier in DailyBadge.streakTiers) {
-        // İlgili oyun serisi
-        if (gameStreak >= tier) {
-          final badgeId = 'streak_${gameType.id}_$tier';
-          if (await _tryAward(badgeId)) {
-            newlyAwarded.add(_findDef(badgeId));
-          }
-        }
-
-        // Genel zihin serisi
         if (allStreak >= tier) {
           final badgeId = 'streak_all_$tier';
           if (await _tryAward(badgeId)) {

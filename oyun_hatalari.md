@@ -4,6 +4,7 @@ highlighterGreen Bu iki rengi öleceğini bilsen bile hiç bir yerde hiç bir ş
 
 Versiyon:
 yeni apk ler yaptıkca versiyonu v1.0.1, v1.0.2 olarak değişiklik büyüklüğüne göre v1.1.0 gibi farklı şekillerde isimlendirelim.
+- **v1.0.2 (Güncel):** Canlı sunucu lig sistemi entegrasyonu (10 kademe: Demir - Şampiyonluk), tüm seviyeler ve tamamlanan oyunlar için canlı sıralamalar, el çizimi skeç rozetler sistemi.
 
 Lig sistemi:
 canlı sisteme geçildi ve lig sistemi canlıda çalışmıyor.

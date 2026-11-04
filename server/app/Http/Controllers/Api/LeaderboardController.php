@@ -156,4 +156,70 @@ class LeaderboardController extends Controller
             'leaderboard' => $leaderboard,
         ]);
     }
+
+    /**
+     * Haftalık Genel Lig Sıralamasını (Tüm oyunların bu haftaki puanları toplamı) döner.
+     */
+    public function league(Request $request): JsonResponse
+    {
+        $targetDate = Carbon::now('UTC');
+        $weekStart = $targetDate->copy()->startOfWeek(Carbon::MONDAY)->startOfDay();
+        $endOfDay = $targetDate->copy()->endOfDay();
+        $limit = $request->input('limit', 150);
+
+        $results = GameScore::query()
+            ->join('players', 'game_scores.player_id', '=', 'players.id')
+            ->whereBetween('game_scores.completed_at', [$weekStart, $endOfDay])
+            ->select(
+                'players.id as player_id',
+                'players.nickname as player_name',
+                'players.avatar_id',
+                'players.is_bot',
+                'players.device_id',
+                DB::raw('SUM(game_scores.score) as total_score'),
+                DB::raw('SUM(game_scores.duration_ms) as total_duration_ms'),
+                DB::raw('COUNT(game_scores.id) as games_played')
+            )
+            ->groupBy('players.id', 'players.nickname', 'players.avatar_id', 'players.is_bot', 'players.device_id')
+            ->orderByDesc('total_score')
+            ->orderBy('total_duration_ms')
+            ->limit($limit)
+            ->get();
+
+        $leaderboard = [];
+        $rank = 1;
+        $requestDeviceId = $request->header('X-Device-Id') ?: $request->query('device_id');
+        $myRank = null;
+        $myEntry = null;
+
+        foreach ($results as $item) {
+            $entry = [
+                'rank' => $rank,
+                'player_id' => $item->player_id,
+                'player_name' => $item->player_name,
+                'avatar_id' => $item->avatar_id,
+                'is_bot' => (bool)$item->is_bot,
+                'total_score' => (int)$item->total_score,
+                'best_time_ms' => (int)$item->total_duration_ms,
+                'games_played' => (int)$item->games_played,
+            ];
+
+            if ($requestDeviceId && $item->device_id === $requestDeviceId) {
+                $myRank = $rank;
+                $myEntry = $entry;
+            }
+
+            $leaderboard[] = $entry;
+            $rank++;
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'week_id' => $targetDate->format('Y') . '-W' . str_pad($targetDate->isoWeek(), 2, '0', STR_PAD_LEFT),
+            'total_entries' => count($leaderboard),
+            'my_rank' => $myRank,
+            'my_entry' => $myEntry,
+            'leaderboard' => $leaderboard,
+        ]);
+    }
 }
