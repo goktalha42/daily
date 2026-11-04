@@ -62,3 +62,6 @@ app.*.map.json
 /server/database/*.sqlite
 /server/database/*.sqlite-journal
 /server/storage/logs/*.log
+
+*.apk
+
