@@ -109,6 +109,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       onTap: () {
                         HapticFeedback.selectionClick();
                         setState(() => _bottomNavIndex = 1);
+                        ref.read(leaderboardServiceProvider).refreshCurrentLeaderboard();
                       },
                     ),
                     _NavTabItem(

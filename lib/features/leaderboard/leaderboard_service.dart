@@ -26,6 +26,24 @@ class LeaderboardService extends ChangeNotifier {
   final List<GameResult> _resultsStore = [];
   bool _isSyncingWithServer = false;
 
+  GameType lastRequestedGame = GameType.queens;
+  LeaderboardTimeframe lastRequestedTimeframe = LeaderboardTimeframe.daily;
+  String? lastRequestedDifficulty;
+
+  final Map<String, List<LeaderboardEntry>> _serverLeaderboardCache = {};
+
+  String _buildCacheKey(GameType gameType, LeaderboardTimeframe timeframe, String? difficulty, String? levelId) {
+    return '${gameType.id}_${timeframe.name}_${difficulty ?? ""}_${levelId ?? ""}';
+  }
+
+  Future<void> refreshCurrentLeaderboard() async {
+    await refreshFromServer(
+      gameType: lastRequestedGame,
+      timeframe: lastRequestedTimeframe,
+      difficulty: lastRequestedDifficulty,
+    );
+  }
+
   bool get isSyncingWithServer => _isSyncingWithServer;
   bool get isServerConnected => apiClient?.isServerOnline ?? false;
 
@@ -467,19 +485,32 @@ class LeaderboardService extends ChangeNotifier {
         durationMs: result.durationMs,
         difficulty: result.difficulty,
         moveCount: result.moveCount,
-      );
+      ).then((success) {
+        if (success) {
+          refreshFromServer(
+            gameType: result.gameType,
+            timeframe: LeaderboardTimeframe.daily,
+            difficulty: result.difficulty,
+            levelId: result.levelId,
+          );
+        }
+      });
     }
 
     notifyListeners();
   }
 
-  /// Canlı sunucudan liderlik tablosunu çekerek yerel hafızaya aktarır
+  /// Canlı sunucudan liderlik tablosunu çeker ve doğrudan önbelleğe yazar
   Future<void> refreshFromServer({
     required GameType gameType,
     required LeaderboardTimeframe timeframe,
     String? difficulty,
     String? levelId,
   }) async {
+    lastRequestedGame = gameType;
+    lastRequestedTimeframe = timeframe;
+    lastRequestedDifficulty = difficulty;
+
     if (apiClient == null) return;
     _isSyncingWithServer = true;
     notifyListeners();
@@ -493,35 +524,25 @@ class LeaderboardService extends ChangeNotifier {
       );
 
       if (remoteEntries != null && remoteEntries.isNotEmpty) {
-        final targetLevelId = levelId ?? GameDateUtils.getTodayLevelId();
-        for (final entry in remoteEntries) {
-          if (entry.userId.startsWith('server_player_')) {
-            final idx = _resultsStore.indexWhere((r) =>
-                r.userId == entry.userId &&
-                r.gameType == gameType &&
-                r.levelId == targetLevelId &&
-                r.difficulty == difficulty);
+        final key = _buildCacheKey(gameType, timeframe, difficulty, levelId);
+        final normalizedMyNick = userNickname.trim().toLowerCase();
 
-            final result = GameResult(
-              id: 'remote_${entry.userId}_${gameType.id}_${difficulty ?? "main"}_$targetLevelId',
-              gameType: gameType,
-              levelId: targetLevelId,
-              userId: entry.userId,
+        final mapped = remoteEntries.map((entry) {
+          final isMe = entry.userName.trim().toLowerCase() == normalizedMyNick;
+          if (isMe) {
+            return LeaderboardEntry(
+              rank: entry.rank,
+              userId: 'user_local',
               userName: entry.userName,
-              durationMs: entry.bestTimeMs,
-              moveCount: 10,
-              score: entry.totalScore,
-              completedAt: DateTime.now(),
-              difficulty: difficulty,
+              totalScore: entry.totalScore,
+              bestTimeMs: entry.bestTimeMs,
+              gamesPlayed: entry.gamesPlayed,
             );
-
-            if (idx >= 0) {
-              _resultsStore[idx] = result;
-            } else {
-              _resultsStore.add(result);
-            }
           }
-        }
+          return entry;
+        }).toList();
+
+        _serverLeaderboardCache[key] = mapped;
       }
     } catch (e) {
       debugPrint('[LeaderboardService] refreshFromServer hatası: $e');
@@ -537,6 +558,14 @@ class LeaderboardService extends ChangeNotifier {
     String? difficulty,
     String? levelId,
   }) {
+    lastRequestedGame = gameType;
+    lastRequestedTimeframe = timeframe;
+    lastRequestedDifficulty = difficulty;
+
+    final key = _buildCacheKey(gameType, timeframe, difficulty, levelId);
+    if (_serverLeaderboardCache.containsKey(key) && _serverLeaderboardCache[key]!.isNotEmpty) {
+      return _serverLeaderboardCache[key]!;
+    }
     final activeDate = GameDateUtils.getActiveDate();
     final targetLevelId = levelId ?? GameDateUtils.getTodayLevelId();
 

@@ -181,6 +181,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                             onTap: () {
                               HapticFeedback.selectionClick();
                               setState(() => _timeframe = tf);
+                              _triggerRefresh();
                             },
                             child: Padding(
                               padding: const EdgeInsets.symmetric(vertical: 6),
@@ -223,6 +224,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                   onTap: () {
                     HapticFeedback.selectionClick();
                     setState(() => _selectedGame = game);
+                    _triggerRefresh();
                   },
                   borderRadius: 10,
                   borderWidth: isSelected ? 2.2 : 1.6,
@@ -266,6 +268,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                     onTap: () {
                       HapticFeedback.selectionClick();
                       setState(() => _selectedQueensDifficulty = null);
+                      _triggerRefresh();
                     },
                   ),
                   const SizedBox(width: 6),
@@ -275,6 +278,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                     onTap: () {
                       HapticFeedback.selectionClick();
                       setState(() => _selectedQueensDifficulty = 'kolay');
+                      _triggerRefresh();
                     },
                   ),
                   const SizedBox(width: 6),
@@ -284,6 +288,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                     onTap: () {
                       HapticFeedback.selectionClick();
                       setState(() => _selectedQueensDifficulty = 'zor');
+                      _triggerRefresh();
                     },
                   ),
                   const SizedBox(width: 6),
@@ -293,6 +298,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                     onTap: () {
                       HapticFeedback.selectionClick();
                       setState(() => _selectedQueensDifficulty = 'master');
+                      _triggerRefresh();
                     },
                   ),
                 ],
