@@ -17,8 +17,12 @@ class LeaderboardController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
+        if ($request->input('game_type') === 'zipPath') {
+            $request->merge(['game_type' => 'zip_path']);
+        }
+
         $validated = $request->validate([
-            'game_type' => 'required|string|in:queens,pinpoint,crossclimb,tango,zip_path,patches',
+            'game_type' => 'required|string|in:queens,pinpoint,crossclimb,tango,zip_path,zipPath,patches',
             'timeframe' => 'nullable|string|in:daily,weekly,monthly,all_time',
             'difficulty' => 'nullable|string|max:32',
             'date_id' => 'nullable|string|regex:/^\d{4}-\d{2}-\d{2}$/',

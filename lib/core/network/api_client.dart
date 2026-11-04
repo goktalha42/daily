@@ -233,6 +233,11 @@ class ApiClient {
     return null;
   }
 
+  String _mapGameType(GameType type) {
+    if (type == GameType.zipPath) return 'zip_path';
+    return type.id;
+  }
+
   /// Oyuncu oyun bitirdiğinde skoru sunucuya asenkron iletir
   Future<bool> submitGameScore({
     required GameType gameType,
@@ -256,7 +261,7 @@ class ApiClient {
       };
 
       final payload = {
-        'game_type': gameType.id,
+        'game_type': _mapGameType(gameType),
         'date_id': dateId,
         'difficulty': difficulty ?? 'default',
         'score': score,
@@ -304,7 +309,7 @@ class ApiClient {
       }
 
       final queryParams = {
-        'game_type': gameType.id,
+        'game_type': _mapGameType(gameType),
         'timeframe': tfParam,
         'difficulty': ?difficulty,
         'date_id': ?dateId,

@@ -34,8 +34,12 @@ class GameController extends Controller
      */
     public function submit(Request $request): JsonResponse
     {
+        if ($request->input('game_type') === 'zipPath') {
+            $request->merge(['game_type' => 'zip_path']);
+        }
+
         $validated = $request->validate([
-            'game_type' => 'required|string|in:queens,pinpoint,crossclimb,tango,zip_path,patches',
+            'game_type' => 'required|string|in:queens,pinpoint,crossclimb,tango,zip_path,zipPath,patches',
             'date_id' => 'required|string|regex:/^\d{4}-\d{2}-\d{2}$/',
             'difficulty' => 'nullable|string|max:32',
             'score' => 'required|integer|min:0|max:3000',
