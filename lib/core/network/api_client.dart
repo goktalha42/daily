@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
@@ -19,10 +18,8 @@ class ApiClient {
   final TimeSyncService timeSync;
   final http.Client _client = http.Client();
 
-  // Sabit veya önceden kaydedilmiş sunucu adresi
-  // Bilgisayarın yerel Wi-Fi IP'si: 192.168.1.108:8000
-  static const String _defaultLanUrl = 'http://192.168.1.108:8000/api/v1';
-  static const String _defaultLocalhostUrl = 'http://127.0.0.1:8000/api/v1';
+  // Canlı VPS Sunucu Adresi (Ubuntu 24.04 - Nginx Port 80)
+  static const String _defaultLiveUrl = 'http://2.56.109.165/api/v1';
 
   static const String _serverUrlKey = 'zuhtu_custom_server_url';
   static const String _deviceIdKey = 'zuhtu_device_uuid';
@@ -48,18 +45,9 @@ class ApiClient {
       return _cachedBaseUrl!;
     }
 
-    if (kIsWeb) {
-      _cachedBaseUrl = _defaultLocalhostUrl;
-    } else if (Platform.isAndroid) {
-      // Fiziksel telefon ve emülatör desteği:
-      // Varsayılan olarak aynı Wi-Fi'deki bilgisayar IP'si (192.168.1.108)
-      _cachedBaseUrl = _defaultLanUrl;
-    } else if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
-      _cachedBaseUrl = _defaultLocalhostUrl;
-    } else {
-      _cachedBaseUrl = _defaultLanUrl;
-    }
-
+    // Canlı VPS Sunucusu devrede: Tüm istemciler (Android, iOS, Windows, Web)
+    // varsayılan olarak canlı sunucuya bağlanır.
+    _cachedBaseUrl = _defaultLiveUrl;
     return _cachedBaseUrl!;
   }
 

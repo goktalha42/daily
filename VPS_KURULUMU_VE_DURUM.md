@@ -67,47 +67,25 @@ Evdeki ana bilgisayara geçtiğinizde:
 
 ---
 
-## 🌐 4. VPS Alındığında Kurulum Adımları (Adım Adım)
+## 🌐 4. Canlı VPS Sunucu Durumu (AKTİF & ÇALIŞIYOR)
 
-Kullanıcı ucuz bir VPS aldığında (Örn. Ubuntu 22.04 / 24.04):
+Sunucu başarıyla kiralandı, kuruldu ve API tüm dünyaya açıldı!
 
-### Adım 4.1: VPS Sunucusunu Hazırlama
+- **Sunucu IP:** `2.56.109.165`
+- **Konum / Donanım:** TR4 Paketi (3 CORE Platinum, 4 GB RAM, 50 GB SSD - Ubuntu 24.04 LTS)
+- **Web & Backend:** Nginx (Port 80) + PHP 8.4-FPM + SQLite
+- **API Base URL:** `http://2.56.109.165/api/v1`
+- **Sunucu Dizin Yolu:** `/var/www/daily/server`
+- **Veritabanı Durumu:** Migrasyonlar tamamlandı; 150 gerçekçi bot oyuncu ve skorları yüklendi (`RealisticBotSeeder`).
+- **Flutter İstemci:** [`lib/core/network/api_client.dart`](file:///c:/Users/Talha/Desktop/projeler/daily/lib/core/network/api_client.dart) içerisindeki varsayılan adres canlı VPS IP'sine güncellendi (`http://2.56.109.165/api/v1`).
+
+### İleride Backend Güncellendiğinde VPS'i Güncelleme Komutu:
+Bilgisayarınızdan GitHub'a kod push'ladıktan sonra VPS'e bağlanıp:
 ```bash
-sudo apt update && sudo apt upgrade -y
-sudo apt install -y php8.3-cli php8.3-fpm php8.3-sqlite3 php8.3-curl php8.3-xml php8.3-mbstring php8.3-zip composer nginx git
+ssh root@2.56.109.165
+cd /var/www/daily && git pull origin main
+cd server && php artisan optimize:clear && php artisan config:cache && php artisan route:cache
 ```
-
-### Adım 4.2: Kodları VPS'e Yükleme
-- GitHub reposunu VPS'e klonlayın veya `server/` klasörünü `/var/www/zuhtu-api` dizinine atın.
-- İzinleri ayarlayın:
-  ```bash
-  sudo chown -R www-data:www-data /var/www/zuhtu-api/storage /var/www/zuhtu-api/database
-  sudo chmod -R 775 /var/www/zuhtu-api/storage /var/www/zuhtu-api/database
-  ```
-- `.env` dosyasını oluşturun ve veritabanını kurun:
-  ```bash
-  composer install --no-dev --optimize-autoloader
-  php artisan key:generate
-  touch database/database.sqlite
-  php artisan migrate --force --seed
-  ```
-
-### Adım 4.3: Hızlı Çalıştırma (Test Aşaması)
-En basit test için Nginx ile uğraşmadan direkt:
-```bash
-php artisan serve --host=0.0.0.0 --port=8000
-```
-veya Nginx sanal host (VirtualHost) eklenip `systemd` ile kalıcı servis yapılabilir.
-
-### Adım 4.4: Flutter'ı VPS Adresine Bağlama
-Flutter projesindeki [`lib/core/network/api_client.dart`](file:///c:/Users/Talha/Desktop/projeler/daily/lib/core/network/api_client.dart) dosyasına gidin:
-```dart
-// Satır 24 civarı:
-static const String _defaultLanUrl = 'http://VPS_IP_ADRESI:8000/api/v1';
-// veya alan adı bağlandıysa:
-// static const String _defaultLanUrl = 'https://api.oyununuz.com/api/v1';
-```
-Bu adresi yazdıktan sonra APK derleyip (`flutter build apk`) uzaktaki tüm arkadaşlarınıza gönderdiğinizde, herkes o VPS'e bağlanıp tek bir liderlik tablosunda yarışacaktır!
 
 ---
 
