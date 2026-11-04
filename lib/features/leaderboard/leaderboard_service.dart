@@ -83,8 +83,16 @@ class LeaderboardService extends ChangeNotifier {
 
   static int _excess(int value) => value > 0 ? value : 0;
 
-  LeaderboardService({this.apiClient, this.userNickname = 'Oyuncu'}) {
-    _seedMockData();
+  final bool enableMockBots;
+
+  LeaderboardService({
+    this.apiClient,
+    this.userNickname = 'Oyuncu',
+    this.enableMockBots = false,
+  }) {
+    if (enableMockBots) {
+      _seedMockData();
+    }
     if (apiClient != null) {
       _initServerSync();
     }
@@ -523,7 +531,7 @@ class LeaderboardService extends ChangeNotifier {
         dateId: levelId,
       );
 
-      if (remoteEntries != null && remoteEntries.isNotEmpty) {
+      if (remoteEntries != null) {
         final key = _buildCacheKey(gameType, timeframe, difficulty, levelId);
         final normalizedMyNick = userNickname.trim().toLowerCase();
 
@@ -563,7 +571,7 @@ class LeaderboardService extends ChangeNotifier {
     lastRequestedDifficulty = difficulty;
 
     final key = _buildCacheKey(gameType, timeframe, difficulty, levelId);
-    if (_serverLeaderboardCache.containsKey(key) && _serverLeaderboardCache[key]!.isNotEmpty) {
+    if (_serverLeaderboardCache.containsKey(key)) {
       return _serverLeaderboardCache[key]!;
     }
     final activeDate = GameDateUtils.getActiveDate();

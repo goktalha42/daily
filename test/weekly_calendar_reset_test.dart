@@ -17,7 +17,7 @@ void main() {
   });
 
   test('Çarşamba günü oynanan oyunun puanı Pazartesi günü sıfırlanır (Çarşamba gününü beklemez)', () async {
-    final leaderboard = LeaderboardService();
+    final leaderboard = LeaderboardService(enableMockBots: true);
     final leagueNotifier = LeagueNotifier(leaderboard);
     await Future.delayed(const Duration(milliseconds: 100));
 

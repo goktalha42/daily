@@ -17,7 +17,7 @@ void main() {
 
   group('Lig İlerleme ve Hafta Geçişi Testleri', () {
     test('Hafta geçişinde kullanıcı ilk 10 daysa bir üst lige terfi eder', () async {
-      final leaderboard = LeaderboardService();
+      final leaderboard = LeaderboardService(enableMockBots: true);
       final notifier = LeagueNotifier(leaderboard);
       await Future.delayed(const Duration(milliseconds: 100));
 
@@ -45,7 +45,7 @@ void main() {
     });
 
     test('Hafta geçişinde kullanıcı son 10 daysa bir alt lige geriler', () async {
-      final leaderboard = LeaderboardService();
+      final leaderboard = LeaderboardService(enableMockBots: true);
       final notifier = LeagueNotifier(leaderboard);
       await Future.delayed(const Duration(milliseconds: 100));
 
@@ -72,7 +72,7 @@ void main() {
     });
 
     test('Ekim ayının tamamı için her günde skorbord doludur', () {
-      final leaderboard = LeaderboardService();
+      final leaderboard = LeaderboardService(enableMockBots: true);
 
       // 1 Ekim'den 31 Ekim'e kadar kontrol et
       for (int d = 1; d <= 31; d++) {

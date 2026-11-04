@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->call(RealisticBotSeeder::class);
+        // Bot seeding disabled: pure real-user production/testing
+        // $this->call(RealisticBotSeeder::class);
     }
 }

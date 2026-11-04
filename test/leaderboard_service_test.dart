@@ -15,7 +15,7 @@ void main() {
 
   group('LeaderboardService 150 Oyuncu & Kurallar Testi', () {
     test('150 Farklı kullanıcı başarıyla seed edilir ve günlük liderlikte yer alır', () {
-      final service = LeaderboardService();
+      final service = LeaderboardService(enableMockBots: true);
       final dailyTango = service.getLeaderboard(
         gameType: GameType.tango,
         timeframe: LeaderboardTimeframe.daily,
@@ -30,7 +30,7 @@ void main() {
     });
 
     test('Vezirler oyununda toplam puan: Kolay + Zor + Master toplamıdır, oynanmayan 0 sayılır', () {
-      final service = LeaderboardService();
+      final service = LeaderboardService(enableMockBots: true);
 
       // Zorluk belirtilmeden çağrıldığında toplam puan sıralaması döner
       final queensOverall = service.getLeaderboard(
@@ -52,7 +52,7 @@ void main() {
     });
 
     test('Vezirler belirli bir zorluk için tekil liderlik tablosu verir', () {
-      final service = LeaderboardService();
+      final service = LeaderboardService(enableMockBots: true);
 
       final kolayEntries = service.getLeaderboard(
         gameType: GameType.queens,
@@ -72,7 +72,7 @@ void main() {
     });
 
     test('Kullanıcı DailyPlayState kaydı ile liderlik tablosuna dinamik olarak eklenir ve sıralamaya girer', () {
-      final service = LeaderboardService();
+      final service = LeaderboardService(enableMockBots: true);
       final todayId = GameDateUtils.getTodayLevelId();
 
       final dailyState = DailyPlayState(records: {
@@ -100,7 +100,7 @@ void main() {
     });
 
     test('Kullanıcı sadece kolay vezirler oynadığında toplam puan sadece kolay puanı olur', () {
-      final service = LeaderboardService();
+      final service = LeaderboardService(enableMockBots: true);
       final todayId = GameDateUtils.getTodayLevelId();
 
       final dailyState = DailyPlayState(records: {
@@ -128,7 +128,7 @@ void main() {
     });
 
     test('Kullanıcı henüz oyun oynamadıysa skorborda dahil edilmez ve Sena_M kullanıcı sayılmaz', () {
-      final service = LeaderboardService();
+      final service = LeaderboardService(enableMockBots: true);
 
       for (final game in GameType.values) {
         final entries = service.getLeaderboard(
@@ -150,7 +150,7 @@ void main() {
     test('Bütün oyunlar için Haftalık, Aylık ve Genel sıralamalarda puanlar zamanla birikir ve artar', () {
       // Çoklu gün birikimini test etmek için ayın ve haftanın ilerlemiş olduğu bir referans tarihi (25 Ekim 2026 Pazar) kullanılır
       GameDateUtils.setCustomDate(DateTime(2026, 10, 25, 14, 0));
-      final service = LeaderboardService();
+      final service = LeaderboardService(enableMockBots: true);
 
       for (final game in GameType.values) {
         final dailyEntries = service.getLeaderboard(

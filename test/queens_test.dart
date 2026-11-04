@@ -105,7 +105,7 @@ void main() {
 
   group('Vezirler Skorbord ve Kural Testleri', () {
     test('Her zorluk seviyesi (kolay, zor, master) için ayrı skorbord listelenir', () {
-      final leaderboard = LeaderboardService();
+      final leaderboard = LeaderboardService(enableMockBots: true);
 
       final kolayList = leaderboard.getLeaderboard(
         gameType: GameType.queens,
