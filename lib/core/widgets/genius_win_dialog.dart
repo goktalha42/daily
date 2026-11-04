@@ -14,14 +14,14 @@ import 'sketch_decorations.dart';
 class GeniusWinDialog extends StatefulWidget {
   final GameResult result;
   final String gameTitle;
-  final VoidCallback onRestart;
+  final VoidCallback? onRestart;
   final GameStatsUpdateResult? statsResult;
 
   const GeniusWinDialog({
     super.key,
     required this.result,
     required this.gameTitle,
-    required this.onRestart,
+    this.onRestart,
     this.statsResult,
   });
 
@@ -29,7 +29,7 @@ class GeniusWinDialog extends StatefulWidget {
     BuildContext context, {
     required GameResult result,
     required String gameTitle,
-    required VoidCallback onRestart,
+    VoidCallback? onRestart,
     GameStatsUpdateResult? statsResult,
   }) async {
     // Ekranı sars ve konfeti patlat
@@ -203,74 +203,39 @@ class _GeniusWinDialogState extends State<GeniusWinDialog> {
 
               const SizedBox(height: 18),
 
-              // Aksiyon Butonları (Lobiye Dön & Tekrar Oyna)
-              Row(
-                children: [
-                  Expanded(
-                    child: SketchCard(
-                      backgroundColor: isDark ? AppColors.surfaceSecondaryDark : Colors.white,
-                      borderColor: isDark ? Colors.white38 : AppColors.pencilBlack,
-                      borderRadius: 14,
-                      borderWidth: 2.0,
-                      shadowOffset: const Offset(2.5, 2.5),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      onTap: () {
-                        HapticFeedback.lightImpact();
-                        Navigator.pop(context);
-                        Navigator.pop(context);
-                      },
-                      child: Center(
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.home_rounded, size: 19, color: textColor),
-                            const SizedBox(width: 6),
-                            Text(
-                              'Lobiye Dön',
-                              style: GoogleFonts.patrickHand(
-                                color: textColor,
-                                fontWeight: FontWeight.w700,
-                                fontSize: 18,
-                              ),
-                            ),
-                          ],
+              // Aksiyon Butonu (Lobiye Dön)
+              SizedBox(
+                width: double.infinity,
+                child: SketchCard(
+                  backgroundColor: AppColors.sunYellow,
+                  borderColor: isDark ? Colors.white : AppColors.pencilBlack,
+                  borderRadius: 14,
+                  borderWidth: 2.4,
+                  shadowOffset: const Offset(3.0, 3.0),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    Navigator.pop(context);
+                    Navigator.pop(context);
+                  },
+                  child: Center(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.home_rounded, size: 22, color: AppColors.inkBlack),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Lobiye Dön',
+                          style: GoogleFonts.patrickHand(
+                            color: AppColors.inkBlack,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 20,
+                          ),
                         ),
-                      ),
+                      ],
                     ),
                   ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: SketchCard(
-                      backgroundColor: AppColors.sunYellow,
-                      borderColor: isDark ? Colors.white : AppColors.pencilBlack,
-                      borderRadius: 14,
-                      borderWidth: 2.2,
-                      shadowOffset: const Offset(2.5, 2.5),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      onTap: () {
-                        HapticFeedback.mediumImpact();
-                        widget.onRestart();
-                      },
-                      child: Center(
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.replay_rounded, size: 19, color: AppColors.inkBlack),
-                            const SizedBox(width: 6),
-                            Text(
-                              'Tekrar Oyna',
-                              style: GoogleFonts.patrickHand(
-                                color: AppColors.inkBlack,
-                                fontWeight: FontWeight.w700,
-                                fontSize: 18,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               ),
             ],
           ),

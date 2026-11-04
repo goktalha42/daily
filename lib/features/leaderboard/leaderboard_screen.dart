@@ -39,6 +39,13 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
   @override
   Widget build(BuildContext context) {
     final service = ref.watch(leaderboardServiceProvider);
+    final hasServerData = service.hasServerDataFor(
+      gameType: _selectedGame,
+      timeframe: _timeframe,
+      difficulty: _selectedGame == GameType.queens ? _selectedQueensDifficulty : null,
+    );
+    final isSyncing = service.isSyncingWithServer;
+
     final entries = service.getLeaderboard(
       gameType: _selectedGame,
       timeframe: _timeframe,
@@ -96,7 +103,9 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                           ),
                           const SizedBox(width: 6),
                           Text(
-                            isConnected ? 'CANLI SUNUCU • ÇEVRİMİÇİ' : 'GLOBAL ARENA • GÜNCEL',
+                            isSyncing
+                                ? 'GÜNCELLENİYOR...'
+                                : (isConnected ? 'CANLI SUNUCU • ÇEVRİMİÇİ' : 'GLOBAL ARENA • GÜNCEL'),
                             style: GoogleFonts.patrickHand(
                               fontSize: 13,
                               fontWeight: FontWeight.w700,
@@ -306,6 +315,52 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
             ),
           ),
 
+        if (!hasServerData && isSyncing)
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+              child: SketchCard(
+                borderRadius: 16,
+                borderWidth: 2.2,
+                shadowOffset: const Offset(3.0, 3.0),
+                padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 20),
+                backgroundColor: AppColors.surfaceOf(context),
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const SizedBox(
+                        width: 32,
+                        height: 32,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 3,
+                          color: AppColors.sunYellow,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Canlı liderlik tablosu güncelleniyor...',
+                        style: GoogleFonts.patrickHand(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.pencil(context),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Sunucudan en güncel yarışmacı skorları alınıyor.',
+                        style: GoogleFonts.patrickHand(
+                          fontSize: 14,
+                          color: AppColors.gray(context),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          )
+        else ...[
         // 4. KULLANICININ KENDİ DURUM KARTI (DİNAMİK SKOR VE SIRA)
         SliverToBoxAdapter(
           child: Padding(
@@ -547,6 +602,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                   ),
                 ),
               ),
+        ],
 
         const SliverToBoxAdapter(
           child: SizedBox(height: 120), // Floating nav bar için pay

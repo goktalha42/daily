@@ -7,11 +7,16 @@ Rozet ve Kemerler:
 Rozetler ve kemer sistemi, profil kısmında çok kötü duruyor, oradan rozetlere ve kemerlere ayrı geçiş olacak. steamde ki gibi rozetler ekranı olabilir.
 
 Lig sistemi:
+canlı sisteme geçildi ve lig sistemi canlıda çalışmıyor.
 
-Ana sayfa:
+Oyunlar:
+Bazı oyunları bitirir bitirmez tekrar  oyna seçeneği çıkıyor o seçeneği kaldıralım.
 
 Sıralama sayfası:
+cache ler var ve bu yüzden uygulamadan girilip çıkıldığı zaman telefona ilk yüklendiği andaki veriler görünüyor, sayfa yeniledikten sonra veya başka sayfaya geçip geri geldikten sonra gerçek sıralamalar görünüyor. örnek veriyorum. 2. apk yüklü olan telefonda, uygulamaya girildiği zaman botların skorları hala görünüyor ama sayfa yenileyince botların skorları kayboluyor. ama 3. apk yüklü telefonlarda botlar görünmüyor, onlarda da sadece kendisi görünüyor ve yenileyince diğerleri görünüyor.
 
+Versiyon:
+yeni apk ler yaptıkca versiyonu v1.0.1, v1.0.2 olarak değişiklik büyüklüğüne göre v1.1.0 gibi farklı şekillerde isimlendirelim.
 
 
 Uygulamada ve oyunlarda ve puanlama sisteminde mantıga aykırı olan her şeyi kontrol et. Mantıksız veya saçma duran her şeyi düzelt. ve bana da söyle. 

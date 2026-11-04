@@ -1,6 +1,8 @@
-import 'package:flutter/foundation.dart';
+import 'dart:convert';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/network/api_client.dart';
 import '../../core/services/daily_play_service.dart';
@@ -31,9 +33,57 @@ class LeaderboardService extends ChangeNotifier {
   String? lastRequestedDifficulty;
 
   final Map<String, List<LeaderboardEntry>> _serverLeaderboardCache = {};
+  static const String _prefsCacheKey = 'zuhtu_server_leaderboard_cache_v2';
 
   String _buildCacheKey(GameType gameType, LeaderboardTimeframe timeframe, String? difficulty, String? levelId) {
     return '${gameType.id}_${timeframe.name}_${difficulty ?? ""}_${levelId ?? ""}';
+  }
+
+  bool hasServerDataFor({
+    required GameType gameType,
+    required LeaderboardTimeframe timeframe,
+    String? difficulty,
+    String? levelId,
+  }) {
+    final key = _buildCacheKey(gameType, timeframe, difficulty, levelId);
+    return _serverLeaderboardCache.containsKey(key);
+  }
+
+  Future<void> _loadCacheFromPrefs() async {
+    try {
+      WidgetsFlutterBinding.ensureInitialized();
+      final prefs = await SharedPreferences.getInstance();
+      final jsonStr = prefs.getString(_prefsCacheKey);
+      if (jsonStr != null && jsonStr.isNotEmpty) {
+        final decoded = jsonDecode(jsonStr) as Map<String, dynamic>;
+        decoded.forEach((key, val) {
+          if (val is List) {
+            final entries = val
+                .map((e) => LeaderboardEntry.fromJson(e as Map<String, dynamic>))
+                .where((e) => !e.userId.startsWith('mock_user_') && !_seedUserNames.contains(e.userName))
+                .toList();
+            _serverLeaderboardCache[key] = entries;
+          }
+        });
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint('[LeaderboardService] Cache load error: $e');
+    }
+  }
+
+  Future<void> _saveCacheToPrefs() async {
+    try {
+      WidgetsFlutterBinding.ensureInitialized();
+      final prefs = await SharedPreferences.getInstance();
+      final mapToSave = <String, dynamic>{};
+      _serverLeaderboardCache.forEach((key, list) {
+        mapToSave[key] = list.map((e) => e.toJson()).toList();
+      });
+      await prefs.setString(_prefsCacheKey, jsonEncode(mapToSave));
+    } catch (e) {
+      debugPrint('[LeaderboardService] Cache save error: $e');
+    }
   }
 
   Future<void> refreshCurrentLeaderboard() async {
@@ -90,6 +140,7 @@ class LeaderboardService extends ChangeNotifier {
     this.userNickname = 'Oyuncu',
     this.enableMockBots = false,
   }) {
+    _loadCacheFromPrefs();
     if (enableMockBots) {
       _seedMockData();
     }
@@ -103,6 +154,8 @@ class LeaderboardService extends ChangeNotifier {
     if (ok) {
       await apiClient!.ensureAuthenticated();
       notifyListeners();
+      // Uygulama baslangicinda aktif liderlik tablosunu arka planda hemen sorgula
+      refreshCurrentLeaderboard();
     }
   }
 
@@ -551,6 +604,7 @@ class LeaderboardService extends ChangeNotifier {
         }).toList();
 
         _serverLeaderboardCache[key] = mapped;
+        _saveCacheToPrefs();
       }
     } catch (e) {
       debugPrint('[LeaderboardService] refreshFromServer hatası: $e');
@@ -574,6 +628,13 @@ class LeaderboardService extends ChangeNotifier {
     if (_serverLeaderboardCache.containsKey(key)) {
       return _serverLeaderboardCache[key]!;
     }
+
+    // Eger sunucuya bagliysak ve veriler henuz yukleniyorsa,
+    // kullaniciya tek basina yaniltici yerel liste gostermek yerine bos don (yukleme durumu calisacak)
+    if (apiClient != null && isServerConnected && _isSyncingWithServer) {
+      return const [];
+    }
+
     final activeDate = GameDateUtils.getActiveDate();
     final targetLevelId = levelId ?? GameDateUtils.getTodayLevelId();
 

@@ -242,4 +242,22 @@ class LeaderboardEntry {
     required this.bestTimeMs,
     required this.gamesPlayed,
   });
+
+  Map<String, dynamic> toJson() => {
+    'rank': rank,
+    'userId': userId,
+    'userName': userName,
+    'totalScore': totalScore,
+    'bestTimeMs': bestTimeMs,
+    'gamesPlayed': gamesPlayed,
+  };
+
+  factory LeaderboardEntry.fromJson(Map<String, dynamic> json) => LeaderboardEntry(
+    rank: json['rank'] as int,
+    userId: json['userId'] as String,
+    userName: json['userName'] as String,
+    totalScore: json['totalScore'] as int,
+    bestTimeMs: json['bestTimeMs'] as int,
+    gamesPlayed: json['gamesPlayed'] as int? ?? 1,
+  );
 }
