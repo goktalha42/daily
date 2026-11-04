@@ -1,25 +1,19 @@
 ALTIN KURAL:
 highlighterYellow
-highlighterGreen Bu iki rengi öleceğini bilsen bile hiç bir yerde hiç bir şekilde kullanma. Bu iki rengi de begenmedim hatta nefret 
-
-
-Rozet ve Kemerler:
-Rozetler ve kemer sistemi, profil kısmında çok kötü duruyor, oradan rozetlere ve kemerlere ayrı geçiş olacak. steamde ki gibi rozetler ekranı olabilir.
-
-Lig sistemi:
-canlı sisteme geçildi ve lig sistemi canlıda çalışmıyor.
-
-Oyunlar:
-Bazı oyunları bitirir bitirmez tekrar  oyna seçeneği çıkıyor o seçeneği kaldıralım.
-
-Sıralama sayfası:
-cache ler var ve bu yüzden uygulamadan girilip çıkıldığı zaman telefona ilk yüklendiği andaki veriler görünüyor, sayfa yeniledikten sonra veya başka sayfaya geçip geri geldikten sonra gerçek sıralamalar görünüyor. örnek veriyorum. 2. apk yüklü olan telefonda, uygulamaya girildiği zaman botların skorları hala görünüyor ama sayfa yenileyince botların skorları kayboluyor. ama 3. apk yüklü telefonlarda botlar görünmüyor, onlarda da sadece kendisi görünüyor ve yenileyince diğerleri görünüyor.
+highlighterGreen Bu iki rengi öleceğini bilsen bile hiç bir yerde hiç bir şekilde kullanma. Bu iki rengi de begenmedim hatta nefret ediyorum.
 
 Versiyon:
 yeni apk ler yaptıkca versiyonu v1.0.1, v1.0.2 olarak değişiklik büyüklüğüne göre v1.1.0 gibi farklı şekillerde isimlendirelim.
 
+Lig sistemi:
+canlı sisteme geçildi ve lig sistemi canlıda çalışmıyor.
+ve lig isimleri değiştirilecek.
+en aşağıdan yukarıya doğru: Demir - bronz - gümüş - altın - platin - zümrüt - elmas - ustalık - üstatlık - şampiyonluk
 
-Uygulamada ve oyunlarda ve puanlama sisteminde mantıga aykırı olan her şeyi kontrol et. Mantıksız veya saçma duran her şeyi düzelt. ve bana da söyle. 
+Sıralama sayfası:
+veziler oyununun içinde gösterilen sıralamalar, canlı değil, sıralama sayfasında ki gibi görünmüyor, burası da canlı olsun. bütün seviyeler için. ve ayrıca ana sayfada tamamlanan herhangi bir oyuna basınca görünen sıralama da canlı değil. burası da sıralama sayfasında ki gibi canlı olsun. 
+
+Rozetler sistemi anlaşılır değil ve o sayfada tasarımımıza uygun olmayan kutular var.
 
 ---
 
@@ -54,9 +48,8 @@ Uygulamada ve oyunlarda ve puanlama sisteminde mantıga aykırı olan her şeyi 
 ---
 
 ### 🚀 Sıradaki Geliştirme Önerileri ve Fikirler:
-1. **Oyun İçi Hızlı Geri Bildirim Toast/Banner:** Yanlış hamle yapıldığında ekran titremesine ek olarak defterin alt köşesinde el yazısıyla tatlı bir uyarı balonu (ör. "Bu vezir diğerini tehdit ediyor!").
-2. **Kişisel Günlük Rekor Bildirimi:** Oyuncu kendi kişisel en iyi derecesini geliştirdiğinde veya günün liderlik tablosunda ilk 3'e yükseldiğinde konfeti eşliğinde "Yeni Zirve!" kutlaması.
-3. **Günlük Zeka Defteri Özeti (Günün 6/6 Tamamlanışı):** 6 oyunun tamamı bittiğinde oyuncuya günün tüm istatistiklerini, toplam IQ değişimini ve kazanılan rozetleri tek bir skeç sertifikası olarak sunma.
+1. **Kişisel Günlük Rekor Bildirimi:** Oyuncu kendi kişisel en iyi derecesini geliştirdiğinde veya günün liderlik tablosunda ilk 3'e yükseldiğinde konfeti eşliğinde "Yeni Zirve!" kutlaması.
+2. **Günlük Zeka Defteri Özeti (Günün 6/6 Tamamlanışı):** 6 oyunun tamamı bittiğinde oyuncuya günün tüm istatistiklerini, toplam IQ değişimini ve kazanılan rozetleri tek bir skeç sertifikası olarak sunma.
 
 
 💡 Oyun Geliştirmeleri Hakkında Vizyon ve İleri Fikirler:
