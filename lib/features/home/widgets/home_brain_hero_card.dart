@@ -266,13 +266,13 @@ class HomeBrainHeroCard extends StatelessWidget {
             const SizedBox(height: 14),
 
             // ALT BÖLÜM: Günlük 6 Oyun Tamamlama İlerleme Çubuğu (Mini Sketch Dots)
-            Container(
+            SketchCard(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-              decoration: BoxDecoration(
-                color: isDark ? Colors.white.withValues(alpha: 0.05) : const Color(0xFFF5F1E8),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: pencilColor.withValues(alpha: 0.3), width: 1.2),
-              ),
+              borderRadius: 10,
+              borderWidth: 1.2,
+              shadowOffset: const Offset(1.5, 1.5),
+              backgroundColor: isDark ? Colors.white.withValues(alpha: 0.05) : const Color(0xFFF5F1E8),
+              borderColor: pencilColor.withValues(alpha: 0.4),
               child: Row(
                 children: [
                   Text(

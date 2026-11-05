@@ -202,20 +202,22 @@ class _BadgesScreenState extends ConsumerState<BadgesScreen> {
                         const SizedBox(height: 14),
 
                         // El Çizimi İlerleme Çubuğu
-                        Container(
-                          height: 12,
-                          decoration: BoxDecoration(
-                            color: isDark ? AppColors.surfaceSecondaryDark : AppColors.surfaceSecondaryLight,
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(color: AppColors.pencil(context), width: 1.4),
-                          ),
-                          child: FractionallySizedBox(
-                            alignment: Alignment.centerLeft,
-                            widthFactor: progressRatio.clamp(0.04, 1.0),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: AppColors.sunYellow,
-                                borderRadius: BorderRadius.circular(5),
+                        SketchCard(
+                          padding: EdgeInsets.zero,
+                          borderRadius: 6,
+                          borderWidth: 1.4,
+                          shadowOffset: const Offset(1, 1),
+                          backgroundColor: isDark ? AppColors.surfaceSecondaryDark : AppColors.surfaceSecondaryLight,
+                          child: SizedBox(
+                            height: 12,
+                            child: FractionallySizedBox(
+                              alignment: Alignment.centerLeft,
+                              widthFactor: progressRatio.clamp(0.04, 1.0),
+                              child: DecoratedBox(
+                                decoration: BoxDecoration(
+                                  color: AppColors.sunYellow,
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
                               ),
                             ),
                           ),
@@ -509,18 +511,16 @@ class _BadgesScreenState extends ConsumerState<BadgesScreen> {
             borderWidth: 1.2,
             shadowOffset: const Offset(1, 1),
             backgroundColor: isUnlocked
-                ? (isDark ? const Color(0xFF14532D) : const Color(0xFFDCFCE7))
-                : (isDark ? Colors.white12 : const Color(0xFFF1F5F9)),
-            borderColor: isUnlocked
-                ? const Color(0xFF16A34A)
-                : AppColors.pencil(context).withValues(alpha: 0.3),
+                ? AppColors.sunYellow
+                : (isDark ? Colors.white10 : const Color(0xFFF1EDE4)),
+            borderColor: AppColors.pencil(context),
             child: Text(
               isUnlocked ? '✓ AÇILDI' : '🔒 KİLİTLİ',
               style: GoogleFonts.patrickHand(
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
                 color: isUnlocked
-                    ? const Color(0xFF16A34A)
+                    ? AppColors.inkBlack
                     : AppColors.gray(context),
               ),
             ),

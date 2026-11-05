@@ -1089,13 +1089,13 @@ class _AppVersionUpdateCardState extends State<_AppVersionUpdateCard> {
       borderColor: pencilColor,
       child: Row(
         children: [
-          Container(
+          SketchCard(
             padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: AppColors.sunYellow.withValues(alpha: 0.25),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: pencilColor, width: 1.5),
-            ),
+            borderRadius: 10,
+            borderWidth: 1.5,
+            shadowOffset: const Offset(1.5, 1.5),
+            backgroundColor: AppColors.sunYellow.withValues(alpha: 0.25),
+            borderColor: pencilColor,
             child: const Text('📱', style: TextStyle(fontSize: 20)),
           ),
           const SizedBox(width: 12),
@@ -1123,50 +1123,38 @@ class _AppVersionUpdateCardState extends State<_AppVersionUpdateCard> {
               ],
             ),
           ),
-          Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: _isChecking ? null : _checkUpdate,
-              borderRadius: BorderRadius.circular(10),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: BoxDecoration(
-                  color: AppColors.sunYellow,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: pencilColor, width: 1.8),
-                  boxShadow: [
-                    BoxShadow(
-                      color: pencilColor.withValues(alpha: 0.2),
-                      offset: const Offset(2.0, 2.0),
+          SketchCard(
+            onTap: _isChecking ? null : _checkUpdate,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            borderRadius: 10,
+            borderWidth: 1.8,
+            shadowOffset: const Offset(2.0, 2.0),
+            backgroundColor: AppColors.sunYellow,
+            borderColor: pencilColor,
+            child: _isChecking
+                ? SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: pencilColor,
                     ),
-                  ],
-                ),
-                child: _isChecking
-                    ? SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
+                  )
+                : Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.refresh_rounded, size: 16, color: pencilColor),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Kontrol Et',
+                        style: GoogleFonts.patrickHand(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
                           color: pencilColor,
                         ),
-                      )
-                    : Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.refresh_rounded, size: 16, color: pencilColor),
-                          const SizedBox(width: 4),
-                          Text(
-                            'Kontrol Et',
-                            style: GoogleFonts.patrickHand(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              color: pencilColor,
-                            ),
-                          ),
-                        ],
                       ),
-              ),
-            ),
+                    ],
+                  ),
           ),
         ],
       ),
