@@ -64,4 +64,7 @@ app.*.map.json
 /server/storage/logs/*.log
 
 *.apk
+*.jks
+*.keystore
+/android/key.properties
 
