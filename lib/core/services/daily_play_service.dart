@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../games/common/base_game.dart';
+import '../utils/date_utils.dart';
 
 class DailyPlayRecord {
   final GameType gameType;
@@ -79,7 +80,7 @@ class DailyPlayState {
     }
     if (distinctDates.isEmpty) return 0;
 
-    final now = DateTime.now();
+    final now = GameDateUtils.getActiveDate();
     DateTime checkDate = DateTime(now.year, now.month, now.day);
     String checkKey = _formatDateKey(checkDate);
 

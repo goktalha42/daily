@@ -38,13 +38,24 @@ class ProfileScreen extends ConsumerWidget {
     final hasEinstein = badgeNotifier.isUnlocked('belt_einstein') || userIQ >= 148;
     final hasGrandmaster = badgeNotifier.isUnlocked('belt_grandmaster') || userIQ >= 120;
 
-    // Toplam istatistik hesaplamaları
+    // Toplam istatistik ve dinamik reaksiyon hesaplamaları
     int totalPlayed = 0;
     int totalScore = 0;
+    int totalBestDurationMs = 0;
+    int durationGamesCount = 0;
     for (var perf in statsMap.values) {
       totalPlayed += perf.totalGamesPlayed;
       totalScore += perf.bestScore;
+      if (perf.bestDurationMs > 0) {
+        totalBestDurationMs += perf.bestDurationMs;
+        durationGamesCount++;
+      }
     }
+    final int avgReactionMs = durationGamesCount > 0 ? (totalBestDurationMs / durationGamesCount).round() : 0;
+    final String avgReactionStr = avgReactionMs > 0 ? '${(avgReactionMs / 1000).toStringAsFixed(1)} sn' : '--';
+    final String avgReactionSubtitle = avgReactionMs > 0
+        ? (avgReactionMs < 30000 ? '⚡ Işık Hızı' : (avgReactionMs < 60000 ? '🚀 Yüksek Hız' : '🎯 Dengeli'))
+        : 'Henüz Veri Yok';
 
     return CustomScrollView(
       physics: const BouncingScrollPhysics(),
@@ -437,8 +448,8 @@ class ProfileScreen extends ConsumerWidget {
                     icon: Icons.speed_rounded,
                     fillColor: AppColors.highlighterPurple,
                     title: 'ORT. REAKSİYON',
-                    value: '38 sn',
-                    subtitle: '4.2x Işık Hızı',
+                    value: avgReactionStr,
+                    subtitle: avgReactionSubtitle,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -589,67 +600,7 @@ class ProfileScreen extends ConsumerWidget {
           ),
         ),
 
-        // 6. ZÜHTÜ ROZETLERİ (BAŞARIMLAR)
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.only(left: 24, right: 24, top: 12, bottom: 8),
-            child: Row(
-              children: [
-                Text(
-                  'KAZANILAN SKEÇ ROZETLERİ',
-                  style: GoogleFonts.patrickHand(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                    color: headerGraphite,
-                    letterSpacing: 1.0,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
 
-        SliverToBoxAdapter(
-          child: Container(
-            height: 95,
-            margin: const EdgeInsets.only(bottom: 14),
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              physics: const BouncingScrollPhysics(),
-              children: const [
-                _SketchBadgeCard(
-                  icon: Icons.bolt_rounded,
-                  title: 'Işık Hızı',
-                  desc: '< 40 sn Çözüm',
-                  fillColor: AppColors.sunYellow,
-                  isUnlocked: true,
-                ),
-                _SketchBadgeCard(
-                  icon: Icons.local_fire_department_rounded,
-                  title: 'Ateşli Zihin',
-                  desc: '5 Günlük Seri',
-                  fillColor: AppColors.highlighterOrange,
-                  isUnlocked: true,
-                ),
-                _SketchBadgeCard(
-                  icon: Icons.workspace_premium_rounded,
-                  title: 'Zirve %1',
-                  desc: 'Global Zühtü',
-                  fillColor: AppColors.success,
-                  isUnlocked: true,
-                ),
-                _SketchBadgeCard(
-                  icon: Icons.military_tech_rounded,
-                  title: 'Büyük Usta',
-                  desc: '5 Oyunu Çöz',
-                  fillColor: AppColors.highlighterPurple,
-                  isUnlocked: false,
-                ),
-              ],
-            ),
-          ),
-        ),
 
         // 7. TEMA SEÇİMİ (AÇIK / KOYU / SİSTEM)
         SliverToBoxAdapter(
@@ -904,89 +855,7 @@ class _SketchMetricBox extends StatelessWidget {
   }
 }
 
-class _SketchBadgeCard extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String desc;
-  final Color fillColor;
-  final bool isUnlocked;
 
-  const _SketchBadgeCard({
-    required this.icon,
-    required this.title,
-    required this.desc,
-    required this.fillColor,
-    required this.isUnlocked,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardBorder = isDark ? AppColors.pencilWhite : AppColors.pencilBlack;
-    final cardBg = isUnlocked
-        ? (isDark ? AppColors.surfaceDark : Colors.white)
-        : (isDark ? AppColors.surfaceSecondaryDark : AppColors.surfaceSecondaryLight);
-    final titleColor = isDark ? AppColors.pencilWhite : AppColors.pencilBlack;
-    final descColor = isDark ? AppColors.pencilGrayDark : AppColors.pencilGray;
-
-    return Padding(
-      padding: const EdgeInsets.only(right: 12),
-      child: SketchCard(
-        padding: const EdgeInsets.all(10),
-        borderRadius: 12,
-        borderWidth: 1.8,
-        shadowOffset: isUnlocked ? const Offset(2.5, 2.5) : const Offset(1.0, 1.0),
-        backgroundColor: cardBg,
-        borderColor: cardBorder,
-        child: SizedBox(
-          width: 110,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  SketchCard(
-                    padding: const EdgeInsets.all(4),
-                    borderRadius: 6,
-                    borderWidth: 1.2,
-                    shadowOffset: const Offset(1.0, 1.0),
-                    backgroundColor: isUnlocked ? fillColor : Colors.transparent,
-                    borderColor: cardBorder,
-                    child: Icon(icon, color: AppColors.pencilBlack, size: 18),
-                  ),
-                  Icon(
-                    isUnlocked ? Icons.check_circle_rounded : Icons.lock_rounded,
-                    color: isUnlocked ? const Color(0xFF15803D) : AppColors.pencilGray,
-                    size: 16,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 6),
-              Text(
-                title,
-                style: GoogleFonts.patrickHand(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                  color: titleColor,
-                ),
-              ),
-              Text(
-                desc,
-                style: GoogleFonts.patrickHand(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  color: descColor,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
 
 /// Profil Ekranı Uygulama Sürümü ve Manuel Güncelleme Kontrol Kartı
 class _AppVersionUpdateCard extends StatefulWidget {
