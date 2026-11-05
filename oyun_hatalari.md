@@ -7,12 +7,10 @@ yeni apk ler yaptıkca versiyonu v1.0.1, v1.0.2 olarak değişiklik büyüklüğ
 - **v1.0.2 (Güncel):** Canlı sunucu lig sistemi entegrasyonu (10 kademe: Demir - Şampiyonluk), tüm seviyeler ve tamamlanan oyunlar için canlı sıralamalar, el çizimi skeç rozetler sistemi.
 
 Lig sistemi:
-canlı sisteme geçildi ve lig sistemi canlıda çalışmıyor.
-ve lig isimleri değiştirilecek.
-en aşağıdan yukarıya doğru: Demir - bronz - gümüş - altın - platin - zümrüt - elmas - ustalık - üstatlık - şampiyonluk
+
 
 Sıralama sayfası:
-veziler oyununun içinde gösterilen sıralamalar, canlı değil, sıralama sayfasında ki gibi görünmüyor, burası da canlı olsun. bütün seviyeler için. ve ayrıca ana sayfada tamamlanan herhangi bir oyuna basınca görünen sıralama da canlı değil. burası da sıralama sayfasında ki gibi canlı olsun. 
+
 
 Rozetler sistemi anlaşılır değil ve o sayfada tasarımımıza uygun olmayan kutular var.
 

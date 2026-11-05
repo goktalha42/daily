@@ -315,7 +315,7 @@ final leagueServiceProvider =
 });
 
 class LeagueNotifier extends StateNotifier<LeagueState> {
-  static const _prefKey = 'zuhtu_league_state_v2';
+  static const _prefKey = 'zuhtu_league_state_v3';
   static const int leagueSize = 42;
   static const int promotionCount = 10;
   static const int relegationCount = 10;
@@ -393,12 +393,13 @@ class LeagueNotifier extends StateNotifier<LeagueState> {
           if (decoded['players'] is List) {
             savedPlayers = (decoded['players'] as List)
                 .map((p) => LeaguePlayer.fromJson(p as Map<String, dynamic>))
+                .where((p) => !p.userId.startsWith('bot_') && !_allBotNames.contains(p.userName))
                 .toList();
           }
         }
       }
 
-      final players = savedPlayers.isNotEmpty && savedPlayers.length == leagueSize
+      final players = savedPlayers.isNotEmpty
           ? savedPlayers
           : _buildLeaguePlayers(savedLevel, currentWeekId);
 
@@ -470,7 +471,6 @@ class LeagueNotifier extends StateNotifier<LeagueState> {
 
     try {
       final currentWeekId = _currentWeekId();
-      final level = state.currentLevel;
 
       // 1. Canlı sunucudan tüm oyunların haftalık sıralamalarını paralel çek
       final Map<String, int> playerTotalScores = {};
@@ -526,12 +526,7 @@ class LeagueNotifier extends StateNotifier<LeagueState> {
         );
       });
 
-      // 4. Kalan kontenjanı lig seviyesine uygun botlarla doldur (toplam 41 diğer oyuncu)
-      final neededBots = max(0, (leagueSize - 1) - realPlayers.length);
-      final (int botMin, int botMax) = _botScoreRange(level);
-      final rng = Random(_weekSeed(currentWeekId, level));
-      final bots = _generateBotPlayers(level, rng, botMin, botMax, count: neededBots);
-
+      // 4. KESİNLİKLE BOT YOK: Sadece gerçek canlı sunucu oyuncuları
       final allPlayers = [
         LeaguePlayer(
           userId: 'user_local',
@@ -541,7 +536,6 @@ class LeagueNotifier extends StateNotifier<LeagueState> {
           isUser: true,
         ),
         ...realPlayers,
-        ...bots,
       ];
 
       allPlayers.sort((a, b) {
@@ -574,90 +568,18 @@ class LeagueNotifier extends StateNotifier<LeagueState> {
     int userScore = _calculateUserWeeklyScore();
     final userNick = userNickname.trim().isEmpty ? 'Sen' : userNickname.trim();
 
-    final (int botMin, int botMax) = _botScoreRange(level);
-    final rng = Random(_weekSeed(weekId, level));
-    final bots = _generateBotPlayers(level, rng, botMin, botMax);
-
-    final allPlayers = [
+    return [
       LeaguePlayer(
         userId: 'user_local',
         userName: userNick,
         weeklyScore: userScore,
-        rank: 0,
+        rank: 1,
         isUser: true,
       ),
-      ...bots,
     ];
-
-    allPlayers.sort((a, b) {
-      if (b.weeklyScore != a.weeklyScore) {
-        return b.weeklyScore.compareTo(a.weeklyScore);
-      }
-      return a.userId.compareTo(b.userId);
-    });
-
-    return List.generate(allPlayers.length, (i) {
-      return allPlayers[i].copyWith(rank: i + 1);
-    });
   }
 
-  int _weekSeed(String weekId, LeagueLevel level) {
-    int seed = 0;
-    for (final ch in weekId.codeUnits) {
-      seed += ch;
-    }
-    return seed + level.index * 1000;
-  }
 
-  (int, int) _botScoreRange(LeagueLevel level) {
-    switch (level) {
-      case LeagueLevel.iron:
-        return (200, 3500);
-      case LeagueLevel.bronze:
-        return (1500, 5500);
-      case LeagueLevel.silver:
-        return (3000, 8000);
-      case LeagueLevel.gold:
-        return (5000, 11500);
-      case LeagueLevel.platinum:
-        return (7000, 15000);
-      case LeagueLevel.emerald:
-        return (10000, 20000);
-      case LeagueLevel.diamond:
-        return (14000, 26000);
-      case LeagueLevel.master:
-        return (18000, 33000);
-      case LeagueLevel.grandmaster:
-        return (24000, 42000);
-      case LeagueLevel.champion:
-        return (32000, 55000);
-    }
-  }
-
-  List<LeaguePlayer> _generateBotPlayers(
-      LeagueLevel level, Random rng, int minScore, int maxScore,
-      {int count = leagueSize - 1}) {
-    if (count <= 0) return [];
-    final active = GameDateUtils.getActiveDate();
-    final double dayFactor = (active.weekday / 7.0).clamp(0.25, 1.0);
-    final currentMin = (minScore * dayFactor).round();
-    final currentMax = (maxScore * dayFactor).round();
-
-    final names = _botNamesForLevel(level);
-    return List.generate(count, (i) {
-      final baseName = names[i % names.length];
-      final suffix = rng.nextInt(9000) + 1000;
-      final range = max(10, currentMax - currentMin);
-      final score = currentMin + rng.nextInt(range);
-      return LeaguePlayer(
-        userId: 'bot_${level.index}_$i',
-        userName: '${baseName}_$suffix',
-        weeklyScore: score,
-        rank: 0,
-        isUser: false,
-      );
-    });
-  }
 
   static const _allBotNames = [
     'ZekaUstası', 'BeyinFırtınası', 'HızlıDüşünür', 'MatematikKurdu',
@@ -673,21 +595,7 @@ class LeagueNotifier extends StateNotifier<LeagueState> {
     'BronzKral', 'GümüşYıldız',
   ];
 
-  List<String> _botNamesForLevel(LeagueLevel level) {
-    if (level.index >= 7) {
-      return [
-        'ElitDeha', 'AbsoluteZeka', 'PerfektBeyin', 'GrandMaster',
-        'ZirveKralı', 'NihayetŞampiyon', 'EfsaneOyuncu', 'MuhteşemBeyin'
-      ];
-    }
-    if (level.index >= 4) {
-      return [
-        'DiamondZeka', 'SafirUsta', 'ZümrütBeyin', 'LigEfsanesi',
-        'ŞampiyonYolu', 'StratejiKral', 'ZirveYıldız', 'ElitSkor'
-      ];
-    }
-    return _allBotNames;
-  }
+
 
   /// Gün değişimi veya yeni haftaya geçiş kontrolü
   Future<void> checkWeekTransition() async {

@@ -93,20 +93,13 @@ class ProfileScreen extends ConsumerWidget {
                   ],
                 ),
                 // Skeç Seviye Rozeti
-                Container(
+                SketchCard(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: AppColors.highlighterPurple,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: AppColors.pencilBlack, width: 2.0),
-                    boxShadow: [
-                      BoxShadow(
-                        color: isDark ? AppColors.cardShadowDark : AppColors.pencilBlack,
-                        offset: const Offset(2.5, 2.5),
-                        blurRadius: 0,
-                      ),
-                    ],
-                  ),
+                  borderRadius: 10,
+                  borderWidth: 2.0,
+                  shadowOffset: const Offset(2.5, 2.5),
+                  backgroundColor: AppColors.highlighterPurple,
+                  borderColor: AppColors.pencilBlack,
                   child: Row(
                     children: [
                       const Icon(Icons.psychology_rounded, size: 18, color: AppColors.pencilBlack),
@@ -186,24 +179,24 @@ class ProfileScreen extends ConsumerWidget {
                                           builder: (ctx) => const NicknamePromptDialog(isEditing: true),
                                         );
                                       },
-                                      child: Container(
+                                      child: SketchCard(
                                         padding: const EdgeInsets.all(4),
-                                        decoration: BoxDecoration(
-                                          color: isDark ? AppColors.surfaceSecondaryDark : Colors.grey.shade200,
-                                          borderRadius: BorderRadius.circular(6),
-                                          border: Border.all(color: headerPencil, width: 1.0),
-                                        ),
+                                        borderRadius: 6,
+                                        borderWidth: 1.2,
+                                        shadowOffset: const Offset(1.0, 1.0),
+                                        backgroundColor: isDark ? AppColors.surfaceSecondaryDark : AppColors.surfaceSecondaryLight,
+                                        borderColor: headerPencil,
                                         child: Icon(Icons.edit, size: 14, color: headerPencil),
                                       ),
                                     ),
                                     const SizedBox(width: 6),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-                                      decoration: BoxDecoration(
-                                        color: AppColors.sunYellow,
-                                        borderRadius: BorderRadius.circular(4),
-                                        border: Border.all(color: AppColors.pencilBlack, width: 1.2),
-                                      ),
+                                    SketchCard(
+                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                      borderRadius: 4,
+                                      borderWidth: 1.2,
+                                      shadowOffset: const Offset(1.0, 1.0),
+                                      backgroundColor: AppColors.sunYellow,
+                                      borderColor: AppColors.pencilBlack,
                                       child: Text(
                                         'SİZ',
                                         style: GoogleFonts.patrickHand(
@@ -224,13 +217,13 @@ class ProfileScreen extends ConsumerWidget {
                                   ),
                                 ),
                                 const SizedBox(height: 4),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.highlighterCyan,
-                                    borderRadius: BorderRadius.circular(6),
-                                    border: Border.all(color: AppColors.pencilBlack, width: 1.2),
-                                  ),
+                                SketchCard(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                  borderRadius: 6,
+                                  borderWidth: 1.4,
+                                  shadowOffset: const Offset(1.2, 1.2),
+                                  backgroundColor: AppColors.highlighterCyan,
+                                  borderColor: AppColors.pencilBlack,
                                   child: Text(
                                     '⚡ KÜRESEL İLK %1 STATÜSÜ',
                                     style: GoogleFonts.patrickHand(
@@ -248,13 +241,13 @@ class ProfileScreen extends ConsumerWidget {
                       const SizedBox(height: 16),
 
                       // FOTOĞRAFTAKİ EN MEŞHUR DETAY: El Çizimi %92 Çember Göstergesi & IQ
-                      Container(
+                      SketchCard(
                         padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: isDark ? AppColors.surfaceSecondaryDark : AppColors.surfaceSecondaryLight,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: headerPencil, width: 1.8),
-                        ),
+                        borderRadius: 12,
+                        borderWidth: 1.8,
+                        shadowOffset: const Offset(2.0, 2.0),
+                        backgroundColor: isDark ? AppColors.surfaceSecondaryDark : AppColors.surfaceSecondaryLight,
+                        borderColor: headerPencil,
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: [
@@ -319,19 +312,13 @@ class ProfileScreen extends ConsumerWidget {
                   Positioned(
                     top: -12,
                     left: 14,
-                    child: Container(
+                    child: SketchCard(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: AppColors.highlighterPurple,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: AppColors.pencilBlack, width: 2.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: isDark ? AppColors.cardShadowDark : AppColors.pencilBlack,
-                            offset: const Offset(2.0, 2.0),
-                          ),
-                        ],
-                      ),
+                      borderRadius: 8,
+                      borderWidth: 2.0,
+                      shadowOffset: const Offset(2.0, 2.0),
+                      backgroundColor: AppColors.highlighterPurple,
+                      borderColor: AppColors.pencilBlack,
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -354,19 +341,13 @@ class ProfileScreen extends ConsumerWidget {
                   Positioned(
                     top: -12,
                     left: 14,
-                    child: Container(
+                    child: SketchCard(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: AppColors.sunYellow,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: AppColors.pencilBlack, width: 2.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: isDark ? AppColors.cardShadowDark : AppColors.pencilBlack,
-                            offset: const Offset(2.0, 2.0),
-                          ),
-                        ],
-                      ),
+                      borderRadius: 8,
+                      borderWidth: 2.0,
+                      shadowOffset: const Offset(2.0, 2.0),
+                      backgroundColor: AppColors.sunYellow,
+                      borderColor: AppColors.pencilBlack,
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -515,92 +496,87 @@ class ProfileScreen extends ConsumerWidget {
                       geniusTitle: 'Zühtü Çırağı',
                     );
 
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 10),
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: isDark ? AppColors.surfaceDark : Colors.white,
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: headerPencil, width: 2.0),
-                    boxShadow: [
-                      BoxShadow(
-                        color: isDark ? AppColors.cardShadowDark : AppColors.pencilBlack,
-                        offset: const Offset(2.5, 2.5),
-                        blurRadius: 0,
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      // Sol Renk İkonu
-                      Container(
-                        width: 44,
-                        height: 44,
-                        decoration: BoxDecoration(
-                          color: game.color,
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: AppColors.pencilBlack, width: 1.8),
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: SketchCard(
+                    padding: const EdgeInsets.all(12),
+                    borderRadius: 14,
+                    borderWidth: 2.0,
+                    shadowOffset: const Offset(3.0, 3.0),
+                    backgroundColor: isDark ? AppColors.surfaceDark : Colors.white,
+                    borderColor: headerPencil,
+                    child: Row(
+                      children: [
+                        // Sol Renk İkonu
+                        SketchCard(
+                          padding: EdgeInsets.zero,
+                          borderRadius: 10,
+                          borderWidth: 1.8,
+                          shadowOffset: const Offset(1.5, 1.5),
+                          backgroundColor: game.color,
+                          borderColor: AppColors.pencilBlack,
+                          child: SizedBox(
+                            width: 44,
+                            height: 44,
+                            child: Icon(game.icon, color: AppColors.pencilBlack, size: 24),
+                          ),
                         ),
-                        child: Icon(game.icon, color: AppColors.pencilBlack, size: 24),
-                      ),
-                      const SizedBox(width: 12),
+                        const SizedBox(width: 12),
 
-                      // Oyun ve Skor Detayı
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              game.title,
-                              style: GoogleFonts.patrickHand(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w700,
-                                color: headerPencil,
+                        // Oyun ve Skor Detayı
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                game.title,
+                                style: GoogleFonts.patrickHand(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                  color: headerPencil,
+                                ),
                               ),
-                            ),
-                            Text(
-                              perf.hasPlayed
-                                  ? 'En İyi: ${GameDateUtils.formatGameTime(perf.bestDurationMs)} • ${perf.bestScore} Puan'
-                                  : 'Henüz bugün çözülmedi',
-                              style: GoogleFonts.patrickHand(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: isDark ? AppColors.pencilGrayDark : AppColors.pencilGray,
+                              Text(
+                                perf.hasPlayed
+                                    ? 'En İyi: ${GameDateUtils.formatGameTime(perf.bestDurationMs)} • ${perf.bestScore} Puan'
+                                    : 'Henüz bugün çözülmedi',
+                                style: GoogleFonts.patrickHand(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: isDark ? AppColors.pencilGrayDark : AppColors.pencilGray,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
 
-                      // Skeç Yüzdelik Rozeti
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: perf.hasPlayed
+                        // Skeç Yüzdelik Rozeti
+                        SketchCard(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          borderRadius: 6,
+                          borderWidth: 1.5,
+                          shadowOffset: const Offset(1.2, 1.2),
+                          backgroundColor: perf.hasPlayed
                               ? (perf.percentile! <= 1
                                   ? AppColors.sunYellow
                                   : game.color)
                               : (isDark ? AppColors.surfaceSecondaryDark : AppColors.surfaceSecondaryLight),
-                          borderRadius: BorderRadius.circular(6),
-                          border: Border.all(
-                            color: isDark ? AppColors.pencilWhite : AppColors.pencilBlack,
-                            width: 1.5,
+                          borderColor: isDark ? AppColors.pencilWhite : AppColors.pencilBlack,
+                          child: Text(
+                            perf.hasPlayed
+                                ? (perf.percentile! <= 1 ? '👑 %1' : '%${perf.percentile}')
+                                : 'HEDEF %1',
+                            style: GoogleFonts.patrickHand(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: (perf.hasPlayed)
+                                  ? AppColors.pencilBlack
+                                  : (isDark ? AppColors.pencilWhite : AppColors.pencilBlack),
+                            ),
                           ),
                         ),
-                        child: Text(
-                          perf.hasPlayed
-                              ? (perf.percentile! <= 1 ? '👑 %1' : '%${perf.percentile}')
-                              : 'HEDEF %1',
-                          style: GoogleFonts.patrickHand(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                            color: (perf.hasPlayed)
-                                ? AppColors.pencilBlack
-                                : (isDark ? AppColors.pencilWhite : AppColors.pencilBlack),
-                          ),
-                        ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 );
               },
@@ -732,20 +708,13 @@ class ProfileScreen extends ConsumerWidget {
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            child: Container(
+            child: SketchCard(
               padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: isDark ? AppColors.surfaceDark : Colors.white,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: headerPencil, width: 2.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: isDark ? AppColors.cardShadowDark : AppColors.pencilBlack,
-                    offset: const Offset(2.5, 2.5),
-                    blurRadius: 0,
-                  ),
-                ],
-              ),
+              borderRadius: 14,
+              borderWidth: 2.0,
+              shadowOffset: const Offset(3.0, 3.0),
+              backgroundColor: isDark ? AppColors.surfaceDark : Colors.white,
+              borderColor: headerPencil,
               child: Row(
                 children: [
                   Icon(Icons.info_outline_rounded, color: headerPencil, size: 22),
@@ -882,13 +851,13 @@ class _SketchMetricBox extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
+          SketchCard(
             padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: fillColor,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: AppColors.pencilBlack, width: 1.5),
-            ),
+            borderRadius: 8,
+            borderWidth: 1.5,
+            shadowOffset: const Offset(1.5, 1.5),
+            backgroundColor: fillColor,
+            borderColor: AppColors.pencilBlack,
             child: Icon(icon, color: AppColors.pencilBlack, size: 20),
           ),
           const SizedBox(height: 10),
@@ -948,68 +917,60 @@ class _SketchBadgeCard extends StatelessWidget {
     final titleColor = isDark ? AppColors.pencilWhite : AppColors.pencilBlack;
     final descColor = isDark ? AppColors.pencilGrayDark : AppColors.pencilGray;
 
-    return Container(
-      width: 130,
-      margin: const EdgeInsets.only(right: 12),
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: cardBg,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: cardBorder,
-          width: 1.8,
-        ),
-        boxShadow: isUnlocked
-            ? [
-                BoxShadow(
-                  color: isDark ? AppColors.cardShadowDark : AppColors.pencilBlack,
-                  offset: const Offset(2, 2),
-                  blurRadius: 0,
-                ),
-              ]
-            : null,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Padding(
+      padding: const EdgeInsets.only(right: 12),
+      child: SketchCard(
+        padding: const EdgeInsets.all(10),
+        borderRadius: 12,
+        borderWidth: 1.8,
+        shadowOffset: isUnlocked ? const Offset(2.5, 2.5) : const Offset(1.0, 1.0),
+        backgroundColor: cardBg,
+        borderColor: cardBorder,
+        child: SizedBox(
+          width: 110,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: isUnlocked ? fillColor : Colors.transparent,
-                  borderRadius: BorderRadius.circular(6),
-                  border: Border.all(color: cardBorder, width: 1.2),
-                ),
-                child: Icon(icon, color: AppColors.pencilBlack, size: 18),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  SketchCard(
+                    padding: const EdgeInsets.all(4),
+                    borderRadius: 6,
+                    borderWidth: 1.2,
+                    shadowOffset: const Offset(1.0, 1.0),
+                    backgroundColor: isUnlocked ? fillColor : Colors.transparent,
+                    borderColor: cardBorder,
+                    child: Icon(icon, color: AppColors.pencilBlack, size: 18),
+                  ),
+                  Icon(
+                    isUnlocked ? Icons.check_circle_rounded : Icons.lock_rounded,
+                    color: isUnlocked ? const Color(0xFF15803D) : AppColors.pencilGray,
+                    size: 16,
+                  ),
+                ],
               ),
-              Icon(
-                isUnlocked ? Icons.check_circle_rounded : Icons.lock_rounded,
-                color: isUnlocked ? const Color(0xFF15803D) : AppColors.pencilGray,
-                size: 16,
+              const SizedBox(height: 6),
+              Text(
+                title,
+                style: GoogleFonts.patrickHand(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: titleColor,
+                ),
+              ),
+              Text(
+                desc,
+                style: GoogleFonts.patrickHand(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: descColor,
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 6),
-          Text(
-            title,
-            style: GoogleFonts.patrickHand(
-              fontSize: 15,
-              fontWeight: FontWeight.w700,
-              color: titleColor,
-            ),
-          ),
-          Text(
-            desc,
-            style: GoogleFonts.patrickHand(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: descColor,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
