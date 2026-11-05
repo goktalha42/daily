@@ -29,6 +29,8 @@ import '../league/league_screen.dart';
 import '../../core/services/league_service.dart';
 import '../../core/network/api_client.dart';
 import '../../core/widgets/nickname_prompt_dialog.dart';
+import '../../core/services/update_service.dart';
+import '../../core/widgets/update_prompt_dialog.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -43,8 +45,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _checkMandatoryNickname();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await _checkMandatoryNickname();
+      if (mounted) {
+        await _checkAppUpdate();
+      }
     });
   }
 
@@ -57,6 +62,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         barrierDismissible: false,
         builder: (ctx) => const NicknamePromptDialog(),
       );
+    }
+  }
+
+  Future<void> _checkAppUpdate() async {
+    try {
+      final info = await UpdateService.instance.checkForUpdate();
+      if (info != null && info.isUpdateAvailable && mounted) {
+        if (info.forceUpdate || !UpdateService.hasDismissedThisSession(info.remoteBuildNumber)) {
+          await UpdatePromptDialog.show(context, info);
+        }
+      }
+    } catch (e) {
+      debugPrint('[HomeScreen] Güncelleme kontrolü hatası: $e');
     }
   }
 

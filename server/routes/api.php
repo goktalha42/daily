@@ -23,4 +23,21 @@ Route::prefix('v1')->group(function () {
 
     // 5. Haftalık Genel Lig Sıralaması (Tüm oyunların bu haftaki puanları)
     Route::get('/league', [LeaderboardController::class, 'league']);
+
+    // 6. Uygulama Otomatik Güncelleme Bilgisi
+    Route::get('/app-version', function () {
+        $versionFile = base_path('../version.json');
+        if (file_exists($versionFile)) {
+            return response()->file($versionFile, ['Content-Type' => 'application/json']);
+        }
+        return response()->json([
+            'version' => '1.0.3',
+            'build_number' => 4,
+            'title' => 'Zühtü v1.0.3 Güncellemesi 🚀',
+            'changelog' => "• Otomatik güncelleme sistemi eklendi.\n• Lig ve liderlik tablosu botlardan temizlendi.\n• Profil sayfası el çizimi tasarımına kavuştu.",
+            'apk_url' => 'https://github.com/goktalha42/daily/releases/download/v1.0.3/Zuhtu_v1.0.3.apk',
+            'release_url' => 'https://github.com/goktalha42/daily/releases/tag/v1.0.3',
+            'force_update' => false,
+        ]);
+    });
 });

@@ -14,6 +14,8 @@ import '../../core/services/badge_service.dart';
 import '../league/league_screen.dart';
 import '../../core/services/user_nickname_provider.dart';
 import '../../core/widgets/nickname_prompt_dialog.dart';
+import '../../core/services/update_service.dart';
+import '../../core/widgets/update_prompt_dialog.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -735,6 +737,14 @@ class ProfileScreen extends ConsumerWidget {
           ),
         ),
 
+        // 9. UYGULAMA SÜRÜMÜ & GÜNCELLEME KONTROLÜ
+        const SliverToBoxAdapter(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+            child: _AppVersionUpdateCard(),
+          ),
+        ),
+
         const SliverToBoxAdapter(
           child: SizedBox(height: 120), // Floating nav bar için pay
         ),
@@ -971,6 +981,192 @@ class _SketchBadgeCard extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Profil Ekranı Uygulama Sürümü ve Manuel Güncelleme Kontrol Kartı
+class _AppVersionUpdateCard extends StatefulWidget {
+  const _AppVersionUpdateCard();
+
+  @override
+  State<_AppVersionUpdateCard> createState() => _AppVersionUpdateCardState();
+}
+
+class _AppVersionUpdateCardState extends State<_AppVersionUpdateCard> {
+  bool _isChecking = false;
+  String _versionText = 'v1.0.3';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadVersion();
+  }
+
+  Future<void> _loadVersion() async {
+    final v = await UpdateService.instance.getInstalledVersion();
+    if (mounted) {
+      setState(() {
+        _versionText = 'v${v.version} (Build ${v.buildNumber})';
+      });
+    }
+  }
+
+  Future<void> _checkUpdate() async {
+    if (_isChecking) return;
+    setState(() => _isChecking = true);
+    HapticFeedback.lightImpact();
+
+    try {
+      final info = await UpdateService.instance.checkForUpdate();
+      if (!mounted) return;
+
+      if (info != null && info.isUpdateAvailable) {
+        await UpdatePromptDialog.show(context, info);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: AppColors.pencilBlack,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: const BorderSide(color: AppColors.sunYellow, width: 1.5),
+            ),
+            content: Row(
+              children: [
+                const Text('✨', style: TextStyle(fontSize: 18)),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'Zühtü en güncel sürümde! ($_versionText)',
+                    style: GoogleFonts.patrickHand(
+                      fontSize: 15,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: AppColors.error,
+            content: Text(
+              'Güncelleme kontrolü başarısız: $e',
+              style: GoogleFonts.patrickHand(color: Colors.white),
+            ),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isChecking = false);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final pencilColor = isDark ? AppColors.pencilWhite : AppColors.pencilBlack;
+    final graphiteColor = isDark ? AppColors.pencilGraphiteDark : AppColors.pencilGraphite;
+
+    return SketchCard(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      borderRadius: 14,
+      borderWidth: 2.0,
+      shadowOffset: const Offset(3.0, 3.0),
+      backgroundColor: isDark ? AppColors.surfaceDark : Colors.white,
+      borderColor: pencilColor,
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: AppColors.sunYellow.withValues(alpha: 0.25),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: pencilColor, width: 1.5),
+            ),
+            child: const Text('📱', style: TextStyle(fontSize: 20)),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Zühtü $_versionText',
+                  style: GoogleFonts.patrickHand(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: pencilColor,
+                  ),
+                ),
+                Text(
+                  'Otomatik Güncelleme Aktif',
+                  style: GoogleFonts.patrickHand(
+                    fontSize: 13,
+                    color: graphiteColor,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: _isChecking ? null : _checkUpdate,
+              borderRadius: BorderRadius.circular(10),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: AppColors.sunYellow,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: pencilColor, width: 1.8),
+                  boxShadow: [
+                    BoxShadow(
+                      color: pencilColor.withValues(alpha: 0.2),
+                      offset: const Offset(2.0, 2.0),
+                    ),
+                  ],
+                ),
+                child: _isChecking
+                    ? SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: pencilColor,
+                        ),
+                      )
+                    : Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.refresh_rounded, size: 16, color: pencilColor),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Kontrol Et',
+                            style: GoogleFonts.patrickHand(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: pencilColor,
+                            ),
+                          ),
+                        ],
+                      ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
