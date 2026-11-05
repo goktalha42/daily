@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/network/network_checker.dart';
 import '../../core/services/game_stats_service.dart';
+import '../../core/services/daily_play_service.dart';
 import '../../core/services/theme_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/date_utils.dart';
@@ -32,8 +33,9 @@ class ProfileScreen extends ConsumerWidget {
     final statsMap = ref.watch(gameStatsServiceProvider);
     final statsNotifier = ref.read(gameStatsServiceProvider.notifier);
     final userIQ = statsNotifier.getOverallIQ();
+    final currentStreak = ref.watch(dailyPlayServiceProvider).getCurrentStreak();
     final badgeNotifier = ref.read(badgeServiceProvider.notifier);
-    final hasEinstein = badgeNotifier.isUnlocked('belt_einstein') || userIQ >= 130;
+    final hasEinstein = badgeNotifier.isUnlocked('belt_einstein') || userIQ >= 148;
     final hasGrandmaster = badgeNotifier.isUnlocked('belt_grandmaster') || userIQ >= 120;
 
     // Toplam istatistik hesaplamaları
@@ -407,7 +409,7 @@ class ProfileScreen extends ConsumerWidget {
                     icon: Icons.local_fire_department_rounded,
                     fillColor: AppColors.highlighterOrange,
                     title: 'GÜNLÜK SERİ',
-                    value: '5 Gün',
+                    value: '$currentStreak Gün',
                     subtitle: 'Kesintisiz Odak',
                   ),
                 ),

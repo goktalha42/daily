@@ -25,50 +25,43 @@ class IQMilestone {
     IQMilestone(
       iqThreshold: 100,
       title: 'Ortalama Zekâ',
-      message: 'Dünya ortalamasındasın! Oynadıkça yükseleceksin.',
-      emoji: '🧠',
-      betterThanPercent: 50,
+      message: 'Dünya standartlarında dengeli bir başlangıç! Diğer oyunları çözdükçe zihnin açılacak.',
+      emoji: '🌱',
+      betterThanPercent: 50.0,
     ),
     IQMilestone(
-      iqThreshold: 108,
-      title: 'Ortalamanın Üstü',
-      message: 'Diğer oyuncuların %70\'inden daha iyi seviyedesin!',
+      iqThreshold: 110,
+      title: 'Keskin Zihin',
+      message: 'Ortalamanın üzerindesin! Nüfusun %75\'inden daha hızlı örüntü yakalıyorsun.',
       emoji: '⭐',
-      betterThanPercent: 70,
-    ),
-    IQMilestone(
-      iqThreshold: 115,
-      title: 'Parlak Zekâ',
-      message: 'Diğer oyuncuların %84\'ünden daha iyi seviyedesin!',
-      emoji: '🌟',
-      betterThanPercent: 84,
+      betterThanPercent: 75.0,
     ),
     IQMilestone(
       iqThreshold: 120,
-      title: 'Yüksek Zekâ',
-      message: 'Diğer oyuncuların %91\'inden daha iyi seviyedesin! Çoğu insanın ulaşamadığı bir seviye.',
+      title: 'Büyük Usta',
+      message: 'Yüksek mantık kapasitesi! Nüfusun %90\'ından üstünsün, zorlu bulmacalar sana vız geliyor!',
       emoji: '💡',
-      betterThanPercent: 91,
+      betterThanPercent: 90.0,
     ),
     IQMilestone(
       iqThreshold: 130,
-      title: 'Üstün Zekâ',
-      message: 'Einstein seviyesine yaklaşıyorsun! Nüfusun %98\'inden üstünsün!',
-      emoji: '🚀',
-      betterThanPercent: 98,
+      title: 'Üstün Mantık (Mensa)',
+      message: 'Mensa seviyesindesin! Nüfusun %98\'ini geride bıraktın, olağanüstü analitik hız!',
+      emoji: '🌟',
+      betterThanPercent: 98.0,
     ),
     IQMilestone(
       iqThreshold: 140,
-      title: 'Dahi Seviyesi',
-      message: 'Einstein\'ı geride bıraktın! Dünya nüfusunun %99.6\'sından üstünsün!',
-      emoji: '👑',
-      betterThanPercent: 99.6,
+      title: 'Zühtü Dahisi',
+      message: 'Gerçek bir problem çözücü! Nüfusun %99.5\'inden üstünsün, zirveye sadece bir adım kaldı!',
+      emoji: '🚀',
+      betterThanPercent: 99.5,
     ),
     IQMilestone(
-      iqThreshold: 145,
-      title: 'Eşsiz Deha',
-      message: 'Tarihte nadir görülen zekâ seviyesindesin! Her alanda mutlak dominasyon!',
-      emoji: '🏆',
+      iqThreshold: 148,
+      title: 'Einstein Mertebesi',
+      message: 'Tarihe geçen eşsiz deha! Nüfusun %99.9\'unun üzerindesin, arenanın efsanevi dâhisi sensin!',
+      emoji: '👑',
       betterThanPercent: 99.9,
     ),
   ];
@@ -227,43 +220,31 @@ class GameStatsNotifier extends StateNotifier<Map<GameType, GamePerformanceData>
   }) async {
     final int previousIQ = getOverallIQ();
 
-    // Gerçekçi Yüzdelik Dilim Hesaplama:
-    // Puan kalitesi (score / referans) + hız bonusu birleşik değerlendirmesi
-    final double scoreRatio = score / 1100.0;
-    final double speedBonus = durationMs < 25000
-        ? 0.18
-        : durationMs < 45000
-            ? 0.12
-            : durationMs < 70000
-                ? 0.06
-                : durationMs < 100000
-                    ? 0.02
-                    : 0.0;
-    final double quality = (scoreRatio + speedBonus).clamp(0.0, 1.5);
-
+    // Zorlu ve Gerçekçi Tekil Oyun Yüzdelik Dilim Hesaplama:
+    // Zirve %1 dilim için hem 1100+ puan hem de 30 saniye altı kusursuz çözüm gerekir!
     int calculatedPercentile;
     String calculatedTitle;
 
-    if (quality >= 1.0) {
+    if (score >= 1100 && durationMs < 30000) {
       calculatedPercentile = 1;
       calculatedTitle = 'Olağanüstü Zekâ';
-    } else if (quality >= 0.88) {
+    } else if (score >= 1050 && durationMs < 45000) {
       calculatedPercentile = 3;
       calculatedTitle = 'Üstün Zekâ';
-    } else if (quality >= 0.75) {
+    } else if (score >= 980 && durationMs < 65000) {
       calculatedPercentile = 7;
       calculatedTitle = 'Yüksek Zekâ';
-    } else if (quality >= 0.62) {
+    } else if (score >= 900 && durationMs < 90000) {
       calculatedPercentile = 15;
-      calculatedTitle = 'Ortalamanın Üstü';
-    } else if (quality >= 0.48) {
+      calculatedTitle = 'Keskin Zihin';
+    } else if (score >= 800) {
       calculatedPercentile = 30;
-      calculatedTitle = 'Ortalama Seviye';
-    } else if (quality >= 0.35) {
+      calculatedTitle = 'Ortalama Üstü';
+    } else if (score >= 650) {
       calculatedPercentile = 50;
-      calculatedTitle = 'Ortalama';
+      calculatedTitle = 'Dengeli Zihin';
     } else {
-      calculatedPercentile = 65;
+      calculatedPercentile = 70;
       calculatedTitle = 'Gelişmekte';
     }
 
@@ -319,60 +300,112 @@ class GameStatsNotifier extends StateNotifier<Map<GameType, GamePerformanceData>
 
   int _mathMax(int a, int b) => a > b ? a : b;
 
-  /// Kullanıcının Genel Beyin Gücü / IQ Endeksi.
-  /// Oynanmış oyunların yüzdelik dilimlerinden ağırlıklı IQ hesaplar.
-  /// Standart IQ dağılımına yakın gerçekçi değerler üretir (100 = popülasyon ortalaması).
+  /// Kullanıcının Genel Beyin Gücü / Gerçekçi IQ Endeksi.
+  /// Psikometrik Güvenilirlik & Çoklu Kategori Ağırlıklı Model:
+  /// - 1-2 oyun oynayan bir kullanıcı hemen Einstein veya Mensa olamaz!
+  /// - Tam kalibrasyon için farklı oyun kategorilerinin (en az 4-5) oynanması zorunludur.
+  /// - Einstein (148+) yalnızca tüm 6 kategoriyi fethetmiş ve 25+ oyun çözmüş elit oyunculara açıktır.
   int getOverallIQ() {
     final played = state.values.where((e) => e.hasPlayed).toList();
-    if (played.isEmpty) return 100;
+    if (played.isEmpty) return 95; // Başlangıç taban kalibrasyonu
 
-    double totalIQ = 0;
+    double rawTotal = 0;
+    int totalGamesCount = 0;
+
     for (final perf in played) {
-      final p = perf.percentile!;
-      double gameIQ;
-      if (p <= 1) {
-        gameIQ = 142;
-      } else if (p <= 3) {
-        gameIQ = 133;
-      } else if (p <= 5) {
-        gameIQ = 126;
-      } else if (p <= 7) {
-        gameIQ = 122;
-      } else if (p <= 10) {
-        gameIQ = 119;
-      } else if (p <= 15) {
-        gameIQ = 115;
-      } else if (p <= 20) {
-        gameIQ = 112;
-      } else if (p <= 25) {
-        gameIQ = 110;
-      } else if (p <= 30) {
-        gameIQ = 108;
-      } else if (p <= 40) {
-        gameIQ = 104;
-      } else if (p <= 50) {
-        gameIQ = 100;
-      } else if (p <= 65) {
-        gameIQ = 95;
-      } else {
-        gameIQ = 90;
+      totalGamesCount += perf.totalGamesPlayed;
+
+      // Puan kalitesi (Referans 1000 puan)
+      final double scoreFactor = (perf.bestScore / 1000.0).clamp(0.4, 1.2);
+
+      // Çözüm hızı faktörü
+      double speedFactor = 1.0;
+      if (perf.bestDurationMs > 0) {
+        if (perf.bestDurationMs < 30000) {
+          speedFactor = 1.15;
+        } else if (perf.bestDurationMs < 60000) {
+          speedFactor = 1.06;
+        } else if (perf.bestDurationMs < 120000) {
+          speedFactor = 0.98;
+        } else {
+          speedFactor = 0.90;
+        }
       }
-      totalIQ += gameIQ;
+
+      // Bu oyun için hesaplanan ham zeka puanı (90 - 140 aralığı)
+      final double gameRaw = 90.0 + (scoreFactor * speedFactor * 34.0);
+      rawTotal += gameRaw;
     }
 
-    // Oyun çeşitliliği bonusu: Daha fazla farklı oyun oynayan hafif bonus alır
-    final diversityBonus = played.length >= 5
-        ? 3.0
-        : played.length >= 3
-            ? 1.5
-            : 0.0;
+    final double averageGameIQ = rawTotal / played.length;
 
-    return ((totalIQ / played.length) + diversityBonus).round();
+    // 1. Kategori Çeşitliliği Ağırlığı (Confidence / Çeşitlilik Güveni):
+    // 1 kategori oynayan: %25 güven (kalan %75 taban 95 puan)
+    // 2 kategori: %45 güven
+    // 3 kategori: %65 güven
+    // 4 kategori: %80 güven
+    // 5 kategori: %92 güven
+    // 6 kategori: %100 tam güven!
+    double confidenceWeight;
+    switch (played.length) {
+      case 1:
+        confidenceWeight = 0.25;
+        break;
+      case 2:
+        confidenceWeight = 0.45;
+        break;
+      case 3:
+        confidenceWeight = 0.65;
+        break;
+      case 4:
+        confidenceWeight = 0.80;
+        break;
+      case 5:
+        confidenceWeight = 0.92;
+        break;
+      default:
+        confidenceWeight = 1.00;
+        break;
+    }
+
+    // 2. Deneyim ve Tutarlılık Bonusu (Oynadıkça kazanılan ekstra güven puanı)
+    final double experienceBonus = (totalGamesCount * 0.45).clamp(0.0, 16.0);
+
+    final double blendedIQ =
+        (95.0 * (1.0 - confidenceWeight)) + (averageGameIQ * confidenceWeight) + experienceBonus;
+
+    // 3. ZORLU TAVAN BARİYERLERİ (Hiçbir hileli hızlı başlangıç üst liglere atlayamaz!):
+    // - 1 kategori: Tavan 106 (Asla ortalama üstü olamaz)
+    // - 2 kategori: Tavan 116 (Parlak Zihin tavanı)
+    // - 3 kategori: Tavan 126 (Büyük Usta tavanı)
+    // - 4 kategori: Tavan 136 (Üstün Mantık tavanı)
+    // - 5 kategori: Tavan 144 (Zühtü Dahisi tavanı)
+    // - 6 kategori:
+    //    * Eğer toplam oynanan oyun sayısı < 25 ise Tavan 144!
+    //    * 25+ oyun çözüldüyse ve ortalama yüksekse 148+ Einstein kapısı açılır!
+    double cap;
+    if (played.length <= 1) {
+      cap = 106.0;
+    } else if (played.length == 2) {
+      cap = 116.0;
+    } else if (played.length == 3) {
+      cap = 126.0;
+    } else if (played.length == 4) {
+      cap = 136.0;
+    } else if (played.length == 5) {
+      cap = 144.0;
+    } else {
+      if (totalGamesCount < 25) {
+        cap = 144.0;
+      } else {
+        cap = 160.0;
+      }
+    }
+
+    return blendedIQ.clamp(90.0, cap).round();
   }
 
   /// Yeni ulaşılan IQ milestone'unu tespit eder.
-  /// [previousIQ] kaydedilmeden önceki IQ değeri, [currentIQ] kaydedildikten sonraki IQ.
-  /// Eğer yeni bir milestone aşıldıysa o milestone'u döner, yoksa null.
   IQMilestone? detectNewMilestone(int previousIQ, int currentIQ) {
     if (currentIQ <= previousIQ) return null;
 

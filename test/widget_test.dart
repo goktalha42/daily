@@ -16,5 +16,6 @@ void main() {
 
     expect(find.text('Zühtü Arenası'), findsOneWidget);
     expect(find.byType(HomeScreen), findsOneWidget);
+    await tester.pump(const Duration(seconds: 6));
   });
 }

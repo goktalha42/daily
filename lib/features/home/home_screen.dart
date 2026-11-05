@@ -8,7 +8,7 @@ import '../../core/services/game_stats_service.dart';
 import '../../core/services/time_sync_service.dart';
 import '../../core/services/daily_play_service.dart';
 import '../../core/services/theme_service.dart';
-import '../../core/widgets/sketch_countdown_timer.dart';
+
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/date_utils.dart';
 import '../../core/widgets/game_card_logos.dart';
@@ -31,6 +31,7 @@ import '../../core/network/api_client.dart';
 import '../../core/widgets/nickname_prompt_dialog.dart';
 import '../../core/services/update_service.dart';
 import '../../core/widgets/update_prompt_dialog.dart';
+import 'widgets/home_brain_hero_card.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -326,6 +327,8 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
     final statsMap = ref.watch(gameStatsServiceProvider);
     final statsNotifier = ref.read(gameStatsServiceProvider.notifier);
     final userIQ = statsNotifier.getOverallIQ();
+    final dailyPlayState = ref.watch(dailyPlayServiceProvider);
+    final activeDateKey = GameDateUtils.getTodayLevelId();
 
     return CustomScrollView(
       physics: const BouncingScrollPhysics(),
@@ -427,150 +430,15 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
           ),
         ),
 
-        // 2. KARA KALEM SKEÇ HERO KARTI: IQ & BEYİN GÜCÜ & SERİ
+        // 2. DİNAMİK & ANİMASYONLU BEYİN GÜCÜ HERO KARTI
         SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
-            child: SketchCard(
-              enableHatching: true,
-              borderWidth: 2.5,
-              borderRadius: 16,
-              shadowOffset: const Offset(4.0, 4.0),
-              padding: const EdgeInsets.all(18),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      // Sol: Sarı Fosforlu Rozet
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: AppColors.sunYellow,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: AppColors.pencilBlack, width: 1.5),
-                        ),
-                        child: Row(
-                          children: [
-                            const SketchDoodleCrown(size: 16, color: AppColors.pencilBlack),
-                            const SizedBox(width: 4),
-                            Text(
-                              'DÜNYANIN EN İYİ %1\'İ',
-                              style: GoogleFonts.patrickHand(
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.pencilBlack,
-                                fontSize: 13,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      // Sağ: Skeç Sayaç
-                      const SketchCountdownTimer(fontSize: 13),
-                    ],
-                  ),
-                  const SizedBox(height: 14),
-                  Row(
-                    children: [
-                      // IQ Endeksi
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                  const SketchDoodleBrain(size: 18),
-                                  const SizedBox(width: 5),
-                                  Text(
-                                    'GÜNLÜK BEYİN GÜCÜ ENDEKSİ',
-                                    style: GoogleFonts.patrickHand(
-                                      color: isDark ? Colors.white : AppColors.pencilGray,
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 2),
-                              Row(
-                                children: [
-                                  Text(
-                                    'IQ $userIQ+',
-                                    style: GoogleFonts.patrickHand(
-                                      color: isDark ? Colors.white : headerPencil,
-                                      fontSize: 32,
-                                      fontWeight: FontWeight.w700,
-                                      letterSpacing: -0.5,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.highlighterCyan,
-                                      borderRadius: BorderRadius.circular(6),
-                                      border: Border.all(color: AppColors.pencilBlack, width: 1.5),
-                                    ),
-                                    child: Text(
-                                      'ZÜHTÜ SEVİYESİ',
-                                      style: GoogleFonts.patrickHand(
-                                        color: AppColors.pencilBlack,
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              Text(
-                                'Mantık reaksiyonun ortalamadan 4.8 kat daha keskin!',
-                                style: GoogleFonts.patrickHand(
-                                  color: isDark ? Colors.white : headerGraphite,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        // Ateşli Seri (Fotoğraftaki gibi el çizimi alev doodle'ı)
-                        SketchPlaceholderBox(
-                          width: 72,
-                          height: 76,
-                          fillColor: AppColors.highlighterOrange,
-                          lineColor: AppColors.pencilBlack,
-                          lineWidth: 2.0,
-                          borderRadius: 12,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const SketchDoodleFlame(size: 26, color: AppColors.pencilBlack),
-                              Text(
-                                '5 GÜN',
-                                style: GoogleFonts.patrickHand(
-                                  color: AppColors.pencilBlack,
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 15,
-                                  height: 1.0,
-                                ),
-                              ),
-                              Text(
-                                'SERİ',
-                                style: GoogleFonts.patrickHand(
-                                  color: AppColors.pencilBlack,
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 11,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
+          child: HomeBrainHeroCard(
+            userIQ: userIQ,
+            statsMap: statsMap,
+            dailyPlayState: dailyPlayState,
+            activeDateKey: activeDateKey,
           ),
+        ),
 
         SliverToBoxAdapter(
           child: Padding(

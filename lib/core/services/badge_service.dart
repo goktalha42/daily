@@ -96,7 +96,7 @@ class BadgeNotifier extends StateNotifier<Map<String, UserBadge>> {
     final newlyAwarded = <DailyBadge>[];
 
     // 1. Einstein Zekâ Rozeti (130+ IQ korunduğu sürece aktif, 130 altına inildiğinde otomatik düşer)
-    if (overallIQ >= 130) {
+    if (overallIQ >= 148) {
       if (await _tryAward('belt_einstein')) {
         newlyAwarded.add(_findDef('belt_einstein'));
       }

@@ -297,9 +297,9 @@ class DailyBadge {
     ),
     const DailyBadge(
       id: 'belt_einstein',
-      title: 'Einstein Zekâ Endeksi (130+)',
-      description: 'Genel Zekâ Endeksin 130 IQ seviyesinin üzerinde parladığı sürece gururla taşınır.',
-      requirement: 'Genel IQ endeksinde 130+ puanı koru',
+      title: 'Einstein Zekâ Endeksi (148+)',
+      description: 'Tüm kategorilerde mutlak ustalık ve 148+ IQ ile tarihe geçen efsane deha.',
+      requirement: 'Tüm 6 kategoriyi fethedip 148+ IQ endeksine ulaş',
       emoji: '🧠',
       color: AppColors.accentPurple,
       category: BadgeCategory.championship,
