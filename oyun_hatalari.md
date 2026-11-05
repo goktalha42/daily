@@ -4,13 +4,13 @@ highlighterGreen Bu iki rengi öleceğini bilsen bile hiç bir yerde hiç bir ş
 
 Versiyon:
 yeni apk ler yaptıkca versiyonu v1.0.1, v1.0.2 olarak değişiklik büyüklüğüne göre v1.1.0 gibi farklı şekillerde isimlendirelim.
-- **v1.0.2 (Güncel):** Canlı sunucu lig sistemi entegrasyonu (10 kademe: Demir - Şampiyonluk), tüm seviyeler ve tamamlanan oyunlar için canlı sıralamalar, el çizimi skeç rozetler sistemi.
+- **v1.0.2:** Canlı sunucu lig sistemi entegrasyonu (10 kademe: Demir - Şampiyonluk), tüm seviyeler ve tamamlanan oyunlar için canlı sıralamalar, el çizimi skeç rozetler sistemi.
+- **v1.0.4 (Güncel):** WAIS-IV gerçekçi psikometrik IQ motoru (148+ katı Einstein kriteri), koreografili & %100 el çizimi dinamik ana sayfa Beyin Gücü kartı (7 günlük seri takvimi ve 6 bilişsel alan karnesi), tek tıkla OTA güncelleme sistemi.
 
 IQ sistemi:
-IQ sistemi çok kötü, uygulamayı yeni indiren birisi hemen einstein oluyor, olmaz abi. einsten bizim maksimum noktamız o seviyeye ulaşan çok az oyuncu olacak. şuan gelen geçen einstein oluyor, IQ sistemini detaylı araştır ve ona göre zorlu olsun, hem kullanıcı tatmin olsun hem de daha yukarı çıkmak için ekstra motive olsun. uygulamayı her oynayan 2 oyunda yüksek IQ larda olmasın. gerçekçi bir sistem olsun.
+
 
 Ana sayfada ki oyunların üstünde ki kart:
-bu kart çok dinamik değil gibi görünüyor. 5 gün seri yazıyor ama herkeste aynısı yazıyor, bu kartı tamamen dinamik ve doğru verilerle olan haline getirelim. animasyonlu ve hareketli açılsın, görenler wow desin. Ve içinde elle çizilmemiş kutular var.
 
 
 

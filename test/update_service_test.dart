@@ -90,8 +90,8 @@ void main() {
 
     test('UpdateService mock HTTP istemcisiyle güncelleme yanıtını alır', () async {
       final mockData = {
-        'version': '1.0.4',
-        'build_number': 5,
+        'version': '1.0.5',
+        'build_number': 6,
         'title': 'Test Güncellemesi',
         'changelog': 'Test içeriği',
         'apk_url': 'https://example.com/Zuhtu.apk',
@@ -109,8 +109,8 @@ void main() {
 
       final info = await UpdateService.instance.checkForUpdate(httpClient: client);
       expect(info, isNotNull);
-      expect(info!.remoteVersion, '1.0.4');
-      expect(info.remoteBuildNumber, 5);
+      expect(info!.remoteVersion, '1.0.5');
+      expect(info.remoteBuildNumber, 6);
       expect(info.isUpdateAvailable, isTrue);
     });
 

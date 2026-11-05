@@ -1,5 +1,6 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/services/daily_play_service.dart';
@@ -10,8 +11,11 @@ import '../../../core/widgets/sketch_countdown_timer.dart';
 import '../../../core/widgets/sketch_decorations.dart';
 import '../../../games/common/base_game.dart';
 
-/// Zühtü Arenası Ana Sayfa Canlı & Animasyonlu Beyin Gücü Hero Kartı
-class HomeBrainHeroCard extends StatelessWidget {
+/// Zühtü Arenası Ana Sayfa Canlı, Koreografili & %100 El Çizimi Beyin Gücü Hero Kartı.
+/// - Sıfır sabit/sahte veri: tüm değerler gerçek oyun kayıtlarından ve psikometrik IQ motorundan akar.
+/// - Sıfır düz kutu: tüm rozetler, ilerleme çubukları ve günlük mühürler el çizimi CustomPainter / SketchCard ile çizilir.
+/// - Karta dokunulduğunda interaktif "6 Bilişsel Alan & 7 Günlük Seri Karnesi" yumuşakça açılır.
+class HomeBrainHeroCard extends StatefulWidget {
   final int userIQ;
   final Map<GameType, GamePerformanceData> statsMap;
   final DailyPlayState dailyPlayState;
@@ -28,409 +32,1375 @@ class HomeBrainHeroCard extends StatelessWidget {
   });
 
   @override
+  State<HomeBrainHeroCard> createState() => _HomeBrainHeroCardState();
+}
+
+class _HomeBrainHeroCardState extends State<HomeBrainHeroCard>
+    with TickerProviderStateMixin {
+  late final AnimationController _entranceController;
+  late final AnimationController _ambientController;
+  late int _fromIQ;
+  bool _isExpanded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _fromIQ = math.max(88, widget.userIQ - 12);
+
+    _entranceController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1150),
+    )..forward();
+
+    _ambientController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2200),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void didUpdateWidget(covariant HomeBrainHeroCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.userIQ != widget.userIQ) {
+      _fromIQ = oldWidget.userIQ;
+      _entranceController
+        ..reset()
+        ..forward();
+    }
+  }
+
+  @override
+  void dispose() {
+    _entranceController.dispose();
+    _ambientController.dispose();
+    super.dispose();
+  }
+
+  void _toggleExpanded() {
+    HapticFeedback.selectionClick();
+    setState(() {
+      _isExpanded = !_isExpanded;
+    });
+    widget.onStreakTap?.call();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final pencilColor = isDark ? AppColors.pencilWhite : AppColors.pencilBlack;
-    final graphiteColor = isDark ? AppColors.pencilGraphiteDark : AppColors.pencilGraphite;
+    final graphiteColor =
+        isDark ? AppColors.pencilGraphiteDark : AppColors.pencilGraphite;
+    final subtleTextColor =
+        isDark ? AppColors.pencilGrayDark : AppColors.pencilGray;
 
-    // 1. Dinamik Seri Hesaplama
-    final currentStreak = dailyPlayState.getCurrentStreak();
+    // 1. Dinamik Seri ve Rekor Hesaplamaları
+    final int currentStreak = widget.dailyPlayState.getCurrentStreak();
+    final int maxStreak = widget.dailyPlayState.getMaxStreak();
 
-    // 2. Kategori Çeşitliliği & Bugün Çözülen Oyunlar
-    final playedCategories = statsMap.values.where((p) => p.hasPlayed).length;
+    // 2. Kategori Çeşitliliği, Toplam Oyun ve Bugün Çözülenler
+    int playedCategories = 0;
+    int totalGamesPlayed = 0;
+    int bestDurationMs = 0;
+    for (final perf in widget.statsMap.values) {
+      if (perf.hasPlayed) {
+        playedCategories++;
+        totalGamesPlayed += perf.totalGamesPlayed;
+        if (perf.bestDurationMs > 0 &&
+            (bestDurationMs == 0 || perf.bestDurationMs < bestDurationMs)) {
+          bestDurationMs = perf.bestDurationMs;
+        }
+      }
+    }
+
     int todayCompleted = 0;
     for (final game in GameType.values) {
-      if (dailyPlayState.isCompleted(game, activeDateKey)) {
+      if (widget.dailyPlayState.isCompleted(game, widget.activeDateKey)) {
         todayCompleted++;
       }
     }
 
-    // 3. En Hızlı Çözüm Süresi
-    int bestDurationMs = 0;
-    for (final p in statsMap.values) {
-      if (p.bestDurationMs > 0 &&
-          (bestDurationMs == 0 || p.bestDurationMs < bestDurationMs)) {
-        bestDurationMs = p.bestDurationMs;
-      }
+    // 3. Psikometrik Seviye, Sonraki Hedef ve Gauss Yüzdelik Dilimi
+    final milestone =
+        IQMilestone.currentMilestone(widget.userIQ) ?? IQMilestone.all.first;
+    final nextMilestone = IQMilestone.nextMilestone(widget.userIQ);
+    final double betterThanPercent =
+        IQMilestone.gaussianBetterThanPercent(widget.userIQ);
+
+    // Mevcut seviye ile sonraki seviye arasındaki ilerleme oranı (0.0 .. 1.0)
+    final double milestoneProgress;
+    if (nextMilestone == null) {
+      milestoneProgress = 1.0;
+    } else {
+      final int floorIQ =
+          widget.userIQ < 100 ? 90 : milestone.iqThreshold;
+      final int span = math.max(1, nextMilestone.iqThreshold - floorIQ);
+      milestoneProgress =
+          ((widget.userIQ - floorIQ) / span).clamp(0.08, 0.96);
     }
 
-    // 4. Dinamik Üst Rozet & İkon Belirleme
-    final ({String text, Color bg, Widget icon}) badgeInfo = _getBadgeInfo(
-      userIQ: userIQ,
+    // 4. Üst Rozet Bilgisi
+    final badgeInfo = _resolveTopBadge(
+      userIQ: widget.userIQ,
       playedCategories: playedCategories,
-      pencilColor: pencilColor,
     );
 
-    // 5. Dinamik Seviye Rozeti (Milestone)
-    final milestone = IQMilestone.currentMilestone(userIQ) ?? IQMilestone.all.first;
-
-    // 6. Dinamik Açıklama Metni
-    final String subtitleText;
-    if (todayCompleted == 6) {
-      subtitleText = '🏆 Bugünün 6/6 görevi tamamlandı! Zihnin zirvede.';
+    // 5. Dinamik Durum Cümlesi
+    final String dynamicHeadline;
+    if (todayCompleted == GameType.values.length) {
+      dynamicHeadline =
+          '🏆 6/6 günlük bulmaca fethedildi! Zihin profilin tam güçte.';
+    } else if (playedCategories == 0) {
+      dynamicHeadline =
+          'Kalibrasyonu başlatmak için ilk bulmacanı çöz • 6 alan seni bekliyor!';
     } else if (todayCompleted > 0) {
-      subtitleText = 'Bugün $todayCompleted/6 oyun çözüldü • ${6 - todayCompleted} bulmaca bekliyor!';
+      dynamicHeadline =
+          'Bugün $todayCompleted/6 çözüldü • Nüfusun %${betterThanPercent.toStringAsFixed(1)}\'inden üstünsün!';
+    } else if (currentStreak > 0) {
+      dynamicHeadline =
+          '⚡ $currentStreak günlük serini korumak için bugün en az 1 oyun çöz!';
     } else if (bestDurationMs > 0) {
-      subtitleText = 'En hızlı reaksiyonun: ${GameDateUtils.formatGameTime(bestDurationMs)} • Zihnini test et!';
+      dynamicHeadline =
+          'En hızlı çözümün ${GameDateUtils.formatGameTime(bestDurationMs)} • Nüfusun %${betterThanPercent.toStringAsFixed(1)}\'inden üstünsün!';
     } else {
-      subtitleText = 'Güne zihnini açarak başla • 6 yeni bulmaca seni bekliyor!';
+      dynamicHeadline =
+          'Günün 6 yeni zekâ bulmacası hazır • Zihnini test et!';
     }
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
-      child: SketchCard(
-        enableHatching: true,
-        borderWidth: 2.5,
-        borderRadius: 18,
-        shadowOffset: const Offset(4.0, 4.0),
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // ÜST SATIR: Sol Dinamik Rozet & Sağ Geri Sayım Sayacı
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // Sol: El Çizimi Eskiz Rozet
-                SketchCard(
-                  backgroundColor: badgeInfo.bg,
-                  borderColor: pencilColor,
-                  borderWidth: 1.8,
-                  borderRadius: 10,
-                  shadowOffset: const Offset(1.5, 1.5),
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      badgeInfo.icon,
-                      const SizedBox(width: 5),
-                      Text(
-                        badgeInfo.text,
-                        style: GoogleFonts.patrickHand(
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.pencilBlack,
-                          fontSize: 13,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                // Sağ: Eskiz Sayaç
-                const SketchCountdownTimer(fontSize: 13),
-              ],
-            ),
-            const SizedBox(height: 14),
+    // Koreografi eğrileri
+    final cardSlideAnim = CurvedAnimation(
+      parent: _entranceController,
+      curve: const Interval(0.0, 0.55, curve: Curves.easeOutBack),
+    );
+    final iqCountAnim = CurvedAnimation(
+      parent: _entranceController,
+      curve: const Interval(0.15, 0.88, curve: Curves.easeOutQuart),
+    );
+    final barFillAnim = CurvedAnimation(
+      parent: _entranceController,
+      curve: const Interval(0.28, 0.95, curve: Curves.easeOutCubic),
+    );
 
-            // ORTA SATIR: Sol IQ Bilgisi & Sağ Ateşli Seri Kutusu
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                // Sol Bölüm: IQ & Seviye & Açıklama
-                Expanded(
+    return AnimatedBuilder(
+      animation: _entranceController,
+      builder: (context, _) {
+        final double slideOffset = (1.0 - cardSlideAnim.value) * 18.0;
+        final double cardScale = 0.95 + (0.05 * cardSlideAnim.value);
+        final double opacity = cardSlideAnim.value.clamp(0.0, 1.0);
+        final int animatedIQ = (_fromIQ +
+                ((widget.userIQ - _fromIQ) * iqCountAnim.value))
+            .round();
+
+        return Opacity(
+          opacity: opacity,
+          child: Transform.translate(
+            offset: Offset(0, slideOffset),
+            child: Transform.scale(
+              scale: cardScale,
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+                child: SketchCard(
+                  onTap: _toggleExpanded,
+                  enableHatching: true,
+                  borderWidth: 2.6,
+                  borderRadius: 20,
+                  shadowOffset: const Offset(4.5, 4.5),
+                  padding: const EdgeInsets.fromLTRB(15, 14, 15, 13),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
+                      // 1. ÜST SATIR: Sol Dinamik Seviye/Kalibrasyon Rozeti & Sağ El Çizimi Sayaç
                       Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const SketchDoodleBrain(size: 18),
-                          const SizedBox(width: 6),
-                          Text(
-                            'GÜNLÜK BEYİN GÜCÜ ENDEKSİ',
-                            style: GoogleFonts.patrickHand(
-                              color: graphiteColor,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 0.5,
+                          Flexible(
+                            child: SketchCard(
+                              backgroundColor: badgeInfo.bg,
+                              borderColor: pencilColor,
+                              borderWidth: 1.8,
+                              borderRadius: 10,
+                              shadowOffset: const Offset(1.8, 1.8),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 9, vertical: 4),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  badgeInfo.icon,
+                                  const SizedBox(width: 5),
+                                  Flexible(
+                                    child: Text(
+                                      badgeInfo.text,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: GoogleFonts.patrickHand(
+                                        fontWeight: FontWeight.w700,
+                                        color: AppColors.inkBlack,
+                                        fontSize: 12.5,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                        ],
-                      ),
-                      const SizedBox(height: 2),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.baseline,
-                        textBaseline: TextBaseline.alphabetic,
-                        children: [
-                          Text(
-                            playedCategories == 0 ? 'IQ ~95' : 'IQ $userIQ',
-                            style: GoogleFonts.patrickHand(
-                              color: pencilColor,
-                              fontSize: 34,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: -0.5,
-                            ),
-                          )
-                              .animate()
-                              .fadeIn(duration: 350.ms)
-                              .scale(
-                                begin: const Offset(0.85, 0.85),
-                                end: const Offset(1, 1),
-                                curve: Curves.easeOutBack,
-                                duration: 500.ms,
-                              ),
                           const SizedBox(width: 8),
-                          // Dinamik El Çizimi Seviye Rozeti
-                          SketchCard(
-                            backgroundColor: AppColors.skyBlue.withValues(alpha: 0.35),
-                            borderColor: pencilColor,
-                            borderWidth: 1.6,
-                            borderRadius: 8,
-                            shadowOffset: const Offset(1.5, 1.5),
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                            child: Text(
-                              milestone.title.toUpperCase(),
-                              style: GoogleFonts.patrickHand(
-                                color: pencilColor,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w700,
+                          const SketchCountdownTimer(
+                            fontSize: 12.5,
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 9, vertical: 4),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 13),
+
+                      // 2. ORTA BÖLÜM: Yaşayan El Çizimi Beyin Madalyonu + Dinamik IQ + Seri Mührü
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          // Sol: Canlı Nefes Alan El Çizimi Nöral Madalyon
+                          _AnimatedNeuralMedallion(
+                            ambientAnimation: _ambientController,
+                            isEinstein: widget.userIQ >= 148,
+                            isCompleteToday:
+                                todayCompleted == GameType.values.length,
+                            pencilColor: pencilColor,
+                            isDark: isDark,
+                          ),
+                          const SizedBox(width: 11),
+
+                          // Orta: Yuvarlanan IQ Sayacı, Rütbe Etiketi ve Durum Metni
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  playedCategories == 0
+                                      ? 'BAŞLANGIÇ KALİBRASYONU'
+                                      : 'PSİKOMETRİK ZEKÂ ENDEKSİ',
+                                  style: GoogleFonts.patrickHand(
+                                    color: subtleTextColor,
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 0.6,
+                                  ),
+                                ),
+                                const SizedBox(height: 1),
+                                Wrap(
+                                  crossAxisAlignment: WrapCrossAlignment.center,
+                                  spacing: 7,
+                                  runSpacing: 4,
+                                  children: [
+                                    Text(
+                                      playedCategories == 0
+                                          ? 'IQ 100'
+                                          : 'IQ $animatedIQ',
+                                      style: GoogleFonts.patrickHand(
+                                        color: pencilColor,
+                                        fontSize: 33,
+                                        fontWeight: FontWeight.w700,
+                                        height: 1.0,
+                                        letterSpacing: -0.5,
+                                      ),
+                                    ),
+                                    SketchCard(
+                                      backgroundColor: widget.userIQ >= 148
+                                          ? AppColors.highlighterPurple
+                                          : AppColors.skyBlue
+                                              .withValues(alpha: 0.42),
+                                      borderColor: pencilColor,
+                                      borderWidth: 1.6,
+                                      borderRadius: 8,
+                                      shadowOffset: const Offset(1.5, 1.5),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 7, vertical: 2),
+                                      child: Text(
+                                        playedCategories == 0
+                                            ? 'TEST BEKLİYOR'
+                                            : '${milestone.emoji} ${milestone.title.toUpperCase()}',
+                                        style: GoogleFonts.patrickHand(
+                                          color: widget.userIQ >= 148
+                                              ? AppColors.inkBlack
+                                              : pencilColor,
+                                          fontSize: 11.5,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  dynamicHeadline,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: GoogleFonts.patrickHand(
+                                    color: graphiteColor,
+                                    fontSize: 13.2,
+                                    fontWeight: FontWeight.w600,
+                                    height: 1.15,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          const SizedBox(width: 9),
+
+                          // Sağ: %100 Dinamik El Çizimi Ateşli Seri Mührü
+                          _DynamicStreakStamp(
+                            ambientAnimation: _ambientController,
+                            currentStreak: currentStreak,
+                            todayCompleted: todayCompleted,
+                            pencilColor: pencilColor,
+                            graphiteColor: graphiteColor,
+                            isDark: isDark,
+                            onTap: _toggleExpanded,
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      // 3. SONRAKİ IQ MERTEBESİ EL ÇİZİMİ TARAMALI İLERLEME ÇUBUĞU
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  nextMilestone != null
+                                      ? 'SONRAKİ HEDEF: ${nextMilestone.emoji} ${nextMilestone.title.toUpperCase()} (${nextMilestone.iqThreshold} IQ)'
+                                      : '👑 ZİRVE MERTEBE: EINSTEIN (148+ IQ AKTİF)',
+                                  overflow: TextOverflow.ellipsis,
+                                  style: GoogleFonts.patrickHand(
+                                    fontSize: 11.8,
+                                    fontWeight: FontWeight.w700,
+                                    color: graphiteColor,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                nextMilestone != null
+                                    ? '${nextMilestone.iqThreshold - widget.userIQ} IQ KALDI'
+                                    : 'İLK %0.1',
+                                style: GoogleFonts.patrickHand(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                  color: isDark
+                                      ? AppColors.sunYellow
+                                      : AppColors.pencilBlack,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          SizedBox(
+                            height: 13,
+                            child: CustomPaint(
+                              painter: _HandDrawnMilestoneBarPainter(
+                                progress:
+                                    milestoneProgress * barFillAnim.value,
+                                strokeColor: pencilColor,
+                                fillColor: widget.userIQ >= 148
+                                    ? AppColors.highlighterPurple
+                                    : AppColors.sunYellow,
+                                trackColor: isDark
+                                    ? AppColors.surfaceSecondaryDark
+                                    : AppColors.surfaceSecondaryLight,
                               ),
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        subtitleText,
-                        style: GoogleFonts.patrickHand(
-                          color: graphiteColor,
-                          fontSize: 14,
-                          height: 1.15,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 12),
 
-                // Sağ Bölüm: Canlı Animasyonlu Ateşli Seri Kutusu
-                Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: onStreakTap,
-                    borderRadius: BorderRadius.circular(14),
-                    child: SketchCard(
-                      backgroundColor: currentStreak > 0
-                          ? AppColors.highlighterOrange
-                          : (isDark ? AppColors.surfaceSecondaryDark : AppColors.surfaceSecondaryLight),
-                      borderColor: pencilColor,
-                      borderWidth: 2.2,
-                      borderRadius: 14,
-                      shadowOffset: const Offset(3.0, 3.0),
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                      child: SizedBox(
-                        width: 64,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                      const SizedBox(height: 11),
+
+                      // 4. ALT ŞERİT: 6 El Çizimi Günlük Oyun Mührü + Analiz Defteri Aç/Kapat Rozeti
+                      SketchCard(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 7),
+                        borderRadius: 12,
+                        borderWidth: 1.5,
+                        shadowOffset: const Offset(1.8, 1.8),
+                        backgroundColor: isDark
+                            ? AppColors.surfaceSecondaryDark
+                            : const Color(0xFFF5F1E8),
+                        borderColor: pencilColor.withValues(alpha: 0.75),
+                        child: Row(
                           children: [
-                            // Alev Doodle'ı (Seri varsa canlı nefes alma animasyonu)
-                            SketchDoodleFlame(
-                              size: 26,
-                              color: currentStreak > 0 ? AppColors.pencilBlack : graphiteColor,
-                            )
-                                .animate(
-                                  target: currentStreak > 0 ? 1 : 0,
-                                  onPlay: currentStreak > 0 ? (controller) => controller.repeat(reverse: true) : null,
-                                )
-                                .scale(
-                                  begin: const Offset(1.0, 1.0),
-                                  end: const Offset(1.12, 1.12),
-                                  duration: 1200.ms,
-                                  curve: Curves.easeInOut,
-                                ),
-                            const SizedBox(height: 2),
                             Text(
-                              currentStreak > 0 ? '$currentStreak GÜN' : '0 GÜN',
+                              'GÜNLÜK $todayCompleted/6',
                               style: GoogleFonts.patrickHand(
-                                color: currentStreak > 0 ? AppColors.pencilBlack : pencilColor,
+                                fontSize: 12.5,
                                 fontWeight: FontWeight.w700,
-                                fontSize: 15,
-                                height: 1.0,
+                                color: todayCompleted == 6
+                                    ? AppColors.success
+                                    : graphiteColor,
                               ),
                             ),
-                            Text(
-                              currentStreak > 0 ? 'SERİ 🔥' : 'BAŞLA',
-                              style: GoogleFonts.patrickHand(
-                                color: currentStreak > 0 ? AppColors.pencilBlack : graphiteColor,
-                                fontWeight: FontWeight.w700,
-                                fontSize: 11,
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: List.generate(
+                                    GameType.values.length, (index) {
+                                  final game = GameType.values[index];
+                                  final isDone = widget.dailyPlayState
+                                      .isCompleted(game, widget.activeDateKey);
+                                  final double itemStart =
+                                      (0.25 + index * 0.08).clamp(0.0, 0.85);
+                                  final double itemEnd =
+                                      (itemStart + 0.25).clamp(0.0, 1.0);
+                                  final double stampScale = CurvedAnimation(
+                                    parent: _entranceController,
+                                    curve: Interval(itemStart, itemEnd,
+                                        curve: Curves.easeOutBack),
+                                  ).value;
+
+                                  return Transform.scale(
+                                    scale: stampScale.clamp(0.0, 1.15),
+                                    child: _HandDrawnGameStamp(
+                                      game: game,
+                                      isDone: isDone,
+                                      pencilColor: pencilColor,
+                                      seed: index + 11,
+                                    ),
+                                  );
+                                }),
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            SketchCard(
+                              backgroundColor: _isExpanded
+                                  ? AppColors.sunYellow
+                                  : (isDark
+                                      ? AppColors.surfaceDark
+                                      : Colors.white),
+                              borderColor: pencilColor,
+                              borderWidth: 1.4,
+                              borderRadius: 8,
+                              shadowOffset: const Offset(1.2, 1.2),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 7, vertical: 2),
+                              child: Text(
+                                _isExpanded ? 'Kapat ▴' : 'Analiz ▾',
+                                style: GoogleFonts.patrickHand(
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w700,
+                                  color: _isExpanded
+                                      ? AppColors.inkBlack
+                                      : pencilColor,
+                                ),
                               ),
                             ),
                           ],
                         ),
                       ),
-                    ),
+
+                      // 5. İNTERAKTİF AÇILIR PANEL: 7 Günlük Seri Takvimi & 6 Bilişsel Alan Karnesi
+                      AnimatedSize(
+                        duration: const Duration(milliseconds: 320),
+                        curve: Curves.easeOutCubic,
+                        alignment: Alignment.topCenter,
+                        child: _isExpanded
+                            ? _ExpandedCognitiveNotebook(
+                                statsMap: widget.statsMap,
+                                dailyPlayState: widget.dailyPlayState,
+                                currentStreak: currentStreak,
+                                maxStreak: maxStreak,
+                                playedCategories: playedCategories,
+                                totalGamesPlayed: totalGamesPlayed,
+                                userIQ: widget.userIQ,
+                                pencilColor: pencilColor,
+                                graphiteColor: graphiteColor,
+                                isDark: isDark,
+                              )
+                            : const SizedBox.shrink(),
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            ),
-
-            const SizedBox(height: 14),
-
-            // ALT BÖLÜM: Günlük 6 Oyun Tamamlama İlerleme Çubuğu (Mini Sketch Dots)
-            SketchCard(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-              borderRadius: 10,
-              borderWidth: 1.2,
-              shadowOffset: const Offset(1.5, 1.5),
-              backgroundColor: isDark ? Colors.white.withValues(alpha: 0.05) : const Color(0xFFF5F1E8),
-              borderColor: pencilColor.withValues(alpha: 0.4),
-              child: Row(
-                children: [
-                  Text(
-                    'BUGÜN:',
-                    style: GoogleFonts.patrickHand(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: graphiteColor,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: List.generate(GameType.values.length, (index) {
-                        final game = GameType.values[index];
-                        final isDone = dailyPlayState.isCompleted(game, activeDateKey);
-                        return _MiniGameDot(
-                          game: game,
-                          isDone: isDone,
-                          isDark: isDark,
-                          pencilColor: pencilColor,
-                          index: index,
-                        );
-                      }),
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    '$todayCompleted/6',
-                    style: GoogleFonts.patrickHand(
-                      fontSize: 13,
-                      fontWeight: FontWeight.bold,
-                      color: todayCompleted == 6 ? const Color(0xFF15803D) : pencilColor,
-                    ),
-                  ),
-                ],
               ),
             ),
-          ],
-        ),
-      ),
-    )
-        // Kartın açılış Wow animasyonu (Hafif yaylı sıçrama ve fade-in)
-        .animate()
-        .fadeIn(duration: 400.ms)
-        .slideY(begin: 0.08, end: 0, curve: Curves.easeOutBack, duration: 500.ms);
+          ),
+        );
+      },
+    );
   }
 
-  /// Dinamik rozet başlığı, arka plan rengi ve ikonu
-  static ({String text, Color bg, Widget icon}) _getBadgeInfo({
+  static ({String text, Color bg, Widget icon}) _resolveTopBadge({
     required int userIQ,
     required int playedCategories,
-    required Color pencilColor,
   }) {
-    if (playedCategories < 3) {
+    if (playedCategories < 6) {
       return (
-        text: '🌱 KALİBRASYON: $playedCategories/6 KATEGORİ',
+        text: 'KALİBRASYON: $playedCategories/6 BİLİŞSEL ALAN',
         bg: AppColors.sunYellow,
-        icon: const SketchDoodleBrain(size: 16),
+        icon: const SketchDoodleBrain(size: 15, color: AppColors.inkBlack),
       );
     }
 
     if (userIQ >= 148) {
       return (
-        text: '👑 EINSTEIN MERTEBESİ • İLK %0.1',
+        text: 'EINSTEIN MERTEBESİ • İLK %0.1',
         bg: AppColors.highlighterPurple,
-        icon: const SketchDoodleCrown(size: 16, color: AppColors.pencilBlack),
+        icon: const SketchDoodleCrown(size: 15, color: AppColors.inkBlack),
       );
     } else if (userIQ >= 140) {
       return (
-        text: '🚀 ZÜHTÜ DAHİSİ • İLK %0.5',
+        text: 'ZÜHTÜ DAHİSİ • İLK %0.4',
         bg: AppColors.sunYellow,
-        icon: const Text('🚀', style: TextStyle(fontSize: 14)),
+        icon: const SketchDoodleTrophy(size: 15, color: AppColors.inkBlack),
       );
     } else if (userIQ >= 130) {
       return (
-        text: '🌟 MENSA DÜZEYİ • İLK %2',
+        text: 'MENSA DÜZEYİ • İLK %2.3',
         bg: AppColors.skyBlue,
-        icon: const Text('🌟', style: TextStyle(fontSize: 14)),
+        icon: const SketchDoodleBrain(size: 15, color: AppColors.inkBlack),
       );
     } else if (userIQ >= 120) {
       return (
-        text: '💡 BÜYÜK USTA • İLK %10',
+        text: 'BÜYÜK USTA • İLK %9',
         bg: AppColors.sunYellow,
-        icon: const Text('💡', style: TextStyle(fontSize: 14)),
+        icon: const SketchDoodleCrown(size: 15, color: AppColors.inkBlack),
       );
     } else if (userIQ >= 110) {
       return (
-        text: '⭐ KESKİN ZİHİN • İLK %25',
+        text: 'KESKİN ZİHİN • İLK %25',
         bg: AppColors.highlighterOrange,
-        icon: const Text('⭐', style: TextStyle(fontSize: 14)),
+        icon: const SketchDoodleBrain(size: 15, color: AppColors.inkBlack),
       );
     } else {
       return (
-        text: '🎯 DENGELİ ZİHİN • İLK %50',
-        bg: AppColors.sunYellow.withValues(alpha: 0.6),
-        icon: const Text('🎯', style: TextStyle(fontSize: 14)),
+        text: '6/6 ALAN AKTİF • KALİBRE EDİLDİ',
+        bg: AppColors.highlighterCyan,
+        icon: const SketchDoodleBrain(size: 15, color: AppColors.inkBlack),
       );
     }
   }
 }
 
-/// Günlük 6 Oyun İlerleme Noktası
-class _MiniGameDot extends StatelessWidget {
+/// Yaşayan el çizimi nöral beyin / taç madalyonu (nefes alma ve el çizimi kıvılcım çizgileri)
+class _AnimatedNeuralMedallion extends StatelessWidget {
+  final Animation<double> ambientAnimation;
+  final bool isEinstein;
+  final bool isCompleteToday;
+  final Color pencilColor;
+  final bool isDark;
+
+  const _AnimatedNeuralMedallion({
+    required this.ambientAnimation,
+    required this.isEinstein,
+    required this.isCompleteToday,
+    required this.pencilColor,
+    required this.isDark,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: ambientAnimation,
+      builder: (context, _) {
+        final double t = ambientAnimation.value;
+        final double floatY = (t - 0.5) * 3.0;
+        final Color fill = isEinstein
+            ? AppColors.highlighterPurple
+            : (isCompleteToday ? AppColors.success : AppColors.sunYellow);
+
+        return Transform.translate(
+          offset: Offset(0, floatY),
+          child: SizedBox(
+            width: 54,
+            height: 54,
+            child: CustomPaint(
+              painter: _WobblyMedallionPainter(
+                fillColor: fill,
+                strokeColor: pencilColor,
+                sparkPhase: t,
+              ),
+              child: Center(
+                child: isEinstein
+                    ? const SketchDoodleCrown(
+                        size: 26, color: AppColors.inkBlack)
+                    : const SketchDoodleBrain(
+                        size: 26, color: AppColors.inkBlack),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// El çizimi dalgalı madalyon ve nöral kıvılcım çizgileri ressamı
+class _WobblyMedallionPainter extends CustomPainter {
+  final Color fillColor;
+  final Color strokeColor;
+  final double sparkPhase;
+
+  _WobblyMedallionPainter({
+    required this.fillColor,
+    required this.strokeColor,
+    required this.sparkPhase,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width * 0.40;
+
+    // Sert kurşun kalem gölgesi
+    final shadowPath = _buildWobblyCircle(center + const Offset(2.2, 2.2), radius, 7);
+    canvas.drawPath(
+      shadowPath,
+      Paint()
+        ..color = AppColors.inkBlack.withValues(alpha: 0.85)
+        ..style = PaintingStyle.fill,
+    );
+
+    // Ana dolgu
+    final mainPath = _buildWobblyCircle(center, radius, 7);
+    canvas.drawPath(
+      mainPath,
+      Paint()
+        ..color = fillColor
+        ..style = PaintingStyle.fill,
+    );
+
+    // İç çapraz tarama dokusu
+    canvas.save();
+    canvas.clipPath(mainPath);
+    final hatchPaint = Paint()
+      ..color = AppColors.inkBlack.withValues(alpha: 0.14)
+      ..strokeWidth = 1.0;
+    for (double i = -size.width; i < size.width * 2; i += 6.5) {
+      canvas.drawLine(
+        Offset(i, size.height),
+        Offset(i + size.height * 0.65, 0),
+        hatchPaint,
+      );
+    }
+    canvas.restore();
+
+    // Çift vuruşlu el çizimi çember konturu
+    canvas.drawPath(
+      mainPath,
+      Paint()
+        ..color = strokeColor
+        ..strokeWidth = 2.0
+        ..style = PaintingStyle.stroke,
+    );
+    final secondRing = _buildWobblyCircle(center, radius * 0.96, 19);
+    canvas.drawPath(
+      secondRing,
+      Paint()
+        ..color = strokeColor.withValues(alpha: 0.5)
+        ..strokeWidth = 1.0
+        ..style = PaintingStyle.stroke,
+    );
+
+    // Etrafında nefes alan 4 el çizimi kıvılcım çizgisi
+    final sparkPaint = Paint()
+      ..color = strokeColor.withValues(alpha: 0.45 + 0.45 * sparkPhase)
+      ..strokeWidth = 1.5
+      ..strokeCap = StrokeCap.round;
+
+    const angles = [-0.75, 0.75, 2.38, -2.38];
+    final innerR = radius + 2.5 + (sparkPhase * 1.2);
+    final outerR = innerR + 3.0 + (sparkPhase * 1.8);
+    for (final a in angles) {
+      canvas.drawLine(
+        Offset(center.dx + math.cos(a) * innerR,
+            center.dy + math.sin(a) * innerR),
+        Offset(center.dx + math.cos(a) * outerR,
+            center.dy + math.sin(a) * outerR),
+        sparkPaint,
+      );
+    }
+  }
+
+  Path _buildWobblyCircle(Offset center, double radius, int seed) {
+    final rnd = math.Random(seed);
+    final path = Path();
+    const steps = 16;
+    final pts = List.generate(steps, (i) {
+      final angle = (i / steps) * math.pi * 2;
+      final jitter = (rnd.nextDouble() - 0.5) * 2.2;
+      return Offset(
+        center.dx + math.cos(angle) * (radius + jitter),
+        center.dy + math.sin(angle) * (radius + jitter),
+      );
+    });
+    path.moveTo(pts.first.dx, pts.first.dy);
+    for (int i = 0; i < steps; i++) {
+      final next = pts[(i + 1) % steps];
+      final mid = Offset(
+        (pts[i].dx + next.dx) / 2,
+        (pts[i].dy + next.dy) / 2,
+      );
+      path.quadraticBezierTo(pts[i].dx, pts[i].dy, mid.dx, mid.dy);
+    }
+    path.close();
+    return path;
+  }
+
+  @override
+  bool shouldRepaint(covariant _WobblyMedallionPainter oldDelegate) {
+    return oldDelegate.sparkPhase != sparkPhase ||
+        oldDelegate.fillColor != fillColor ||
+        oldDelegate.strokeColor != strokeColor;
+  }
+}
+
+/// Sağ taraftaki %100 dinamik el çizimi seri mührü
+class _DynamicStreakStamp extends StatelessWidget {
+  final Animation<double> ambientAnimation;
+  final int currentStreak;
+  final int todayCompleted;
+  final Color pencilColor;
+  final Color graphiteColor;
+  final bool isDark;
+  final VoidCallback onTap;
+
+  const _DynamicStreakStamp({
+    required this.ambientAnimation,
+    required this.currentStreak,
+    required this.todayCompleted,
+    required this.pencilColor,
+    required this.graphiteColor,
+    required this.isDark,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final bool hasStreak = currentStreak > 0;
+    final bool securedToday = todayCompleted > 0;
+
+    final Color bg = hasStreak
+        ? (securedToday ? AppColors.highlighterOrange : AppColors.sunYellow)
+        : (isDark
+            ? AppColors.surfaceSecondaryDark
+            : AppColors.surfaceSecondaryLight);
+
+    final String statusLabel;
+    if (!hasStreak) {
+      statusLabel = 'BAŞLAT';
+    } else if (securedToday) {
+      statusLabel = 'AKTİF ✓';
+    } else {
+      statusLabel = 'KORU! ⚡';
+    }
+
+    return SketchCard(
+      onTap: onTap,
+      backgroundColor: bg,
+      borderColor: pencilColor,
+      borderWidth: 2.1,
+      borderRadius: 14,
+      shadowOffset: const Offset(2.8, 2.8),
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 7),
+      child: SizedBox(
+        width: 62,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            AnimatedBuilder(
+              animation: ambientAnimation,
+              builder: (context, child) {
+                final scale = hasStreak
+                    ? (0.96 + 0.14 * ambientAnimation.value)
+                    : 1.0;
+                return Transform.scale(scale: scale, child: child);
+              },
+              child: SketchDoodleFlame(
+                size: 24,
+                color: hasStreak ? AppColors.inkBlack : graphiteColor,
+              ),
+            ),
+            const SizedBox(height: 2),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                '$currentStreak GÜN',
+                style: GoogleFonts.patrickHand(
+                  color: hasStreak ? AppColors.inkBlack : pencilColor,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 15,
+                  height: 1.0,
+                ),
+              ),
+            ),
+            const SizedBox(height: 1),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                statusLabel,
+                style: GoogleFonts.patrickHand(
+                  color: hasStreak ? AppColors.inkBlack : graphiteColor,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 10.5,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// El çizimi dalgalı ve çapraz taramalı IQ hedef ilerleme çubuğu ressamı
+class _HandDrawnMilestoneBarPainter extends CustomPainter {
+  final double progress;
+  final Color strokeColor;
+  final Color fillColor;
+  final Color trackColor;
+
+  _HandDrawnMilestoneBarPainter({
+    required this.progress,
+    required this.strokeColor,
+    required this.fillColor,
+    required this.trackColor,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final trackPath = _buildWobblyBarPath(size, seed: 31);
+
+    // Sert alt gölge
+    canvas.save();
+    canvas.translate(1.5, 1.5);
+    canvas.drawPath(
+      trackPath,
+      Paint()
+        ..color = AppColors.inkBlack.withValues(alpha: 0.55)
+        ..style = PaintingStyle.fill,
+    );
+    canvas.restore();
+
+    // Zemin
+    canvas.drawPath(
+      trackPath,
+      Paint()
+        ..color = trackColor
+        ..style = PaintingStyle.fill,
+    );
+
+    // İlerleme dolgusu + çapraz kurşun kalem taraması
+    final clamped = progress.clamp(0.0, 1.0);
+    if (clamped > 0.01) {
+      final fillW = size.width * clamped;
+      canvas.save();
+      canvas.clipPath(trackPath);
+
+      canvas.drawRect(
+        Rect.fromLTWH(0, 0, fillW, size.height),
+        Paint()..color = fillColor,
+      );
+
+      final hatchPaint = Paint()
+        ..color = AppColors.inkBlack.withValues(alpha: 0.22)
+        ..strokeWidth = 1.1;
+      for (double x = -size.height; x < fillW + size.height; x += 5.5) {
+        canvas.drawLine(
+          Offset(x, size.height),
+          Offset(x + size.height * 0.75, 0),
+          hatchPaint,
+        );
+      }
+
+      // Sağ bitiş el çizimi dikey sınır çizgisi
+      if (clamped < 0.99) {
+        canvas.drawLine(
+          Offset(fillW, 0.5),
+          Offset(fillW - 1.0, size.height - 0.5),
+          Paint()
+            ..color = strokeColor
+            ..strokeWidth = 1.8,
+        );
+      }
+      canvas.restore();
+    }
+
+    // Çift vuruşlu el çizimi dış kontur
+    canvas.drawPath(
+      trackPath,
+      Paint()
+        ..color = strokeColor
+        ..strokeWidth = 1.6
+        ..style = PaintingStyle.stroke,
+    );
+    canvas.drawPath(
+      _buildWobblyBarPath(size, seed: 53, inset: 0.7),
+      Paint()
+        ..color = strokeColor.withValues(alpha: 0.4)
+        ..strokeWidth = 0.8
+        ..style = PaintingStyle.stroke,
+    );
+  }
+
+  Path _buildWobblyBarPath(Size size, {required int seed, double inset = 0.8}) {
+    final r = (size.height / 2) - inset;
+    final left = inset;
+    final top = inset;
+    final right = size.width - inset;
+    final bottom = size.height - inset;
+    final midX = (left + right) / 2;
+    final wobble = (seed % 3 == 0) ? 0.6 : -0.6;
+
+    final path = Path();
+    path.moveTo(left + r, top);
+    path.quadraticBezierTo(midX, top + wobble, right - r, top);
+    path.arcToPoint(
+      Offset(right - r, bottom),
+      radius: Radius.circular(r),
+      clockwise: true,
+    );
+    path.quadraticBezierTo(midX, bottom - wobble, left + r, bottom);
+    path.arcToPoint(
+      Offset(left + r, top),
+      radius: Radius.circular(r),
+      clockwise: true,
+    );
+    path.close();
+    return path;
+  }
+
+  @override
+  bool shouldRepaint(covariant _HandDrawnMilestoneBarPainter oldDelegate) {
+    return oldDelegate.progress != progress ||
+        oldDelegate.fillColor != fillColor ||
+        oldDelegate.strokeColor != strokeColor;
+  }
+}
+
+/// Düz Container yerine %100 el çizimi (çift konturlu + taramalı + el çizimi tikli) günlük oyun mührü
+class _HandDrawnGameStamp extends StatelessWidget {
   final GameType game;
   final bool isDone;
-  final bool isDark;
   final Color pencilColor;
-  final int index;
+  final int seed;
 
-  const _MiniGameDot({
+  const _HandDrawnGameStamp({
     required this.game,
     required this.isDone,
-    required this.isDark,
     required this.pencilColor,
-    required this.index,
+    required this.seed,
   });
 
   @override
   Widget build(BuildContext context) {
     return Tooltip(
       message: '${game.title}: ${isDone ? "Tamamlandı" : "Bekliyor"}',
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        width: 22,
-        height: 22,
-        decoration: BoxDecoration(
-          color: isDone ? game.color : Colors.transparent,
-          shape: BoxShape.circle,
-          border: Border.all(
-            color: isDone ? pencilColor : pencilColor.withValues(alpha: 0.4),
-            width: isDone ? 1.8 : 1.2,
+      child: SizedBox(
+        width: 25,
+        height: 25,
+        child: CustomPaint(
+          painter: _WobblyGameStampPainter(
+            isDone: isDone,
+            fillColor: game.color,
+            strokeColor: pencilColor,
+            seed: seed,
           ),
-          boxShadow: isDone
-              ? [
-                  BoxShadow(
-                    color: pencilColor.withValues(alpha: 0.2),
-                    offset: const Offset(1, 1),
+          child: Center(
+            child: isDone
+                ? const SizedBox.shrink()
+                : Text(
+                    game.title.substring(0, 1),
+                    style: GoogleFonts.patrickHand(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w700,
+                      color: pencilColor.withValues(alpha: 0.72),
+                      height: 1.0,
+                    ),
                   ),
-                ]
-              : null,
+          ),
         ),
-        alignment: Alignment.center,
-        child: isDone
-            ? Icon(Icons.check, size: 14, color: AppColors.pencilBlack)
-            : Text(
-                game.title.substring(0, 1),
-                style: GoogleFonts.patrickHand(
-                  fontSize: 11,
-                  fontWeight: FontWeight.bold,
-                  color: pencilColor.withValues(alpha: 0.6),
-                ),
-              ),
-      )
-          .animate(delay: (index * 60).ms)
-          .scale(begin: const Offset(0.7, 0.7), end: const Offset(1, 1), curve: Curves.easeOutBack),
+      ),
     );
   }
 }
 
+class _WobblyGameStampPainter extends CustomPainter {
+  final bool isDone;
+  final Color fillColor;
+  final Color strokeColor;
+  final int seed;
+
+  _WobblyGameStampPainter({
+    required this.isDone,
+    required this.fillColor,
+    required this.strokeColor,
+    required this.seed,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = (size.width / 2) - 2.2;
+    final stampPath = _wobblyStamp(center, radius, seed);
+
+    if (isDone) {
+      // Sert mühür gölgesi
+      canvas.drawPath(
+        _wobblyStamp(center + const Offset(1.3, 1.3), radius, seed),
+        Paint()
+          ..color = AppColors.inkBlack.withValues(alpha: 0.75)
+          ..style = PaintingStyle.fill,
+      );
+
+      // Renkli mürekkep dolgusu
+      canvas.drawPath(
+        stampPath,
+        Paint()
+          ..color = fillColor
+          ..style = PaintingStyle.fill,
+      );
+
+      // Çapraz tarama
+      canvas.save();
+      canvas.clipPath(stampPath);
+      final hatchPaint = Paint()
+        ..color = AppColors.inkBlack.withValues(alpha: 0.16)
+        ..strokeWidth = 0.9;
+      for (double x = -size.height; x < size.width + size.height; x += 4.5) {
+        canvas.drawLine(
+          Offset(x, size.height),
+          Offset(x + size.height * 0.7, 0),
+          hatchPaint,
+        );
+      }
+      canvas.restore();
+
+      // El çizimi tik işareti (checkmark)
+      final checkPath = Path()
+        ..moveTo(size.width * 0.28, size.height * 0.52)
+        ..lineTo(size.width * 0.44, size.height * 0.68)
+        ..lineTo(size.width * 0.73, size.height * 0.34);
+      canvas.drawPath(
+        checkPath,
+        Paint()
+          ..color = AppColors.inkBlack
+          ..strokeWidth = 2.1
+          ..strokeCap = StrokeCap.round
+          ..strokeJoin = StrokeJoin.round
+          ..style = PaintingStyle.stroke,
+      );
+    }
+
+    // Dış el çizimi çift kontur
+    canvas.drawPath(
+      stampPath,
+      Paint()
+        ..color = isDone ? strokeColor : strokeColor.withValues(alpha: 0.5)
+        ..strokeWidth = isDone ? 1.7 : 1.25
+        ..style = PaintingStyle.stroke,
+    );
+    canvas.drawPath(
+      _wobblyStamp(center, radius * 0.94, seed + 17),
+      Paint()
+        ..color = strokeColor.withValues(alpha: isDone ? 0.45 : 0.25)
+        ..strokeWidth = 0.75
+        ..style = PaintingStyle.stroke,
+    );
+  }
+
+  Path _wobblyStamp(Offset center, double radius, int s) {
+    final rnd = math.Random(s);
+    const count = 12;
+    final pts = List.generate(count, (i) {
+      final a = (i / count) * math.pi * 2;
+      final r = radius + (rnd.nextDouble() - 0.5) * 1.5;
+      return Offset(center.dx + math.cos(a) * r, center.dy + math.sin(a) * r);
+    });
+    final path = Path()..moveTo(pts.first.dx, pts.first.dy);
+    for (int i = 0; i < count; i++) {
+      final next = pts[(i + 1) % count];
+      path.quadraticBezierTo(
+        pts[i].dx,
+        pts[i].dy,
+        (pts[i].dx + next.dx) / 2,
+        (pts[i].dy + next.dy) / 2,
+      );
+    }
+    path.close();
+    return path;
+  }
+
+  @override
+  bool shouldRepaint(covariant _WobblyGameStampPainter oldDelegate) {
+    return oldDelegate.isDone != isDone ||
+        oldDelegate.fillColor != fillColor ||
+        oldDelegate.strokeColor != strokeColor;
+  }
+}
+
+/// Karta dokunulduğunda açılan "Son 7 Gün Seri Takvimi & 6 Bilişsel Alan Karnesi"
+class _ExpandedCognitiveNotebook extends StatelessWidget {
+  final Map<GameType, GamePerformanceData> statsMap;
+  final DailyPlayState dailyPlayState;
+  final int currentStreak;
+  final int maxStreak;
+  final int playedCategories;
+  final int totalGamesPlayed;
+  final int userIQ;
+  final Color pencilColor;
+  final Color graphiteColor;
+  final bool isDark;
+
+  const _ExpandedCognitiveNotebook({
+    required this.statsMap,
+    required this.dailyPlayState,
+    required this.currentStreak,
+    required this.maxStreak,
+    required this.playedCategories,
+    required this.totalGamesPlayed,
+    required this.userIQ,
+    required this.pencilColor,
+    required this.graphiteColor,
+    required this.isDark,
+  });
+
+  static const List<String> _weekdayShort = [
+    'Pzt',
+    'Sal',
+    'Çar',
+    'Per',
+    'Cum',
+    'Cmt',
+    'Paz',
+  ];
+
+  static String _dateKey(DateTime d) {
+    final y = d.year.toString().padLeft(4, '0');
+    final m = d.month.toString().padLeft(2, '0');
+    final day = d.day.toString().padLeft(2, '0');
+    return '$y-$m-$day';
+  }
+
+  bool _hasAnyPlayOnDate(String dateKey) {
+    for (final r in dailyPlayState.records.values) {
+      if (r.dateId == dateKey) return true;
+    }
+    return false;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final activeDate = GameDateUtils.getActiveDate();
+    final todayClean =
+        DateTime(activeDate.year, activeDate.month, activeDate.day);
+
+    // Son 7 gün (bugün en sağda)
+    final last7Days = List.generate(7, (idx) {
+      return todayClean.subtract(Duration(days: 6 - idx));
+    });
+
+    // Einstein kriter ilerlemesi
+    int minCategoryPlays = playedCategories == 6 ? 999999 : 0;
+    if (playedCategories == 6) {
+      for (final g in GameType.values) {
+        final c = statsMap[g]?.totalGamesPlayed ?? 0;
+        if (c < minCategoryPlays) minCategoryPlays = c;
+      }
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Divider(
+            height: 10,
+            thickness: 1.2,
+            color: pencilColor.withValues(alpha: 0.25),
+          ),
+          const SizedBox(height: 6),
+
+          // BÖLÜM A: Son 7 Günlük Gerçek Seri Takvimi
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'SON 7 GÜN SERİ TAKVİMİ',
+                style: GoogleFonts.patrickHand(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w700,
+                  color: pencilColor,
+                  letterSpacing: 0.4,
+                ),
+              ),
+              Text(
+                'Aktif: $currentStreak Gün • Rekor: $maxStreak Gün',
+                style: GoogleFonts.patrickHand(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: graphiteColor,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: List.generate(last7Days.length, (i) {
+              final day = last7Days[i];
+              final key = _dateKey(day);
+              final played = _hasAnyPlayOnDate(key);
+              final isToday = i == last7Days.length - 1;
+              final dayName = _weekdayShort[day.weekday - 1];
+
+              return Expanded(
+                child: Padding(
+                  padding: EdgeInsets.only(right: i < 6 ? 5 : 0),
+                  child: SketchCard(
+                    padding: const EdgeInsets.symmetric(vertical: 5),
+                    borderRadius: 9,
+                    borderWidth: isToday ? 2.0 : 1.3,
+                    shadowOffset: played
+                        ? const Offset(1.8, 1.8)
+                        : const Offset(0.8, 0.8),
+                    backgroundColor: played
+                        ? AppColors.sunYellow
+                        : (isDark
+                            ? AppColors.surfaceSecondaryDark
+                            : Colors.white),
+                    borderColor: isToday
+                        ? pencilColor
+                        : pencilColor.withValues(alpha: 0.6),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          dayName,
+                          style: GoogleFonts.patrickHand(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: played ? AppColors.inkBlack : graphiteColor,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          played ? '✓' : '${day.day}',
+                          style: GoogleFonts.patrickHand(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: played
+                                ? AppColors.inkBlack
+                                : pencilColor.withValues(alpha: 0.55),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }),
+          ),
+
+          const SizedBox(height: 12),
+
+          // BÖLÜM B: 6 Bilişsel Alan Yetenek Haritası
+          Text(
+            '6 BİLİŞSEL ALAN KARNESİ',
+            style: GoogleFonts.patrickHand(
+              fontSize: 12.5,
+              fontWeight: FontWeight.w700,
+              color: pencilColor,
+              letterSpacing: 0.4,
+            ),
+          ),
+          const SizedBox(height: 6),
+          ...GameType.values.map((game) {
+            final perf = statsMap[game];
+            final hasPlayed = perf != null && perf.hasPlayed;
+            final domainIQ = perf?.domainIQ ?? 100;
+            final double normBar = hasPlayed
+                ? ((domainIQ - 85.0) / (152.0 - 85.0)).clamp(0.10, 1.0)
+                : 0.0;
+
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 5),
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 112,
+                    child: Text(
+                      '${game.shortDomainLabel} (${game.title})',
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.patrickHand(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: graphiteColor,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: SizedBox(
+                      height: 10,
+                      child: CustomPaint(
+                        painter: _HandDrawnMilestoneBarPainter(
+                          progress: normBar,
+                          strokeColor: pencilColor.withValues(alpha: 0.8),
+                          fillColor: game.color,
+                          trackColor: isDark
+                              ? AppColors.surfaceSecondaryDark
+                              : AppColors.surfaceSecondaryLight,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  SizedBox(
+                    width: 48,
+                    child: Text(
+                      hasPlayed ? '$domainIQ IQ' : '—',
+                      textAlign: TextAlign.right,
+                      style: GoogleFonts.patrickHand(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: hasPlayed ? pencilColor : graphiteColor,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+
+          const SizedBox(height: 6),
+
+          // BÖLÜM C: Einstein Mertebesi Kriter Notu
+          SketchCard(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+            borderRadius: 10,
+            borderWidth: 1.4,
+            shadowOffset: const Offset(1.5, 1.5),
+            backgroundColor: isDark
+                ? AppColors.surfaceSecondaryDark
+                : const Color(0xFFFFFBEB),
+            borderColor: pencilColor.withValues(alpha: 0.7),
+            child: Text(
+              userIQ >= 148
+                  ? '👑 Einstein Mertebesi Aktif! Tüm 6 bilişsel alanda %99.9\'luk efsanevi istikrarı koruyorsun.'
+                  : '👑 Einstein Kriteri (148+ IQ): $playedCategories/6 alan • En az ${math.min(5, minCategoryPlays)}/5 kategori derinliği • ${math.min(35, totalGamesPlayed)}/35 toplam çözüm ve elit hız istikrarı.',
+              style: GoogleFonts.patrickHand(
+                fontSize: 11.8,
+                fontWeight: FontWeight.w700,
+                color: pencilColor,
+                height: 1.2,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

@@ -72,8 +72,8 @@ class UpdateService {
   static final UpdateService instance = UpdateService._();
 
   /// Yedek sürüm sabitleri (PackageInfo çağrılamazsa fallback)
-  static const String fallbackVersion = '1.0.3';
-  static const int fallbackBuildNumber = 4;
+  static const String fallbackVersion = '1.0.4';
+  static const int fallbackBuildNumber = 5;
 
   /// GitHub raw güncelleme URL'i (Genel açık repo)
   static const String githubVersionUrl =

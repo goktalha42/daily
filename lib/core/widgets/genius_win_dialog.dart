@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -32,7 +33,6 @@ class GeniusWinDialog extends StatefulWidget {
     VoidCallback? onRestart,
     GameStatsUpdateResult? statsResult,
   }) async {
-    // Ekranı sars ve konfeti patlat
     ScreenShake.shake(context, intensity: 14.0, duration: const Duration(milliseconds: 600));
     GeniusConfettiOverlay.explode(context);
 
@@ -57,7 +57,9 @@ class _GeniusWinDialogState extends State<GeniusWinDialog> {
   void initState() {
     super.initState();
     Future.delayed(const Duration(milliseconds: 150), () {
-      HapticFeedback.heavyImpact();
+      if (mounted) {
+        HapticFeedback.heavyImpact();
+      }
     });
   }
 
@@ -67,17 +69,31 @@ class _GeniusWinDialogState extends State<GeniusWinDialog> {
     final textColor = isDark ? Colors.white : AppColors.pencilBlack;
 
     final stats = widget.statsResult;
-    final int currentIQ = stats?.currentIQ ?? 115;
-    final int percentile = stats?.percentile ??
-        (widget.result.score >= 1000 ? 1 : (widget.result.score >= 800 ? 5 : 20));
-    final String geniusTitle = stats?.geniusTitle ?? (percentile <= 5 ? 'Üstün Zekâ' : 'Ortalama Üstü');
+    final int previousIQ = stats?.previousIQ ?? 100;
+    final int currentIQ = stats?.currentIQ ?? 102;
+    final int iqDelta = currentIQ - previousIQ;
 
-    final activeMilestone = stats?.milestone ?? IQMilestone.currentMilestone(currentIQ) ?? IQMilestone.all.first;
+    final double fallbackZ = PsychometricIQCalculator.evaluateSingleSolveZ(
+      gameType: widget.result.gameType,
+      score: widget.result.score,
+      durationMs: widget.result.durationMs,
+      difficulty: widget.result.difficulty,
+    );
+    final int solvePercentile =
+        stats?.percentile ?? PsychometricIQCalculator.zScoreToSolvePercentile(fallbackZ);
+    final String geniusTitle =
+        stats?.geniusTitle ?? PsychometricIQCalculator.titleForIQ(currentIQ, playedCategories: 1);
+
+    final activeMilestone =
+        stats?.milestone ?? IQMilestone.currentMilestone(currentIQ) ?? IQMilestone.all.first;
+    final nextMilestone = IQMilestone.nextMilestone(currentIQ);
     final isNewMilestone = stats?.milestone != null;
 
-    final String percentileBadgeText = percentile <= 1
-        ? '🏆 ZİRVE %1\'LİK DİLİM'
-        : '🎯 İLK %$percentile\'LİK DİLİM';
+    final String solveBadgeText = solvePercentile <= 1
+        ? '🏆 BU OYUN: ZİRVE %1\'LİK ÇÖZÜM'
+        : (solvePercentile <= 10
+            ? '⚡ BU OYUN: İLK %$solvePercentile\'LİK ÇÖZÜM'
+            : '🎯 BU OYUN: İLK %$solvePercentile\'LİK DİLİM');
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -101,16 +117,16 @@ class _GeniusWinDialogState extends State<GeniusWinDialog> {
                 borderWidth: 2.5,
                 shadowOffset: const Offset(3, 3),
                 padding: const EdgeInsets.all(14),
-                child: const Icon(
-                  Icons.emoji_events_rounded,
-                  color: AppColors.inkBlack,
-                  size: 40,
-                ),
+                child: const SketchDoodleTrophy(size: 38, color: AppColors.inkBlack),
               )
-                  .animate(onPlay: (c) => c.repeat(reverse: true))
-                  .scaleXY(begin: 1.0, end: 1.06, duration: 600.ms, curve: Curves.easeInOut)
                   .animate()
-                  .shake(duration: 400.ms),
+                  .scale(
+                    begin: const Offset(0.75, 0.75),
+                    end: const Offset(1.0, 1.0),
+                    duration: 450.ms,
+                    curve: Curves.easeOutBack,
+                  )
+                  .shake(duration: 380.ms),
 
               const SizedBox(height: 12),
 
@@ -126,7 +142,7 @@ class _GeniusWinDialogState extends State<GeniusWinDialog> {
 
               const SizedBox(height: 6),
 
-              // Yüzdelik Dilim Vurgusu
+              // Tekil Oyun Performansı Yüzdelik Vurgusu
               SketchCard(
                 backgroundColor: isDark ? const Color(0xFF9D174D) : AppColors.highlighterPink,
                 borderColor: isDark ? Colors.white38 : AppColors.pencilBlack,
@@ -135,21 +151,24 @@ class _GeniusWinDialogState extends State<GeniusWinDialog> {
                 shadowOffset: const Offset(2, 2),
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                 child: Text(
-                  '$percentileBadgeText 🏆',
+                  solveBadgeText,
                   style: GoogleFonts.patrickHand(
                     color: isDark ? Colors.white : AppColors.pencilBlack,
                     fontWeight: FontWeight.w700,
-                    fontSize: 15,
+                    fontSize: 14,
                   ),
                 ),
               ),
 
               const SizedBox(height: 14),
 
-              // 🚀 HAREKETLİ IQ VE OYUNCU KARŞILAŞTIRMA GRAFİĞİ (KULLANICI TALEBİ!)
+              // Hareketli Psikometrik IQ ve Sonraki Hedef Motivasyon Kartı
               _buildAnimatedIQMilestoneCard(
                 milestone: activeMilestone,
+                nextMilestone: nextMilestone,
+                previousIQ: previousIQ,
                 currentIQ: currentIQ,
+                iqDelta: iqDelta,
                 isNewMilestone: isNewMilestone,
                 isDark: isDark,
               ),
@@ -158,7 +177,8 @@ class _GeniusWinDialogState extends State<GeniusWinDialog> {
 
               // İstatistikler Kutusu (Organik SketchCard)
               SketchCard(
-                backgroundColor: isDark ? AppColors.surfaceSecondaryDark : AppColors.backgroundLight,
+                backgroundColor:
+                    isDark ? AppColors.surfaceSecondaryDark : AppColors.backgroundLight,
                 borderColor: isDark ? Colors.white38 : AppColors.pencilBlack,
                 borderRadius: 16,
                 borderWidth: 2.0,
@@ -168,12 +188,15 @@ class _GeniusWinDialogState extends State<GeniusWinDialog> {
                   children: [
                     _SketchStatRow(
                       icon: Icons.psychology_rounded,
-                      label: 'Zeka Endeksi (IQ)',
+                      label: 'Genel Zekâ (IQ)',
                       value: '$currentIQ IQ • $geniusTitle',
                       badgeColor: AppColors.highlighterPurple,
                       isDark: isDark,
                     ),
-                    Divider(height: 14, color: isDark ? Colors.white24 : AppColors.pencilBlack, thickness: 1.2),
+                    Divider(
+                        height: 14,
+                        color: isDark ? Colors.white24 : AppColors.pencilBlack,
+                        thickness: 1.2),
                     _SketchStatRow(
                       icon: Icons.timer_outlined,
                       label: 'Çözüm Süresi',
@@ -181,7 +204,10 @@ class _GeniusWinDialogState extends State<GeniusWinDialog> {
                       badgeColor: AppColors.skyBlue,
                       isDark: isDark,
                     ),
-                    Divider(height: 14, color: isDark ? Colors.white24 : AppColors.pencilBlack, thickness: 1.2),
+                    Divider(
+                        height: 14,
+                        color: isDark ? Colors.white24 : AppColors.pencilBlack,
+                        thickness: 1.2),
                     _SketchStatRow(
                       icon: Icons.touch_app_rounded,
                       label: 'Hamle Sayısı',
@@ -189,12 +215,15 @@ class _GeniusWinDialogState extends State<GeniusWinDialog> {
                       badgeColor: AppColors.highlighterOrange,
                       isDark: isDark,
                     ),
-                    Divider(height: 14, color: isDark ? Colors.white24 : AppColors.pencilBlack, thickness: 1.2),
+                    Divider(
+                        height: 14,
+                        color: isDark ? Colors.white24 : AppColors.pencilBlack,
+                        thickness: 1.2),
                     _SketchStatRow(
                       icon: Icons.military_tech_rounded,
                       label: 'Kazanılan Puan',
                       value: '+${widget.result.score} P',
-                      badgeColor: const Color(0xFF34D399),
+                      badgeColor: AppColors.success,
                       isDark: isDark,
                     ),
                   ],
@@ -246,19 +275,31 @@ class _GeniusWinDialogState extends State<GeniusWinDialog> {
 
   Widget _buildAnimatedIQMilestoneCard({
     required IQMilestone milestone,
+    required IQMilestone? nextMilestone,
+    required int previousIQ,
     required int currentIQ,
+    required int iqDelta,
     required bool isNewMilestone,
     required bool isDark,
   }) {
-    final double targetPercent = (milestone.betterThanPercent / 100.0).clamp(0.05, 1.0);
+    final double betterThan = IQMilestone.gaussianBetterThanPercent(currentIQ);
+    final double targetPercent = (betterThan / 100.0).clamp(0.06, 1.0);
     final textColor = isDark ? Colors.white : AppColors.pencilBlack;
     final secondaryTextColor = isDark ? AppColors.pencilLightDark : AppColors.pencilGraphite;
+
+    final Color deltaBg = iqDelta > 0
+        ? AppColors.success
+        : (iqDelta < 0 ? AppColors.highlighterOrange : AppColors.skyBlue);
+    final String deltaLabel = iqDelta > 0
+        ? '+$iqDelta IQ ARTIŞ!'
+        : (iqDelta < 0 ? '$iqDelta IQ' : 'KORUNDU');
 
     return SketchCard(
       backgroundColor: isNewMilestone
           ? (isDark ? const Color(0xFF451A03).withValues(alpha: 0.6) : const Color(0xFFFFFBEB))
           : (isDark ? AppColors.surfaceSecondaryDark : Colors.white),
-      borderColor: isDark ? (isNewMilestone ? AppColors.sunYellow : Colors.white38) : AppColors.pencilBlack,
+      borderColor:
+          isDark ? (isNewMilestone ? AppColors.sunYellow : Colors.white38) : AppColors.pencilBlack,
       borderRadius: 14,
       borderWidth: isNewMilestone ? 2.4 : 1.8,
       shadowOffset: const Offset(2.5, 2.5),
@@ -267,20 +308,24 @@ class _GeniusWinDialogState extends State<GeniusWinDialog> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 milestone.emoji,
-                style: const TextStyle(fontSize: 22),
+                style: const TextStyle(fontSize: 24),
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
+                    Wrap(
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      spacing: 6,
+                      runSpacing: 4,
                       children: [
                         Text(
-                          isNewMilestone ? 'YENİ SEVİYE: ' : 'ZEKÂ GRAFİĞİ: ',
+                          isNewMilestone ? 'YENİ SEVİYE:' : 'ZEKÂ SEVİYESİ:',
                           style: GoogleFonts.patrickHand(
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
@@ -291,17 +336,18 @@ class _GeniusWinDialogState extends State<GeniusWinDialog> {
                         Text(
                           milestone.title.toUpperCase(),
                           style: GoogleFonts.patrickHand(
-                            fontSize: 13,
+                            fontSize: 14,
                             fontWeight: FontWeight.w700,
                             color: isNewMilestone ? AppColors.sunYellow : textColor,
                           ),
                         ),
                       ],
                     ),
+                    const SizedBox(height: 2),
                     Text(
                       milestone.message,
                       style: GoogleFonts.patrickHand(
-                        fontSize: 14,
+                        fontSize: 13.5,
                         fontWeight: FontWeight.w700,
                         color: textColor,
                         height: 1.15,
@@ -310,48 +356,76 @@ class _GeniusWinDialogState extends State<GeniusWinDialog> {
                   ],
                 ),
               ),
+              const SizedBox(width: 6),
+              // Canlı IQ Değişim Etiketi
+              SketchCard(
+                backgroundColor: deltaBg,
+                borderColor: AppColors.pencilBlack,
+                borderRadius: 8,
+                borderWidth: 1.5,
+                shadowOffset: const Offset(1.5, 1.5),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                child: TweenAnimationBuilder<double>(
+                  tween: Tween(begin: previousIQ.toDouble(), end: currentIQ.toDouble()),
+                  duration: const Duration(milliseconds: 900),
+                  curve: Curves.easeOutCubic,
+                  builder: (context, val, _) {
+                    return Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'IQ ${val.round()}',
+                          style: GoogleFonts.patrickHand(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.inkBlack,
+                            height: 1.0,
+                          ),
+                        ),
+                        Text(
+                          deltaLabel,
+                          style: GoogleFonts.patrickHand(
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.inkBlack,
+                            height: 1.1,
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 10),
 
-          // Hareketli Yükselen Karşılaştırma Çubuğu
+          // El Çizimi Taranmış Yükselen Gauss Yüzdelik Çubuğu
           Row(
             children: [
               Expanded(
-                child: Container(
-                  height: 18,
-                  decoration: BoxDecoration(
-                    color: isDark ? AppColors.surfaceDark : AppColors.backgroundLight,
-                    borderRadius: BorderRadius.circular(9),
-                    border: Border.all(color: isDark ? Colors.white38 : AppColors.pencilBlack, width: 1.6),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(7),
-                    child: TweenAnimationBuilder<double>(
-                      tween: Tween(begin: 0.0, end: targetPercent),
-                      duration: const Duration(milliseconds: 1200),
-                      curve: Curves.easeOutCubic,
-                      builder: (context, value, _) {
-                        return FractionallySizedBox(
-                          alignment: Alignment.centerLeft,
-                          widthFactor: value,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: AppColors.sunYellow,
-                              border: Border(
-                                right: BorderSide(color: isDark ? Colors.white70 : AppColors.pencilBlack, width: 1.8),
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
+                child: TweenAnimationBuilder<double>(
+                  tween: Tween(begin: 0.0, end: targetPercent),
+                  duration: const Duration(milliseconds: 1100),
+                  curve: Curves.easeOutCubic,
+                  builder: (context, value, _) {
+                    return SizedBox(
+                      height: 18,
+                      child: CustomPaint(
+                        painter: _WinSketchProgressPainter(
+                          progress: value,
+                          strokeColor: isDark ? Colors.white70 : AppColors.pencilBlack,
+                          fillColor: AppColors.sunYellow,
+                          trackColor: isDark ? AppColors.surfaceDark : AppColors.backgroundLight,
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ),
               const SizedBox(width: 8),
               Text(
-                '%${milestone.betterThanPercent.toStringAsFixed(milestone.betterThanPercent % 1 == 0 ? 0 : 1)} ÜSTÜN',
+                '%${betterThan.toStringAsFixed(1)} ÜSTÜN',
                 style: GoogleFonts.patrickHand(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
@@ -360,9 +434,110 @@ class _GeniusWinDialogState extends State<GeniusWinDialog> {
               ),
             ],
           ),
+
+          const SizedBox(height: 6),
+          Text(
+            nextMilestone != null
+                ? '🎯 Sonraki Hedef: ${nextMilestone.emoji} ${nextMilestone.title} (${nextMilestone.iqThreshold} IQ) • ${nextMilestone.iqThreshold - currentIQ} puan kaldı!'
+                : '👑 Zirvedesin! 148+ Einstein mertebesini istikrarlı oyunla koru!',
+            style: GoogleFonts.patrickHand(
+              fontSize: 12.5,
+              fontWeight: FontWeight.w700,
+              color: secondaryTextColor,
+            ),
+          ),
         ],
       ),
     );
+  }
+}
+
+/// El çizimi çift konturlu ve çapraz taramalı ilerleme çubuğu ressamı
+class _WinSketchProgressPainter extends CustomPainter {
+  final double progress;
+  final Color strokeColor;
+  final Color fillColor;
+  final Color trackColor;
+
+  _WinSketchProgressPainter({
+    required this.progress,
+    required this.strokeColor,
+    required this.fillColor,
+    required this.trackColor,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rrect = RRect.fromRectAndRadius(
+      Rect.fromLTWH(1, 1, size.width - 2, size.height - 2),
+      const Radius.circular(7),
+    );
+
+    // Zemin dolgusu
+    final bgPaint = Paint()
+      ..color = trackColor
+      ..style = PaintingStyle.fill;
+    canvas.drawRRect(rrect, bgPaint);
+
+    // İlerleme dolgusu + çapraz kurşun kalem taraması
+    final clamped = progress.clamp(0.0, 1.0);
+    if (clamped > 0.01) {
+      final fillWidth = (size.width - 4) * clamped;
+      canvas.save();
+      canvas.clipRRect(rrect);
+
+      final fillRect = Rect.fromLTWH(2, 2, fillWidth, size.height - 4);
+      canvas.drawRect(fillRect, Paint()..color = fillColor);
+
+      final hatchPaint = Paint()
+        ..color = AppColors.inkBlack.withValues(alpha: 0.18)
+        ..strokeWidth = 1.1
+        ..style = PaintingStyle.stroke;
+
+      for (double x = -size.height; x < fillWidth + size.height; x += 6) {
+        canvas.drawLine(
+          Offset(x, size.height),
+          Offset(x + size.height * 0.7, 0),
+          hatchPaint,
+        );
+      }
+
+      // Sağ bitiş kalem çizgisi
+      canvas.drawLine(
+        Offset(fillWidth + 2, 1),
+        Offset(fillWidth + 1.2, size.height - 1),
+        Paint()
+          ..color = strokeColor
+          ..strokeWidth = 1.8,
+      );
+      canvas.restore();
+    }
+
+    // Çift vuruşlu hafif dalgalı el çizimi dış kontur
+    final borderPaint = Paint()
+      ..color = strokeColor
+      ..strokeWidth = 1.6
+      ..style = PaintingStyle.stroke;
+    canvas.drawRRect(rrect, borderPaint);
+
+    final secondStroke = RRect.fromRectAndRadius(
+      Rect.fromLTWH(1.8, 1.6, math.max(0, size.width - 3.6), math.max(0, size.height - 3.2)),
+      const Radius.circular(6.5),
+    );
+    canvas.drawRRect(
+      secondStroke,
+      Paint()
+        ..color = strokeColor.withValues(alpha: 0.45)
+        ..strokeWidth = 0.9
+        ..style = PaintingStyle.stroke,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _WinSketchProgressPainter oldDelegate) {
+    return oldDelegate.progress != progress ||
+        oldDelegate.strokeColor != strokeColor ||
+        oldDelegate.fillColor != fillColor;
   }
 }
 
@@ -389,35 +564,39 @@ class _SketchStatRow extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Row(
-          children: [
-            Container(
-              width: 28,
-              height: 28,
-              decoration: BoxDecoration(
-                color: badgeColor,
-                shape: BoxShape.circle,
-                border: Border.all(color: isDark ? Colors.white38 : AppColors.pencilBlack, width: 1.6),
+        Flexible(
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SketchCard(
+                padding: const EdgeInsets.all(5),
+                borderRadius: 8,
+                borderWidth: 1.5,
+                shadowOffset: const Offset(1.5, 1.5),
+                backgroundColor: badgeColor,
+                borderColor: isDark ? Colors.white54 : AppColors.pencilBlack,
+                child: Icon(icon, color: AppColors.inkBlack, size: 15),
               ),
-              child: Center(
-                child: Icon(icon, color: AppColors.inkBlack, size: 16),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  label,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.patrickHand(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: labelColor,
+                  ),
+                ),
               ),
-            ),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: GoogleFonts.patrickHand(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: labelColor,
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
+        const SizedBox(width: 8),
         Text(
           value,
           style: GoogleFonts.patrickHand(
-            fontSize: 17,
+            fontSize: 16.5,
             fontWeight: FontWeight.w700,
             color: textColor,
           ),

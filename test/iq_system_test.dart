@@ -1,142 +1,158 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:daily_games/core/services/game_stats_service.dart';
 import 'package:daily_games/games/common/base_game.dart';
 
 void main() {
-  group('Realist IQ Sistemi & Einstein Kriterleri Testi', () {
-    test('Yeni kullanıcı başlangıçta asla Einstein veya dahi olmaz (Taban 95)', () {
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
+  });
+
+  group('WAIS-IV Psikometrik IQ Sistemi & Katı Einstein Kriterleri', () {
+    test('Yeni kullanıcı tam dünya ortalaması olan 100 IQ ile başlar', () {
       final notifier = GameStatsNotifier();
       final initialIQ = notifier.getOverallIQ();
 
-      expect(initialIQ, 95);
-      final milestone = IQMilestone.currentMilestone(initialIQ);
-      expect(milestone?.title, isNot('Einstein Mertebesi'));
-      // Başlangıçta henüz milestone aşılmamış veya ilk tabandadır
-      expect(initialIQ < 130, isTrue);
+      expect(initialIQ, 100);
+      expect(IQMilestone.gaussianBetterThanPercent(100), closeTo(50.0, 0.1));
+      expect(IQMilestone.gaussianBetterThanPercent(130), closeTo(97.7, 0.2));
+      expect(IQMilestone.gaussianBetterThanPercent(148), greaterThan(99.85));
     });
 
-    test('Kullanıcı tek bir oyunda 1000+ puan alsa bile 106 IQ tavanını aşamaz (Einstein olamaz)', () async {
+    test('1 veya 2 kusursuz dünya rekoru oyunda bile yüksek IQ görülmez (101-106 bandı)', () async {
       final notifier = GameStatsNotifier();
 
-      // 1. Oyunda (Vezirler) olağanüstü yüksek puan ve 20 saniye hız
-      await notifier.recordGameResult(
-        gameType: GameType.queens,
-        score: 1150,
-        durationMs: 20000,
-        moveCount: 8,
-      );
-
-      final currentIQ = notifier.getOverallIQ();
-
-      // 1 oyun oynayan birine tek bir başarıyla asla dahi/Einstein unvanı verilemez!
-      expect(currentIQ <= 106, isTrue);
-      expect(currentIQ >= 98, isTrue);
-
-      final milestone = IQMilestone.currentMilestone(currentIQ);
-      expect(milestone?.title, isNot('Einstein Mertebesi'));
-      expect(milestone?.title, isNot('Zühtü Dahisi'));
-      expect(milestone?.title, isNot('Üstün Mantık (Mensa)'));
-    });
-
-    test('2 oyun çözüldüğünde tavan 116 IQ ile sınırlıdır', () async {
-      final notifier = GameStatsNotifier();
-
-      await notifier.recordGameResult(
-        gameType: GameType.queens,
-        score: 1150,
-        durationMs: 20000,
-        moveCount: 8,
-      );
-      await notifier.recordGameResult(
-        gameType: GameType.tango,
-        score: 1100,
-        durationMs: 25000,
-        moveCount: 10,
-      );
-
-      final currentIQ = notifier.getOverallIQ();
-      expect(currentIQ <= 116, isTrue);
-      expect(currentIQ < 130, isTrue);
-    });
-
-    test('3 ve 4 oyun çözüldükçe IQ kademeli olarak yükselir ve motive eder', () async {
-      final notifier = GameStatsNotifier();
-
-      await notifier.recordGameResult(
-        gameType: GameType.queens,
-        score: 1150,
-        durationMs: 20000,
-        moveCount: 8,
-      );
-      final iq1 = notifier.getOverallIQ();
-
-      await notifier.recordGameResult(
-        gameType: GameType.tango,
-        score: 1100,
-        durationMs: 25000,
-        moveCount: 10,
-      );
-      final iq2 = notifier.getOverallIQ();
-
-      await notifier.recordGameResult(
+      // 1. Oyun: Sayı Yolu (2000 tabanlı oyunda 15 saniyede 1850 puanlık kusursuz çözüm)
+      final res1 = await notifier.recordGameResult(
         gameType: GameType.zipPath,
-        score: 1080,
-        durationMs: 30000,
+        score: 1850,
+        durationMs: 15000,
         moveCount: 20,
       );
-      final iq3 = notifier.getOverallIQ();
 
-      await notifier.recordGameResult(
-        gameType: GameType.crossclimb,
-        score: 1050,
-        durationMs: 35000,
-        moveCount: 5,
+      expect(res1.currentIQ, greaterThanOrEqualTo(101));
+      expect(res1.currentIQ, lessThanOrEqualTo(104));
+      expect(res1.iqDelta, greaterThan(0));
+
+      // 2. Oyun: Güneş & Ay (17 saniyede 1830 puanlık kusursuz çözüm)
+      final res2 = await notifier.recordGameResult(
+        gameType: GameType.tango,
+        score: 1830,
+        durationMs: 17000,
+        moveCount: 22,
       );
-      final iq4 = notifier.getOverallIQ();
 
-      expect(iq2 >= iq1, isTrue);
-      expect(iq3 >= iq2, isTrue);
-      expect(iq4 >= iq3, isTrue);
-
-      // 4 oyunda bile henüz Einstein (148+) olamaz!
-      expect(iq4 <= 136, isTrue);
+      expect(res2.currentIQ, greaterThan(res1.currentIQ));
+      expect(res2.currentIQ, lessThanOrEqualTo(106));
+      expect(IQMilestone.currentMilestone(res2.currentIQ)?.title, 'Dengeli Zihin');
     });
 
-    test('Einstein (148+) için tüm 6 oyun türü ve yüksek tecrübe (25+ oyun) şarttır', () async {
+    test('Sadece tek bir kategoriyi 50 kez kusursuz oynayan oyuncu 110 IQ barajını bile aşamaz', () async {
       final notifier = GameStatsNotifier();
 
-      // 6 oyunu da 1 kez oyna
-      for (final game in GameType.values) {
+      for (int i = 0; i < 50; i++) {
         await notifier.recordGameResult(
-          gameType: game,
-          score: 1100,
-          durationMs: 24000,
-          moveCount: 10,
+          gameType: GameType.pinpoint,
+          score: 1920,
+          durationMs: 14000,
+          moveCount: 1,
         );
       }
 
-      // Henüz toplam oyun sayısı 6 (25'ten az) -> Einstein kapalı (tavan 144)
-      final earlyAll6IQ = notifier.getOverallIQ();
-      expect(earlyAll6IQ <= 144, isTrue);
+      // 5/6 bilişsel alan hiç test edilmediği için doğal Bayesyen sınır ~109 IQ'dur
+      final singleDomainIQ = notifier.getOverallIQ();
+      expect(singleDomainIQ, lessThanOrEqualTo(109));
+    });
 
-      // Şimdi tecrübe kazanarak 25+ oyun tamamlasın
-      for (int i = 0; i < 4; i++) {
+    test('Ortalama performansla 60 oyun oynamak (grind) bedava yüksek IQ vermez', () async {
+      final notifier = GameStatsNotifier();
+
+      // 10 gün boyunca 6 oyunu da ortalama hızda (60-70 sn, ~1300 puan) çözsün
+      for (int day = 0; day < 10; day++) {
         for (final game in GameType.values) {
           await notifier.recordGameResult(
             gameType: game,
-            score: 1150,
-            durationMs: 22000,
-            moveCount: 10,
+            score: game == GameType.queens ? 850 : 1300,
+            durationMs: 65000,
+            moveCount: 25,
+            difficulty: game == GameType.queens ? 'hard' : null,
           );
         }
       }
 
-      // Artık 30 oyun çözüldü, tüm kategorilerde mutlak ustalık var -> 148+ Einstein açılır!
-      final eliteIQ = notifier.getOverallIQ();
-      expect(eliteIQ >= 148, isTrue);
-      final milestone = IQMilestone.currentMilestone(eliteIQ);
-      expect(milestone?.title, 'Einstein Mertebesi');
-      expect(milestone?.emoji, '👑');
+      final grindIQ = notifier.getOverallIQ();
+      expect(grindIQ, greaterThanOrEqualTo(98));
+      expect(grindIQ, lessThan(112)); // Asla Büyük Usta, Mensa veya Einstein olamaz!
+    });
+
+    test('İlk gün 6/6 kusursuz çözüm motive edici şekilde ~115-117 IQ (Keskin Zihin) seviyesine taşır', () async {
+      final notifier = GameStatsNotifier();
+
+      for (final game in GameType.values) {
+        await notifier.recordGameResult(
+          gameType: game,
+          score: game == GameType.queens ? 1300 : 1860,
+          durationMs: game == GameType.queens ? 32000 : 15000,
+          moveCount: 12,
+          difficulty: game == GameType.queens ? 'master' : null,
+        );
+      }
+
+      final day1IQ = notifier.getOverallIQ();
+      expect(day1IQ, greaterThanOrEqualTo(114));
+      expect(day1IQ, lessThan(120)); // İlk günden Büyük Usta (120) veya Mensa (130) olamaz
+    });
+
+    test('Einstein Mertebesi (148+ IQ) yalnızca 6/6 kategori, 35+ oyun ve %99.9 elit istikrarla açılır', () async {
+      final notifier = GameStatsNotifier();
+
+      // 4 gün (24 elit oyun) -> henüz 35 oyun ve kategori başına 5 derinlik dolmadı
+      for (int day = 0; day < 4; day++) {
+        for (final game in GameType.values) {
+          await notifier.recordGameResult(
+            gameType: game,
+            score: game == GameType.queens ? 1310 : 1880,
+            durationMs: game == GameType.queens ? 30000 : 14000,
+            moveCount: 10,
+            difficulty: game == GameType.queens ? 'master' : null,
+          );
+        }
+      }
+
+      final day4IQ = notifier.getOverallIQ();
+      expect(day4IQ, lessThan(148)); // 4. günde bile henüz Einstein değil!
+
+      // 3 gün daha aynı %99.9 elit performansı sürdürsün (Toplam 7 gün = 42 oyun, her kategoride 7'şer kez)
+      for (int day = 0; day < 3; day++) {
+        for (final game in GameType.values) {
+          await notifier.recordGameResult(
+            gameType: game,
+            score: game == GameType.queens ? 1310 : 1880,
+            durationMs: game == GameType.queens ? 30000 : 14000,
+            moveCount: 10,
+            difficulty: game == GameType.queens ? 'master' : null,
+          );
+        }
+      }
+
+      final einsteinIQ = notifier.getOverallIQ();
+      expect(einsteinIQ, greaterThanOrEqualTo(148));
+      expect(IQMilestone.currentMilestone(einsteinIQ)?.title, 'Einstein Mertebesi');
+
+      // Ardından üst üste çok kötü ve yavaş oyunlar oynarsa EMA düşer ve Einstein unvanını kaybeder!
+      for (int slump = 0; slump < 3; slump++) {
+        for (final game in GameType.values) {
+          await notifier.recordGameResult(
+            gameType: game,
+            score: 300,
+            durationMs: 220000,
+            moveCount: 60,
+          );
+        }
+      }
+
+      final droppedIQ = notifier.getOverallIQ();
+      expect(droppedIQ, lessThan(148));
     });
   });
 }

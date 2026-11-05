@@ -31,12 +31,12 @@ Route::prefix('v1')->group(function () {
             return response()->file($versionFile, ['Content-Type' => 'application/json']);
         }
         return response()->json([
-            'version' => '1.0.3',
-            'build_number' => 4,
-            'title' => 'Zühtü v1.0.3 Güncellemesi 🚀',
-            'changelog' => "• Otomatik güncelleme sistemi eklendi.\n• Lig ve liderlik tablosu botlardan temizlendi.\n• Profil sayfası el çizimi tasarımına kavuştu.",
-            'apk_url' => 'https://github.com/goktalha42/daily/releases/download/v1.0.3/Zuhtu_v1.0.3.apk',
-            'release_url' => 'https://github.com/goktalha42/daily/releases/tag/v1.0.3',
+            'version' => '1.0.4',
+            'build_number' => 5,
+            'title' => 'Zühtü v1.0.4 Güncellemesi 🧠✨',
+            'changelog' => "• Gerçekçi WAIS-IV psikometrik IQ sistemi ve katı Einstein (148+ IQ) kriterleri eklendi.\n• Ana sayfa Beyin Gücü kartı %100 dinamik, koreografili ve el çizimi tasarıma kavuştu.\n• 6 Bilişsel Alan Karnesi ve Son 7 Gün Seri Takvimi eklendi.",
+            'apk_url' => 'https://github.com/goktalha42/daily/releases/download/v1.0.4/Zuhtu_v1.0.4.apk',
+            'release_url' => 'https://github.com/goktalha42/daily/releases/tag/v1.0.4',
             'force_update' => false,
         ]);
     });

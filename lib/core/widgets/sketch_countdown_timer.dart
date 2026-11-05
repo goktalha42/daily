@@ -4,8 +4,9 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../services/time_sync_service.dart';
 import '../theme/app_colors.dart';
+import 'sketch_decorations.dart';
 
-/// Kara Kalem Eskiz Defteri Temalı Kalan Süre Sayacı
+/// Kara Kalem Eskiz Defteri Temalı El Çizimi Kalan Süre Sayacı
 class SketchCountdownTimer extends ConsumerWidget {
   final bool showLabel;
   final double fontSize;
@@ -21,32 +22,26 @@ class SketchCountdownTimer extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final countdownAsync = ref.watch(nextResetCountdownProvider);
-    final duration = countdownAsync.value ?? ref.watch(timeSyncServiceProvider).getTimeUntilNextReset();
+    final duration =
+        countdownAsync.value ?? ref.watch(timeSyncServiceProvider).getTimeUntilNextReset();
     final formatted = TimeSyncService.formatCountdown(duration);
 
     final isDark = AppColors.isDark(context);
     final textColor = isDark ? Colors.white : AppColors.pencilBlack;
 
-    return Container(
+    return SketchCard(
       padding: padding,
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.surfaceSecondaryDark : AppColors.surfaceSecondaryLight,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: isDark ? Colors.white : AppColors.pencilBlack, width: 1.8),
-        boxShadow: [
-          BoxShadow(
-            color: isDark ? AppColors.cardShadowDark : AppColors.pencilBlack,
-            offset: const Offset(2.0, 2.0),
-            blurRadius: 0,
-          ),
-        ],
-      ),
+      backgroundColor: isDark ? AppColors.surfaceSecondaryDark : AppColors.surfaceSecondaryLight,
+      borderColor: isDark ? Colors.white : AppColors.pencilBlack,
+      borderWidth: 1.8,
+      borderRadius: 10,
+      shadowOffset: const Offset(2.0, 2.0),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
             Icons.timer_outlined,
-            size: 16,
+            size: 15,
             color: textColor,
           ),
           const SizedBox(width: 5),
