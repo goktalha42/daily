@@ -80,8 +80,8 @@ class DailyPlayState {
     }
     if (distinctDates.isEmpty) return 0;
 
-    final now = GameDateUtils.getActiveDate();
-    DateTime checkDate = DateTime(now.year, now.month, now.day);
+    final activeDate = GameDateUtils.getActiveDate();
+    DateTime checkDate = DateTime(activeDate.year, activeDate.month, activeDate.day);
     String checkKey = _formatDateKey(checkDate);
 
     // Eğer bugün henüz oynanmadıysa seriyi kırmıyoruz; dün oynandıysa dünden itibaren sayıyoruz.
