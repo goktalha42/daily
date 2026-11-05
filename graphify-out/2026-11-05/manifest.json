@@ -1,7 +1,7 @@
 {
   "android/app/build.gradle.kts": {
-    "mtime": 1793868480.9430642,
-    "seen": 1793869829.3020778,
+    "mtime": 1793870597.2287886,
+    "seen": 1793872942.4783216,
     "ast_hash": "d75427426e8d20b3c93b4fb29af879e9",
     "semantic_hash": ""
   },
@@ -60,9 +60,9 @@
     "semantic_hash": "0c3e86af131f6a9e547c80b5ed058914"
   },
   "lib/core/models/badge_model.dart": {
-    "mtime": 1793861257.4106028,
-    "seen": 1793869829.3021116,
-    "ast_hash": "ab32eae3a7eaa4b338bbed04da502201",
+    "mtime": 1793872128.755462,
+    "seen": 1793872942.4783618,
+    "ast_hash": "35acbbdabee22e4dfcec9912cc915622",
     "semantic_hash": ""
   },
   "lib/core/network/network_checker.dart": {
@@ -84,9 +84,9 @@
     "semantic_hash": "f8e426cb4bba38058d7c314fb2c4091b"
   },
   "lib/core/services/badge_service.dart": {
-    "mtime": 1793861257.4136362,
-    "seen": 1793869829.3021233,
-    "ast_hash": "56063ec69187a0e3d667260e1a9c8bc5",
+    "mtime": 1793872148.4389613,
+    "seen": 1793872942.478373,
+    "ast_hash": "2535c62201d653d13dc3a2c8e829965c",
     "semantic_hash": ""
   },
   "lib/core/services/daily_play_service.dart": {
@@ -102,9 +102,9 @@
     "semantic_hash": ""
   },
   "lib/core/services/game_stats_service.dart": {
-    "mtime": 1792396714.2578616,
-    "seen": 1793869829.3021288,
-    "ast_hash": "3f3190cf5f3f2b8c18d32399be127404",
+    "mtime": 1793872622.713235,
+    "seen": 1793872942.4783797,
+    "ast_hash": "8fd0ece561d48ae3bb0635a750528831",
     "semantic_hash": ""
   },
   "lib/core/services/league_service.dart": {
@@ -204,9 +204,9 @@
     "semantic_hash": "8e770919026a0fb9fb8f703d7b1c110d"
   },
   "lib/features/home/home_screen.dart": {
-    "mtime": 1793869055.5987687,
-    "seen": 1793869829.3021677,
-    "ast_hash": "37ec887fcacc9e46dcbe79c5a9fd6bb5",
+    "mtime": 1793872444.6779804,
+    "seen": 1793872942.4784226,
+    "ast_hash": "2c969ce0583089686fa4b2e4be9744e2",
     "semantic_hash": ""
   },
   "lib/features/leaderboard/leaderboard_screen.dart": {
@@ -234,9 +234,9 @@
     "semantic_hash": ""
   },
   "lib/features/profile/profile_screen.dart": {
-    "mtime": 1793869110.4897876,
-    "seen": 1793869829.3021796,
-    "ast_hash": "7f9f45c2c61ef64edc3f2bdd109dbc89",
+    "mtime": 1793872398.504434,
+    "seen": 1793872942.4784396,
+    "ast_hash": "06998c90d0882ea171acf82b1b1c6b6d",
     "semantic_hash": ""
   },
   "lib/features/profile/widgets/badge_showcase_section.dart": {
@@ -576,10 +576,10 @@
     "semantic_hash": ""
   },
   "test/widget_test.dart": {
-    "mtime": 1792580601.4865975,
-    "seen": 1793869829.3023698,
-    "ast_hash": "9b3c5006f311c8c61f61b081f7421b03",
-    "semantic_hash": "9b3c5006f311c8c61f61b081f7421b03"
+    "mtime": 1793872604.258921,
+    "seen": 1793872942.4786522,
+    "ast_hash": "043082ab693e687f51a0bd56db188bc8",
+    "semantic_hash": ""
   },
   "test/zip_generator_test.dart": {
     "mtime": 1791883739.2336512,
@@ -678,14 +678,14 @@
     "semantic_hash": "30cc1614b16214b66c014af09ba699eb"
   },
   "oyun_hatalari.md": {
-    "mtime": 1793866564.2262814,
-    "seen": 1793869829.3024056,
-    "ast_hash": "5add2c53ec84bf1d29705b51670117ba",
+    "mtime": 1793871027.144112,
+    "seen": 1793872942.478692,
+    "ast_hash": "610279f14c38a364ae781427a2567322",
     "semantic_hash": ""
   },
   "pubspec.yaml": {
-    "mtime": 1793869123.35506,
-    "seen": 1793869829.3024075,
+    "mtime": 1793870598.3726735,
+    "seen": 1793872942.4786942,
     "ast_hash": "d024f0bb6ba823ce73ec304362b8fa9a",
     "semantic_hash": ""
   },
@@ -948,8 +948,8 @@
     "semantic_hash": ""
   },
   "lib/core/widgets/update_prompt_dialog.dart": {
-    "mtime": 1793869191.0952117,
-    "seen": 1793869829.3021657,
+    "mtime": 1793870597.799002,
+    "seen": 1793872942.478421,
     "ast_hash": "831a7fc4052098397321d83561acc843",
     "semantic_hash": ""
   },
@@ -1242,8 +1242,8 @@
     "semantic_hash": ""
   },
   "version.json": {
-    "mtime": 1793869210.7877512,
-    "seen": 1793869829.3023732,
+    "mtime": 1793870598.4890063,
+    "seen": 1793872942.478656,
     "ast_hash": "e4653f3ea1cdf5a0171e4dff1d6b084b",
     "semantic_hash": ""
   },
@@ -1287,6 +1287,18 @@
     "mtime": 1791456355.4667654,
     "seen": 1793869829.3024168,
     "ast_hash": "7dff2fa4b3a0f26b0a2957850ae345fd",
+    "semantic_hash": ""
+  },
+  "lib/features/home/widgets/home_brain_hero_card.dart": {
+    "mtime": 1793872623.8924503,
+    "seen": 1793872942.478425,
+    "ast_hash": "b1da64a6bc74975d4c0d755ab1e14959",
+    "semantic_hash": ""
+  },
+  "test/iq_system_test.dart": {
+    "mtime": 1793872410.3688226,
+    "seen": 1793872942.4786274,
+    "ast_hash": "d7d51148e655a1d43ee4586c8a685e7f",
     "semantic_hash": ""
   }
 }
