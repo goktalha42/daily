@@ -7,11 +7,10 @@ yeni apk ler yaptıkca versiyonu v1.0.1, v1.0.2 olarak değişiklik büyüklüğ
 - **v1.0.2:** Canlı sunucu lig sistemi entegrasyonu (10 kademe: Demir - Şampiyonluk), tüm seviyeler ve tamamlanan oyunlar için canlı sıralamalar, el çizimi skeç rozetler sistemi.
 - **v1.0.4 (Güncel):** WAIS-IV gerçekçi psikometrik IQ motoru (148+ katı Einstein kriteri), koreografili & %100 el çizimi dinamik ana sayfa Beyin Gücü kartı (7 günlük seri takvimi ve 6 bilişsel alan karnesi), tek tıkla OTA güncelleme sistemi.
 
-IQ sistemi:
 
+Vezirler oyununda ki 3 ayrı seviyeyei ayrı oyun sayıyor. Tüm oyunlar ve vezirler oyunu tüm bölümleri ile tamamlanınca 8 oyun oynanmış gibi gösteriyor. Vezirler oyununda 1 bölüm de oynansa 1, 3 bölüm de oynansa 3 oyun olarak kabul edilsin.
 
-Ana sayfada ki oyunların üstünde ki kart:
-
+Rozetler ve başarılarda aynı başarılar farklı emojiler ile temsil ediliyor. Her başarı veya rozet için temamıza uygun el çizimi tasarımlarımız olsun.
 
 
 
