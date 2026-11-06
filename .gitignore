@@ -65,6 +65,7 @@ app.*.map.json
 
 *.apk
 *.jks
+!/android/app/zuhtu_keystore.jks
 *.keystore
 /android/key.properties
 
