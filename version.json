@@ -1,9 +1,9 @@
 {
-  "version": "1.0.4",
-  "build_number": 5,
-  "title": "Zühtü v1.0.4 Güncellemesi 🧠✨",
-  "changelog": "• WAIS-IV tabanlı gerçekçi psikometrik IQ sistemi ve katı Einstein (148+ IQ) kriterleri eklendi.\n• Ana sayfa Beyin Gücü kartı %100 dinamik, koreografili ve el çizimi tasarıma kavuştu.\n• Karta dokununca açılan 6 Bilişsel Alan Karnesi ve Son 7 Gün Seri Takvimi eklendi.\n• Zafer ekranı IQ değişim göstergesi ve el çizimi hedef ilerleme çubuğuyla yenilendi.",
-  "apk_url": "https://github.com/goktalha42/daily/releases/download/v1.0.4/Zuhtu_v1.0.4.apk",
-  "release_url": "https://github.com/goktalha42/daily/releases/tag/v1.0.4",
+  "version": "1.1.0",
+  "build_number": 6,
+  "title": "Zühtü v1.1.0 Güncellemesi",
+  "changelog": "• Vezirler oyununda günlük tek oyun sayımı (6/6 tam gün dengesi) ve geçmiş istatistik düzeltmesi eklendi.\n• 27 rozet ve 6 IQ mertebesinin tamamı çakışmasız, %100 el çizimi kara kalem madalyon tasarımlarına kavuştu.\n• Rozetler, Profil, Ana Sayfa ve Zafer ekranları arasında tam sembol tutarlılığı sağlandı.",
+  "apk_url": "https://github.com/goktalha42/daily/releases/download/v1.1.0/Zuhtu_v1.1.0.apk",
+  "release_url": "https://github.com/goktalha42/daily/releases/tag/v1.1.0",
   "force_update": false
 }

@@ -364,6 +364,7 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> with WidgetsBindi
           score: score,
           durationMs: _elapsedMs,
           moveCount: _userRects.length,
+          dateId: widget.levelId,
         );
     ref.read(dailyPlayServiceProvider.notifier).recordCompletion(
           game: GameType.patches,

@@ -8,6 +8,7 @@ import '../theme/app_colors.dart';
 import '../utils/date_utils.dart';
 import '../../games/common/base_game.dart';
 import 'screen_shake.dart';
+import 'sketch_badge_icons.dart';
 import 'sketch_decorations.dart';
 
 /// Zühtü - Tamamen Organik Kara Kalem Skeç Defteri Zafer Ekranı Diyaloğu.
@@ -89,11 +90,14 @@ class _GeniusWinDialogState extends State<GeniusWinDialog> {
     final nextMilestone = IQMilestone.nextMilestone(currentIQ);
     final isNewMilestone = stats?.milestone != null;
 
+    final BadgeArtType solveBadgeArt = solvePercentile <= 1
+        ? BadgeArtType.podiumTrophy
+        : (solvePercentile <= 10 ? BadgeArtType.lightning : BadgeArtType.bullseye);
     final String solveBadgeText = solvePercentile <= 1
-        ? '🏆 BU OYUN: ZİRVE %1\'LİK ÇÖZÜM'
+        ? 'BU OYUN: ZİRVE %1\'LİK ÇÖZÜM'
         : (solvePercentile <= 10
-            ? '⚡ BU OYUN: İLK %$solvePercentile\'LİK ÇÖZÜM'
-            : '🎯 BU OYUN: İLK %$solvePercentile\'LİK DİLİM');
+            ? 'BU OYUN: İLK %$solvePercentile\'LİK ÇÖZÜM'
+            : 'BU OYUN: İLK %$solvePercentile\'LİK DİLİM');
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -131,7 +135,7 @@ class _GeniusWinDialogState extends State<GeniusWinDialog> {
               const SizedBox(height: 12),
 
               Text(
-                'BÖLÜM TAMAMLANDI! 🎉',
+                'BAŞARIYLA TAMAMLANDI!',
                 style: GoogleFonts.patrickHand(
                   fontSize: 26,
                   fontWeight: FontWeight.w700,
@@ -150,13 +154,26 @@ class _GeniusWinDialogState extends State<GeniusWinDialog> {
                 borderWidth: 1.8,
                 shadowOffset: const Offset(2, 2),
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                child: Text(
-                  solveBadgeText,
-                  style: GoogleFonts.patrickHand(
-                    color: isDark ? Colors.white : AppColors.pencilBlack,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 14,
-                  ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SketchBadgeIcon(
+                      type: solveBadgeArt,
+                      size: 16,
+                      strokeColor: isDark ? Colors.white : AppColors.pencilBlack,
+                    ),
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
+                        solveBadgeText,
+                        style: GoogleFonts.patrickHand(
+                          color: isDark ? Colors.white : AppColors.pencilBlack,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
 
@@ -308,13 +325,15 @@ class _GeniusWinDialogState extends State<GeniusWinDialog> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Text(
-                milestone.emoji,
-                style: const TextStyle(fontSize: 24),
+              SketchBadgeMedallion(
+                type: milestone.artType,
+                accentColor: milestone.artType.defaultAccentColor,
+                isUnlocked: true,
+                size: 42,
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 10),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -436,15 +455,28 @@ class _GeniusWinDialogState extends State<GeniusWinDialog> {
           ),
 
           const SizedBox(height: 6),
-          Text(
-            nextMilestone != null
-                ? '🎯 Sonraki Hedef: ${nextMilestone.emoji} ${nextMilestone.title} (${nextMilestone.iqThreshold} IQ) • ${nextMilestone.iqThreshold - currentIQ} puan kaldı!'
-                : '👑 Zirvedesin! 148+ Einstein mertebesini istikrarlı oyunla koru!',
-            style: GoogleFonts.patrickHand(
-              fontSize: 12.5,
-              fontWeight: FontWeight.w700,
-              color: secondaryTextColor,
-            ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              SketchBadgeIcon(
+                type: nextMilestone?.artType ?? BadgeArtType.einsteinBrain,
+                size: 15,
+                strokeColor: textColor,
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  nextMilestone != null
+                      ? 'Sonraki Hedef: ${nextMilestone.title} (${nextMilestone.iqThreshold} IQ) • ${nextMilestone.iqThreshold - currentIQ} puan kaldı!'
+                      : 'Zirvedesin! 148+ Einstein mertebesini istikrarlı oyunla koru!',
+                  style: GoogleFonts.patrickHand(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w700,
+                    color: secondaryTextColor,
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),

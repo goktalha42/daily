@@ -479,7 +479,12 @@ class LeaderboardService extends ChangeNotifier {
 
     for (final record in dailyPlay.records.values) {
       final resultId = 'user_local_${record.gameType.id}_${record.subKey ?? "main"}_${record.dateId}';
-      final existingIndex = _resultsStore.indexWhere((r) => r.id == resultId);
+      final existingIndex = _resultsStore.indexWhere((r) =>
+          r.id == resultId ||
+          (r.userId == 'user_local' &&
+              r.gameType == record.gameType &&
+              r.levelId == record.dateId &&
+              r.difficulty == record.subKey));
 
       final result = GameResult(
         id: resultId,
@@ -697,7 +702,7 @@ class LeaderboardService extends ChangeNotifier {
 
         final totalScore = kolayScore + zorScore + masterScore;
         final totalDuration = (kolay?.durationMs ?? 0) + (zor?.durationMs ?? 0) + (master?.durationMs ?? 0);
-        final gamesPlayed = (kolay != null ? 1 : 0) + (zor != null ? 1 : 0) + (master != null ? 1 : 0);
+        final gamesPlayed = (kolay != null || zor != null || master != null) ? 1 : 0;
 
         if (totalScore > 0 || gamesPlayed > 0) {
           entries.add(
@@ -734,6 +739,9 @@ class LeaderboardService extends ChangeNotifier {
           // Haftalık/Aylık/Genel: Toplam puan ve en iyi süre
           final totalScore = list.fold<int>(0, (sum, r) => sum + r.score);
           final bestTimeMs = list.map((r) => r.durationMs).reduce((a, b) => a < b ? a : b);
+          final distinctGamesPlayed = (gameType == GameType.queens && difficulty == null)
+              ? list.map((r) => r.levelId).toSet().length
+              : list.length;
           entries.add(
             LeaderboardEntry(
               rank: 0,
@@ -741,7 +749,7 @@ class LeaderboardService extends ChangeNotifier {
               userName: userName,
               totalScore: totalScore,
               bestTimeMs: bestTimeMs,
-              gamesPlayed: list.length,
+              gamesPlayed: distinctGamesPlayed,
             ),
           );
         }

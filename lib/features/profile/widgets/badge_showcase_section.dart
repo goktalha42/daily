@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/models/badge_model.dart';
 import '../../../core/services/badge_service.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/sketch_badge_icons.dart';
 import '../../../core/widgets/sketch_decorations.dart';
 import '../badges_screen.dart';
 
@@ -48,7 +49,10 @@ class BadgeShowcaseSection extends ConsumerWidget {
               children: [
                 Row(
                   children: [
-                    const Text('🏆', style: TextStyle(fontSize: 16)),
+                    SketchDoodleTrophy(
+                      size: 17,
+                      color: isDark ? AppColors.sunYellow : AppColors.pencilBlack,
+                    ),
                     const SizedBox(width: 6),
                     Text(
                       'BAŞARI & PRESTİJ VİTRİNİ',
@@ -99,13 +103,17 @@ class BadgeShowcaseSection extends ConsumerWidget {
               children: [
                 Row(
                   children: [
-                    SketchCard(
-                      padding: const EdgeInsets.all(8),
+                    const SketchCard(
+                      padding: EdgeInsets.all(8),
                       borderRadius: 10,
                       borderWidth: 1.5,
-                      shadowOffset: const Offset(1.5, 1.5),
+                      shadowOffset: Offset(1.5, 1.5),
                       backgroundColor: AppColors.sunYellow,
-                      child: const Text('🎖️', style: TextStyle(fontSize: 22)),
+                      child: SketchBadgeIcon(
+                        type: BadgeArtType.honorMedal,
+                        size: 24,
+                        strokeColor: AppColors.inkBlack,
+                      ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -161,22 +169,11 @@ class BadgeShowcaseSection extends ConsumerWidget {
                           padding: const EdgeInsets.only(right: 10),
                           child: Column(
                             children: [
-                              SketchCard(
-                                padding: EdgeInsets.zero,
-                                borderRadius: 10,
-                                borderWidth: 1.5,
-                                shadowOffset: const Offset(1.5, 1.5),
-                                backgroundColor: AppColors.sunYellow,
-                                child: SizedBox(
-                                  width: 44,
-                                  height: 44,
-                                  child: Center(
-                                    child: Text(
-                                      badge.emoji,
-                                      style: const TextStyle(fontSize: 22),
-                                    ),
-                                  ),
-                                ),
+                              SketchBadgeMedallion(
+                                type: badge.artType,
+                                accentColor: badge.color,
+                                isUnlocked: true,
+                                size: 46,
                               ),
                               const SizedBox(height: 4),
                               SizedBox(

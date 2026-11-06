@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../games/common/base_game.dart';
+import '../widgets/sketch_badge_icons.dart';
 
 /// WAIS-IV Psikometrik Normal Dağılım (Ortalama = 100, Standart Sapma = 15)
 /// tabanlı IQ kilometre taşları ve Gauss yüzdelik dilim hesaplayıcısı.
@@ -10,14 +11,14 @@ class IQMilestone {
   final int iqThreshold;
   final String title;
   final String message;
-  final String emoji;
+  final BadgeArtType artType;
   final double betterThanPercent;
 
   const IQMilestone({
     required this.iqThreshold,
     required this.title,
     required this.message,
-    required this.emoji,
+    required this.artType,
     required this.betterThanPercent,
   });
 
@@ -26,42 +27,42 @@ class IQMilestone {
       iqThreshold: 100,
       title: 'Dengeli Zihin',
       message: 'Dünya ortalamasıyla dengeli bir başlangıç! Farklı kategorileri çözdükçe zihin profilin netleşecek.',
-      emoji: '🌱',
+      artType: BadgeArtType.balanceScale,
       betterThanPercent: 50.0,
     ),
     IQMilestone(
       iqThreshold: 110,
       title: 'Keskin Zihin',
       message: 'Ortalamanın belirgin şekilde üzerindesin! Nüfusun %75\'inden daha hızlı örüntü yakalıyorsun.',
-      emoji: '⭐',
+      artType: BadgeArtType.sharpStar,
       betterThanPercent: 74.8,
     ),
     IQMilestone(
       iqThreshold: 120,
       title: 'Büyük Usta',
       message: 'Üstün analitik kapasite! Nüfusun %91\'ini geride bıraktın, karmaşık bulmacalarda ustalaşıyorsun.',
-      emoji: '💡',
+      artType: BadgeArtType.lightbulb,
       betterThanPercent: 90.9,
     ),
     IQMilestone(
       iqThreshold: 130,
       title: 'Üstün Mantık (Mensa)',
       message: 'Mensa kabul barajındasın (+2σ)! Nüfusun %97.7\'sinden daha keskin bir muhakeme gücün var.',
-      emoji: '🌟',
+      artType: BadgeArtType.mensaCrest,
       betterThanPercent: 97.7,
     ),
     IQMilestone(
       iqThreshold: 140,
       title: 'Zühtü Dahisi',
       message: 'Nadir görülen bilişsel hız! Nüfusun %99.6\'sından üstünsün, efsanevi Einstein zirvesine çok yakınsın!',
-      emoji: '🚀',
+      artType: BadgeArtType.zuhtuGenius,
       betterThanPercent: 99.6,
     ),
     IQMilestone(
       iqThreshold: 148,
       title: 'Einstein Mertebesi',
       message: 'Binde birlik tarihsel deha (+3.2σ)! 6 bilişsel alanın tamamında mutlak ve istikrarlı zirvedesin!',
-      emoji: '👑',
+      artType: BadgeArtType.einsteinBrain,
       betterThanPercent: 99.9,
     ),
   ];
@@ -161,6 +162,9 @@ class GamePerformanceData {
   final String geniusTitle;
   final double emaZScore;
   final double peakZScore;
+  final String? lastCountedDateId;
+  final double preDayEmaZScore;
+  final double dayBestZScore;
 
   GamePerformanceData({
     required this.gameType,
@@ -172,6 +176,9 @@ class GamePerformanceData {
     required this.geniusTitle,
     this.emaZScore = 0.0,
     this.peakZScore = 0.0,
+    this.lastCountedDateId,
+    this.preDayEmaZScore = 0.0,
+    this.dayBestZScore = 0.0,
   });
 
   bool get hasPlayed => percentile != null && totalGamesPlayed > 0;
@@ -180,9 +187,9 @@ class GamePerformanceData {
   /// Böylece tek şanslı oyunla kalıcı yüksek IQ kazanılamaz ve kötü oyunlar ortalamayı düşürebilir.
   double get effectiveZScore => (0.72 * emaZScore) + (0.28 * peakZScore);
 
-  /// Alt-test Bayesyen güvenilirlik katsayısı: c(n) = 1 - exp(-n / 2.8)
+  /// Alt-test Bayesyen güvenilirlik katsayısı: c(n) = 1 - exp(-n / 2.6)
   double get credibility =>
-      hasPlayed ? (1.0 - math.exp(-totalGamesPlayed / 2.8)).clamp(0.0, 1.0) : 0.0;
+      hasPlayed ? (1.0 - math.exp(-totalGamesPlayed / 2.6)).clamp(0.0, 1.0) : 0.0;
 
   /// Bu bilişsel alandaki kalibre edilmiş alt-IQ skoru (82 .. 153)
   int get domainIQ {
@@ -192,21 +199,50 @@ class GamePerformanceData {
 
   String get percentileBadgeText {
     if (!hasPlayed) {
-      return '🚀 HENÜZ OYNANMADI';
+      return 'HENÜZ OYNANMADI';
     }
     if (percentile! <= 1) {
-      return '🏆 ZİRVE %1\'LİK DİLİM';
+      return 'ZİRVE %1\'LİK DİLİM';
     } else if (percentile! <= 5) {
-      return '⚡ İLK %$percentile\'LİK DİLİM';
+      return 'İLK %$percentile\'LİK DİLİM';
     } else if (percentile! <= 15) {
-      return '🎯 İLK %$percentile\'LİK DİLİM';
+      return 'İLK %$percentile\'LİK DİLİM';
     } else if (percentile! <= 35) {
-      return '📊 İLK %$percentile\'LİK DİLİM';
+      return 'İLK %$percentile\'LİK DİLİM';
     } else if (percentile! <= 55) {
-      return '📈 DENGELİ PERFORMANS';
+      return 'DENGELİ PERFORMANS';
     } else {
-      return '🌱 GELİŞMEKTE';
+      return 'GELİŞMEKTE';
     }
+  }
+
+  GamePerformanceData copyWith({
+    int? percentile,
+    int? bestScore,
+    int? bestDurationMs,
+    int? totalGamesPlayed,
+    DateTime? lastPlayedAt,
+    String? geniusTitle,
+    double? emaZScore,
+    double? peakZScore,
+    String? lastCountedDateId,
+    double? preDayEmaZScore,
+    double? dayBestZScore,
+  }) {
+    return GamePerformanceData(
+      gameType: gameType,
+      percentile: percentile ?? this.percentile,
+      bestScore: bestScore ?? this.bestScore,
+      bestDurationMs: bestDurationMs ?? this.bestDurationMs,
+      totalGamesPlayed: totalGamesPlayed ?? this.totalGamesPlayed,
+      lastPlayedAt: lastPlayedAt ?? this.lastPlayedAt,
+      geniusTitle: geniusTitle ?? this.geniusTitle,
+      emaZScore: emaZScore ?? this.emaZScore,
+      peakZScore: peakZScore ?? this.peakZScore,
+      lastCountedDateId: lastCountedDateId ?? this.lastCountedDateId,
+      preDayEmaZScore: preDayEmaZScore ?? this.preDayEmaZScore,
+      dayBestZScore: dayBestZScore ?? this.dayBestZScore,
+    );
   }
 
   Map<String, dynamic> toJson() => {
@@ -219,6 +255,9 @@ class GamePerformanceData {
         'geniusTitle': geniusTitle,
         'emaZScore': emaZScore,
         'peakZScore': peakZScore,
+        if (lastCountedDateId != null) 'lastCountedDateId': lastCountedDateId,
+        'preDayEmaZScore': preDayEmaZScore,
+        'dayBestZScore': dayBestZScore,
       };
 
   factory GamePerformanceData.fromJson(Map<String, dynamic> json, GameType type) {
@@ -235,6 +274,9 @@ class GamePerformanceData {
           )
         : 0.0;
 
+    final resolvedEma = (json['emaZScore'] as num?)?.toDouble() ?? fallbackZ;
+    final resolvedPeak = (json['peakZScore'] as num?)?.toDouble() ?? fallbackZ;
+
     return GamePerformanceData(
       gameType: type,
       percentile: json['percentile'] as int?,
@@ -245,8 +287,11 @@ class GamePerformanceData {
           ? DateTime.tryParse(json['lastPlayedAt'])
           : null,
       geniusTitle: (json['geniusTitle'] as String?) ?? 'Henüz Belirlenmedi',
-      emaZScore: (json['emaZScore'] as num?)?.toDouble() ?? fallbackZ,
-      peakZScore: (json['peakZScore'] as num?)?.toDouble() ?? fallbackZ,
+      emaZScore: resolvedEma,
+      peakZScore: resolvedPeak,
+      lastCountedDateId: json['lastCountedDateId'] as String?,
+      preDayEmaZScore: (json['preDayEmaZScore'] as num?)?.toDouble() ?? resolvedEma,
+      dayBestZScore: (json['dayBestZScore'] as num?)?.toDouble() ?? resolvedEma,
     );
   }
 }
@@ -431,10 +476,17 @@ final gameStatsServiceProvider =
 class GameStatsNotifier extends StateNotifier<Map<GameType, GamePerformanceData>> {
   static const _prefKey = 'daily_genius_game_stats_v3';
   static const _legacyPrefKey = 'daily_genius_game_stats_v2';
+  static const _dailyPlayPrefKey = 'zuhtu_daily_play_records_v1';
+  static const _queensCountMigrationKey = 'daily_genius_queens_1perday_v1';
+
+  late final Future<void> _initFuture;
 
   GameStatsNotifier() : super(_createInitialState()) {
-    _loadStats();
+    _initFuture = _loadStats();
   }
+
+  /// İlk açılışta diskteki istatistiklerin ve Vezirler migrasyonunun yüklenmesini bekler.
+  Future<void> ensureLoaded() => _initFuture;
 
   /// Temiz başlangıç: hiçbir oyun oynanmamış, sahte veri yok
   static Map<GameType, GamePerformanceData> _createInitialState() {
@@ -469,7 +521,53 @@ class GameStatsNotifier extends StateNotifier<Map<GameType, GamePerformanceData>
             );
           }
         }
+
+        // Tek seferlik Vezirler oyun adedi uzlaştırması:
+        // Vezirler'de aynı gün çözülen 3 ayrı zorluk seviyesi geçmişte 3 ayrı oyun sayıldığı için
+        // (toplamda 8 oyun gibi görünmesi), günlük oyun kayıtlarındaki benzersiz gün sayısıyla eşitlenir.
+        final bool migrated = prefs.getBool(_queensCountMigrationKey) ?? false;
+        bool needsSave = false;
+        if (!migrated) {
+          final dailyRaw = prefs.getString(_dailyPlayPrefKey);
+          final queensPerf = current[GameType.queens];
+          if (dailyRaw != null && queensPerf != null && queensPerf.hasPlayed) {
+            final dailyDecoded = jsonDecode(dailyRaw) as Map<String, dynamic>;
+            final distinctQueensDates = <String>{};
+            String? latestDateId;
+
+            dailyDecoded.forEach((_, val) {
+              if (val is Map<String, dynamic> && val['gameType'] == GameType.queens.id) {
+                final dId = val['dateId'] as String?;
+                if (dId != null && dId.isNotEmpty) {
+                  distinctQueensDates.add(dId);
+                  if (latestDateId == null || dId.compareTo(latestDateId!) > 0) {
+                    latestDateId = dId;
+                  }
+                }
+              }
+            });
+
+            if (distinctQueensDates.isNotEmpty) {
+              current[GameType.queens] = queensPerf.copyWith(
+                totalGamesPlayed: distinctQueensDates.length,
+                lastCountedDateId: queensPerf.lastCountedDateId ?? latestDateId,
+                dayBestZScore: queensPerf.emaZScore,
+                preDayEmaZScore: queensPerf.emaZScore,
+              );
+              needsSave = true;
+            }
+          }
+          await prefs.setBool(_queensCountMigrationKey, true);
+        }
+
         state = current;
+
+        if (needsSave) {
+          final mapToSave = {
+            for (var e in current.entries) e.key.id: e.value.toJson(),
+          };
+          await prefs.setString(_prefKey, jsonEncode(mapToSave));
+        }
       }
     } catch (_) {}
   }
@@ -480,8 +578,11 @@ class GameStatsNotifier extends StateNotifier<Map<GameType, GamePerformanceData>
     required int durationMs,
     required int moveCount,
     String? difficulty,
+    String? dateId,
   }) async {
+    await _initFuture;
     final int previousIQ = getOverallIQ();
+    final bool hasExplicitDate = dateId != null && dateId.isNotEmpty;
 
     // 1. Bu tekil çözümün gerçekçi psikometrik Z-skoru ve yüzdelik dilimi
     final double solveZ = PsychometricIQCalculator.evaluateSingleSolveZ(
@@ -493,14 +594,26 @@ class GameStatsNotifier extends StateNotifier<Map<GameType, GamePerformanceData>
     final int solvePercentile = PsychometricIQCalculator.zScoreToSolvePercentile(solveZ);
 
     final old = state[gameType]!;
-    final bool isFirstPlay = old.totalGamesPlayed == 0;
+    final bool isFirstPlayEver = old.totalGamesPlayed == 0;
+    // Aynı gün içinde (örn. Vezirler'de 1. bölümden sonra 2. veya 3. bölüm çözüldüğünde)
+    // oyun sayısı tekrar artırılmaz; 1 bölüm de oynansa 3 bölüm de oynansa 1 oyun kabul edilir.
+    final bool isSameDayRepeat =
+        !isFirstPlayEver && hasExplicitDate && old.lastCountedDateId == dateId;
+
+    final int updatedTotalPlayed =
+        isSameDayRepeat ? old.totalGamesPlayed : (old.totalGamesPlayed + 1);
 
     // 2. EMA (Üstel Hareketli Ortalama) güncellemesi:
-    // İlk oyunda doğrudan çözüm Z-skoru, sonraki oyunlarda %68 geçmiş istikrar + %32 yeni oyun.
-    final double updatedEmaZ = isFirstPlay
-        ? solveZ
-        : (0.68 * old.emaZScore) + (0.32 * solveZ);
-    final double updatedPeakZ = isFirstPlay
+    // Aynı gün ek zorluk çözüldüğünde o günün en yüksek Z-skoru baz alınır (kolay seviye çözmek IQ düşürmez).
+    final double preDayEma = isSameDayRepeat ? old.preDayEmaZScore : old.emaZScore;
+    final double dayBestZ = isSameDayRepeat
+        ? math.max(old.dayBestZScore, solveZ)
+        : solveZ;
+
+    final double updatedEmaZ = (updatedTotalPlayed <= 1)
+        ? dayBestZ
+        : (0.68 * preDayEma) + (0.32 * dayBestZ);
+    final double updatedPeakZ = isFirstPlayEver
         ? solveZ
         : math.max(old.peakZScore, solveZ);
 
@@ -518,11 +631,14 @@ class GameStatsNotifier extends StateNotifier<Map<GameType, GamePerformanceData>
       percentile: categoryPercentile,
       bestScore: newBestScore,
       bestDurationMs: newBestDuration,
-      totalGamesPlayed: old.totalGamesPlayed + 1,
+      totalGamesPlayed: updatedTotalPlayed,
       lastPlayedAt: DateTime.now(),
       geniusTitle: _domainTitleForZ(tempEffectiveZ),
       emaZScore: updatedEmaZ,
       peakZScore: updatedPeakZ,
+      lastCountedDateId: hasExplicitDate ? dateId : old.lastCountedDateId,
+      preDayEmaZScore: preDayEma,
+      dayBestZScore: dayBestZ,
     );
 
     final newState = Map<GameType, GamePerformanceData>.from(state);

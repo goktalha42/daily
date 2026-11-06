@@ -233,6 +233,7 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> with WidgetsBin
           score: score,
           durationMs: _elapsedMs,
           moveCount: _wrongGuesses.length + 1,
+          dateId: widget.levelId,
         );
     ref.read(dailyPlayServiceProvider.notifier).recordCompletion(
           game: GameType.pinpoint,

@@ -7,6 +7,7 @@ import '../../../core/services/daily_play_service.dart';
 import '../../../core/services/game_stats_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/date_utils.dart';
+import '../../../core/widgets/sketch_badge_icons.dart';
 import '../../../core/widgets/sketch_countdown_timer.dart';
 import '../../../core/widgets/sketch_decorations.dart';
 import '../../../games/common/base_game.dart';
@@ -148,7 +149,7 @@ class _HomeBrainHeroCardState extends State<HomeBrainHeroCard>
     final String dynamicHeadline;
     if (todayCompleted == GameType.values.length) {
       dynamicHeadline =
-          '🏆 6/6 günlük bulmaca fethedildi! Zihin profilin tam güçte.';
+          '6/6 günlük bulmaca fethedildi! Zihin profilin tam güçte.';
     } else if (playedCategories == 0) {
       dynamicHeadline =
           'Kalibrasyonu başlatmak için ilk bulmacanı çöz • 6 alan seni bekliyor!';
@@ -157,7 +158,7 @@ class _HomeBrainHeroCardState extends State<HomeBrainHeroCard>
           'Bugün $todayCompleted/6 çözüldü • Nüfusun %${betterThanPercent.toStringAsFixed(1)}\'inden üstünsün!';
     } else if (currentStreak > 0) {
       dynamicHeadline =
-          '⚡ $currentStreak günlük serini korumak için bugün en az 1 oyun çöz!';
+          '$currentStreak günlük serini korumak için bugün en az 1 oyun çöz!';
     } else if (bestDurationMs > 0) {
       dynamicHeadline =
           'En hızlı çözümün ${GameDateUtils.formatGameTime(bestDurationMs)} • Nüfusun %${betterThanPercent.toStringAsFixed(1)}\'inden üstünsün!';
@@ -313,18 +314,40 @@ class _HomeBrainHeroCardState extends State<HomeBrainHeroCard>
                                       shadowOffset: const Offset(1.5, 1.5),
                                       padding: const EdgeInsets.symmetric(
                                           horizontal: 7, vertical: 2),
-                                      child: Text(
-                                        playedCategories == 0
-                                            ? 'TEST BEKLİYOR'
-                                            : '${milestone.emoji} ${milestone.title.toUpperCase()}',
-                                        style: GoogleFonts.patrickHand(
-                                          color: widget.userIQ >= 148
-                                              ? AppColors.inkBlack
-                                              : pencilColor,
-                                          fontSize: 11.5,
-                                          fontWeight: FontWeight.w700,
-                                        ),
-                                      ),
+                                      child: playedCategories == 0
+                                          ? Text(
+                                              'TEST BEKLİYOR',
+                                              style: GoogleFonts.patrickHand(
+                                                color: pencilColor,
+                                                fontSize: 11.5,
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                            )
+                                          : Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                SketchBadgeIcon(
+                                                  type: milestone.artType,
+                                                  size: 14,
+                                                  strokeColor:
+                                                      widget.userIQ >= 148
+                                                          ? AppColors.inkBlack
+                                                          : pencilColor,
+                                                ),
+                                                const SizedBox(width: 4),
+                                                Text(
+                                                  milestone.title.toUpperCase(),
+                                                  style:
+                                                      GoogleFonts.patrickHand(
+                                                    color: widget.userIQ >= 148
+                                                        ? AppColors.inkBlack
+                                                        : pencilColor,
+                                                    fontSize: 11.5,
+                                                    fontWeight: FontWeight.w700,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
                                     ),
                                   ],
                                 ),
@@ -369,16 +392,30 @@ class _HomeBrainHeroCardState extends State<HomeBrainHeroCard>
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Flexible(
-                                child: Text(
-                                  nextMilestone != null
-                                      ? 'SONRAKİ HEDEF: ${nextMilestone.emoji} ${nextMilestone.title.toUpperCase()} (${nextMilestone.iqThreshold} IQ)'
-                                      : '👑 ZİRVE MERTEBE: EINSTEIN (148+ IQ AKTİF)',
-                                  overflow: TextOverflow.ellipsis,
-                                  style: GoogleFonts.patrickHand(
-                                    fontSize: 11.8,
-                                    fontWeight: FontWeight.w700,
-                                    color: graphiteColor,
-                                  ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    SketchBadgeIcon(
+                                      type: nextMilestone?.artType ??
+                                          BadgeArtType.einsteinBrain,
+                                      size: 14,
+                                      strokeColor: pencilColor,
+                                    ),
+                                    const SizedBox(width: 5),
+                                    Flexible(
+                                      child: Text(
+                                        nextMilestone != null
+                                            ? 'SONRAKİ HEDEF: ${nextMilestone.title.toUpperCase()} (${nextMilestone.iqThreshold} IQ)'
+                                            : 'ZİRVE MERTEBE: EINSTEIN (148+ IQ AKTİF)',
+                                        overflow: TextOverflow.ellipsis,
+                                        style: GoogleFonts.patrickHand(
+                                          fontSize: 11.8,
+                                          fontWeight: FontWeight.w700,
+                                          color: graphiteColor,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                               const SizedBox(width: 6),
@@ -548,37 +585,61 @@ class _HomeBrainHeroCardState extends State<HomeBrainHeroCard>
       return (
         text: 'EINSTEIN MERTEBESİ • İLK %0.1',
         bg: AppColors.highlighterPurple,
-        icon: const SketchDoodleCrown(size: 15, color: AppColors.inkBlack),
+        icon: const SketchBadgeIcon(
+          type: BadgeArtType.einsteinBrain,
+          size: 16,
+          strokeColor: AppColors.inkBlack,
+        ),
       );
     } else if (userIQ >= 140) {
       return (
         text: 'ZÜHTÜ DAHİSİ • İLK %0.4',
         bg: AppColors.sunYellow,
-        icon: const SketchDoodleTrophy(size: 15, color: AppColors.inkBlack),
+        icon: const SketchBadgeIcon(
+          type: BadgeArtType.zuhtuGenius,
+          size: 16,
+          strokeColor: AppColors.inkBlack,
+        ),
       );
     } else if (userIQ >= 130) {
       return (
         text: 'MENSA DÜZEYİ • İLK %2.3',
         bg: AppColors.skyBlue,
-        icon: const SketchDoodleBrain(size: 15, color: AppColors.inkBlack),
+        icon: const SketchBadgeIcon(
+          type: BadgeArtType.mensaCrest,
+          size: 16,
+          strokeColor: AppColors.inkBlack,
+        ),
       );
     } else if (userIQ >= 120) {
       return (
         text: 'BÜYÜK USTA • İLK %9',
         bg: AppColors.sunYellow,
-        icon: const SketchDoodleCrown(size: 15, color: AppColors.inkBlack),
+        icon: const SketchBadgeIcon(
+          type: BadgeArtType.lightbulb,
+          size: 16,
+          strokeColor: AppColors.inkBlack,
+        ),
       );
     } else if (userIQ >= 110) {
       return (
         text: 'KESKİN ZİHİN • İLK %25',
         bg: AppColors.highlighterOrange,
-        icon: const SketchDoodleBrain(size: 15, color: AppColors.inkBlack),
+        icon: const SketchBadgeIcon(
+          type: BadgeArtType.sharpStar,
+          size: 16,
+          strokeColor: AppColors.inkBlack,
+        ),
       );
     } else {
       return (
         text: '6/6 ALAN AKTİF • KALİBRE EDİLDİ',
         bg: AppColors.highlighterCyan,
-        icon: const SketchDoodleBrain(size: 15, color: AppColors.inkBlack),
+        icon: const SketchBadgeIcon(
+          type: BadgeArtType.balanceScale,
+          size: 16,
+          strokeColor: AppColors.inkBlack,
+        ),
       );
     }
   }
@@ -624,8 +685,11 @@ class _AnimatedNeuralMedallion extends StatelessWidget {
               ),
               child: Center(
                 child: isEinstein
-                    ? const SketchDoodleCrown(
-                        size: 26, color: AppColors.inkBlack)
+                    ? const SketchBadgeIcon(
+                        type: BadgeArtType.einsteinBrain,
+                        size: 27,
+                        strokeColor: AppColors.inkBlack,
+                      )
                     : const SketchDoodleBrain(
                         size: 26, color: AppColors.inkBlack),
               ),
@@ -794,7 +858,7 @@ class _DynamicStreakStamp extends StatelessWidget {
     } else if (securedToday) {
       statusLabel = 'AKTİF ✓';
     } else {
-      statusLabel = 'KORU! ⚡';
+      statusLabel = 'KORU!';
     }
 
     return SketchCard(
@@ -1387,16 +1451,32 @@ class _ExpandedCognitiveNotebook extends StatelessWidget {
                 ? AppColors.surfaceSecondaryDark
                 : const Color(0xFFFFFBEB),
             borderColor: pencilColor.withValues(alpha: 0.7),
-            child: Text(
-              userIQ >= 148
-                  ? '👑 Einstein Mertebesi Aktif! Tüm 6 bilişsel alanda %99.9\'luk efsanevi istikrarı koruyorsun.'
-                  : '👑 Einstein Kriteri (148+ IQ): $playedCategories/6 alan • En az ${math.min(5, minCategoryPlays)}/5 kategori derinliği • ${math.min(35, totalGamesPlayed)}/35 toplam çözüm ve elit hız istikrarı.',
-              style: GoogleFonts.patrickHand(
-                fontSize: 11.8,
-                fontWeight: FontWeight.w700,
-                color: pencilColor,
-                height: 1.2,
-              ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(top: 1),
+                  child: SketchBadgeIcon(
+                    type: BadgeArtType.einsteinBrain,
+                    size: 16,
+                    strokeColor: pencilColor,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    userIQ >= 148
+                        ? 'Einstein Mertebesi Aktif! Tüm 6 bilişsel alanda %99.9\'luk efsanevi istikrarı koruyorsun.'
+                        : 'Einstein Kriteri (148+ IQ): $playedCategories/6 alan • En az ${math.min(5, minCategoryPlays)}/5 kategori derinliği • ${math.min(35, totalGamesPlayed)}/35 toplam çözüm ve elit hız istikrarı.',
+                    style: GoogleFonts.patrickHand(
+                      fontSize: 11.8,
+                      fontWeight: FontWeight.w700,
+                      color: pencilColor,
+                      height: 1.2,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],

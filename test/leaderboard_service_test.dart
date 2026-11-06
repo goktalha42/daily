@@ -40,9 +40,9 @@ void main() {
 
       expect(queensOverall.length, equals(150));
 
-      // En üstteki oyuncular 3 seviyeyi de oynamış olmalı (Kolay + Zor + Master)
+      // En üstteki oyuncular 3 seviyeyi de oynamış olmalı (puanları toplanır ama günlük 1 oyun sayılır)
       final topEntry = queensOverall.first;
-      expect(topEntry.gamesPlayed, equals(3));
+      expect(topEntry.gamesPlayed, equals(1));
       expect(topEntry.totalScore, greaterThan(3000)); // 3 seviyenin toplamı 3000'den büyük
 
       // Sadece Kolay oynayan oyuncular listenin alt kısımlarındadır

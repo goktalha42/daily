@@ -1528,6 +1528,7 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
           durationMs: _elapsedMs,
           moveCount: _moveCount,
           difficulty: _currentDifficulty.name,
+          dateId: widget.levelId,
         );
     ref.read(dailyPlayServiceProvider.notifier).recordCompletion(
           game: GameType.queens,

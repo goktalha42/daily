@@ -57,16 +57,83 @@ class DailyPlayState {
     return '${game.id}|$dateId';
   }
 
+  /// Belirli bir oyunun [dateId] tarihinde tamamlanıp tamamlanmadığını kontrol eder.
+  /// [subKey] verilmezse (örn. Vezirler genel kartı), ilgili tarihte en az 1 bölüm
+  /// dahi oynanmışsa oyun o gün için tamamlanmış (1 oyun) kabul edilir.
   bool isCompleted(GameType game, String dateId, {String? subKey}) {
-    return records.containsKey(makeKey(game, dateId, subKey));
+    if (subKey != null && subKey.isNotEmpty) {
+      return records.containsKey(makeKey(game, dateId, subKey));
+    }
+    if (records.containsKey(makeKey(game, dateId))) {
+      return true;
+    }
+    for (final r in records.values) {
+      if (r.gameType == game && r.dateId == dateId) {
+        return true;
+      }
+    }
+    return false;
   }
 
+  /// [subKey] verilmezse ve alt bölümler (örn. Vezirler Kolay/Zor/Master) mevcutsa,
+  /// o güne ait toplam puanı ve en son tamamlanma bilgisini tek bir oyun kaydı olarak döner.
   DailyPlayRecord? getRecord(GameType game, String dateId, {String? subKey}) {
-    return records[makeKey(game, dateId, subKey)];
+    if (subKey != null && subKey.isNotEmpty) {
+      return records[makeKey(game, dateId, subKey)];
+    }
+
+    final subRecords = records.entries
+        .where((e) =>
+            e.key.startsWith('${game.id}:') &&
+            e.value.gameType == game &&
+            e.value.dateId == dateId)
+        .map((e) => e.value)
+        .toList();
+
+    if (subRecords.isNotEmpty) {
+      int totalScore = 0;
+      int totalDurationMs = 0;
+      DateTime latestCompleted = subRecords.first.completedAt;
+      for (final r in subRecords) {
+        totalScore += r.score;
+        totalDurationMs += r.durationMs;
+        if (r.completedAt.isAfter(latestCompleted)) {
+          latestCompleted = r.completedAt;
+        }
+      }
+      return DailyPlayRecord(
+        gameType: game,
+        dateId: dateId,
+        score: totalScore,
+        durationMs: totalDurationMs,
+        completedAt: latestCompleted,
+      );
+    }
+
+    return records[makeKey(game, dateId)];
   }
 
+  /// Verilen tarihte kaç farklı oyunun tamamlandığını döner (Maksimum 6).
+  /// Vezirler'de 1 bölüm de oynansa, 3 bölüm de oynansa 1 oyun olarak sayılır.
   int getCompletedCountForDate(String dateId) {
-    return records.values.where((r) => r.dateId == dateId && r.subKey == null).length;
+    final completedGames = <GameType>{};
+    for (final r in records.values) {
+      if (r.dateId == dateId) {
+        completedGames.add(r.gameType);
+      }
+    }
+    return completedGames.length;
+  }
+
+  /// Belirli bir oyunun toplam kaç farklı günde oynandığını (oyun sayısını) döner.
+  int getDistinctPlayedDatesCount(GameType game) {
+    final dates = <String>{};
+    for (final r in records.values) {
+      if (r.gameType == game) {
+        dates.add(r.dateId);
+      }
+    }
+    return dates.length;
   }
 
   /// Belirli bir oyun (veya [game] null ise herhangi bir oyun) için
@@ -149,6 +216,29 @@ class DailyPlayNotifier extends StateNotifier<DailyPlayState> {
     loadFromPrefs();
   }
 
+  /// Eski sürümlerde Vezirler için hem "queens:kolay|tarih" hem de mükerrer "queens|tarih"
+  /// anahtarı kaydedilmişse, mükerrer özet anahtarı temizler.
+  static Map<String, DailyPlayRecord> _sanitizeLegacyDuplicates(
+    Map<String, DailyPlayRecord> rawMap,
+  ) {
+    final datesWithSubKeys = <String>{};
+    for (final entry in rawMap.entries) {
+      if (entry.key.contains(':')) {
+        datesWithSubKeys.add('${entry.value.gameType.id}|${entry.value.dateId}');
+      }
+    }
+    if (datesWithSubKeys.isEmpty) return rawMap;
+
+    final cleaned = <String, DailyPlayRecord>{};
+    rawMap.forEach((k, v) {
+      if (!k.contains(':') && datesWithSubKeys.contains(k)) {
+        return;
+      }
+      cleaned[k] = v;
+    });
+    return cleaned;
+  }
+
   Future<void> loadFromPrefs() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -159,7 +249,12 @@ class DailyPlayNotifier extends StateNotifier<DailyPlayState> {
         decoded.forEach((k, v) {
           map[k] = DailyPlayRecord.fromJson(v as Map<String, dynamic>);
         });
-        state = DailyPlayState(records: map);
+        final sanitized = _sanitizeLegacyDuplicates(map);
+        state = DailyPlayState(records: sanitized);
+        if (sanitized.length != map.length) {
+          final mapToSave = sanitized.map((k, v) => MapEntry(k, v.toJson()));
+          await prefs.setString(_prefKey, jsonEncode(mapToSave));
+        }
       }
     } catch (_) {}
   }
@@ -184,12 +279,9 @@ class DailyPlayNotifier extends StateNotifier<DailyPlayState> {
     final updated = Map<String, DailyPlayRecord>.from(state.records);
     updated[key] = record;
 
-    // Eğer subKey varsa ana anahtarı da (örn. 'queens|date') güncelle
+    // Alt seviye (subKey) kullanılıyorsa mükerrer ana anahtarı ("queens|date") tutma
     if (subKey != null && subKey.isNotEmpty) {
-      final mainKey = '${game.id}|$dateId';
-      if (!updated.containsKey(mainKey) || updated[mainKey]!.score < score) {
-        updated[mainKey] = record;
-      }
+      updated.remove('${game.id}|$dateId');
     }
 
     state = state.copyWith(records: updated);

@@ -8,6 +8,7 @@ import '../../core/services/daily_play_service.dart';
 import '../../core/services/theme_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/date_utils.dart';
+import '../../core/widgets/sketch_badge_icons.dart';
 import '../../core/widgets/sketch_decorations.dart';
 import '../../games/common/base_game.dart';
 import 'widgets/badge_showcase_section.dart';
@@ -54,7 +55,7 @@ class ProfileScreen extends ConsumerWidget {
     final int avgReactionMs = durationGamesCount > 0 ? (totalBestDurationMs / durationGamesCount).round() : 0;
     final String avgReactionStr = avgReactionMs > 0 ? '${(avgReactionMs / 1000).toStringAsFixed(1)} sn' : '--';
     final String avgReactionSubtitle = avgReactionMs > 0
-        ? (avgReactionMs < 30000 ? '⚡ Işık Hızı' : (avgReactionMs < 60000 ? '🚀 Yüksek Hız' : '🎯 Dengeli'))
+        ? (avgReactionMs < 30000 ? 'Işık Hızı' : (avgReactionMs < 60000 ? 'Yüksek Hız' : 'Dengeli'))
         : 'Henüz Veri Yok';
 
     return CustomScrollView(
@@ -239,13 +240,24 @@ class ProfileScreen extends ConsumerWidget {
                                   shadowOffset: const Offset(1.2, 1.2),
                                   backgroundColor: AppColors.highlighterCyan,
                                   borderColor: AppColors.pencilBlack,
-                                  child: Text(
-                                    '⚡ KÜRESEL İLK %1 STATÜSÜ',
-                                    style: GoogleFonts.patrickHand(
-                                      color: AppColors.pencilBlack,
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 11,
-                                    ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const SketchBadgeIcon(
+                                        type: BadgeArtType.lightning,
+                                        size: 12,
+                                        strokeColor: AppColors.pencilBlack,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        'KÜRESEL İLK %1 STATÜSÜ',
+                                        style: GoogleFonts.patrickHand(
+                                          color: AppColors.pencilBlack,
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 11,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ],
@@ -322,7 +334,7 @@ class ProfileScreen extends ConsumerWidget {
                     ],
                   ),
                 ),
-                // SOL KÖŞEDEKİ EINSTEIN (130+ IQ) VEYA BÜYÜK USTA ROZETİ
+                // SOL KÖŞEDEKİ EINSTEIN (148+ IQ) VEYA BÜYÜK USTA ROZETİ
                 if (hasEinstein)
                   Positioned(
                     top: -12,
@@ -337,10 +349,14 @@ class ProfileScreen extends ConsumerWidget {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Text('🧠', style: TextStyle(fontSize: 14)),
+                          const SketchBadgeIcon(
+                            type: BadgeArtType.einsteinBrain,
+                            size: 16,
+                            strokeColor: AppColors.pencilBlack,
+                          ),
                           const SizedBox(width: 5),
                           Text(
-                            'EINSTEIN STATÜSÜ (130+ IQ)',
+                            'EINSTEIN STATÜSÜ (148+ IQ)',
                             style: GoogleFonts.patrickHand(
                               fontSize: 12,
                               fontWeight: FontWeight.w700,
@@ -366,7 +382,11 @@ class ProfileScreen extends ConsumerWidget {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Text('💡', style: TextStyle(fontSize: 14)),
+                          const SketchBadgeIcon(
+                            type: BadgeArtType.lightbulb,
+                            size: 16,
+                            strokeColor: AppColors.pencilBlack,
+                          ),
                           const SizedBox(width: 5),
                           Text(
                             'BÜYÜK USTA (120+ IQ)',
@@ -430,7 +450,7 @@ class ProfileScreen extends ConsumerWidget {
                     icon: Icons.sports_esports_rounded,
                     fillColor: AppColors.highlighterCyan,
                     title: 'ÇÖZÜLEN OYUN',
-                    value: '$totalPlayed Bölüm',
+                    value: '$totalPlayed Oyun',
                     subtitle: 'Tamamlandı',
                   ),
                 ),
@@ -577,18 +597,37 @@ class ProfileScreen extends ConsumerWidget {
                                   : game.color)
                               : (isDark ? AppColors.surfaceSecondaryDark : AppColors.surfaceSecondaryLight),
                           borderColor: isDark ? AppColors.pencilWhite : AppColors.pencilBlack,
-                          child: Text(
-                            perf.hasPlayed
-                                ? (perf.percentile! <= 1 ? '👑 %1' : '%${perf.percentile}')
-                                : 'HEDEF %1',
-                            style: GoogleFonts.patrickHand(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
-                              color: (perf.hasPlayed)
-                                  ? AppColors.pencilBlack
-                                  : (isDark ? AppColors.pencilWhite : AppColors.pencilBlack),
-                            ),
-                          ),
+                          child: (perf.hasPlayed && perf.percentile! <= 1)
+                              ? Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const SketchDoodleCrown(
+                                      size: 13,
+                                      color: AppColors.pencilBlack,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      '%1',
+                                      style: GoogleFonts.patrickHand(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w700,
+                                        color: AppColors.pencilBlack,
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              : Text(
+                                  perf.hasPlayed
+                                      ? '%${perf.percentile}'
+                                      : 'HEDEF %1',
+                                  style: GoogleFonts.patrickHand(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                    color: perf.hasPlayed
+                                        ? AppColors.pencilBlack
+                                        : (isDark ? AppColors.pencilWhite : AppColors.pencilBlack),
+                                  ),
+                                ),
                         ),
                       ],
                     ),
@@ -867,7 +906,7 @@ class _AppVersionUpdateCard extends StatefulWidget {
 
 class _AppVersionUpdateCardState extends State<_AppVersionUpdateCard> {
   bool _isChecking = false;
-  String _versionText = 'v1.0.4';
+  String _versionText = 'v1.1.0';
 
   @override
   void initState() {

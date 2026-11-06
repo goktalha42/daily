@@ -89,9 +89,10 @@ void main() {
     });
 
     test('UpdateService mock HTTP istemcisiyle güncelleme yanıtını alır', () async {
+      TestWidgetsFlutterBinding.ensureInitialized();
       final mockData = {
-        'version': '1.0.5',
-        'build_number': 6,
+        'version': '1.2.0',
+        'build_number': 99,
         'title': 'Test Güncellemesi',
         'changelog': 'Test içeriği',
         'apk_url': 'https://example.com/Zuhtu.apk',
@@ -109,8 +110,8 @@ void main() {
 
       final info = await UpdateService.instance.checkForUpdate(httpClient: client);
       expect(info, isNotNull);
-      expect(info!.remoteVersion, '1.0.5');
-      expect(info.remoteBuildNumber, 6);
+      expect(info!.remoteVersion, '1.2.0');
+      expect(info.remoteBuildNumber, 99);
       expect(info.isUpdateAvailable, isTrue);
     });
 

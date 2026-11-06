@@ -484,6 +484,7 @@ class _TangoScreenState extends ConsumerState<TangoScreen> with WidgetsBindingOb
           score: score,
           durationMs: _elapsedMs,
           moveCount: _moveCount,
+          dateId: widget.levelId,
         );
     ref.read(dailyPlayServiceProvider.notifier).recordCompletion(
           game: GameType.tango,

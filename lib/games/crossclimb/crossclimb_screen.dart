@@ -253,6 +253,7 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> with Widget
           score: score,
           durationMs: _elapsedMs,
           moveCount: _level.steps.length,
+          dateId: widget.levelId,
         );
     ref.read(dailyPlayServiceProvider.notifier).recordCompletion(
           game: GameType.crossclimb,

@@ -267,6 +267,7 @@ class _ZipScreenState extends ConsumerState<ZipScreen> with WidgetsBindingObserv
           score: score,
           durationMs: _elapsedMs,
           moveCount: _path.length,
+          dateId: widget.levelId,
         );
     ref.read(dailyPlayServiceProvider.notifier).recordCompletion(
           game: GameType.zipPath,
