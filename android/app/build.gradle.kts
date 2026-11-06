@@ -1,17 +1,8 @@
-import java.util.Properties
-import java.io.FileInputStream
-
 plugins {
     id("com.android.application")
     id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
-}
-
-val keystoreProperties = Properties()
-val keystorePropertiesFile = rootProject.file("key.properties")
-if (keystorePropertiesFile.exists()) {
-    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 }
 
 android {
@@ -40,17 +31,11 @@ android {
 
     signingConfigs {
         create("release") {
-            if (keystorePropertiesFile.exists()) {
-                keyAlias = keystoreProperties.getProperty("keyAlias")
-                keyPassword = keystoreProperties.getProperty("keyPassword")
-                storeFile = keystoreProperties.getProperty("storeFile")?.let { file(it) }
-                storePassword = keystoreProperties.getProperty("storePassword")
-            } else {
-                keyAlias = "zuhtu"
-                keyPassword = "zuhtupassword2026"
-                storeFile = file("zuhtu_keystore.jks")
-                storePassword = "zuhtupassword2026"
-            }
+            // Tüm bilgisayarlarda ve GitHub Actions üzerinde tek ortak imza (zuhtu_keystore.jks)
+            keyAlias = "zuhtu"
+            keyPassword = "zuhtupassword2026"
+            storeFile = file("zuhtu_keystore.jks")
+            storePassword = "zuhtupassword2026"
             enableV1Signing = true
             enableV2Signing = true
         }

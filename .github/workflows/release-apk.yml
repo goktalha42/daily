@@ -32,12 +32,13 @@ jobs:
           echo "build_number=$BUILD_NUM" >> "$GITHUB_OUTPUT"
           echo "title=$TITLE" >> "$GITHUB_OUTPUT"
           echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
-          if [ -f "releases/Zuhtu_v${VERSION}.apk" ]; then
+          EXISTING_APK=$(ls releases/Zuhtu_v${VERSION}*.apk 2>/dev/null | head -n 1 || true)
+          if [ -n "$EXISTING_APK" ] && [ -f "$EXISTING_APK" ]; then
             echo "prebuilt=true" >> "$GITHUB_OUTPUT"
-            echo "apk_path=releases/Zuhtu_v${VERSION}.apk" >> "$GITHUB_OUTPUT"
+            echo "apk_path=$EXISTING_APK" >> "$GITHUB_OUTPUT"
           else
             echo "prebuilt=false" >> "$GITHUB_OUTPUT"
-            echo "apk_path=Zuhtu_v${VERSION}.apk" >> "$GITHUB_OUTPUT"
+            echo "apk_path=Zuhtu_v${VERSION}_b${BUILD_NUM}.apk" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Setup Java 17
@@ -62,7 +63,7 @@ jobs:
             --target-platform android-arm,android-arm64 \
             --build-name="${{ steps.meta.outputs.version }}" \
             --build-number="${{ steps.meta.outputs.build_number }}"
-          cp build/app/outputs/flutter-apk/app-release.apk "Zuhtu_v${{ steps.meta.outputs.version }}.apk"
+          cp build/app/outputs/flutter-apk/app-release.apk "${{ steps.meta.outputs.apk_path }}"
 
       - name: Create or Update GitHub Release
         uses: softprops/action-gh-release@v2
@@ -75,4 +76,3 @@ jobs:
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-

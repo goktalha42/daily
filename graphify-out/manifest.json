@@ -1,8 +1,8 @@
 {
   "android/app/build.gradle.kts": {
-    "mtime": 1793973153.61081,
-    "seen": 1793994642.286179,
-    "ast_hash": "bfb78528bc8d8136f412a8f84efddefb",
+    "mtime": 1793998101.3799274,
+    "seen": 1793998270.9113097,
+    "ast_hash": "559f17c8350ca99e78ab44abb4461997",
     "semantic_hash": ""
   },
   "android/app/src/main/kotlin/com/dailygames/daily_games/MainActivity.kt": {
@@ -684,9 +684,9 @@
     "semantic_hash": ""
   },
   "pubspec.yaml": {
-    "mtime": 1793996128.3567753,
-    "seen": 1793996355.6105552,
-    "ast_hash": "2b1a35a925990580a359215128e5438f",
+    "mtime": 1793998102.884973,
+    "seen": 1793998270.911835,
+    "ast_hash": "6f0f012f29b7f42812b56bcef5942cfb",
     "semantic_hash": ""
   },
   "rozetler.md": {
@@ -930,9 +930,9 @@
     "semantic_hash": ""
   },
   "lib/core/services/update_service.dart": {
-    "mtime": 1793996167.188686,
-    "seen": 1793996355.6102436,
-    "ast_hash": "014a224850fe8dc61db3624fb92135f7",
+    "mtime": 1793998104.3791766,
+    "seen": 1793998270.9113712,
+    "ast_hash": "51fae2a83767d0cd4a84e57566725816",
     "semantic_hash": ""
   },
   "lib/core/services/user_nickname_provider.dart": {
@@ -948,8 +948,8 @@
     "semantic_hash": ""
   },
   "lib/core/widgets/update_prompt_dialog.dart": {
-    "mtime": 1793996170.7235992,
-    "seen": 1793996355.6102815,
+    "mtime": 1793997860.2225473,
+    "seen": 1793998270.9114623,
     "ast_hash": "ab4e8254d51cb7436e4235c858a1c51a",
     "semantic_hash": ""
   },
@@ -1236,15 +1236,15 @@
     "semantic_hash": ""
   },
   "test/update_service_test.dart": {
-    "mtime": 1793996183.873737,
-    "seen": 1793996355.610513,
+    "mtime": 1793997860.277087,
+    "seen": 1793998270.911774,
     "ast_hash": "bb309c25e3a6b65f7114deff66d1cf76",
     "semantic_hash": ""
   },
   "version.json": {
-    "mtime": 1793996203.5673473,
-    "seen": 1793996355.6105206,
-    "ast_hash": "013fc3557e931829d1ef15e59bc22830",
+    "mtime": 1793998130.1296248,
+    "seen": 1793998270.9117835,
+    "ast_hash": "ef4688cfd204191eab3db0ae8deaa835",
     "semantic_hash": ""
   },
   "VPS_KURULUMU_VE_DURUM.md": {
@@ -1320,15 +1320,15 @@
     "semantic_hash": ""
   },
   "publish_release.ps1": {
-    "mtime": 1793996308.3035438,
-    "seen": 1793996355.6103935,
-    "ast_hash": "aed8640f7267bf03b72c84169449641c",
+    "mtime": 1793998139.6270132,
+    "seen": 1793998270.9116147,
+    "ast_hash": "15cb147bd9c89356bed6a74d8089af5a",
     "semantic_hash": ""
   },
   ".github/workflows/release-apk.yml": {
-    "mtime": 1793996308.0651565,
-    "seen": 1793996355.6105373,
-    "ast_hash": "cc26743b2f0569f8bc3df95d74e88bed",
+    "mtime": 1793998132.417099,
+    "seen": 1793998270.9118109,
+    "ast_hash": "fc7a21595368c41f8901542687397f61",
     "semantic_hash": ""
   }
 }

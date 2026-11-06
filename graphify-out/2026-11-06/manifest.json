@@ -234,8 +234,8 @@
     "semantic_hash": ""
   },
   "lib/features/profile/profile_screen.dart": {
-    "mtime": 1793995261.354851,
-    "seen": 1793995280.7432244,
+    "mtime": 1793995381.3929985,
+    "seen": 1793996355.6103015,
     "ast_hash": "77b486ddeb4222e13a7b3d52b52db60b",
     "semantic_hash": ""
   },
@@ -684,9 +684,9 @@
     "semantic_hash": ""
   },
   "pubspec.yaml": {
-    "mtime": 1793995257.6113982,
-    "seen": 1793995280.7433732,
-    "ast_hash": "4d415f53d6b38174629715d59cf4ac65",
+    "mtime": 1793996128.3567753,
+    "seen": 1793996355.6105552,
+    "ast_hash": "2b1a35a925990580a359215128e5438f",
     "semantic_hash": ""
   },
   "rozetler.md": {
@@ -930,9 +930,9 @@
     "semantic_hash": ""
   },
   "lib/core/services/update_service.dart": {
-    "mtime": 1793995259.504588,
-    "seen": 1793995280.7431939,
-    "ast_hash": "9924999788493a263bcc39bb2b76e40d",
+    "mtime": 1793996167.188686,
+    "seen": 1793996355.6102436,
+    "ast_hash": "014a224850fe8dc61db3624fb92135f7",
     "semantic_hash": ""
   },
   "lib/core/services/user_nickname_provider.dart": {
@@ -948,9 +948,9 @@
     "semantic_hash": ""
   },
   "lib/core/widgets/update_prompt_dialog.dart": {
-    "mtime": 1793888008.7788765,
-    "seen": 1793994642.2862253,
-    "ast_hash": "594d1b508dd93f2eb0780f6828e519eb",
+    "mtime": 1793996170.7235992,
+    "seen": 1793996355.6102815,
+    "ast_hash": "ab4e8254d51cb7436e4235c858a1c51a",
     "semantic_hash": ""
   },
   "lib/features/leaderboard/widgets/completed_game_leaderboard_dialog.dart": {
@@ -1236,15 +1236,15 @@
     "semantic_hash": ""
   },
   "test/update_service_test.dart": {
-    "mtime": 1793995263.8091369,
-    "seen": 1793995280.743346,
-    "ast_hash": "1f32690a5fae654e66bb8e711910d64b",
+    "mtime": 1793996183.873737,
+    "seen": 1793996355.610513,
+    "ast_hash": "bb309c25e3a6b65f7114deff66d1cf76",
     "semantic_hash": ""
   },
   "version.json": {
-    "mtime": 1793995262.3969793,
-    "seen": 1793995280.7433507,
-    "ast_hash": "3eef297acdc565b8c3175c66d923b62f",
+    "mtime": 1793996203.5673473,
+    "seen": 1793996355.6105206,
+    "ast_hash": "013fc3557e931829d1ef15e59bc22830",
     "semantic_hash": ""
   },
   "VPS_KURULUMU_VE_DURUM.md": {
@@ -1317,6 +1317,18 @@
     "mtime": 1793995186.3325002,
     "seen": 1793995280.7433417,
     "ast_hash": "9a4773aa72a79f6ae37195b846ae3250",
+    "semantic_hash": ""
+  },
+  "publish_release.ps1": {
+    "mtime": 1793996308.3035438,
+    "seen": 1793996355.6103935,
+    "ast_hash": "aed8640f7267bf03b72c84169449641c",
+    "semantic_hash": ""
+  },
+  ".github/workflows/release-apk.yml": {
+    "mtime": 1793996308.0651565,
+    "seen": 1793996355.6105373,
+    "ast_hash": "cc26743b2f0569f8bc3df95d74e88bed",
     "semantic_hash": ""
   }
 }
