@@ -11,6 +11,7 @@ import '../../../core/widgets/sketch_badge_icons.dart';
 import '../../../core/widgets/sketch_countdown_timer.dart';
 import '../../../core/widgets/sketch_decorations.dart';
 import '../../../games/common/base_game.dart';
+import 'daily_genius_certificate_dialog.dart';
 
 /// Zühtü Arenası Ana Sayfa Canlı, Koreografili & %100 El Çizimi Beyin Gücü Hero Kartı.
 /// - Sıfır sabit/sahte veri: tüm değerler gerçek oyun kayıtlarından ve psikometrik IQ motorundan akar.
@@ -511,6 +512,55 @@ class _HomeBrainHeroCardState extends State<HomeBrainHeroCard>
                               ),
                             ),
                             const SizedBox(width: 6),
+                            if (todayCompleted == 6) ...[
+                              InkWell(
+                                onTap: () {
+                                  DailyGeniusCertificateDialog.show(
+                                    context,
+                                    dateId: widget.activeDateKey,
+                                    overallIQ: widget.userIQ,
+                                    statsMap: widget.statsMap,
+                                    dailyPlayState: widget.dailyPlayState,
+                                  );
+                                },
+                                borderRadius: BorderRadius.circular(8),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.sunYellow,
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(color: pencilColor, width: 1.4),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: pencilColor.withValues(alpha: 0.18),
+                                        offset: const Offset(1, 1),
+                                        blurRadius: 0,
+                                      ),
+                                    ],
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      SketchBadgeIcon(
+                                        type: BadgeArtType.centuryLaurel,
+                                        size: 13,
+                                        strokeColor: AppColors.inkBlack,
+                                      ),
+                                      const SizedBox(width: 3),
+                                      Text(
+                                        'Karne',
+                                        style: GoogleFonts.patrickHand(
+                                          fontSize: 11.5,
+                                          fontWeight: FontWeight.bold,
+                                          color: AppColors.inkBlack,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                            ],
                             SketchCard(
                               backgroundColor: _isExpanded
                                   ? AppColors.sunYellow

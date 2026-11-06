@@ -1,0 +1,514 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
+
+import '../../../core/models/badge_model.dart';
+import '../../../core/services/daily_play_service.dart';
+import '../../../core/services/game_stats_service.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/date_utils.dart';
+import '../../../core/widgets/sketch_badge_icons.dart';
+import '../../../core/widgets/sketch_decorations.dart';
+import '../../../games/common/base_game.dart';
+
+/// Günlük Zeka Defteri Özeti (Günün 6/6 Tamamlanış Sertifikası)
+/// 6 oyunun tamamı bittiğinde oyuncuya özel hazırlanan, paylaşılabilir skeç diploması.
+class DailyGeniusCertificateDialog extends StatelessWidget {
+  final String dateId;
+  final int overallIQ;
+  final Map<GameType, GamePerformanceData> statsMap;
+  final DailyPlayState dailyPlayState;
+  final List<DailyBadge> todayBadges;
+
+  const DailyGeniusCertificateDialog({
+    super.key,
+    required this.dateId,
+    required this.overallIQ,
+    required this.statsMap,
+    required this.dailyPlayState,
+    this.todayBadges = const [],
+  });
+
+  static Future<void> show(
+    BuildContext context, {
+    required String dateId,
+    required int overallIQ,
+    required Map<GameType, GamePerformanceData> statsMap,
+    required DailyPlayState dailyPlayState,
+    List<DailyBadge> todayBadges = const [],
+  }) async {
+    HapticFeedback.heavyImpact();
+    await showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (ctx) => DailyGeniusCertificateDialog(
+        dateId: dateId,
+        overallIQ: overallIQ,
+        statsMap: statsMap,
+        dailyPlayState: dailyPlayState,
+        todayBadges: todayBadges,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final pencilColor = isDark ? AppColors.pencilWhite : AppColors.pencilBlack;
+    final cardBg = isDark ? AppColors.cardBgDark : AppColors.surfaceLight;
+    final subtitleColor = isDark ? AppColors.pencilGraphiteDark : AppColors.pencilGraphite;
+
+    final completedGames = dailyPlayState.getCompletedGamesForDate(dateId);
+    int totalDayScore = 0;
+    int totalDayDurationMs = 0;
+    for (final r in completedGames.values) {
+      totalDayScore += r.score;
+      totalDayDurationMs += r.durationMs;
+    }
+
+    final activeMilestone =
+        IQMilestone.currentMilestone(overallIQ) ?? IQMilestone.all.first;
+    final formattedDate =
+        GameDateUtils.getFormattedDate(GameDateUtils.parseLevelId(dateId));
+
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      child: Center(
+        child: SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 420),
+            child: SketchCard(
+              backgroundColor: cardBg,
+              borderColor: pencilColor,
+              borderWidth: 2.8,
+              borderRadius: 22,
+              shadowOffset: const Offset(5, 5),
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // 1. Sertifika Üst Mührü & Başlık
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      SketchCard(
+                        padding: const EdgeInsets.all(8),
+                        borderRadius: 12,
+                        borderWidth: 2.0,
+                        shadowOffset: const Offset(2, 2),
+                        backgroundColor: AppColors.sunYellow,
+                        borderColor: pencilColor,
+                        child: SketchBadgeIcon(
+                          type: BadgeArtType.centuryLaurel,
+                          size: 26,
+                          strokeColor: pencilColor,
+                        ),
+                      ),
+                      Expanded(
+                        child: Column(
+                          children: [
+                            Text(
+                              'GÜNÜN DÂHİSİ SERTİFİKASI',
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.patrickHand(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: pencilColor,
+                                letterSpacing: 1.0,
+                              ),
+                            ),
+                            Text(
+                              '6 / 6 TAM GÜN DENGESİ',
+                              style: GoogleFonts.patrickHand(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.success,
+                                letterSpacing: 0.8,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      SketchCard(
+                        padding: const EdgeInsets.all(8),
+                        borderRadius: 12,
+                        borderWidth: 2.0,
+                        shadowOffset: const Offset(2, 2),
+                        backgroundColor: AppColors.highlighterPurple,
+                        borderColor: pencilColor,
+                        child: SketchBadgeIcon(
+                          type: activeMilestone.artType,
+                          size: 26,
+                          strokeColor: pencilColor,
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 12),
+                  Divider(
+                    color: pencilColor.withValues(alpha: 0.35),
+                    thickness: 1.5,
+                  ),
+                  const SizedBox(height: 8),
+
+                  // 2. Oyuncu Onur Metni & Tarih
+                  Text(
+                    '$formattedDate tarihindeki tüm zihinsel egzersizleri ve psikometrik bulmacaları başarıyla tamamlayarak zihinsel disiplinini kanıtladın.',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.patrickHand(
+                      fontSize: 15,
+                      color: subtitleColor,
+                      height: 1.25,
+                    ),
+                  ),
+
+                  const SizedBox(height: 14),
+
+                  // 3. Genel Performans Rozetleri (IQ, Puan, Toplam Süre)
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _CertificateMetricCard(
+                          label: 'Beyin Gücü',
+                          value: '$overallIQ IQ',
+                          subValue: activeMilestone.title,
+                          bgColor: AppColors.highlighterPurple,
+                          pencilColor: pencilColor,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _CertificateMetricCard(
+                          label: 'Günün Puanı',
+                          value: '$totalDayScore',
+                          subValue: '6 Bölüm Toplamı',
+                          bgColor: AppColors.sunYellow,
+                          pencilColor: pencilColor,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _CertificateMetricCard(
+                          label: 'Toplam Süre',
+                          value: GameDateUtils.formatGameTime(totalDayDurationMs),
+                          subValue: 'Odaklanma',
+                          bgColor: AppColors.skyBlue,
+                          pencilColor: pencilColor,
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // 4. 6 Oyunluk Karne Izgarası
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      '📋 Günün 6 Bilişsel Alan Karnesi:',
+                      style: GoogleFonts.patrickHand(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: pencilColor,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+
+                  Container(
+                    decoration: BoxDecoration(
+                      color: isDark ? AppColors.surfaceSecondaryDark : const Color(0xFFFBF9F3),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: pencilColor.withValues(alpha: 0.4), width: 1.5),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    child: Column(
+                      children: GameType.values.map((game) {
+                        final rec = completedGames[game];
+                        final score = rec?.score ?? 0;
+                        final duration = rec != null
+                            ? GameDateUtils.formatGameTime(rec.durationMs)
+                            : '--:--';
+                        final isDone = rec != null;
+
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 4),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 22,
+                                height: 22,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: isDone ? AppColors.success : Colors.grey.shade400,
+                                  border: Border.all(color: pencilColor, width: 1.2),
+                                ),
+                                child: Center(
+                                  child: Icon(
+                                    isDone ? Icons.check : Icons.lock_outline,
+                                    size: 13,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      game.title,
+                                      style: GoogleFonts.patrickHand(
+                                        fontSize: 14.5,
+                                        fontWeight: FontWeight.bold,
+                                        color: pencilColor,
+                                        height: 1.1,
+                                      ),
+                                    ),
+                                    Text(
+                                      game.cognitiveDomainLabel,
+                                      style: GoogleFonts.patrickHand(
+                                        fontSize: 11.5,
+                                        color: subtitleColor,
+                                        height: 1.0,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Text(
+                                '$score P',
+                                style: GoogleFonts.patrickHand(
+                                  fontSize: 14.5,
+                                  fontWeight: FontWeight.bold,
+                                  color: pencilColor,
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Text(
+                                duration,
+                                style: GoogleFonts.patrickHand(
+                                  fontSize: 13.5,
+                                  color: subtitleColor,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+
+                  // 5. Günün Açılan Rozetleri (Varsa)
+                  if (todayBadges.isNotEmpty) ...[
+                    const SizedBox(height: 14),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        '🎖️ Bugün Kazanılan Yeni Rozetler:',
+                        style: GoogleFonts.patrickHand(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: pencilColor,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 6,
+                      children: todayBadges.map((b) {
+                        return Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: b.color.withValues(alpha: 0.25),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: pencilColor, width: 1.4),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              SketchBadgeIcon(
+                                type: b.artType,
+                                size: 16,
+                                strokeColor: pencilColor,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                b.title,
+                                style: GoogleFonts.patrickHand(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                  color: pencilColor,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ],
+
+                  const SizedBox(height: 20),
+
+                  // 6. Eylem Butonları
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () {
+                              HapticFeedback.lightImpact();
+                              Navigator.pop(context);
+                            },
+                            borderRadius: BorderRadius.circular(12),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 11),
+                              decoration: BoxDecoration(
+                                color: isDark ? Colors.white10 : const Color(0xFFE2E8F0),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: pencilColor, width: 2.0),
+                              ),
+                              alignment: Alignment.center,
+                              child: Text(
+                                'Kapat',
+                                style: GoogleFonts.patrickHand(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: pencilColor,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () {
+                              HapticFeedback.mediumImpact();
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    '🎉 Günlük sertifikanız hazır! Ekran görüntüsü alarak paylaşabilirsiniz.',
+                                    style: GoogleFonts.patrickHand(fontSize: 15),
+                                  ),
+                                  behavior: SnackBarBehavior.floating,
+                                  duration: const Duration(seconds: 3),
+                                ),
+                              );
+                            },
+                            borderRadius: BorderRadius.circular(12),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 11),
+                              decoration: BoxDecoration(
+                                color: AppColors.sunYellow,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: pencilColor, width: 2.2),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: pencilColor.withValues(alpha: 0.18),
+                                    offset: const Offset(2.5, 2.5),
+                                    blurRadius: 0,
+                                  ),
+                                ],
+                              ),
+                              alignment: Alignment.center,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.share_rounded, size: 18, color: pencilColor),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    'Paylaş',
+                                    style: GoogleFonts.patrickHand(
+                                      fontSize: 16.5,
+                                      fontWeight: FontWeight.bold,
+                                      color: pencilColor,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CertificateMetricCard extends StatelessWidget {
+  final String label;
+  final String value;
+  final String subValue;
+  final Color bgColor;
+  final Color pencilColor;
+
+  const _CertificateMetricCard({
+    required this.label,
+    required this.value,
+    required this.subValue,
+    required this.bgColor,
+    required this.pencilColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
+      decoration: BoxDecoration(
+        color: bgColor.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: pencilColor, width: 1.8),
+      ),
+      child: Column(
+        children: [
+          Text(
+            label,
+            style: GoogleFonts.patrickHand(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: pencilColor.withValues(alpha: 0.8),
+              height: 1.0,
+            ),
+          ),
+          const SizedBox(height: 3),
+          Text(
+            value,
+            style: GoogleFonts.patrickHand(
+              fontSize: 17,
+              fontWeight: FontWeight.bold,
+              color: pencilColor,
+              height: 1.1,
+            ),
+          ),
+          Text(
+            subValue,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.patrickHand(
+              fontSize: 10.5,
+              color: pencilColor.withValues(alpha: 0.7),
+              height: 1.1,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

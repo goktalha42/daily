@@ -1530,13 +1530,19 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
           difficulty: _currentDifficulty.name,
           dateId: widget.levelId,
         );
-    ref.read(dailyPlayServiceProvider.notifier).recordCompletion(
+    final recordResult = await ref.read(dailyPlayServiceProvider.notifier).recordCompletion(
           game: GameType.queens,
           dateId: widget.levelId,
           score: score,
           durationMs: _elapsedMs,
           subKey: _currentDifficulty.name,
         );
+    final isPB = recordResult.isNewPersonalBestScore || recordResult.isNewPersonalBestTime;
+    final pbNote = recordResult.isNewPersonalBestScore && recordResult.isNewPersonalBestTime
+        ? 'Hem en yüksek puanını hem en iyi süreni geliştirdin!'
+        : (recordResult.isNewPersonalBestScore
+            ? 'Önceki en yüksek puanını aştın!'
+            : (recordResult.isNewPersonalBestTime ? 'En hızlı çözüm sürene ulaştın!' : null));
 
     ref.read(badgeServiceProvider.notifier).evaluateBadges(
           gameType: GameType.queens,
@@ -1560,6 +1566,8 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
       result: result,
       gameTitle: 'Vezirler',
       statsResult: statsResult,
+      isPersonalBest: isPB,
+      personalBestNote: pbNote,
       onRestart: () {
         Navigator.pop(context);
         Navigator.pop(context); // Lobiye dön (günlük oyun tek oynanır)

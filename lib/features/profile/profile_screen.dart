@@ -906,7 +906,7 @@ class _AppVersionUpdateCard extends StatefulWidget {
 
 class _AppVersionUpdateCardState extends State<_AppVersionUpdateCard> {
   bool _isChecking = false;
-  String _versionText = 'v1.1.0';
+  String _versionText = 'v1.1.1';
 
   @override
   void initState() {

@@ -18,6 +18,8 @@ class GeniusWinDialog extends StatefulWidget {
   final String gameTitle;
   final VoidCallback? onRestart;
   final GameStatsUpdateResult? statsResult;
+  final bool isPersonalBest;
+  final String? personalBestNote;
 
   const GeniusWinDialog({
     super.key,
@@ -25,6 +27,8 @@ class GeniusWinDialog extends StatefulWidget {
     required this.gameTitle,
     this.onRestart,
     this.statsResult,
+    this.isPersonalBest = false,
+    this.personalBestNote,
   });
 
   static Future<void> show(
@@ -33,8 +37,10 @@ class GeniusWinDialog extends StatefulWidget {
     required String gameTitle,
     VoidCallback? onRestart,
     GameStatsUpdateResult? statsResult,
+    bool isPersonalBest = false,
+    String? personalBestNote,
   }) async {
-    ScreenShake.shake(context, intensity: 14.0, duration: const Duration(milliseconds: 600));
+    ScreenShake.shake(context, intensity: isPersonalBest ? 18.0 : 14.0, duration: const Duration(milliseconds: 600));
     GeniusConfettiOverlay.explode(context);
 
     await showDialog(
@@ -45,6 +51,8 @@ class GeniusWinDialog extends StatefulWidget {
         gameTitle: gameTitle,
         onRestart: onRestart,
         statsResult: statsResult,
+        isPersonalBest: isPersonalBest,
+        personalBestNote: personalBestNote,
       ),
     );
   }
@@ -146,7 +154,55 @@ class _GeniusWinDialogState extends State<GeniusWinDialog> {
 
               const SizedBox(height: 6),
 
-              // Tekil Oyun Performansı Yüzdelik Vurgusu
+              // Tekil Oyun Performansı Yüzdelik Vurgusu veya Yeni Kişisel Zirve Kutlaması
+              if (widget.isPersonalBest) ...[
+                SketchCard(
+                  backgroundColor: isDark ? const Color(0xFFB45309) : AppColors.sunYellow,
+                  borderColor: isDark ? Colors.white70 : AppColors.pencilBlack,
+                  borderRadius: 12,
+                  borderWidth: 2.2,
+                  shadowOffset: const Offset(3, 3),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SketchBadgeIcon(
+                        type: BadgeArtType.royalCrown,
+                        size: 20,
+                        strokeColor: isDark ? Colors.white : AppColors.pencilBlack,
+                      ),
+                      const SizedBox(width: 8),
+                      Flexible(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'YENİ KİŞİSEL ZİRVE! 🏆',
+                              style: GoogleFonts.patrickHand(
+                                color: isDark ? Colors.white : AppColors.pencilBlack,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                                height: 1.1,
+                              ),
+                            ),
+                            if (widget.personalBestNote != null)
+                              Text(
+                                widget.personalBestNote!,
+                                style: GoogleFonts.patrickHand(
+                                  color: isDark ? Colors.white70 : AppColors.pencilBlack.withValues(alpha: 0.8),
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 13,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ).animate().shimmer(duration: 800.ms).scale(begin: const Offset(0.9, 0.9)),
+                const SizedBox(height: 8),
+              ],
+
               SketchCard(
                 backgroundColor: isDark ? const Color(0xFF9D174D) : AppColors.highlighterPink,
                 borderColor: isDark ? Colors.white38 : AppColors.pencilBlack,

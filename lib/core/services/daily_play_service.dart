@@ -125,6 +125,62 @@ class DailyPlayState {
     return completedGames.length;
   }
 
+  /// Verilen tarihte tamamlanan tüm oyunların özet kayıtlarını döner (Maksimum 6 oyun).
+  Map<GameType, DailyPlayRecord> getCompletedGamesForDate(String dateId) {
+    final result = <GameType, DailyPlayRecord>{};
+    for (final game in GameType.values) {
+      if (isCompleted(game, dateId)) {
+        final rec = getRecord(game, dateId);
+        if (rec != null) {
+          result[game] = rec;
+        }
+      }
+    }
+    return result;
+  }
+
+  /// Bir oyun/seviye için oyuncunun bu kayıttan önceki en yüksek skorunu döner.
+  int getPreviousBestScore(GameType game, {String? subKey}) {
+    int maxScore = 0;
+    for (final r in records.values) {
+      if (r.gameType == game) {
+        if (subKey != null && subKey.isNotEmpty) {
+          if (r.subKey == subKey && r.score > maxScore) {
+            maxScore = r.score;
+          }
+        } else {
+          if (r.score > maxScore) {
+            maxScore = r.score;
+          }
+        }
+      }
+    }
+    return maxScore;
+  }
+
+  /// Bir oyun/seviye için oyuncunun bu kayıttan önceki en iyi (en kısa) süresini döner (ms).
+  int getPreviousBestDurationMs(GameType game, {String? subKey}) {
+    int minDuration = 0;
+    for (final r in records.values) {
+      if (r.gameType == game) {
+        if (subKey != null && subKey.isNotEmpty) {
+          if (r.subKey == subKey && r.durationMs > 0) {
+            if (minDuration == 0 || r.durationMs < minDuration) {
+              minDuration = r.durationMs;
+            }
+          }
+        } else {
+          if (r.durationMs > 0) {
+            if (minDuration == 0 || r.durationMs < minDuration) {
+              minDuration = r.durationMs;
+            }
+          }
+        }
+      }
+    }
+    return minDuration;
+  }
+
   /// Belirli bir oyunun toplam kaç farklı günde oynandığını (oyun sayısını) döner.
   int getDistinctPlayedDatesCount(GameType game) {
     final dates = <String>{};
@@ -259,13 +315,21 @@ class DailyPlayNotifier extends StateNotifier<DailyPlayState> {
     } catch (_) {}
   }
 
-  Future<void> recordCompletion({
+  /// Tamamlama kaydını işler ve oyuncunun önceki rekorlarını kırıp kırmadığını döner.
+  Future<({bool isNewPersonalBestScore, bool isNewPersonalBestTime, bool isFirstCompletion})> recordCompletion({
     required GameType game,
     required String dateId,
     required int score,
     required int durationMs,
     String? subKey,
   }) async {
+    final prevBestScore = state.getPreviousBestScore(game, subKey: subKey);
+    final prevBestTime = state.getPreviousBestDurationMs(game, subKey: subKey);
+    final isFirst = prevBestScore == 0 && prevBestTime == 0;
+
+    final isNewScore = !isFirst && score > prevBestScore;
+    final isNewTime = !isFirst && durationMs > 0 && (prevBestTime == 0 || durationMs < prevBestTime);
+
     final record = DailyPlayRecord(
       gameType: game,
       dateId: dateId,
@@ -291,6 +355,12 @@ class DailyPlayNotifier extends StateNotifier<DailyPlayState> {
       final mapToSave = updated.map((k, v) => MapEntry(k, v.toJson()));
       await prefs.setString(_prefKey, jsonEncode(mapToSave));
     } catch (_) {}
+
+    return (
+      isNewPersonalBestScore: isNewScore,
+      isNewPersonalBestTime: isNewTime,
+      isFirstCompletion: isFirst,
+    );
   }
 }
 

@@ -35,6 +35,21 @@ class GameDateUtils {
     return DateFormat('yyyy-MM-dd').format(active);
   }
 
+  /// Parses level ID (yyyy-MM-dd) to DateTime
+  static DateTime parseLevelId(String levelId) {
+    try {
+      final parts = levelId.split('-');
+      if (parts.length >= 3) {
+        return DateTime(
+          int.parse(parts[0]),
+          int.parse(parts[1]),
+          int.parse(parts[2]),
+        );
+      }
+    } catch (_) {}
+    return getActiveDate();
+  }
+
   /// Formats date for display in Turkish, e.g. "20 Ağustos 2026"
   static String getFormattedDate(DateTime date) {
     final months = [

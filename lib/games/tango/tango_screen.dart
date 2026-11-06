@@ -486,12 +486,19 @@ class _TangoScreenState extends ConsumerState<TangoScreen> with WidgetsBindingOb
           moveCount: _moveCount,
           dateId: widget.levelId,
         );
-    ref.read(dailyPlayServiceProvider.notifier).recordCompletion(
+    final recordResult = await ref.read(dailyPlayServiceProvider.notifier).recordCompletion(
           game: GameType.tango,
           dateId: widget.levelId,
           score: score,
           durationMs: _elapsedMs,
         );
+    final isPB = recordResult.isNewPersonalBestScore || recordResult.isNewPersonalBestTime;
+    final pbNote = recordResult.isNewPersonalBestScore && recordResult.isNewPersonalBestTime
+        ? 'Hem en yüksek puanını hem en iyi süreni geliştirdin!'
+        : (recordResult.isNewPersonalBestScore
+            ? 'Önceki en yüksek puanını aştın!'
+            : (recordResult.isNewPersonalBestTime ? 'En hızlı çözüm sürene ulaştın!' : null));
+
     ref.read(badgeServiceProvider.notifier).evaluateBadges(
           gameType: GameType.tango,
           score: score,
@@ -507,6 +514,8 @@ class _TangoScreenState extends ConsumerState<TangoScreen> with WidgetsBindingOb
       result: result,
       gameTitle: 'Güneş & Ay',
       statsResult: statsResult,
+      isPersonalBest: isPB,
+      personalBestNote: pbNote,
       onRestart: () {
         Navigator.pop(context);
         GameSessionService.clearSession(game: GameType.tango, levelId: widget.levelId);
