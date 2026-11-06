@@ -1,9 +1,9 @@
 {
   "version": "1.1.0",
-  "build_number": 6,
+  "build_number": 7,
   "title": "Zühtü v1.1.0 Güncellemesi",
-  "changelog": "• Vezirler oyununda günlük tek oyun sayımı (6/6 tam gün dengesi) ve geçmiş istatistik düzeltmesi eklendi.\n• 27 rozet ve 6 IQ mertebesinin tamamı çakışmasız, %100 el çizimi kara kalem madalyon tasarımlarına kavuştu.\n• Rozetler, Profil, Ana Sayfa ve Zafer ekranları arasında tam sembol tutarlılığı sağlandı.",
-  "apk_url": "https://github.com/goktalha42/daily/releases/download/v1.1.0/Zuhtu_v1.1.0.apk",
+  "changelog": "• Vezirler oyununda günlük tek oyun sayımı (6/6 tam gün dengesi) ve geçmiş istatistik düzeltmesi eklendi.\n• 27 rozet ve 6 IQ mertebesinin tamamı çakışmasız, %100 el çizimi kara kalem madalyon tasarımlarına kavuştu.\n• Rozetler, Profil, Ana Sayfa ve Zafer ekranları arasında tam sembol tutarlılığı sağlandı.\n• Tam otomatik uygulama içi (OTA) güncelleme doğrulaması ve anlık sunucu senkronizasyonu eklendi.",
+  "apk_url": "https://raw.githubusercontent.com/goktalha42/daily/main/releases/Zuhtu_v1.1.0.apk",
   "release_url": "https://github.com/goktalha42/daily/releases/tag/v1.1.0",
   "force_update": false
 }

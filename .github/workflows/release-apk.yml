@@ -1,0 +1,78 @@
+name: Publish Zühtü Android Release (OTA)
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'version.json'
+      - 'releases/*.apk'
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Read version metadata from version.json
+        id: meta
+        run: |
+          VERSION=$(jq -r '.version' version.json)
+          BUILD_NUM=$(jq -r '.build_number' version.json)
+          TITLE=$(jq -r '.title' version.json)
+          jq -r '.changelog' version.json > release_notes.md
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "build_number=$BUILD_NUM" >> "$GITHUB_OUTPUT"
+          echo "title=$TITLE" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+          if [ -f "releases/Zuhtu_v${VERSION}.apk" ]; then
+            echo "prebuilt=true" >> "$GITHUB_OUTPUT"
+            echo "apk_path=releases/Zuhtu_v${VERSION}.apk" >> "$GITHUB_OUTPUT"
+          else
+            echo "prebuilt=false" >> "$GITHUB_OUTPUT"
+            echo "apk_path=Zuhtu_v${VERSION}.apk" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Setup Java 17
+        if: steps.meta.outputs.prebuilt != 'true'
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Flutter
+        if: steps.meta.outputs.prebuilt != 'true'
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Build Signed Release APK (if not prebuilt in releases/)
+        if: steps.meta.outputs.prebuilt != 'true'
+        run: |
+          flutter pub get
+          flutter build apk --release \
+            --target-platform android-arm,android-arm64 \
+            --build-name="${{ steps.meta.outputs.version }}" \
+            --build-number="${{ steps.meta.outputs.build_number }}"
+          cp build/app/outputs/flutter-apk/app-release.apk "Zuhtu_v${{ steps.meta.outputs.version }}.apk"
+
+      - name: Create or Update GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.meta.outputs.tag }}
+          name: ${{ steps.meta.outputs.title }}
+          body_path: release_notes.md
+          files: ${{ steps.meta.outputs.apk_path }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+

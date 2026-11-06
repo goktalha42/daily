@@ -66,6 +66,15 @@ class AppUpdateInfo {
   }
 }
 
+/// OTA İndirme Ön-Kontrol Hatası
+class UpdateDownloadException implements Exception {
+  final String message;
+  const UpdateDownloadException(this.message);
+
+  @override
+  String toString() => message;
+}
+
 /// Otomatik Güncelleme Servisi (GitHub & VPS Destekli)
 class UpdateService {
   UpdateService._();
@@ -73,9 +82,13 @@ class UpdateService {
 
   /// Yedek sürüm sabitleri (PackageInfo çağrılamazsa fallback)
   static const String fallbackVersion = '1.1.0';
-  static const int fallbackBuildNumber = 6;
+  static const int fallbackBuildNumber = 7;
 
-  /// GitHub raw güncelleme URL'i (Genel açık repo)
+  /// GitHub API üzerinden sıfır önbellekli (anlık) version.json URL'i
+  static const String githubApiVersionUrl =
+      'https://api.github.com/repos/goktalha42/daily/contents/version.json?ref=main';
+
+  /// GitHub raw güncelleme URL'i (Genel açık repo - CDN yedek)
   static const String githubVersionUrl =
       'https://raw.githubusercontent.com/goktalha42/daily/main/version.json';
 
@@ -148,57 +161,153 @@ class UpdateService {
   Future<AppUpdateInfo?> checkForUpdate({
     http.Client? httpClient,
   }) async {
+    final ownsClient = httpClient == null;
     final client = httpClient ?? http.Client();
     final installed = await getInstalledVersion();
-
-    // 1. Önce GitHub raw version.json üzerinden dene (önbellek engellemek için timestamp parametresi)
     final cacheBuster = DateTime.now().millisecondsSinceEpoch;
-    final githubUri = Uri.parse('$githubVersionUrl?t=$cacheBuster');
 
     try {
-      final response = await client
-          .get(githubUri)
-          .timeout(const Duration(seconds: 5));
+      // 1. Öncelik: GitHub Contents API (CDN önbelleği olmadan anlık yanıt verir)
+      try {
+        final apiUri = Uri.parse('$githubApiVersionUrl&t=$cacheBuster');
+        final apiResponse = await client.get(
+          apiUri,
+          headers: const {
+            'Accept': 'application/vnd.github.raw+json',
+            'Cache-Control': 'no-cache',
+          },
+        ).timeout(const Duration(seconds: 5));
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
-        return AppUpdateInfo.fromJson(
-          json: data,
-          currentVersion: installed.version,
-          currentBuildNumber: installed.buildNumber,
-        );
+        if (apiResponse.statusCode == 200) {
+          final data = jsonDecode(utf8.decode(apiResponse.bodyBytes)) as Map<String, dynamic>;
+          return AppUpdateInfo.fromJson(
+            json: data,
+            currentVersion: installed.version,
+            currentBuildNumber: installed.buildNumber,
+          );
+        }
+      } catch (e) {
+        debugPrint('[UpdateService] GitHub API üzerinden güncelleme sorgulanamadı: $e');
       }
-    } catch (e) {
-      debugPrint('[UpdateService] GitHub üzerinden güncelleme sorgulanamadı: $e');
+
+      // 2. Yedek: GitHub Raw CDN üzerinden dene
+      try {
+        final githubUri = Uri.parse('$githubVersionUrl?t=$cacheBuster');
+        final response = await client
+            .get(githubUri, headers: const {'Cache-Control': 'no-cache'})
+            .timeout(const Duration(seconds: 5));
+
+        if (response.statusCode == 200) {
+          final data = jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
+          return AppUpdateInfo.fromJson(
+            json: data,
+            currentVersion: installed.version,
+            currentBuildNumber: installed.buildNumber,
+          );
+        }
+      } catch (e) {
+        debugPrint('[UpdateService] GitHub Raw üzerinden güncelleme sorgulanamadı: $e');
+      }
+
+      // 3. Yedek: VPS sunucu uç noktasını dene
+      try {
+        final vpsUri = Uri.parse('$vpsVersionUrl?t=$cacheBuster');
+        final response = await client
+            .get(vpsUri)
+            .timeout(const Duration(seconds: 4));
+
+        if (response.statusCode == 200) {
+          final data = jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
+          return AppUpdateInfo.fromJson(
+            json: data,
+            currentVersion: installed.version,
+            currentBuildNumber: installed.buildNumber,
+          );
+        }
+      } catch (e) {
+        debugPrint('[UpdateService] VPS yedek güncelleme kontrolü de başarısız: $e');
+      }
+
+      return null;
+    } finally {
+      if (ownsClient) {
+        client.close();
+      }
+    }
+  }
+
+  /// İndirme başlamadan önce APK bağlantısının gerçekten erişilebilir bir ikili paket
+  /// sunduğunu doğrular (404 HTML sayfasının APK sanılıp "Paketin ayrıştırılmasında sorun oluştu"
+  /// hatası vermesini kesin olarak engeller).
+  Future<void> verifyApkAvailable(
+    String apkUrl, {
+    http.Client? httpClient,
+  }) async {
+    final trimmed = apkUrl.trim();
+    if (trimmed.isEmpty) {
+      throw const UpdateDownloadException('Güncelleme indirme bağlantısı bulunamadı.');
     }
 
-    // 2. GitHub ulaşılamazsa VPS yedek endpointini dene
+    final uri = Uri.tryParse(trimmed);
+    if (uri == null || (!uri.isScheme('https') && !uri.isScheme('http'))) {
+      throw const UpdateDownloadException('Geçersiz güncelleme bağlantısı.');
+    }
+
+    final ownsClient = httpClient == null;
+    final client = httpClient ?? http.Client();
     try {
-      final vpsUri = Uri.parse('$vpsVersionUrl?t=$cacheBuster');
-      final response = await client
-          .get(vpsUri)
-          .timeout(const Duration(seconds: 4));
+      http.BaseResponse response = await client
+          .head(uri)
+          .timeout(const Duration(seconds: 8));
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
-        return AppUpdateInfo.fromJson(
-          json: data,
-          currentVersion: installed.version,
-          currentBuildNumber: installed.buildNumber,
+      // Bazı sunucular/CDN'ler HEAD isteğine 403/405 dönebilir; ilk 4 baytlık Range GET ile kontrol et
+      if (response.statusCode == 405 || response.statusCode == 403) {
+        final rangeReq = http.Request('GET', uri)..headers['Range'] = 'bytes=0-3';
+        response = await client.send(rangeReq).timeout(const Duration(seconds: 8));
+      }
+
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        throw UpdateDownloadException(
+          'Güncelleme paketi sunucuda henüz hazır değil (HTTP ${response.statusCode}). '
+          'Lütfen 1-2 dakika sonra tekrar deneyin.',
         );
       }
-    } catch (e) {
-      debugPrint('[UpdateService] VPS yedek güncelleme kontrolü de başarısız: $e');
-    }
 
-    return null;
+      final contentType = (response.headers['content-type'] ?? '').toLowerCase();
+      if (contentType.contains('text/html')) {
+        throw const UpdateDownloadException(
+          'Sunucu geçerli bir APK yerine web sayfası döndürdü. Lütfen 1-2 dakika sonra tekrar deneyin.',
+        );
+      }
+    } on UpdateDownloadException {
+      rethrow;
+    } catch (e) {
+      throw UpdateDownloadException(
+        'Güncelleme sunucusuna bağlanılamadı. İnternet bağlantınızı kontrol edip tekrar deneyin.',
+      );
+    } finally {
+      if (ownsClient) {
+        client.close();
+      }
+    }
   }
 
   /// OTA Güncelleme indirme ve yükleme akışını başlatır
-  Stream<OtaEvent> startOtaUpdate(String apkUrl) {
-    return OtaUpdate().execute(
+  Stream<OtaEvent> startOtaUpdate(
+    String apkUrl, {
+    String? version,
+    http.Client? httpClient,
+  }) async* {
+    await verifyApkAvailable(apkUrl, httpClient: httpClient);
+
+    final cleanVersion = (version ?? '')
+        .replaceAll(RegExp(r'[^0-9A-Za-z._-]'), '')
+        .trim();
+    final filename = cleanVersion.isNotEmpty ? 'Zuhtu_v$cleanVersion.apk' : 'Zuhtu.apk';
+
+    yield* OtaUpdate().execute(
       apkUrl,
-      destinationFilename: 'Zuhtu.apk',
+      destinationFilename: filename,
     );
   }
 }

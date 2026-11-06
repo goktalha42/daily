@@ -60,7 +60,10 @@ class _UpdatePromptDialogState extends State<UpdatePromptDialog> {
     try {
       _otaSubscription?.cancel();
       _otaSubscription = UpdateService.instance
-          .startOtaUpdate(widget.updateInfo.apkUrl)
+          .startOtaUpdate(
+            widget.updateInfo.apkUrl,
+            version: widget.updateInfo.remoteVersion,
+          )
           .listen(
         (OtaEvent event) {
           if (!mounted) return;
@@ -112,7 +115,9 @@ class _UpdatePromptDialogState extends State<UpdatePromptDialog> {
           if (!mounted) return;
           setState(() {
             _status = _UpdateStatus.error;
-            _errorMessage = 'Bağlantı hatası: $error';
+            _errorMessage = error is UpdateDownloadException
+                ? error.message
+                : 'Bağlantı hatası: $error';
           });
         },
       );

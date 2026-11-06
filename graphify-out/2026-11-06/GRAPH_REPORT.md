@@ -1,12 +1,12 @@
 # Graph Report - daily  (2026-11-06)
 
 ## Corpus Check
-- 175 files · ~140,491 words
+- 175 files · ~140,504 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 73 file(s) not represented in the graph (top: (none) 24, .xml 9, .xcconfig 8)
 
 ## Summary
-- 2330 nodes · 3308 edges · 134 communities (95 shown, 39 thin omitted)
+- 2333 nodes · 3310 edges · 145 communities (102 shown, 43 thin omitted)
 - Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 73 edges (avg confidence: 0.78)
 - Token cost: 0 input · 0 output
 
@@ -51,7 +51,7 @@
 - Ilerleme & Pubspec
 - List
 - Crossclimb Levels & Pinpoint Levels
-- Game Card Logos Module
+- queens_lobby_screen.dart
 - Win32 Window Module
 - App Button & App Theme
 - queens_counting_and_badges_test.dart
@@ -76,10 +76,11 @@
 - zip_logic.dart
 - Neo Game Layout Module
 - Patches Generator Module
-- Player
+- Illuminate\Http\Request
+- theme_service.dart
 - Crossclimb Models Module
 - Manifest Module
-- package:flutter_riverpod/flutter_riverpod.dart
+- ../../games/common/base_game.dart
 - Tango Logic Module
 - Crossclimb Logic Module
 - Puzzle Seed Module
@@ -93,7 +94,7 @@
 - badges_screen.dart
 - Pinpoint Logic Module
 - update_service.dart
-- queens_lobby_screen.dart
+- leaderboardServiceProvider
 - api_client.dart
 - Pinpoint Test Module
 - Win32 Window Module
@@ -113,20 +114,30 @@
 - scripts
 - require-dev
 - README.md
+- ProfileScreen
 - config
 - dart:convert
 - AppServiceProvider
-- main.dart
-- queens_board_painter.dart
+- package:flutter/material.dart
+- GameController.php
 - psr-4
-- queens_logic.dart
+- GameScore
 - ExampleTest
 - Laravel Application
 - Laravel Application
 - autoload-dev
 - extra
+- ConsumerState
 - nickname_prompt_dialog.dart
+- ../../core/utils/date_utils.dart
+- sketch_countdown_timer.dart
+- bootstrap/app.php
 - crossclimb_test.dart
+- 🚀 Daily Games (Zühtü) - Devir Teslim & VPS Geçiş Kılavuzu
+- Illuminate\Database\Seeder
+- Player
+- online_guard_widget.dart
+- _launchGame
 
 ## God Nodes (most connected - your core abstractions)
 1. `Kara Kalem Eskiz Defteri Design Language` - 37 edges
@@ -159,7 +170,7 @@
 - **The 6 Daily Puzzle Games** — readme_game_queens, readme_game_tango, readme_game_zip, readme_game_pinpoint, readme_game_crossclimb, readme_game_patches [EXTRACTED 1.00]
 - **Zühtü Gamification & Motivation Architecture** — ilerleme_league_system, ilerleme_iq_index_system, ilerleme_steam_badge_system, rozetler_championship_belts, rozetler_streak_badges [INFERRED 0.95]
 
-## Communities (134 total, 39 thin omitted)
+## Communities (145 total, 43 thin omitted)
 
 ### Community 0 - "Color Theme & Palette Tokens"
 Cohesion: 0.02
@@ -179,7 +190,7 @@ Nodes (24): allBadges, artType, BadgeCategory, badgeId, _buildStreakBadges, cate
 
 ### Community 4 - "Weekly League & Bot Engine"
 Cohesion: 0.04
-Nodes (49): _allBotNames, apiClient, _buildLeaguePlayers, _calculateUserWeeklyScore, checkWeekTransition, clearPendingLeagueChange, copyWith, currentLevel (+41 more)
+Nodes (47): _allBotNames, apiClient, _buildLeaguePlayers, _calculateUserWeeklyScore, checkWeekTransition, clearPendingLeagueChange, copyWith, currentLevel (+39 more)
 
 ### Community 5 - "Patches Screen & Grid Division"
 Cohesion: 0.05
@@ -211,7 +222,7 @@ Nodes (33): build, _buildRuleCard, cellSize, _checkState, createState, didChange
 
 ### Community 13 - "Game Stats & IQ Milestone Service"
 Cohesion: 0.04
-Nodes (52): all, artType, bestDurationMs, bestScore, betterThanPercent, copyWith, _createInitialState, credibility (+44 more)
+Nodes (54): all, artType, bestDurationMs, bestScore, betterThanPercent, copyWith, _createInitialState, credibility (+46 more)
 
 ### Community 14 - "Home Screen Hub & Nav Providers"
 Cohesion: 0.06
@@ -247,7 +258,7 @@ Nodes (13): main(), first_frame_cb(), my_application_activate(), my_application_
 
 ### Community 22 - "home_brain_hero_card.dart"
 Cohesion: 0.04
-Nodes (46): activeDateKey, ambientAnimation, _ambientController, build, _buildWobblyBarPath, _buildWobblyCircle, createState, currentStreak (+38 more)
+Nodes (44): activeDateKey, ambientAnimation, _ambientController, build, _buildWobblyBarPath, _buildWobblyCircle, createState, currentStreak (+36 more)
 
 ### Community 23 - "sketch_badge_icons.dart"
 Cohesion: 0.04
@@ -262,8 +273,8 @@ Cohesion: 0.07
 Nodes (29): SketchBadgeIcon, SketchBadgeMedallion, SketchDoodleLock, SketchCard, SketchCircularDoodle, SketchDoodleBrain, SketchDoodleCrown, SketchDoodleFlame (+21 more)
 
 ### Community 26 - "Home Screen & Zip Screen"
-Cohesion: 0.07
-Nodes (27): _DoodleLockPainter, _SketchBadgeArtPainter, _WobblyBadgeMedallionPainter, _DoodleBrainPainter, _DoodleCrownPainter, _DoodleFlamePainter, _DoodleTrophyPainter, _SketchNotebookPainter (+19 more)
+Cohesion: 0.05
+Nodes (44): animate, build, _drawDoodlePuffCloud, _drawDoodleQuestion, _drawFreehandSparkle, GameBackgroundLogo, gameType, _getPainter (+36 more)
 
 ### Community 27 - "Leaderboard Service Test &"
 Cohesion: 0.17
@@ -278,8 +289,8 @@ Cohesion: 0.15
 Nodes (4): main, _dateId, main, main
 
 ### Community 30 - "genius_win_dialog.dart"
-Cohesion: 0.06
-Nodes (26): GameStatsUpdateResult, badgeColor, build, _buildAnimatedIQMilestoneCard, createState, fillColor, gameTitle, icon (+18 more)
+Cohesion: 0.07
+Nodes (23): GameStatsUpdateResult, badgeColor, build, _buildAnimatedIQMilestoneCard, createState, fillColor, gameTitle, icon (+15 more)
 
 ### Community 31 - "Win32 Window & Flutter Window"
 Cohesion: 0.11
@@ -297,16 +308,16 @@ Nodes (6): alternativeAnswers, categoryHint, clues, id, PinpointLevel, targetWor
 Cohesion: 0.12
 Nodes (11): _cache, CrossclimbLevelRepository, getDaily, getLevelForDate, _presets, _cache, getDaily, getLevelForDate (+3 more)
 
-### Community 35 - "Game Card Logos Module"
+### Community 35 - "queens_lobby_screen.dart"
 Cohesion: 0.11
-Nodes (17): animate, build, _drawDoodlePuffCloud, _drawDoodleQuestion, _drawFreehandSparkle, GameBackgroundLogo, gameType, _getPainter (+9 more)
+Nodes (14): _activeLeaderboardTab, _buildDifficultyCard, _buildDifficultyLogo, _buildRuleItem, createState, _getDiffColor, _getGridSize, initState (+6 more)
 
 ### Community 36 - "Win32 Window Module"
 Cohesion: 0.13
 Nodes (8): Scale(), Size, height, width, Win32Window::Win32Window(), WindowClassRegistrar, class_registered_, instance_
 
 ### Community 37 - "App Button & App Theme"
-Cohesion: 0.20
+Cohesion: 0.18
 Nodes (9): AppTextStyles, bodyLarge, bodyMedium, displayLarge, headlineLarge, headlineMedium, labelLarge, titleLarge (+1 more)
 
 ### Community 39 - "Profile Screen Module"
@@ -314,8 +325,8 @@ Cohesion: 0.09
 Nodes (15): _checkUpdate, createState, fillColor, icon, initState, _isChecking, isSelected, _loadVersion (+7 more)
 
 ### Community 40 - "Leaderboard Screen Module"
-Cohesion: 0.08
-Nodes (24): build, _buildEntryCard, _buildQueensDifficultyChip, _buildSeparator, createState, crownWidget, entry, fillColor (+16 more)
+Cohesion: 0.11
+Nodes (19): build, _buildEntryCard, _buildQueensDifficultyChip, _buildSeparator, createState, crownWidget, entry, fillColor (+11 more)
 
 ### Community 41 - "Patches Models & Patches Logic"
 Cohesion: 0.12
@@ -326,16 +337,16 @@ Cohesion: 0.12
 Nodes (10): awardBadge, evaluateBadges, _findDef, isUnlocked, _loadBadges, _prefKey, remainingDays, revokeBadge (+2 more)
 
 ### Community 43 - "app_button.dart"
-Cohesion: 0.17
-Nodes (10): AppButton, _AppButtonState, build, createState, icon, isFullWidth, _isPressed, isPrimary (+2 more)
+Cohesion: 0.12
+Nodes (11): AppTheme, AppButton, _AppButtonState, build, createState, icon, isFullWidth, _isPressed (+3 more)
 
 ### Community 44 - "Crossclimb Generator & Pinpoint Generator"
 Cohesion: 0.15
 Nodes (10): _, CrossclimbGenerator, _epoch, generate, pool, _, _epoch, generate (+2 more)
 
 ### Community 45 - "App Card Module"
-Cohesion: 0.11
-Nodes (13): AppTheme, backgroundColor, borderColor, build, child, createState, _handleTapCancel, _handleTapDown (+5 more)
+Cohesion: 0.13
+Nodes (14): AppCard, _AppCardState, backgroundColor, borderColor, build, child, createState, _handleTapCancel (+6 more)
 
 ### Community 47 - "leaderboard_service.dart"
 Cohesion: 0.06
@@ -350,8 +361,8 @@ Cohesion: 0.14
 Nodes (11): _cache, _epoch, getDaily, getDifficultyForDate, getDifficultyForDays, getLevelForDate, getLevelForDateAndDifficulty, PatchesDifficultyScheduler (+3 more)
 
 ### Community 50 - "_"
-Cohesion: 0.14
-Nodes (13): _, canonical, fingerprint, generate, _growRegions, _growRegionsFromPairs, maxAttempts, _pairQueens (+5 more)
+Cohesion: 0.05
+Nodes (33): _drawHandDrawnOuterFrame, _drawOrganicLine, grid, gridSize, isDark, paint, palette, QueensBoardPainter (+25 more)
 
 ### Community 51 - "Main & Utils"
 Cohesion: 0.19
@@ -378,16 +389,16 @@ Cohesion: 0.40
 Nodes (3): countSolutions, validatePath, ZipLogic
 
 ### Community 58 - "Neo Game Layout Module"
-Cohesion: 0.10
-Nodes (9): child, build, child, gameType, levelId, NeoGameLayout, onRestart, statsBar (+1 more)
+Cohesion: 0.18
+Nodes (7): build, child, gameType, levelId, NeoGameLayout, onRestart, statsBar
 
 ### Community 60 - "Patches Generator Module"
 Cohesion: 0.18
 Nodes (9): _, area, generate, _generateTiling, h, maxAttempts, PatchesGenerator, _RectDim (+1 more)
 
-### Community 61 - "Player"
-Cohesion: 0.06
-Nodes (20): AuthController, GameController, LeaderboardController, Controller, GameScore, {closure#1}(), Player, {closure#1}() (+12 more)
+### Community 62 - "theme_service.dart"
+Cohesion: 0.13
+Nodes (10): ApiClient, currentMode, _loadFromPrefs, _prefKey, setThemeMode, toggleTheme, apiClient, _loadInitialNickname (+2 more)
 
 ### Community 63 - "Crossclimb Models Module"
 Cohesion: 0.18
@@ -397,9 +408,9 @@ Nodes (10): changedIndex, clue, CrossclimbLevel, CrossclimbStep, endWord, id, in
 Cohesion: 0.18
 Nodes (10): background_color, description, display, icons, name, orientation, prefer_related_applications, short_name (+2 more)
 
-### Community 65 - "package:flutter_riverpod/flutter_riverpod.dart"
-Cohesion: 0.09
-Nodes (14): clearSession, GameSessionService, gameSessionServiceProvider, loadSession, _makeKey, _prefix, saveSession, updateElapsedMs (+6 more)
+### Community 65 - "../../games/common/base_game.dart"
+Cohesion: 0.20
+Nodes (8): clearSession, GameSessionService, gameSessionServiceProvider, loadSession, _makeKey, _prefix, saveSession, updateElapsedMs
 
 ### Community 66 - "Tango Logic Module"
 Cohesion: 0.20
@@ -414,8 +425,8 @@ Cohesion: 0.22
 Nodes (7): _, derive, devSecret, fingerprint, PuzzleSeed, random, toInt
 
 ### Community 69 - "Daily Play Service &"
-Cohesion: 0.29
-Nodes (5): NetworkCheckerNotifier, BadgeNotifier, GameStatsNotifier, ThemeNotifier, UserNicknameNotifier
+Cohesion: 0.22
+Nodes (7): NetworkCheckerNotifier, BadgeNotifier, GameStatsNotifier, LeagueNotifier, LeagueState, ThemeNotifier, UserNicknameNotifier
 
 ### Community 70 - "Puzzle Repository & Zip Levels"
 Cohesion: 0.22
@@ -449,9 +460,9 @@ Nodes (6): _, calculateScore, isCorrectGuess, normalize, PinpointLogic, validate
 Cohesion: 0.07
 Nodes (25): apkUrl, AppUpdateInfo, changelog, checkForUpdate, compareSemver, currentBuildNumber, currentVersion, _dismissedBuildNumberInSession (+17 more)
 
-### Community 79 - "queens_lobby_screen.dart"
-Cohesion: 0.06
-Nodes (63): networkCheckerProvider, badgeServiceProvider, dailyPlayServiceProvider, gameStatsServiceProvider, themeServiceProvider, build, OnlineGuardWidget, build (+55 more)
+### Community 79 - "leaderboardServiceProvider"
+Cohesion: 0.19
+Nodes (26): badgeServiceProvider, dailyPlayServiceProvider, gameStatsServiceProvider, leaderboardServiceProvider, build, CrossclimbScreen, _CrossclimbScreenState, _handleWin (+18 more)
 
 ### Community 80 - "api_client.dart"
 Cohesion: 0.07
@@ -486,8 +497,8 @@ Cohesion: 0.20
 Nodes (5): _connectivity, dispose, _init, _subscription, _updateState
 
 ### Community 105 - "State"
-Cohesion: 0.19
-Nodes (12): AppCard, _AppCardState, GeniusWinDialog, _GeniusWinDialogState, GeniusConfettiOverlay, _GeniusConfettiOverlayState, ScreenShake, ScreenShakeState (+4 more)
+Cohesion: 0.17
+Nodes (12): GeniusWinDialog, _GeniusWinDialogState, GeniusConfettiOverlay, _GeniusConfettiOverlayState, ScreenShake, ScreenShakeState, _GeniusGameButton, _GeniusGameButtonState (+4 more)
 
 ### Community 106 - "composer.json"
 Cohesion: 0.22
@@ -505,21 +516,25 @@ Nodes (8): require-dev, fakerphp/faker, laravel/pail, laravel/pao, laravel/pint,
 Cohesion: 0.25
 Nodes (7): About Laravel, Agentic Development, Code of Conduct, Contributing, Learning Laravel, License, Security Vulnerabilities
 
+### Community 110 - "ProfileScreen"
+Cohesion: 0.21
+Nodes (12): networkCheckerProvider, themeServiceProvider, userNicknameProvider, initState, build, OnlineGuardWidget, build, LeagueProfileCard (+4 more)
+
 ### Community 111 - "config"
 Cohesion: 0.29
 Nodes (7): pestphp/pest-plugin, php-http/discovery, config, allow-plugins, optimize-autoloader, preferred-install, sort-packages
 
-### Community 115 - "queens_board_painter.dart"
-Cohesion: 0.17
-Nodes (10): _drawHandDrawnOuterFrame, _drawOrganicLine, grid, gridSize, isDark, paint, palette, QueensBoardPainter (+2 more)
+### Community 114 - "package:flutter/material.dart"
+Cohesion: 0.12
+Nodes (4): build, main, main, main
+
+### Community 115 - "GameController.php"
+Cohesion: 0.20
+Nodes (3): GameController, LeaderboardController, Controller
 
 ### Community 118 - "psr-4"
 Cohesion: 0.40
 Nodes (5): autoload, psr-4, App\\, Database\\Factories\\, Database\\Seeders\\
-
-### Community 120 - "queens_logic.dart"
-Cohesion: 0.18
-Nodes (10): autoCrossNeighbors, DeductiveResult, isSolvable, QueensLogic, solution, _solve2QueensBacktracking, solveBacktracking, solveDeductively (+2 more)
 
 ### Community 122 - "Laravel Application"
 Cohesion: 0.50
@@ -537,29 +552,53 @@ Nodes (3): autoload-dev, psr-4, Tests\\
 Cohesion: 0.67
 Nodes (3): extra, laravel, dont-discover
 
+### Community 134 - "ConsumerState"
+Cohesion: 0.27
+Nodes (8): _GeniusLobbyTab, _GeniusLobbyTabState, HomeScreen, _HomeScreenState, CompletedGameLeaderboardDialog, _CompletedGameLeaderboardDialogState, BadgesScreen, _BadgesScreenState
+
 ### Community 135 - "nickname_prompt_dialog.dart"
-Cohesion: 0.10
-Nodes (19): ApiClient, apiClientProvider, apiClient, _loadInitialNickname, _nicknameKey, setNickname, userNicknameProvider, build (+11 more)
+Cohesion: 0.15
+Nodes (12): apiClientProvider, build, _controller, createState, dispose, _errorMessage, isEditing, _isLoading (+4 more)
+
+### Community 136 - "../../core/utils/date_utils.dart"
+Cohesion: 0.22
+Nodes (7): build, customDetailText, entry, isMe, LeaderboardEntryCard, showThreeOfThree, LeaderboardEntry
+
+### Community 137 - "sketch_countdown_timer.dart"
+Cohesion: 0.25
+Nodes (3): fontSize, padding, showLabel
+
+### Community 138 - "bootstrap/app.php"
+Cohesion: 0.32
+Nodes (3): {closure#1}(), {closure#2}(), {closure#3}()
+
+### Community 140 - "🚀 Daily Games (Zühtü) - Devir Teslim & VPS Geçiş Kılavuzu"
+Cohesion: 0.25
+Nodes (7): 📌 1. Projenin Genel Durumu ve Yapılanlar, 🎯 2. Kullanıcının Hedefi ve Vizyonu, 🛠️ 3. Evdeki Bilgisayarda İlk Yapılacaklar (Git & Başlangıç), 🌐 4. Canlı VPS Sunucu Durumu (AKTİF & ÇALIŞIYOR), 📋 5. Sırada Bekleyen Diğer Geliştirme Maddeleri (`oyun_hatalari.md`), 🚀 Daily Games (Zühtü) - Devir Teslim & VPS Geçiş Kılavuzu, İleride Backend Güncellendiğinde VPS'i Güncelleme Komutu:
+
+### Community 144 - "_launchGame"
+Cohesion: 0.50
+Nodes (3): _launchGame, build, _launchQueens
 
 ## Knowledge Gaps
-- **1319 isolated node(s):** `DailyBadge`, `UserBadge`, `label`, `subtitle`, `id` (+1314 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 1663 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **39 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **1321 isolated node(s):** `DailyBadge`, `UserBadge`, `label`, `subtitle`, `id` (+1316 more)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 1666 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **43 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `_` connect `_` to `queens_board_painter.dart`, `Crossclimb Generator & Pinpoint Generator`, `Tango Generator Module`, `Puzzle Seed Module`?**
+- **Why does `_` connect `_` to `Crossclimb Generator & Pinpoint Generator`, `Tango Generator Module`, `Puzzle Seed Module`?**
   _High betweenness centrality (0.014) - this node is a cross-community bridge._
 - **Are the 37 inferred relationships involving `Kara Kalem Eskiz Defteri Design Language` (e.g. with `mipmap-hdpi/ic_launcher.png` and `mipmap-mdpi/ic_launcher.png`) actually correct?**
   _`Kara Kalem Eskiz Defteri Design Language` has 37 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `DailyBadge`, `UserBadge`, `label` to the rest of the system?**
-  _1319 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _1321 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Color Theme & Palette Tokens` be split into smaller, more focused modules?**
   _Cohesion score 0.02247191011235955 - nodes in this community are weakly interconnected._
-- **Why does `Win32Window` connect `win32_window.cpp` to `Win32 Window Module`, `Win32 Window & Main`, `Win32 Window Module`, `Win32 Window & Flutter Window`?**
-  _High betweenness centrality (0.011) - this node is a cross-community bridge._
+- **Why does `_` connect `Crossclimb Generator & Pinpoint Generator` to `Crossclimb Levels & Pinpoint Levels`, `Crossclimb Logic Module`?**
+  _High betweenness centrality (0.012) - this node is a cross-community bridge._
 - **Should `Queens Screen & Solver UI` be split into smaller, more focused modules?**
   _Cohesion score 0.02531645569620253 - nodes in this community are weakly interconnected._
-- **Why does `GameType` connect `base_game.dart` to `Game Card Logos Module`, `badge_model.dart`, `Leaderboard Screen Module`, `Game Stats & IQ Milestone Service`, `Home Screen Hub & Nav Providers`, `leaderboard_service.dart`, `completed_game_leaderboard_dialog.dart`, `home_brain_hero_card.dart`, `Neo Game Layout Module`, `Daily Play Service Module`?**
-  _High betweenness centrality (0.009) - this node is a cross-community bridge._
+- **Why does `GameType` connect `base_game.dart` to `badge_model.dart`, `Neo Game Layout Module`, `Leaderboard Screen Module`, `Game Stats & IQ Milestone Service`, `Home Screen Hub & Nav Providers`, `leaderboard_service.dart`, `completed_game_leaderboard_dialog.dart`, `home_brain_hero_card.dart`, `Home Screen & Zip Screen`, `Daily Play Service Module`?**
+  _High betweenness centrality (0.012) - this node is a cross-community bridge._

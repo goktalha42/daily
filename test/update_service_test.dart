@@ -121,6 +121,50 @@ void main() {
       expect(UpdateService.hasDismissedThisSession(42), isTrue);
       expect(UpdateService.hasDismissedThisSession(43), isFalse);
     });
+
+    test('verifyApkAvailable geçerli ikili APK yanıtını kabul eder', () async {
+      final client = MockClient((request) async {
+        return http.Response(
+          '',
+          200,
+          headers: {'content-type': 'application/octet-stream'},
+        );
+      });
+
+      await expectLater(
+        UpdateService.instance.verifyApkAvailable(
+          'https://raw.githubusercontent.com/goktalha42/daily/main/releases/Zuhtu_v1.1.0.apk',
+          httpClient: client,
+        ),
+        completes,
+      );
+    });
+
+    test('verifyApkAvailable 404 veya HTML yanıtlarını indirme başlamadan engeller', () async {
+      final client404 = MockClient((request) async {
+        return http.Response('Not Found', 404, headers: {'content-type': 'text/html'});
+      });
+
+      await expectLater(
+        UpdateService.instance.verifyApkAvailable(
+          'https://github.com/goktalha42/daily/releases/download/v1.1.0/Zuhtu_v1.1.0.apk',
+          httpClient: client404,
+        ),
+        throwsA(isA<UpdateDownloadException>()),
+      );
+
+      final clientHtml200 = MockClient((request) async {
+        return http.Response('<html></html>', 200, headers: {'content-type': 'text/html; charset=utf-8'});
+      });
+
+      await expectLater(
+        UpdateService.instance.verifyApkAvailable(
+          'https://example.com/fake.apk',
+          httpClient: clientHtml200,
+        ),
+        throwsA(isA<UpdateDownloadException>()),
+      );
+    });
   });
 }
 
