@@ -10,6 +10,7 @@ import '../../games/common/base_game.dart';
 import 'screen_shake.dart';
 import 'sketch_badge_icons.dart';
 import 'sketch_decorations.dart';
+import 'head_to_head_share_dialog.dart';
 
 /// Zühtü - Tamamen Organik Kara Kalem Skeç Defteri Zafer Ekranı Diyaloğu.
 /// Sert skeç gölgeleri, 2.5px siyah kontur, el çizimi SketchCard yapısı.
@@ -305,7 +306,7 @@ class _GeniusWinDialogState extends State<GeniusWinDialog> {
 
               const SizedBox(height: 18),
 
-              // Aksiyon Butonu (Lobiye Dön)
+              // Kafa Kafaya Meydan Oku & Paylaş Butonu (Viral Büyüme)
               SizedBox(
                 width: double.infinity,
                 child: SketchCard(
@@ -314,7 +315,53 @@ class _GeniusWinDialogState extends State<GeniusWinDialog> {
                   borderRadius: 14,
                   borderWidth: 2.4,
                   shadowOffset: const Offset(3.0, 3.0),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  padding: const EdgeInsets.symmetric(vertical: 13),
+                  onTap: () {
+                    HapticFeedback.mediumImpact();
+                    HeadToHeadShareDialog.show(
+                      context,
+                      gameType: widget.result.gameType,
+                      gameTitle: widget.gameTitle,
+                      score: widget.result.score,
+                      durationMs: widget.result.durationMs,
+                      moveCount: widget.result.moveCount,
+                      difficulty: widget.result.difficulty,
+                      statsResult: widget.statsResult,
+                      fallbackIQ: currentIQ,
+                    );
+                  },
+                  child: Center(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.bolt_rounded, size: 22, color: AppColors.inkBlack),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Kafa Kafaya Meydan Oku',
+                          style: GoogleFonts.patrickHand(
+                            color: AppColors.inkBlack,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 19,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 10),
+
+              // Aksiyon Butonu (Lobiye Dön)
+              SizedBox(
+                width: double.infinity,
+                child: SketchCard(
+                  backgroundColor: isDark ? AppColors.surfaceSecondaryDark : Colors.white,
+                  borderColor: isDark ? Colors.white70 : AppColors.pencilBlack,
+                  borderRadius: 14,
+                  borderWidth: 2.0,
+                  shadowOffset: const Offset(2.5, 2.5),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
                   onTap: () {
                     HapticFeedback.lightImpact();
                     Navigator.pop(context);
@@ -322,16 +369,20 @@ class _GeniusWinDialogState extends State<GeniusWinDialog> {
                   },
                   child: Center(
                     child: Row(
-                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.home_rounded, size: 22, color: AppColors.inkBlack),
+                        Icon(
+                          Icons.home_rounded,
+                          size: 20,
+                          color: isDark ? Colors.white : AppColors.pencilBlack,
+                        ),
                         const SizedBox(width: 8),
                         Text(
                           'Lobiye Dön',
                           style: GoogleFonts.patrickHand(
-                            color: AppColors.inkBlack,
+                            color: isDark ? Colors.white : AppColors.pencilBlack,
                             fontWeight: FontWeight.w700,
-                            fontSize: 20,
+                            fontSize: 18,
                           ),
                         ),
                       ],

@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/widgets/app_button.dart';
 import '../../../core/utils/date_utils.dart';
+import '../../../core/widgets/head_to_head_share_dialog.dart';
 import '../../../core/widgets/sketch_decorations.dart';
 import '../../../games/common/base_game.dart';
 import '../leaderboard_service.dart';
@@ -405,11 +406,36 @@ class _CompletedGameLeaderboardDialogState
 
               const SizedBox(height: 12),
 
-              // Kapat Butonu
-              AppButton(
-                text: 'Harika!',
-                onPressed: () => Navigator.of(context).pop(),
-                isPrimary: true,
+              // Alt Butonlar (Kapat & Kafa Kafaya Paylaş)
+              Row(
+                children: [
+                  Expanded(
+                    child: AppButton(
+                      text: 'Harika!',
+                      onPressed: () => Navigator.of(context).pop(),
+                      isPrimary: false,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: AppButton(
+                      text: '⚔️ Kafa Kafaya',
+                      onPressed: () {
+                        HeadToHeadShareDialog.show(
+                          context,
+                          gameType: widget.game,
+                          gameTitle: widget.title,
+                          score: widget.score,
+                          durationMs: widget.durationMs,
+                          moveCount: 0,
+                          difficulty: widget.difficulty,
+                          dateId: widget.levelId,
+                        );
+                      },
+                      isPrimary: true,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

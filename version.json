@@ -1,9 +1,9 @@
 ﻿{
-    "version":  "1.1.1",
-    "build_number":  9,
-    "title":  "Zühtü v1.1.1 Güncellemesi",
-    "changelog":  "• Kişisel Günlük Rekor Bildirimi: En yüksek skor veya süre aşıldığında konfetili \u0027Yeni Zirve! 🏆\u0027 kutlaması eklendi.\n• Günlük Zeka Defteri Özeti: 6 oyun tamamlandığında açılan, 6 bilişsel alan karnesi ve paylaşılabilir skeç diploması eklendi.",
-    "apk_url":  "https://raw.githubusercontent.com/goktalha42/daily/main/releases/Zuhtu_v1.1.1_b9.apk",
-    "release_url":  "https://github.com/goktalha42/daily/releases/tag/v1.1.1",
+    "version":  "1.1.2",
+    "build_number":  10,
+    "title":  "Zühtü v1.1.2 Güncellemesi",
+    "changelog":  "• LinkedIn/Hikaye Tarzı Günlük Kafa Kafaya Karşılaştırma Kartı: Oyun sonlarında ve liderlik pencerelerinde açılan, nüfus yüzdeliği ve zeka unvanı içeren skeç meydan okuma kartı.\n• Doğrudan WhatsApp, Instagram ve sosyal medya paylaşım entegrasyonu.\n• Günlük Zeka Sertifikası tek tıkla paylaşım desteği.",
+    "apk_url":  "https://raw.githubusercontent.com/goktalha42/daily/main/releases/Zuhtu_v1.1.2_b10.apk",
+    "release_url":  "https://github.com/goktalha42/daily/releases/tag/v1.1.2",
     "force_update":  false
 }
