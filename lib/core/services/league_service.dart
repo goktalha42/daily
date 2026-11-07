@@ -437,6 +437,11 @@ class LeagueNotifier extends StateNotifier<LeagueState> {
 
       for (final record in ps.records.values) {
         if (!record.completedAt.isBefore(weekStart) && !record.completedAt.isAfter(endOfWeek)) {
+          // Geçmiş gün oyunları haftalık lig skoruna kesinlikle eklenemez
+          if (record.isArchivePlay) continue;
+          final completedDateKey =
+              '${record.completedAt.year.toString().padLeft(4, '0')}-${record.completedAt.month.toString().padLeft(2, '0')}-${record.completedAt.day.toString().padLeft(2, '0')}';
+          if (record.dateId != completedDateKey) continue;
           total += record.score;
         }
       }

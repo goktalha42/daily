@@ -249,6 +249,9 @@ class _ZipScreenState extends ConsumerState<ZipScreen> with WidgetsBindingObserv
     GameSessionService.clearSession(game: GameType.zipPath, levelId: widget.levelId);
     final score = (2000 - (_elapsedMs ~/ 1000) * 10).clamp(100, 2000);
 
+    final bool isPastGame = widget.levelId != GameDateUtils.getTodayLevelId();
+    final int awardedScore = isPastGame ? 0 : score;
+
     final result = GameResult(
       id: const Uuid().v4(),
       gameType: GameType.zipPath,
@@ -257,34 +260,42 @@ class _ZipScreenState extends ConsumerState<ZipScreen> with WidgetsBindingObserv
       userName: 'Oyuncu',
       durationMs: _elapsedMs,
       moveCount: _path.length,
-      score: score,
+      score: awardedScore,
       completedAt: DateTime.now(),
     );
 
-    ref.read(leaderboardServiceProvider).submitScore(result);
+    if (!isPastGame) {
+      ref.read(leaderboardServiceProvider).submitScore(result);
+    }
+
     final statsResult = await ref.read(gameStatsServiceProvider.notifier).recordGameResult(
           gameType: GameType.zipPath,
           score: score,
           durationMs: _elapsedMs,
           moveCount: _path.length,
           dateId: widget.levelId,
+          isArchivePlay: isPastGame,
         );
+
     final recordResult = await ref.read(dailyPlayServiceProvider.notifier).recordCompletion(
           game: GameType.zipPath,
           dateId: widget.levelId,
-          score: score,
+          score: awardedScore,
           durationMs: _elapsedMs,
         );
-    final isPB = recordResult.isNewPersonalBestScore || recordResult.isNewPersonalBestTime;
-    final pbNote = recordResult.isNewPersonalBestScore && recordResult.isNewPersonalBestTime
-        ? 'Hem en yüksek puanını hem en iyi süreni geliştirdin!'
-        : (recordResult.isNewPersonalBestScore
-            ? 'Önceki en yüksek puanını aştın!'
-            : (recordResult.isNewPersonalBestTime ? 'En hızlı çözüm sürene ulaştın!' : null));
+
+    final isPB = !isPastGame && (recordResult.isNewPersonalBestScore || recordResult.isNewPersonalBestTime);
+    final pbNote = isPastGame
+        ? null
+        : (recordResult.isNewPersonalBestScore && recordResult.isNewPersonalBestTime
+            ? 'Hem en yüksek puanını hem en iyi süreni geliştirdin!'
+            : (recordResult.isNewPersonalBestScore
+                ? 'Önceki en yüksek puanını aştın!'
+                : (recordResult.isNewPersonalBestTime ? 'En hızlı çözüm sürene ulaştın!' : null)));
 
     ref.read(badgeServiceProvider.notifier).evaluateBadges(
           gameType: GameType.zipPath,
-          score: score,
+          score: awardedScore,
           durationMs: _elapsedMs,
           overallIQ: statsResult.currentIQ,
           statsMap: ref.read(gameStatsServiceProvider),

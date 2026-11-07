@@ -78,6 +78,9 @@ class _GeniusWinDialogState extends State<GeniusWinDialog> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDark ? Colors.white : AppColors.pencilBlack;
 
+    final bool isPastGame =
+        widget.result.levelId != GameDateUtils.getTodayLevelId() || widget.result.score == 0;
+
     final stats = widget.statsResult;
     final int previousIQ = stats?.previousIQ ?? 100;
     final int currentIQ = stats?.currentIQ ?? 102;
@@ -156,7 +159,36 @@ class _GeniusWinDialogState extends State<GeniusWinDialog> {
               const SizedBox(height: 6),
 
               // Tekil Oyun Performansı Yüzdelik Vurgusu veya Yeni Kişisel Zirve Kutlaması
-              if (widget.isPersonalBest) ...[
+              if (isPastGame) ...[
+                SketchCard(
+                  backgroundColor: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                  borderColor: isDark ? Colors.white70 : AppColors.pencilBlack,
+                  borderRadius: 12,
+                  borderWidth: 2.2,
+                  shadowOffset: const Offset(3, 3),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.history_rounded, size: 20, color: AppColors.inkBlack),
+                      const SizedBox(width: 8),
+                      Flexible(
+                        child: Text(
+                          'Geçmiş Gün Bulmacası • Puan verilmez, IQ kartına %10 etki eder',
+                          style: GoogleFonts.patrickHand(
+                            color: isDark ? Colors.white : AppColors.pencilBlack,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                            height: 1.1,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ],
+                  ),
+                ).animate().scale(begin: const Offset(0.9, 0.9)),
+                const SizedBox(height: 8),
+              ] else if (widget.isPersonalBest) ...[
                 SketchCard(
                   backgroundColor: isDark ? const Color(0xFFB45309) : AppColors.sunYellow,
                   borderColor: isDark ? Colors.white70 : AppColors.pencilBlack,
@@ -296,8 +328,8 @@ class _GeniusWinDialogState extends State<GeniusWinDialog> {
                     _SketchStatRow(
                       icon: Icons.military_tech_rounded,
                       label: 'Kazanılan Puan',
-                      value: '+${widget.result.score} P',
-                      badgeColor: AppColors.success,
+                      value: isPastGame ? '0 P (Geçmiş Oyun)' : '+${widget.result.score} P',
+                      badgeColor: isPastGame ? const Color(0xFF64748B) : AppColors.success,
                       isDark: isDark,
                     ),
                   ],

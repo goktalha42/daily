@@ -1,9 +1,9 @@
 ﻿{
-    "version":  "1.1.4",
-    "build_number":  12,
-    "title":  "Zühtü v1.1.4: Zaman Makinesi (Arşiv Seviyeleri)",
-    "changelog":  "⏳ Zaman Makinesi devrede! Kaçırdığın günlerin bulmacalarını takvimden seçerek çözebilirsin. Seri kazanımı sadece gününde çözülen oyunlardan beslenmeye devam eder. Ana sayfada arşiv modu bildirim afişi ve bugüne dönüş butonu eklendi.",
-    "apk_url":  "https://raw.githubusercontent.com/goktalha42/daily/main/releases/Zuhtu_v1.1.4_b12.apk",
-    "release_url":  "https://github.com/goktalha42/daily/releases/tag/v1.1.4",
+    "version":  "1.1.5",
+    "build_number":  13,
+    "title":  "Zühtü v1.1.5: Geçmiş Oyun Puan Kısıtlaması \u0026 IQ Dengelemesi",
+    "changelog":  "🎯 Oyunlar artık sadece ait oldukları günde puan kazandırır! Geçmiş oyunlar lig ve sıralama puanı vermez, sadece IQ kartlarına normal etkinin %10\u0027u oranında katkı sağlar. Zafer ekranında geçmiş oyun bilgilendirme rozeti eklendi.",
+    "apk_url":  "https://raw.githubusercontent.com/goktalha42/daily/main/releases/Zuhtu_v1.1.5_b13.apk",
+    "release_url":  "https://github.com/goktalha42/daily/releases/tag/v1.1.5",
     "force_update":  false
 }

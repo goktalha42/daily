@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../games/common/base_game.dart';
+import '../utils/date_utils.dart';
 import '../widgets/sketch_badge_icons.dart';
 
 /// WAIS-IV Psikometrik Normal Dağılım (Ortalama = 100, Standart Sapma = 15)
@@ -158,6 +159,7 @@ class GamePerformanceData {
   final int bestScore;
   final int bestDurationMs;
   final int totalGamesPlayed;
+  final double effectiveGamesPlayed;
   final DateTime? lastPlayedAt;
   final String geniusTitle;
   final double emaZScore;
@@ -172,6 +174,7 @@ class GamePerformanceData {
     required this.bestScore,
     required this.bestDurationMs,
     required this.totalGamesPlayed,
+    double? effectiveGamesPlayed,
     this.lastPlayedAt,
     required this.geniusTitle,
     this.emaZScore = 0.0,
@@ -179,17 +182,18 @@ class GamePerformanceData {
     this.lastCountedDateId,
     this.preDayEmaZScore = 0.0,
     this.dayBestZScore = 0.0,
-  });
+  }) : effectiveGamesPlayed = effectiveGamesPlayed ?? totalGamesPlayed.toDouble();
 
-  bool get hasPlayed => percentile != null && totalGamesPlayed > 0;
+  bool get hasPlayed => percentile != null && (totalGamesPlayed > 0 || effectiveGamesPlayed > 0);
 
   /// İstikrar (%72 EMA) ve Kişisel Zirve (%28 Peak) birleşimi efektif Z-skoru.
   /// Böylece tek şanslı oyunla kalıcı yüksek IQ kazanılamaz ve kötü oyunlar ortalamayı düşürebilir.
   double get effectiveZScore => (0.72 * emaZScore) + (0.28 * peakZScore);
 
   /// Alt-test Bayesyen güvenilirlik katsayısı: c(n) = 1 - exp(-n / 2.6)
+  /// Geçmiş gün oyunları n değerini 0.10 artırır; gününde oynanan oyunlar tam 1.0 artırır.
   double get credibility =>
-      hasPlayed ? (1.0 - math.exp(-totalGamesPlayed / 2.6)).clamp(0.0, 1.0) : 0.0;
+      hasPlayed ? (1.0 - math.exp(-effectiveGamesPlayed / 2.6)).clamp(0.0, 1.0) : 0.0;
 
   /// Bu bilişsel alandaki kalibre edilmiş alt-IQ skoru (82 .. 153)
   int get domainIQ {
@@ -221,6 +225,7 @@ class GamePerformanceData {
     int? bestScore,
     int? bestDurationMs,
     int? totalGamesPlayed,
+    double? effectiveGamesPlayed,
     DateTime? lastPlayedAt,
     String? geniusTitle,
     double? emaZScore,
@@ -235,6 +240,7 @@ class GamePerformanceData {
       bestScore: bestScore ?? this.bestScore,
       bestDurationMs: bestDurationMs ?? this.bestDurationMs,
       totalGamesPlayed: totalGamesPlayed ?? this.totalGamesPlayed,
+      effectiveGamesPlayed: effectiveGamesPlayed ?? this.effectiveGamesPlayed,
       lastPlayedAt: lastPlayedAt ?? this.lastPlayedAt,
       geniusTitle: geniusTitle ?? this.geniusTitle,
       emaZScore: emaZScore ?? this.emaZScore,
@@ -251,6 +257,7 @@ class GamePerformanceData {
         'bestScore': bestScore,
         'bestDurationMs': bestDurationMs,
         'totalGamesPlayed': totalGamesPlayed,
+        'effectiveGamesPlayed': effectiveGamesPlayed,
         'lastPlayedAt': lastPlayedAt?.toIso8601String(),
         'geniusTitle': geniusTitle,
         'emaZScore': emaZScore,
@@ -264,6 +271,8 @@ class GamePerformanceData {
     final bestScore = (json['bestScore'] as int?) ?? 0;
     final bestDurationMs = (json['bestDurationMs'] as int?) ?? 0;
     final totalPlayed = (json['totalGamesPlayed'] as int?) ?? 0;
+    final effectivePlayed =
+        (json['effectiveGamesPlayed'] as num?)?.toDouble() ?? totalPlayed.toDouble();
 
     // Eski kayıtlarda emaZScore yoksa mevcut bestScore/bestDuration üzerinden gerçekçi tahmini Z üret
     final double fallbackZ = totalPlayed > 0
@@ -283,6 +292,7 @@ class GamePerformanceData {
       bestScore: bestScore,
       bestDurationMs: bestDurationMs,
       totalGamesPlayed: totalPlayed,
+      effectiveGamesPlayed: effectivePlayed,
       lastPlayedAt: json['lastPlayedAt'] != null
           ? DateTime.tryParse(json['lastPlayedAt'])
           : null,
@@ -579,10 +589,13 @@ class GameStatsNotifier extends StateNotifier<Map<GameType, GamePerformanceData>
     required int moveCount,
     String? difficulty,
     String? dateId,
+    bool? isArchivePlay,
   }) async {
     await _initFuture;
     final int previousIQ = getOverallIQ();
     final bool hasExplicitDate = dateId != null && dateId.isNotEmpty;
+    final bool isArchive = isArchivePlay ??
+        (hasExplicitDate && dateId != GameDateUtils.getTodayLevelId());
 
     // 1. Bu tekil çözümün gerçekçi psikometrik Z-skoru ve yüzdelik dilimi
     final double solveZ = PsychometricIQCalculator.evaluateSingleSolveZ(
@@ -594,30 +607,66 @@ class GameStatsNotifier extends StateNotifier<Map<GameType, GamePerformanceData>
     final int solvePercentile = PsychometricIQCalculator.zScoreToSolvePercentile(solveZ);
 
     final old = state[gameType]!;
-    final bool isFirstPlayEver = old.totalGamesPlayed == 0;
-    // Aynı gün içinde (örn. Vezirler'de 1. bölümden sonra 2. veya 3. bölüm çözüldüğünde)
-    // oyun sayısı tekrar artırılmaz; 1 bölüm de oynansa 3 bölüm de oynansa 1 oyun kabul edilir.
-    final bool isSameDayRepeat =
-        !isFirstPlayEver && hasExplicitDate && old.lastCountedDateId == dateId;
+    final bool isFirstPlayEver = old.totalGamesPlayed == 0 && old.effectiveGamesPlayed == 0;
 
-    final int updatedTotalPlayed =
-        isSameDayRepeat ? old.totalGamesPlayed : (old.totalGamesPlayed + 1);
+    double updatedEmaZ;
+    double updatedPeakZ;
+    double updatedEffectivePlayed;
+    int updatedTotalPlayed;
+    int newBestScore;
+    double preDayEma;
+    double dayBestZ;
 
-    // 2. EMA (Üstel Hareketli Ortalama) güncellemesi:
-    // Aynı gün ek zorluk çözüldüğünde o günün en yüksek Z-skoru baz alınır (kolay seviye çözmek IQ düşürmez).
-    final double preDayEma = isSameDayRepeat ? old.preDayEmaZScore : old.emaZScore;
-    final double dayBestZ = isSameDayRepeat
-        ? math.max(old.dayBestZScore, solveZ)
-        : solveZ;
+    if (isArchive) {
+      // GEÇMİŞ OYUN KURALI:
+      // Geçmiş oyunlar kullanıcıya oyun puanı kazandırmaz (newBestScore değişmez)
+      // ve IQ kartlarına normal etkinin tam yüzde 10'u (%10 / 0.10) oranında etki eder.
+      preDayEma = old.emaZScore;
+      dayBestZ = solveZ;
 
-    final double updatedEmaZ = (updatedTotalPlayed <= 1)
-        ? dayBestZ
-        : (0.68 * preDayEma) + (0.32 * dayBestZ);
-    final double updatedPeakZ = isFirstPlayEver
-        ? solveZ
-        : math.max(old.peakZScore, solveZ);
+      if (isFirstPlayEver) {
+        updatedEmaZ = 0.10 * solveZ;
+        updatedPeakZ = 0.10 * solveZ;
+        updatedEffectivePlayed = 0.10;
+        updatedTotalPlayed = 1;
+      } else {
+        final double normalEmaDelta = 0.32 * (solveZ - old.emaZScore);
+        updatedEmaZ = old.emaZScore + (0.10 * normalEmaDelta);
 
-    final int newBestScore = math.max(old.bestScore, score);
+        final double normalPeakDelta = math.max(0.0, solveZ - old.peakZScore);
+        updatedPeakZ = old.peakZScore + (0.10 * normalPeakDelta);
+
+        updatedEffectivePlayed = old.effectiveGamesPlayed + 0.10;
+        updatedTotalPlayed = old.totalGamesPlayed + 1;
+      }
+
+      // Geçmiş oyunda oyuncu lig/sıralama puanı kazanmadığı için bestScore eski skorda kalır
+      newBestScore = old.bestScore;
+    } else {
+      // GÜNÜN OYUNU KURALI (Normal tam etki):
+      final bool isSameDayRepeat =
+          !isFirstPlayEver && hasExplicitDate && old.lastCountedDateId == dateId;
+
+      updatedTotalPlayed =
+          isSameDayRepeat ? old.totalGamesPlayed : (old.totalGamesPlayed + 1);
+      updatedEffectivePlayed =
+          old.effectiveGamesPlayed + (isSameDayRepeat ? 0.0 : 1.0);
+
+      preDayEma = isSameDayRepeat ? old.preDayEmaZScore : old.emaZScore;
+      dayBestZ = isSameDayRepeat
+          ? math.max(old.dayBestZScore, solveZ)
+          : solveZ;
+
+      updatedEmaZ = (updatedTotalPlayed <= 1)
+          ? dayBestZ
+          : (0.68 * preDayEma) + (0.32 * dayBestZ);
+      updatedPeakZ = isFirstPlayEver
+          ? solveZ
+          : math.max(old.peakZScore, solveZ);
+
+      newBestScore = math.max(old.bestScore, score);
+    }
+
     final int newBestDuration = old.bestDurationMs == 0
         ? durationMs
         : (durationMs > 0 && durationMs < old.bestDurationMs ? durationMs : old.bestDurationMs);
@@ -632,6 +681,7 @@ class GameStatsNotifier extends StateNotifier<Map<GameType, GamePerformanceData>
       bestScore: newBestScore,
       bestDurationMs: newBestDuration,
       totalGamesPlayed: updatedTotalPlayed,
+      effectiveGamesPlayed: updatedEffectivePlayed,
       lastPlayedAt: DateTime.now(),
       geniusTitle: _domainTitleForZ(tempEffectiveZ),
       emaZScore: updatedEmaZ,
@@ -707,9 +757,9 @@ class GameStatsNotifier extends StateNotifier<Map<GameType, GamePerformanceData>
         minPlaysInAnyCategory = 0;
         continue;
       }
-      totalGamesCount += perf.totalGamesPlayed;
-      if (perf.totalGamesPlayed < minPlaysInAnyCategory) {
-        minPlaysInAnyCategory = perf.totalGamesPlayed;
+      totalGamesCount += perf.effectiveGamesPlayed.round();
+      if (perf.effectiveGamesPlayed < minPlaysInAnyCategory) {
+        minPlaysInAnyCategory = perf.effectiveGamesPlayed.floor();
       }
       weightedZSum += perf.effectiveZScore * perf.credibility;
     }

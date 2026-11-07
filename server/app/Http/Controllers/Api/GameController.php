@@ -78,9 +78,13 @@ class GameController extends Controller
         $difficulty = $validated['difficulty'] ?: 'default';
         $gameType = $validated['game_type'];
         $dateId = $validated['date_id'];
-        $score = $validated['score'];
         $durationMs = $validated['duration_ms'];
         $moveCount = $validated['move_count'] ?? 0;
+
+        // Geçmiş oyun kuralı: Oyunlar sadece ait oldukları günde puan kazandırır
+        $todayUtc = Carbon::now('UTC')->format('Y-m-d');
+        $isPastDate = ($dateId !== $todayUtc);
+        $score = $isPastDate ? 0 : $validated['score'];
 
         $existing = GameScore::where('player_id', $player->id)
             ->where('game_type', $gameType)

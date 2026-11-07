@@ -478,6 +478,9 @@ class LeaderboardService extends ChangeNotifier {
     bool changed = false;
 
     for (final record in dailyPlay.records.values) {
+      // Geçmiş arşiv oyunları liderlik tablosu skoruna ve sunucuya puan olarak iletilmez
+      if (record.isArchivePlay || record.score <= 0) continue;
+
       final resultId = 'user_local_${record.gameType.id}_${record.subKey ?? "main"}_${record.dateId}';
       final existingIndex = _resultsStore.indexWhere((r) =>
           r.id == resultId ||
