@@ -18,6 +18,10 @@ import '../../core/services/user_nickname_provider.dart';
 import '../../core/widgets/nickname_prompt_dialog.dart';
 import '../../core/services/update_service.dart';
 import '../../core/widgets/update_prompt_dialog.dart';
+import '../../core/services/sound_haptic_service.dart';
+import '../../core/services/retention_notification_service.dart';
+import '../../core/services/cloud_backup_service.dart';
+import '../../core/widgets/backup_restore_dialog.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -698,6 +702,60 @@ class ProfileScreen extends ConsumerWidget {
           ),
         ),
 
+        // 7B. SES, TİTREŞİM VE BİLDİRİM AYARLARI (TUTUNDURMA / RETENTION)
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.only(left: 24, right: 24, top: 14, bottom: 8),
+            child: Row(
+              children: [
+                Text(
+                  'SES, TİTREŞİM VE BİLDİRİM AYARLARI',
+                  style: GoogleFonts.patrickHand(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: headerGraphite,
+                    letterSpacing: 1.0,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+            child: _RetentionSettingsCard(currentStreak: currentStreak),
+          ),
+        ),
+
+        // 7C. BULUT YEDEKLEME VE CİHAZ TAŞIMA (KURTARMA KODU)
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.only(left: 24, right: 24, top: 14, bottom: 8),
+            child: Row(
+              children: [
+                Text(
+                  'İLERLEME YEDEKLEME & CİHAZ TAŞIMA',
+                  style: GoogleFonts.patrickHand(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: headerGraphite,
+                    letterSpacing: 1.0,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        const SliverToBoxAdapter(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+            child: _CloudBackupProfileCard(),
+          ),
+        ),
+
         // 8. BİLGİLENDİRME & SİSTEM NOTU
         SliverToBoxAdapter(
           child: Padding(
@@ -1063,6 +1121,324 @@ class _AppVersionUpdateCardState extends State<_AppVersionUpdateCard> {
                       ),
                     ],
                   ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Ses, Titreşim ve Yerel Bildirim Ayarları Kartı
+class _RetentionSettingsCard extends ConsumerWidget {
+  final int currentStreak;
+
+  const _RetentionSettingsCard({required this.currentStreak});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final pencilColor = isDark ? AppColors.pencilWhite : AppColors.pencilBlack;
+    final soundHaptic = ref.watch(soundHapticProvider);
+    final notifySettings = ref.watch(retentionNotificationProvider);
+
+    return SketchCard(
+      padding: const EdgeInsets.all(14),
+      borderRadius: 14,
+      borderWidth: 2.0,
+      shadowOffset: const Offset(3.0, 3.0),
+      backgroundColor: isDark ? AppColors.surfaceDark : Colors.white,
+      borderColor: pencilColor,
+      child: Column(
+        children: [
+          _SketchToggleRow(
+            icon: Icons.volume_up_rounded,
+            accentColor: AppColors.highlighterCyan,
+            title: 'Kalem & Oyun Ses Efektleri (SFX)',
+            subtitle: 'Hamle, vezir koyma ve zafer fanfarı sesleri',
+            value: soundHaptic.soundEnabled,
+            onToggle: () => ref.read(soundHapticProvider.notifier).toggleSound(),
+          ),
+          Divider(
+            height: 16,
+            color: pencilColor.withValues(alpha: 0.2),
+            thickness: 1.1,
+          ),
+          _SketchToggleRow(
+            icon: Icons.vibration_rounded,
+            accentColor: AppColors.highlighterPurple,
+            title: 'Dokunsal Geri Bildirim (Haptic)',
+            subtitle: 'Hücre seçimi, hata ve zafer titreşimleri',
+            value: soundHaptic.hapticEnabled,
+            onToggle: () => ref.read(soundHapticProvider.notifier).toggleHaptic(),
+          ),
+          Divider(
+            height: 16,
+            color: pencilColor.withValues(alpha: 0.2),
+            thickness: 1.1,
+          ),
+          _SketchToggleRow(
+            icon: Icons.local_fire_department_rounded,
+            accentColor: AppColors.highlighterOrange,
+            title: 'Günlük Seri Koruma Bildirimi (20:00)',
+            subtitle: 'O gün oyun çözülmediyse akşam 20:00\'de uyarır',
+            value: notifySettings.streakReminderEnabled,
+            onToggle: () => ref
+                .read(retentionNotificationProvider.notifier)
+                .toggleStreakReminder(),
+          ),
+          Divider(
+            height: 16,
+            color: pencilColor.withValues(alpha: 0.2),
+            thickness: 1.1,
+          ),
+          _SketchToggleRow(
+            icon: Icons.insights_rounded,
+            accentColor: AppColors.sunYellow,
+            title: 'Pazar Akşamı Zeka Raporu (20:00)',
+            subtitle: 'Haftalık 6 bilişsel alan karnesi hazır olduğunda bildirir',
+            value: notifySettings.sundayReportEnabled,
+            onToggle: () => ref
+                .read(retentionNotificationProvider.notifier)
+                .toggleSundayReport(),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: SketchCard(
+              onTap: () async {
+                await SoundHapticService.instance.playSymbolPlace();
+                await RetentionNotificationService.instance
+                    .sendTestNotification(currentStreak: currentStreak);
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      backgroundColor: AppColors.pencilBlack,
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: const BorderSide(
+                          color: AppColors.sunYellow,
+                          width: 1.5,
+                        ),
+                      ),
+                      content: Text(
+                        '🔔 Test bildirimi gönderildi! Bildirim çubuğunu kontrol et.',
+                        style: GoogleFonts.patrickHand(
+                          fontSize: 15,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  );
+                }
+              },
+              padding: const EdgeInsets.symmetric(vertical: 9),
+              borderRadius: 10,
+              borderWidth: 1.8,
+              shadowOffset: const Offset(2.0, 2.0),
+              backgroundColor: isDark
+                  ? AppColors.surfaceSecondaryDark
+                  : AppColors.surfaceSecondaryLight,
+              borderColor: pencilColor,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.notifications_active_rounded,
+                    size: 17,
+                    color: pencilColor,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Seri Hatırlatma Bildirimini Test Et',
+                    style: GoogleFonts.patrickHand(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: pencilColor,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SketchToggleRow extends StatelessWidget {
+  final IconData icon;
+  final Color accentColor;
+  final String title;
+  final String subtitle;
+  final bool value;
+  final VoidCallback onToggle;
+
+  const _SketchToggleRow({
+    required this.icon,
+    required this.accentColor,
+    required this.title,
+    required this.subtitle,
+    required this.value,
+    required this.onToggle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final pencilColor = isDark ? AppColors.pencilWhite : AppColors.pencilBlack;
+    final graphiteColor =
+        isDark ? AppColors.pencilGraphiteDark : AppColors.pencilGraphite;
+
+    return Row(
+      children: [
+        SketchCard(
+          padding: const EdgeInsets.all(7),
+          borderRadius: 10,
+          borderWidth: 1.6,
+          shadowOffset: const Offset(1.5, 1.5),
+          backgroundColor: accentColor,
+          borderColor: AppColors.pencilBlack,
+          child: Icon(icon, color: AppColors.pencilBlack, size: 20),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: GoogleFonts.patrickHand(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: pencilColor,
+                ),
+              ),
+              Text(
+                subtitle,
+                style: GoogleFonts.patrickHand(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w600,
+                  color: graphiteColor,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 8),
+        SketchCard(
+          onTap: onToggle,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          borderRadius: 8,
+          borderWidth: 1.8,
+          shadowOffset: const Offset(1.5, 1.5),
+          backgroundColor: value
+              ? AppColors.sunYellow
+              : (isDark
+                  ? AppColors.surfaceSecondaryDark
+                  : AppColors.surfaceSecondaryLight),
+          borderColor: pencilColor,
+          child: Text(
+            value ? 'AÇIK' : 'KAPALI',
+            style: GoogleFonts.patrickHand(
+              fontSize: 13.5,
+              fontWeight: FontWeight.w700,
+              color: value ? AppColors.pencilBlack : graphiteColor,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Bulut Yedekleme ve Kurtarma Kodu Profil Kartı
+class _CloudBackupProfileCard extends ConsumerWidget {
+  const _CloudBackupProfileCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final pencilColor = isDark ? AppColors.pencilWhite : AppColors.pencilBlack;
+    final graphiteColor =
+        isDark ? AppColors.pencilGraphiteDark : AppColors.pencilGraphite;
+    final backupState = ref.watch(cloudBackupProvider);
+
+    return SketchCard(
+      padding: const EdgeInsets.all(14),
+      borderRadius: 14,
+      borderWidth: 2.0,
+      shadowOffset: const Offset(3.0, 3.0),
+      backgroundColor: isDark ? AppColors.surfaceDark : Colors.white,
+      borderColor: pencilColor,
+      child: Row(
+        children: [
+          SketchCard(
+            padding: const EdgeInsets.all(9),
+            borderRadius: 10,
+            borderWidth: 1.6,
+            shadowOffset: const Offset(1.5, 1.5),
+            backgroundColor: AppColors.highlighterCyan,
+            borderColor: AppColors.pencilBlack,
+            child: const Icon(
+              Icons.cloud_done_rounded,
+              color: AppColors.pencilBlack,
+              size: 22,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Kurtarma Kodu: ${backupState.recoveryCode}',
+                  style: GoogleFonts.patrickHand(
+                    fontSize: 16.5,
+                    fontWeight: FontWeight.w700,
+                    color: pencilColor,
+                  ),
+                ),
+                Text(
+                  'Günlük serini, IQ karneni ve rozetlerini yedekle veya başka cihaza taşı.',
+                  style: GoogleFonts.patrickHand(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: graphiteColor,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          SketchCard(
+            onTap: () {
+              SoundHapticService.instance.playPencilTap();
+              BackupRestoreDialog.show(context);
+            },
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            borderRadius: 10,
+            borderWidth: 1.8,
+            shadowOffset: const Offset(2.0, 2.0),
+            backgroundColor: AppColors.sunYellow,
+            borderColor: pencilColor,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.sync_lock_rounded, size: 16, color: AppColors.pencilBlack),
+                const SizedBox(width: 4),
+                Text(
+                  'Yedekle / Taşı',
+                  style: GoogleFonts.patrickHand(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.pencilBlack,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),

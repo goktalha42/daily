@@ -12,6 +12,7 @@ import '../../core/services/game_stats_service.dart';
 import '../../core/services/badge_service.dart';
 import '../../core/services/daily_play_service.dart';
 import '../../core/services/game_session_service.dart';
+import '../../core/services/sound_haptic_service.dart';
 import '../../core/widgets/genius_win_dialog.dart';
 import '../../core/widgets/sketch_decorations.dart';
 import '../common/base_game.dart';
@@ -179,7 +180,7 @@ class _ZipScreenState extends ConsumerState<ZipScreen> with WidgetsBindingObserv
       if (dr + dc == 1) {
         // LinkedIn Zip: İki kare arasındaki hat/çit üzerinden geçilemez!
         if (_level.edgeWalls.contains(ZipEdgeWall(last, targetPoint))) {
-          HapticFeedback.vibrate();
+          SoundHapticService.instance.playError();
           return;
         }
 
@@ -187,11 +188,11 @@ class _ZipScreenState extends ConsumerState<ZipScreen> with WidgetsBindingObserv
         final cellNum = _level.numberPoints[targetPoint];
 
         if (cellNum != null && cellNum > nextTarget) {
-          HapticFeedback.vibrate();
+          SoundHapticService.instance.playError();
           return;
         }
 
-        HapticFeedback.lightImpact();
+        SoundHapticService.instance.playPencilTap();
         setState(() {
           _path.add(targetPoint);
           _checkState();
@@ -211,7 +212,7 @@ class _ZipScreenState extends ConsumerState<ZipScreen> with WidgetsBindingObserv
 
   void _undoMove() {
     if (_path.isEmpty || _isSolved) return;
-    HapticFeedback.lightImpact();
+    SoundHapticService.instance.playErase();
     setState(() {
       _path.removeLast();
       _checkState();

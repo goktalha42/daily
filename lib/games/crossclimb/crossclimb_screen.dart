@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -15,6 +14,7 @@ import '../../core/widgets/genius_win_dialog.dart';
 import '../../core/widgets/sketch_decorations.dart';
 import '../../core/widgets/screen_shake.dart';
 import '../../core/services/game_session_service.dart';
+import '../../core/services/sound_haptic_service.dart';
 import '../common/base_game.dart';
 import '../../features/leaderboard/leaderboard_service.dart';
 import 'crossclimb_models.dart';
@@ -191,7 +191,7 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> with Widget
     final fullCandidateWord = buffer.toString();
 
     if (CrossclimbLogic.isStepValid(fullCandidateWord, step.targetWord)) {
-      HapticFeedback.mediumImpact();
+      SoundHapticService.instance.playSymbolPlace();
       setState(() {
         _userWords[_currentStepIndex] = step.targetWord;
         _inputController.clear();
@@ -210,7 +210,7 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> with Widget
       });
       _saveSession();
     } else {
-      HapticFeedback.vibrate();
+      SoundHapticService.instance.playError();
       ScreenShake.shake(context, intensity: 6.0);
       setState(() {
         _wrongAttempts++;

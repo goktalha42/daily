@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:uuid/uuid.dart';
@@ -12,6 +11,7 @@ import '../../core/services/game_stats_service.dart';
 import '../../core/services/badge_service.dart';
 import '../../core/services/daily_play_service.dart';
 import '../../core/services/game_session_service.dart';
+import '../../core/services/sound_haptic_service.dart';
 import '../../core/widgets/genius_win_dialog.dart';
 import '../../core/widgets/sketch_decorations.dart';
 import '../../core/widgets/screen_shake.dart';
@@ -190,7 +190,7 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> with WidgetsBindi
 
     final existingIdx = _userRects.indexWhere((r) => r.contains(pt.row, pt.col));
     if (existingIdx != -1) {
-      HapticFeedback.selectionClick();
+      SoundHapticService.instance.playErase();
       setState(() {
         _userRects.removeAt(existingIdx);
         _checkState();
@@ -199,7 +199,7 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> with WidgetsBindi
       return;
     }
 
-    HapticFeedback.lightImpact();
+    SoundHapticService.instance.playPencilTap();
     setState(() {
       _dragStart = pt;
       _dragCurrent = pt;
@@ -230,14 +230,14 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> with WidgetsBindi
       _dragCurrent = null;
 
       if (PatchesLogic.hasOverlap(newRect, _userRects)) {
-        HapticFeedback.vibrate();
+        SoundHapticService.instance.playError();
         ScreenShake.shake(context, intensity: 4.0);
         return;
       }
 
       _userRects.add(newRect);
       _moveCount++;
-      HapticFeedback.mediumImpact();
+      SoundHapticService.instance.playSymbolPlace();
       _checkState();
     });
     _saveSession();
@@ -245,7 +245,7 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> with WidgetsBindi
 
   void _undoMove() {
     if (_userRects.isEmpty || _isSolved) return;
-    HapticFeedback.lightImpact();
+    SoundHapticService.instance.playErase();
     setState(() {
       _userRects.removeLast();
       _checkState();

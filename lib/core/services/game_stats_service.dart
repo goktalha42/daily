@@ -806,4 +806,46 @@ class GameStatsNotifier extends StateNotifier<Map<GameType, GamePerformanceData>
     }
     return newMilestone;
   }
+
+  /// Bulut yedekleme için tüm bilişsel alan ve WAIS-IV IQ istatistiklerini JSON haritası olarak döner.
+  Map<String, dynamic> exportBackupMap() {
+    return {
+      for (final e in state.entries) e.key.id: e.value.toJson(),
+    };
+  }
+
+  /// Buluttan veya yedek anahtarından gelen IQ ve performans istatistiklerini geri yükler.
+  Future<void> restoreFromBackupMap(
+    Map<String, dynamic> decoded, {
+    bool merge = true,
+  }) async {
+    await _initFuture;
+    final updated = Map<GameType, GamePerformanceData>.from(state);
+
+    for (final type in GameType.values) {
+      final rawItem = decoded[type.id];
+      if (rawItem is Map<String, dynamic>) {
+        final incoming = GamePerformanceData.fromJson(rawItem, type);
+        final existing = updated[type];
+        if (!merge ||
+            existing == null ||
+            !existing.hasPlayed ||
+            incoming.totalGamesPlayed >= existing.totalGamesPlayed ||
+            incoming.bestScore > existing.bestScore) {
+          if (incoming.hasPlayed) {
+            updated[type] = incoming;
+          }
+        }
+      }
+    }
+
+    state = updated;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final mapToSave = {
+        for (final e in updated.entries) e.key.id: e.value.toJson(),
+      };
+      await prefs.setString(_prefKey, jsonEncode(mapToSave));
+    } catch (_) {}
+  }
 }

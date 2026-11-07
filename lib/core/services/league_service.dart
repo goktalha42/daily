@@ -403,6 +403,7 @@ class LeagueNotifier extends StateNotifier<LeagueState> {
           ? savedPlayers
           : _buildLeaguePlayers(savedLevel, currentWeekId);
 
+      if (!mounted) return;
       state = LeagueState(
         currentLevel: savedLevel,
         players: players,
@@ -414,8 +415,11 @@ class LeagueNotifier extends StateNotifier<LeagueState> {
       await _saveState();
 
       // Canlı sunucudan en güncel haftalık sıralamayı arka planda çek
-      fetchLiveLeagueData();
+      if (mounted) {
+        fetchLiveLeagueData();
+      }
     } catch (_) {
+      if (!mounted) return;
       final players =
           _buildLeaguePlayers(LeagueLevel.iron, _currentWeekId());
       state = LeagueState(
@@ -470,7 +474,7 @@ class LeagueNotifier extends StateNotifier<LeagueState> {
 
   /// Canlı sunucudaki tüm haftalık oyun skorlarını çekip birleştirir
   Future<void> fetchLiveLeagueData() async {
-    if (apiClient == null) return;
+    if (apiClient == null || !mounted) return;
 
     state = state.copyWith(isSyncing: true);
 
@@ -554,6 +558,7 @@ class LeagueNotifier extends StateNotifier<LeagueState> {
         return allPlayers[i].copyWith(rank: i + 1);
       });
 
+      if (!mounted) return;
       state = state.copyWith(
         players: ranked,
         weekId: currentWeekId,
@@ -563,7 +568,9 @@ class LeagueNotifier extends StateNotifier<LeagueState> {
       await _saveState();
     } catch (e) {
       debugPrint('[LeagueService] Canlı lig verisi çekme hatası (Local korundu): $e');
-      state = state.copyWith(isSyncing: false);
+      if (mounted) {
+        state = state.copyWith(isSyncing: false);
+      }
     }
   }
 
@@ -685,6 +692,36 @@ class LeagueNotifier extends StateNotifier<LeagueState> {
       json['lastRank'] = state.userRank;
       await prefs.setString(_prefKey, jsonEncode(json));
     } catch (_) {}
+  }
+
+  /// Bulut yedekleme için mevcut lig durumunu JSON haritası olarak döner.
+  Map<String, dynamic> exportBackupMap() {
+    return {
+      'currentLevel': state.currentLevel.index,
+      'currentLevelName': state.currentLevel.name,
+      'weekId': state.weekId,
+    };
+  }
+
+  /// Buluttan veya yedek anahtarından gelen lig seviyesini geri yükler.
+  Future<void> restoreFromBackupMap(Map<String, dynamic> decoded) async {
+    int? levelIndex = decoded['currentLevel'] as int?;
+    if (levelIndex == null && decoded['currentLevelName'] is String) {
+      final name = decoded['currentLevelName'] as String;
+      final idx = LeagueLevel.values.indexWhere((l) => l.name == name);
+      if (idx != -1) levelIndex = idx;
+    }
+
+    if (levelIndex != null &&
+        levelIndex >= 0 &&
+        levelIndex < LeagueLevel.values.length) {
+      final restoredLevel = LeagueLevel.values[levelIndex];
+      if (restoredLevel.index > state.currentLevel.index) {
+        state = state.copyWith(currentLevel: restoredLevel);
+        await _saveState();
+      }
+    }
+    await refreshAfterGame();
   }
 }
 

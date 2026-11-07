@@ -9,18 +9,10 @@ yeni apk ler yaptıkca versiyonu v1.0.1, v1.0.2 olarak değişiklik büyüklüğ
 - **v1.1.0:** Vezirler tek oyun sayımı (6/6 dengesi), 31 adet %100 el çizimi rozet ve IQ mertebesi madalyonu, tam otomatik uygulama içi OTA güncelleme hattı.
 - **v1.1.1:** Kişisel Günlük Rekor ("Yeni Zirve! 🏆") kutlama rozeti ve animasyonu, Günlük Zeka Defteri Özeti (Günün 6/6 Tamamlanış Karnesi & Paylaşılabilir Sertifika).
 - **v1.1.2:** LinkedIn & Hikaye benzeri Günlük "Kafa Kafaya" Karşılaştırma ve Meydan Okuma Kartı (Head-to-Head Share).
-- **v1.1.3 (Güncel):** Haftalık Zeka Raporu (Pazar Akşamı Özeti), 6 bilişsel alan odak dağılım grafiği, haftalık seri karnesi, Pazar akşamı otomatik karşılama ve doğrudan sosyal medya paylaşım motoru.
+- **v1.1.3:** Haftalık Zeka Raporu (Pazar Akşamı Özeti), 6 bilişsel alan odak dağılım grafiği, haftalık seri karnesi, Pazar akşamı otomatik karşılama ve doğrudan sosyal medya paylaşım motoru.
+- **v1.1.6 (Güncel):** Oyuncu Tutundurma (Retention) Paketi: Akşam 20:00 Günlük Seri Koruma ve Pazar 20:00 Zeka Raporu bildirimleri, `ZHT-XXXX-XXXX` Kurtarma Kodu & Bulut Yedekleme / Cihaz Taşıma sistemi, prosedürel Kara Kalem Ses Efektleri (SFX) ve Dokunsal Geri Bildirim (Haptic) motoru.
 
 
-
-
-Lig sistemi:
-
-
-Sıralama sayfası:
-
-
-Rozetler sistemi anlaşılır değil ve o sayfada tasarımımıza uygun olmayan kutular var.
 
 ---
 
@@ -54,17 +46,79 @@ Rozetler sistemi anlaşılır değil ve o sayfada tasarımımıza uygun olmayan 
 
 ---
 
-### 🚀 Sıradaki Geliştirme Önerileri ve Fikirler:
-1. **Kişisel Günlük Rekor Bildirimi:** Oyuncu kendi kişisel en iyi derecesini geliştirdiğinde veya günün liderlik tablosunda ilk 3'e yükseldiğinde konfeti eşliğinde "Yeni Zirve!" kutlaması.
-2. **Günlük Zeka Defteri Özeti (Günün 6/6 Tamamlanışı):** 6 oyunun tamamı bittiğinde oyuncuya günün tüm istatistiklerini, toplam IQ değişimini ve kazanılan rozetleri tek bir skeç sertifikası olarak sunma.
 
 
 💡 Oyun Geliştirmeleri Hakkında Vizyon ve İleri Fikirler:
-1-) [TAMAMLANDI] LinkedIn Benzeri Günlük "Kafa Kafaya" Karşılaştırma Kartı (Head-to-Head Share):
-Oyuncu bir oyunu bitirdiğinde WhatsApp/Instagram hikayesinde paylaşabileceği skeç tarzı bir görsel kart üretildi: "Bugün Zühtü'deki oyuncuların %94'ünden daha hızlı çözdüm! (IQ: 132 🧠)". Tekil zafer ekranı (GeniusWinDialog), liderlik pencereleri ve günlük diploma pencerelerine "Kafa Kafaya Meydan Oku" entegre edildi.
-2-) Arkadaş/Şirket Mini-Liderlik Tabloları:
+1-) Arkadaş/Şirket Mini-Liderlik Tabloları:
 Genel 150 kişilik tablonun yanı sıra, kullanıcıların 6 haneli bir kodla kendi arkadaş/iş arkadaşı grubunu kurup sadece birbirleriyle yarışabilecekleri "Ofis Zeka Ligi" özelliği.
-3-) [TAMAMLANDI] Zaman Makinesi (Arşiv Seviyeleri):
-Geçmiş günleri kaçıranlar için ana sayfada ve beyin gücü kartı takviminde geçmiş günlerin bulmacalarını çözebilme özelliği eklendi. "Zaman Makinesi" takvim diyaloğu ile herhangi bir geçmiş tarihe ışınlanılabilir. Ana sayfada üstte belirgin Arşiv Modu afişi gösterilir ve "Bugüne Dön" aksiyonu sunulur. Katı seri kuralı korundu: Arşiv oyunları `isArchivePlay = true` olarak kaydedilir ve günlük seri kazanımı/rekoru sadece gününde çözülen oyunlardan beslenir.
-4-) [TAMAMLANDI] Haftalık Zeka Raporu (Pazar Akşamı Özeti):
-Pazar günleri (ve istenildiği an ana sayfadaki "Rapor" butonu veya Beyin Gücü kartından) açılan grafik kartı: "Bu hafta en çok odaklandığın alan Mantık (%45), en zayıf kaldığın alan Kelime Hafızası (%15). Haftalık Seri: 7 Gün!". 6 bilişsel alan yatay skeç çubukları, Pazar akşamı otomatik gösterimi, Zühtü Koç Tavsiyesi ve doğrudan WhatsApp/Instagram paylaşım butonu eklendi.
+
+---
+
+## 🚀 Google Play Hazırlık, Olmazsa Olmazlar ve Yol Haritası (v1.1.5+13)
+
+Uygulamanın şu anki durumu (**v1.1.5+13**) içerik ve tasarım dili açısından oldukça olgun bir noktada: 6 oyunun tamamı, WAIS-IV tabanlı IQ motoru, 10 kademeli haftalık lig, 31 el çizimi rozet, canlı VPS backend (`server/routes/api.php`), günlük/haftalık zeka karneleri ve sosyal paylaşım kartları aktif çalışıyor.
+
+### 1. 🚨 Google Play İçin "Olmazsa Olmazlar" (Mağaza Reddi Yememek İçin Zorunlular)
+
+Google Play politikaları gereği şu maddeler tamamlanmadan uygulama **onay alamaz** veya yayından kaldırılır:
+
+1. **`REQUEST_INSTALL_PACKAGES` İzni ve `ota_update` Paketi (En Kritik Engel):**
+   * Şu an `android/app/src/main/AndroidManifest.xml` içinde `REQUEST_INSTALL_PACKAGES` izni ve `pubspec.yaml` içinde `ota_update` paketi var (GitHub üzerinden APK indirmek için).
+   * **Google Play Politikası:** Google Play üzerinden dağıtılan bir uygulamanın kendi kendini dışarıdan APK indirerek güncellemesi **kesinlikle yasaktır** (Cihaz ve Ağ Kötüye Kullanımı Politikası).
+   * **Çözüm:** Play Store sürümü (`AAB` - Android App Bundle) alınırken `ota_update` yerine Google'ın resmi **`in_app_update`** paketi kullanılmalı veya sadece sürüm kontrolü yapılıp kullanıcı Play Store sayfasına yönlendirilmelidir.
+2. **HTTPS (SSL) Zorunluluğu ve `usesCleartextTraffic`:**
+   * Şu an `ApiClient` doğrudan `http://2.56.109.165/api/v1` adresine bağlanıyor ve `AndroidManifest.xml` içinde `usesCleartextTraffic="true"` açık.
+   * **Çözüm:** VPS sunucusuna bir alan adı (veya alt alan adı) bağlanıp ücretsiz **Let's Encrypt SSL (HTTPS)** kurulmalı ve `usesCleartextTraffic="false"` yapılmalıdır.
+3. **Veri Silme / Hesap Sıfırlama Hakkı (Google Play Veri Güvenliği Zorunluluğu):**
+   * Uygulama cihaz UUID'si ve kullanıcı adını (`nickname`) sunucuya kaydediyor (`AuthController`). Google Play, sunucuda kullanıcı kaydı tutan her uygulamada uygulama içinden **"Verilerimi ve Hesabımı Sil"** butonu (veya web formu) bulunmasını şart koşuyor.
+   * **Çözüm:** `ProfileScreen` en altına *"Verilerimi Sunucudan ve Cihazdan Sil"* butonu ve buna bağlı bir `DELETE /api/v1/auth/account` uç noktası eklenmeli.
+4. **Gizlilik Politikası (Privacy Policy) Bağlantısı:**
+   * Hem Google Play Console'a hem de uygulama içi `ProfileScreen` ekranına tıklanabilir bir Gizlilik Politikası URL'i eklenmeli (VPS üzerinde `/privacy-policy` sayfası olarak 5 dakikada yayınlanabilir).
+5. **Uygulama Kimliği (`applicationId`) ve Keystore Güvenliği:**
+   * `android/app/build.gradle.kts` içindeki `com.dailygames.daily_games` paketi mağazaya çıkmadan önce `com.zuhtu.app` veya `com.goktalha.zuhtu` gibi kalıcı bir isme çekilebilir (Play Store'a bir kez yüklendikten sonra bir daha **asla** değiştirilemez).
+
+---
+
+### 2. 🔥 Oyuncu Tutundurma İçin "Olmazsa Olmaz" Özellikler (Retention) ✅ (TAMAMLANDI)
+
+Günlük bulmaca oyunlarında (Wordle, NYT Games, LinkedIn Games) oyuncuyu her gün geri getiren 3 temel mekanik vardır:
+
+1. **Yerel Bildirimler (Push / Local Notifications):**
+   * Oyuncu akşam saat 20:00'ye kadar o günün oyunlarını çözmediyse: *"🔥 12 günlük serin yanmak üzere! Günün bulmacaları seni bekliyor."* bildirimi.
+   * Pazar akşamı saat 20:00'de Haftalık Zeka Raporu hazır olduğunda bildirim.
+2. **İlerleme ve Seri Yedekleme / Cihaz Taşıma (Kurtarma Kodu veya Google Girişi):**
+   * Şu an rozetler, günlük seri (`streak`) ve IQ istatistikleri `SharedPreferences` ile yerel cihazda tutuluyor (`DailyPlayService`, `GameStatsService`). Kullanıcı uygulamayı silip yüklerse veya telefon değiştirirse `device_id` değişeceği için serisi sıfırlanır.
+   * En azından tüm istatistiklerin sunucudaki `Player` profiliyle senkronize edilmesi veya tek tıkla "Hesap Kurtarma Kodu" / "Google ile Bağla" seçeneği çok kritik.
+3. **Ses Efektleri (SFX) ve Dokunsal Geri Bildirim (Haptic) Ayarı:**
+   * Kalemle karalama sesi, vezir koyma tıkırtısı, oyun kazanınca kağıt hışırtısı/konfeti sesi oyunun "Kara Kalem Eskiz Defteri" hissiyatını 2 katına çıkarır. Profil sayfasına da Ses/Titreşim açma-kapama anahtarı eklenir.
+
+---
+
+### 3. ✨ "Eklesek Çok Güzel Olur" Dediklerim (Fark Yaratan Özellikler)
+
+1. **Ofis / Arkadaş Zeka Ligi (Özel Oda Sistemi):**
+   * 6 haneli davet koduyla (`#ZHT429` gibi) arkadaş grubunun veya aynı ofisteki kişilerin kendi kapalı liderlik tablosunu kurması. Uygulamayı organik olarak büyütecek (viral yapacak) en güçlü özellik budur.
+2. **Seri Dondurma (Streak Freeze / "Silgi Hakkı"):**
+   * Eskiz defteri konseptine uygun olarak; haftada 6/6 tam gün yapanlara 1 adet **"Zühtü Silgisi (Seri Koruyucu)"** hediye edilmesi. Oyuncu 1 gün girmeyi unutursa serisi yanmak yerine silgi kullanılır.
+3. **İlk Açılış Karşılama & Mini Rehber (Interactive Onboarding):**
+   * Uygulamayı Google Play'den ilk kez indiren bir kullanıcının karşısına doğrudan 6 oyun çıktığında Tango, Patches veya Crossclimb kurallarını anlaması zor olabilir. İlk açılışta 3 slaytlık el çizimi bir tanışma kartı ve her oyuna ilk girişte 15 saniyelik etkileşimli mini öğretici.
+4. **Rozet ve Kemerlerin Sunucu Sıralamasında Görünmesi:**
+   * `LeaderboardScreen` üzerinde ilk 3'teki veya listedeki oyuncuların isminin yanında kazandığı en üst kemerin (ör. *Einstein Statüsü* veya *Büyük Usta*) küçük skeç ikonunun görünmesi.
+
+---
+
+### 4. 📅 Uygulama Ne Zaman Google Play'e Sunmaya Hazır Hale Gelir?
+
+Uygulamanın **oyun motoru, arayüzü ve sunucu altyapısı şu an %90 hazır.**
+
+* **Teknik & Politik Hazırlık Süresi (1 - 2 Günlük İş):**
+  1. VPS'e SSL (HTTPS) tanımlanması,
+  2. Play Store derlemesi için `ota_update` / `REQUEST_INSTALL_PACKAGES` izninin temizlenmesi,
+  3. Profil ekranına "Hesabımı/Verilerimi Sil" ve "Gizlilik Politikası" eklenmesi,
+  4. Günlük seri hatırlatma bildirimlerinin (`flutter_local_notifications`) eklenmesi,
+  5. Mağaza görsellerinin (512x512 ikon, 1024x500 özellik grafiği ve ekran görüntüleri) hazırlanıp `.aab` (App Bundle) çıktısının alınması.
+
+* **Google Play Console Süreci Dikkat Notu:**
+  * Eğer Google Play geliştirici hesabın **bireysel** ve **Kasım 2023'ten sonra** açıldıysa, Google Play politikası gereği uygulamayı herkese açık yayınlamadan önce **en az 12 (veya 20) test kullanıcısıyla 14 gün boyunca Kapalı Test (Closed Testing)** aşamasında tutman gerekiyor.
+  * Dolayısıyla yukarıdaki 1-2 günlük teknik hazırlığı bitirip **hemen bu hafta içinde Kapalı Teste yükleyebiliriz**; 14 günlük test süresi boyunca da ses efektleri, "Ofis Zeka Ligi" ve bulut senkronizasyonu gibi özellikleri güncellemelerle içeri aktarabiliriz.
+

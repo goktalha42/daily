@@ -14,6 +14,7 @@ import '../../core/services/daily_play_service.dart';
 import '../../core/widgets/genius_win_dialog.dart';
 import '../../core/widgets/sketch_decorations.dart';
 import '../../core/services/game_session_service.dart';
+import '../../core/services/sound_haptic_service.dart';
 import '../common/base_game.dart';
 import '../../features/leaderboard/leaderboard_service.dart';
 import 'queens_models.dart';
@@ -430,7 +431,11 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
       _moveCount++;
       _checkState();
     });
-    HapticFeedback.lightImpact();
+    if (next == CellContent.cross) {
+      SoundHapticService.instance.playPencilTap();
+    } else {
+      SoundHapticService.instance.playErase();
+    }
   }
 
   /// Çift Dokunma (Double Tap):
@@ -450,11 +455,11 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
     if (current == CellContent.queen) {
       // Taca çift dokunuldu -> Taç yok olur!
       next = CellContent.empty;
-      HapticFeedback.lightImpact();
+      SoundHapticService.instance.playErase();
     } else {
       // Taç yerleştirilirken sınır kontrolü:
       if (_placedQueenCount >= _level.totalQueens) {
-        HapticFeedback.heavyImpact();
+        SoundHapticService.instance.playError();
         _showHintBanner(
           'Maksimum vezir sınırına (${_level.totalQueens}/${_level.totalQueens}) ulaşıldı! Yeni vezir eklemek için önce mevcut vezirlerden birini kaldırın.',
           title: '⚠️ Vezir Sınırı',
@@ -463,7 +468,7 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
         return;
       }
       next = CellContent.queen;
-      HapticFeedback.mediumImpact();
+      SoundHapticService.instance.playSymbolPlace();
       // Tablo kutularına 3D dalga efektini tetikle
       _triggerBoardRipple(r, c);
     }
@@ -481,7 +486,7 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
 
   void _undoMove() {
     if (_history.isEmpty || _isSolved) return;
-    HapticFeedback.selectionClick();
+    SoundHapticService.instance.playErase();
 
     setState(() {
       final lastMove = _history.removeLast();

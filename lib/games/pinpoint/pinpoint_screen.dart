@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -15,6 +14,7 @@ import '../../core/widgets/genius_win_dialog.dart';
 import '../../core/widgets/sketch_decorations.dart';
 import '../../core/widgets/screen_shake.dart';
 import '../../core/services/game_session_service.dart';
+import '../../core/services/sound_haptic_service.dart';
 import '../common/base_game.dart';
 import '../../features/leaderboard/leaderboard_service.dart';
 import 'pinpoint_models.dart';
@@ -170,6 +170,7 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> with WidgetsBin
     );
 
     if (isCorrect) {
+      SoundHapticService.instance.playSymbolPlace();
       _focusNode.unfocus();
       setState(() {
         _isSolved = true;
@@ -178,7 +179,7 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> with WidgetsBin
       _timer?.cancel();
       _handleWin();
     } else {
-      HapticFeedback.vibrate();
+      SoundHapticService.instance.playError();
       ScreenShake.shake(context, intensity: 6.0);
       setState(() {
         if (!_wrongGuesses.contains(input)) {
@@ -200,7 +201,7 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> with WidgetsBin
   void _revealNextClue() {
     if (_isSolved) return;
     if (_revealedClues < _level.clues.length) {
-      HapticFeedback.mediumImpact();
+      SoundHapticService.instance.playPencilTap();
       setState(() {
         _revealedClues++;
       });

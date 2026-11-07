@@ -1,9 +1,9 @@
 ﻿{
-    "version":  "1.1.5",
-    "build_number":  13,
-    "title":  "Zühtü v1.1.5: Geçmiş Oyun Puan Kısıtlaması \u0026 IQ Dengelemesi",
-    "changelog":  "🎯 Oyunlar artık sadece ait oldukları günde puan kazandırır! Geçmiş oyunlar lig ve sıralama puanı vermez, sadece IQ kartlarına normal etkinin %10\u0027u oranında katkı sağlar. Zafer ekranında geçmiş oyun bilgilendirme rozeti eklendi.",
-    "apk_url":  "https://raw.githubusercontent.com/goktalha42/daily/main/releases/Zuhtu_v1.1.5_b13.apk",
-    "release_url":  "https://github.com/goktalha42/daily/releases/tag/v1.1.5",
+    "version":  "1.1.6",
+    "build_number":  14,
+    "title":  "Zühtü v1.1.6: Seri Koruma Bildirimleri, Bulut Yedekleme \u0026 Ses Efektleri",
+    "changelog":  "🔥 Akşam 20:00 Günlük Seri Koruma ve Pazar 20:00 Haftalık Zeka Raporu bildirimleri eklendi.\n☁️ Kurtarma Kodu (ZHT-XXXX-XXXX) ve Taşınabilir Yedek Anahtarı ile Bulut Yedekleme \u0026 Cihaz Taşıma sistemi eklendi.\n🔊 Kara Kalem Eskiz Defteri konseptine özel kalem, sembol, hata ve zafer ses efektleri (SFX) ile titreşim ayarları eklendi.",
+    "apk_url":  "https://raw.githubusercontent.com/goktalha42/daily/main/releases/Zuhtu_v1.1.6_b14.apk",
+    "release_url":  "https://github.com/goktalha42/daily/releases/tag/v1.1.6",
     "force_update":  false
 }

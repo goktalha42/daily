@@ -151,4 +151,63 @@ class ApiTest extends TestCase
                 'available' => true,
             ]);
     }
+
+    public function test_sync_and_restore_progress_across_devices(): void
+    {
+        $payload = [
+            'version' => 1,
+            'daily_play' => [
+                'queens:kolay|2026-11-08' => [
+                    'gameType' => 'queens',
+                    'dateId' => '2026-11-08',
+                    'score' => 880,
+                    'durationMs' => 21000,
+                    'completedAt' => '2026-11-08T12:00:00Z',
+                    'subKey' => 'kolay',
+                ],
+            ],
+            'badges' => [
+                'badge_first_win' => [
+                    'badgeId' => 'badge_first_win',
+                    'unlockedAt' => '2026-11-08T12:00:00Z',
+                ],
+            ],
+        ];
+
+        $syncRes = $this->postJson('/api/v1/auth/sync-progress', [
+            'device_id' => 'old-phone-device-id',
+            'nickname' => 'ZekaKrali',
+            'league_tier' => 'gold',
+            'progress_payload' => $payload,
+        ]);
+
+        $syncRes->assertStatus(200)
+            ->assertJson([
+                'status' => 'success',
+            ]);
+
+        $recoveryCode = $syncRes->json('recovery_code');
+        $this->assertNotEmpty($recoveryCode);
+        $this->assertStringStartsWith('ZHT-', $recoveryCode);
+
+        // Yeni telefona geçiş: Kurtarma kodu ile tüm seriyi ve profili geri yükle
+        $restoreRes = $this->postJson('/api/v1/auth/restore-progress', [
+            'recovery_code' => strtolower($recoveryCode),
+            'new_device_id' => 'new-phone-device-id',
+        ]);
+
+        $restoreRes->assertStatus(200)
+            ->assertJson([
+                'status' => 'success',
+                'recovery_code' => $recoveryCode,
+                'player' => [
+                    'device_id' => 'new-phone-device-id',
+                    'nickname' => 'ZekaKrali',
+                    'league_tier' => 'gold',
+                ],
+            ]);
+
+        $restoredPayload = $restoreRes->json('progress_payload');
+        $this->assertEquals(880, $restoredPayload['daily_play']['queens:kolay|2026-11-08']['score']);
+    }
 }

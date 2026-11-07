@@ -15,7 +15,29 @@ class Player extends Model
     protected $casts = [
         'is_bot' => 'boolean',
         'last_active_at' => 'datetime',
+        'progress_payload' => 'array',
+        'progress_synced_at' => 'datetime',
     ];
+
+    /**
+     * Benzersiz ve okunaklı 8 haneli kurtarma kodu üretir (Örn: ZHT-4829-K7M2).
+     */
+    public static function generateUniqueRecoveryCode(): string
+    {
+        $chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+        $max = strlen($chars) - 1;
+        do {
+            $part1 = '';
+            $part2 = '';
+            for ($i = 0; $i < 4; $i++) {
+                $part1 .= $chars[random_int(0, $max)];
+                $part2 .= $chars[random_int(0, $max)];
+            }
+            $code = "ZHT-{$part1}-{$part2}";
+        } while (self::where('recovery_code', $code)->exists());
+
+        return $code;
+    }
 
     /**
      * İsimleri büyük/küçük harf ve Türkçe karakter duyarsız tekilleştirir.
@@ -36,6 +58,9 @@ class Player extends Model
         static::saving(function (Player $player) {
             if ($player->nickname && ($player->isDirty('nickname') || !$player->normalized_nickname)) {
                 $player->normalized_nickname = self::normalizeNickname($player->nickname);
+            }
+            if (!$player->is_bot && empty($player->recovery_code)) {
+                $player->recovery_code = self::generateUniqueRecoveryCode();
             }
         });
     }

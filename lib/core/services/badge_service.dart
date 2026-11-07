@@ -280,4 +280,31 @@ class BadgeNotifier extends StateNotifier<Map<String, UserBadge>> {
     if (ub == null || ub.isExpired) return 0;
     return ub.remainingDays;
   }
+
+  /// Bulut yedekleme için kazanılmış rozet ve kemerleri JSON haritası olarak döner.
+  Map<String, dynamic> exportBackupMap() {
+    return {
+      for (final e in state.entries) e.key: e.value.toJson(),
+    };
+  }
+
+  /// Buluttan veya yedek anahtarından gelen rozet ve kemerleri geri yükler.
+  Future<void> restoreFromBackupMap(
+    Map<String, dynamic> decoded, {
+    bool merge = true,
+  }) async {
+    final updated =
+        merge ? Map<String, UserBadge>.from(state) : <String, UserBadge>{};
+
+    decoded.forEach((key, value) {
+      if (value is Map<String, dynamic>) {
+        try {
+          updated[key] = UserBadge.fromJson(value);
+        } catch (_) {}
+      }
+    });
+
+    state = updated;
+    await _saveBadges();
+  }
 }

@@ -32,6 +32,9 @@ import '../../core/widgets/nickname_prompt_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/services/update_service.dart';
 import '../../core/widgets/update_prompt_dialog.dart';
+import '../../core/services/sound_haptic_service.dart';
+import '../../core/services/retention_notification_service.dart';
+import '../../core/services/cloud_backup_service.dart';
 import 'widgets/home_brain_hero_card.dart';
 import 'widgets/weekly_brain_report_dialog.dart';
 import 'widgets/time_machine_dialog.dart';
@@ -50,6 +53,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await SoundHapticService.instance.ensureLoaded();
+      if (mounted) {
+        ref.read(retentionNotificationProvider);
+        ref.read(cloudBackupProvider);
+      }
       await _checkMandatoryNickname();
       if (mounted) {
         await _checkAppUpdate();
@@ -563,6 +571,13 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
               onReturnToday: _returnToToday,
               onChangeDate: _openTimeMachine,
             ),
+          )
+        else if (dailyPlayState.getCurrentStreak() > 0 &&
+            dailyPlayState.getCompletedCountForDate(todayKey) == 0)
+          SliverToBoxAdapter(
+            child: _StreakInDangerBanner(
+              streakDays: dailyPlayState.getCurrentStreak(),
+            ),
           ),
 
         // 2. DİNAMİK & ANİMASYONLU BEYİN GÜCÜ HERO KARTI
@@ -1039,6 +1054,73 @@ class _ArchiveModeBanner extends StatelessWidget {
                   ),
                 ),
               ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Aktif serisi olan oyuncu bugün henüz oyun çözmediğinde görünen hatırlatma kartı
+class _StreakInDangerBanner extends StatelessWidget {
+  final int streakDays;
+
+  const _StreakInDangerBanner({required this.streakDays});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final pencilColor = isDark ? AppColors.pencilWhite : AppColors.pencilBlack;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 4, 20, 6),
+      child: SketchCard(
+        backgroundColor: isDark ? const Color(0xFF431407) : AppColors.highlighterOrange,
+        borderColor: pencilColor,
+        borderRadius: 14,
+        borderWidth: 2.0,
+        shadowOffset: const Offset(2.5, 2.5),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        child: Row(
+          children: [
+            SketchCard(
+              padding: const EdgeInsets.all(6),
+              borderRadius: 9,
+              borderWidth: 1.5,
+              shadowOffset: const Offset(1.5, 1.5),
+              backgroundColor: AppColors.sunYellow,
+              borderColor: AppColors.pencilBlack,
+              child: const Icon(
+                Icons.local_fire_department_rounded,
+                size: 20,
+                color: AppColors.pencilBlack,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '🔥 $streakDays GÜNLÜK SERİNİ KORU!',
+                    style: GoogleFonts.patrickHand(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: isDark ? Colors.white : AppColors.inkBlack,
+                    ),
+                  ),
+                  Text(
+                    'Bugün henüz oyun çözmedin. Gece 00:00\'dan önce en az 1 bulmaca tamamla!',
+                    style: GoogleFonts.patrickHand(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? Colors.white70 : AppColors.inkBlack,
+                      height: 1.15,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),

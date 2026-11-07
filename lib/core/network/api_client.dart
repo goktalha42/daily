@@ -25,11 +25,13 @@ class ApiClient {
   static const String _deviceIdKey = 'zuhtu_device_uuid';
   static const String _authTokenKey = 'zuhtu_auth_token';
   static const String _nicknameKey = 'zuhtu_user_nickname';
+  static const String _recoveryCodeKey = 'zuhtu_recovery_code_v1';
 
   String? _cachedBaseUrl;
   String? _deviceId;
   String? _authToken;
   String? _cachedNickname;
+  String? _cachedRecoveryCode;
   bool _isOnlineServerReachable = false;
 
   bool get isServerOnline => _isOnlineServerReachable;
@@ -114,6 +116,12 @@ class ApiClient {
         }
         _cachedNickname = nickname.trim();
         await prefs.setString(_nicknameKey, _cachedNickname!);
+        final playerMap = data['player'] as Map<String, dynamic>?;
+        final recCode = playerMap?['recovery_code'] as String?;
+        if (recCode != null && recCode.isNotEmpty) {
+          _cachedRecoveryCode = recCode;
+          await prefs.setString(_recoveryCodeKey, recCode);
+        }
 
         return {
           'success': true,
@@ -344,5 +352,136 @@ class ApiClient {
       debugPrint('[ApiClient] Liderlik tablosu çekme hatası (Local fallback): $e');
     }
     return null;
+  }
+
+  /// Kayıtlı kurtarma kodunu döner
+  Future<String?> getRecoveryCode() async {
+    if (_cachedRecoveryCode != null) return _cachedRecoveryCode;
+    final prefs = await SharedPreferences.getInstance();
+    _cachedRecoveryCode = prefs.getString(_recoveryCodeKey);
+    return _cachedRecoveryCode;
+  }
+
+  /// Oyuncunun tüm yerel ilerlemesini (seri, IQ, rozetler, lig) sunucuya yedekler
+  Future<Map<String, dynamic>> syncProgressToServer({
+    required Map<String, dynamic> progressPayload,
+    String? leagueTier,
+  }) async {
+    try {
+      final baseUrl = await getBaseUrl();
+      final deviceId = await getDeviceId();
+      final nickname = await getNickname();
+      final token = await ensureAuthenticated();
+      final url = Uri.parse('$baseUrl/auth/sync-progress');
+
+      final headers = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'X-Device-Id': deviceId,
+        if (token != null) 'Authorization': 'Bearer $token',
+      };
+
+      final res = await _client
+          .post(
+            url,
+            headers: headers,
+            body: jsonEncode({
+              'device_id': deviceId,
+              'nickname': ?nickname,
+              'league_tier': ?leagueTier,
+              'progress_payload': progressPayload,
+            }),
+          )
+          .timeout(const Duration(seconds: 5));
+
+      final data = jsonDecode(res.body) as Map<String, dynamic>;
+      if (res.statusCode == 200 && data['status'] == 'success') {
+        final recCode = data['recovery_code'] as String?;
+        if (recCode != null && recCode.isNotEmpty) {
+          _cachedRecoveryCode = recCode;
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString(_recoveryCodeKey, recCode);
+        }
+        return {
+          'success': true,
+          'recovery_code': recCode,
+          'synced_at': data['synced_at'],
+          'message': data['message'] ?? 'İlerleme başarıyla yedeklendi.',
+        };
+      }
+      return {
+        'success': false,
+        'message': data['message'] ?? 'Bulut senkronizasyonu tamamlanamadı.',
+      };
+    } catch (e) {
+      debugPrint('[ApiClient] syncProgress hatası: $e');
+      return {
+        'success': false,
+        'message': 'Sunucuya ulaşılamadı. Çevrimdışı yedek anahtarını kullanabilirsiniz.',
+      };
+    }
+  }
+
+  /// Kurtarma Kodu (ZHT-XXXX-XXXX) ile sunucudaki ilerlemeyi yeni cihaza geri yükler
+  Future<Map<String, dynamic>> restoreProgressFromServer(String recoveryCode) async {
+    try {
+      final baseUrl = await getBaseUrl();
+      final deviceId = await getDeviceId();
+      final url = Uri.parse('$baseUrl/auth/restore-progress');
+
+      final res = await _client
+          .post(
+            url,
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+              'X-Device-Id': deviceId,
+            },
+            body: jsonEncode({
+              'recovery_code': recoveryCode.trim().toUpperCase(),
+              'new_device_id': deviceId,
+            }),
+          )
+          .timeout(const Duration(seconds: 6));
+
+      final data = jsonDecode(res.body) as Map<String, dynamic>;
+      if (res.statusCode == 200 && data['status'] == 'success') {
+        final prefs = await SharedPreferences.getInstance();
+        final token = data['token'] as String?;
+        if (token != null) {
+          _authToken = token;
+          await prefs.setString(_authTokenKey, token);
+        }
+        final player = data['player'] as Map<String, dynamic>?;
+        final nick = player?['nickname'] as String?;
+        if (nick != null && nick.isNotEmpty) {
+          _cachedNickname = nick;
+          await prefs.setString(_nicknameKey, nick);
+        }
+        final recCode = (data['recovery_code'] ?? player?['recovery_code']) as String?;
+        if (recCode != null && recCode.isNotEmpty) {
+          _cachedRecoveryCode = recCode;
+          await prefs.setString(_recoveryCodeKey, recCode);
+        }
+
+        return {
+          'success': true,
+          'nickname': nick,
+          'recovery_code': recCode,
+          'progress_payload': data['progress_payload'],
+          'message': data['message'] ?? 'İlerlemeniz başarıyla geri yüklendi!',
+        };
+      }
+      return {
+        'success': false,
+        'message': data['message'] ?? 'Kurtarma kodu bulunamadı.',
+      };
+    } catch (e) {
+      debugPrint('[ApiClient] restoreProgress hatası: $e');
+      return {
+        'success': false,
+        'message': 'Sunucuya bağlanılamadı. Lütfen internet bağlantınızı veya kodu kontrol edin.',
+      };
+    }
   }
 }

@@ -119,6 +119,7 @@ class AuthController extends Controller
                 'nickname' => $player->nickname,
                 'avatar_id' => $player->avatar_id,
                 'league_tier' => $player->league_tier,
+                'recovery_code' => $player->recovery_code,
                 'created_at' => $player->created_at?->toIso8601String(),
             ],
         ]);
@@ -196,6 +197,7 @@ class AuthController extends Controller
                 'avatar_id' => $player->avatar_id,
                 'league_tier' => $player->league_tier,
                 'league_group_id' => $player->league_group_id,
+                'recovery_code' => $player->recovery_code,
                 'created_at' => $player->created_at?->toIso8601String(),
             ],
         ]);
@@ -259,7 +261,147 @@ class AuthController extends Controller
                 'nickname' => $player->nickname,
                 'avatar_id' => $player->avatar_id,
                 'league_tier' => $player->league_tier,
+                'recovery_code' => $player->recovery_code,
             ],
+        ]);
+    }
+
+    /**
+     * Oyuncunun tüm ilerlemesini (günlük seri, IQ istatistikleri, rozetler, lig durumu)
+     * sunucuya yedekler ve oyuncuya özel ZHT-XXXX-XXXX kurtarma kodunu döner.
+     */
+    public function syncProgress(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'device_id' => 'required|string|min:4|max:128',
+            'nickname' => 'nullable|string|max:32',
+            'league_tier' => 'nullable|string|max:32',
+            'progress_payload' => 'required|array',
+        ]);
+
+        $deviceId = $validated['device_id'];
+        $player = Player::where('device_id', $deviceId)->first();
+
+        if (!$player) {
+            $nick = isset($validated['nickname']) && trim($validated['nickname']) !== ''
+                ? trim($validated['nickname'])
+                : 'Oyuncu #' . rand(1000, 9999);
+
+            // Eğer aynı takma ad başka bir cihazda kayıtlıysa çakışmayı önle
+            $norm = Player::normalizeNickname($nick);
+            if (Player::where('normalized_nickname', $norm)->exists()) {
+                $nick = $nick . '_' . rand(10, 99);
+            }
+
+            $player = Player::create([
+                'device_id' => $deviceId,
+                'nickname' => $nick,
+                'normalized_nickname' => Player::normalizeNickname($nick),
+                'avatar_id' => 'avatar_default',
+                'is_bot' => false,
+                'league_tier' => $validated['league_tier'] ?? 'stone',
+                'progress_payload' => $validated['progress_payload'],
+                'progress_synced_at' => now(),
+                'last_active_at' => now(),
+            ]);
+        } else {
+            if (empty($player->recovery_code)) {
+                $player->recovery_code = Player::generateUniqueRecoveryCode();
+            }
+            if (!empty($validated['league_tier'])) {
+                $player->league_tier = $validated['league_tier'];
+            }
+            $player->progress_payload = $validated['progress_payload'];
+            $player->progress_synced_at = now();
+            $player->last_active_at = now();
+            $player->save();
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'İlerleme ve günlük seri başarıyla buluta yedeklendi.',
+            'recovery_code' => $player->recovery_code,
+            'synced_at' => $player->progress_synced_at?->toIso8601String(),
+            'player' => [
+                'id' => $player->id,
+                'device_id' => $player->device_id,
+                'nickname' => $player->nickname,
+                'league_tier' => $player->league_tier,
+                'recovery_code' => $player->recovery_code,
+            ],
+        ]);
+    }
+
+    /**
+     * Kurtarma Kodu (ZHT-XXXX-XXXX) ile oyuncunun buluttaki serisini, IQ istatistiklerini,
+     * rozetlerini ve kullanıcı adını yeni cihaza geri yükler.
+     */
+    public function restoreProgress(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'recovery_code' => 'required|string|min:6|max:32',
+            'new_device_id' => 'nullable|string|min:4|max:128',
+        ]);
+
+        $normalizedCode = strtoupper(trim($validated['recovery_code']));
+        $player = Player::where('recovery_code', $normalizedCode)->first();
+
+        if (!$player) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Girdiğiniz kurtarma kodu (' . $normalizedCode . ') ile eşleşen bir yedek bulunamadı.',
+            ], 404);
+        }
+
+        $newDeviceId = $validated['new_device_id'] ?? $request->header('X-Device-Id');
+
+        if ($newDeviceId && $newDeviceId !== $player->device_id) {
+            // Yeni cihazda daha önce oluşmuş geçici bir misafir kaydı varsa skorlarını birleştirip temizle
+            $existingTemp = Player::where('device_id', $newDeviceId)
+                ->where('id', '!=', $player->id)
+                ->first();
+
+            if ($existingTemp) {
+                foreach ($existingTemp->scores as $tempScore) {
+                    $alreadyHas = $player->scores()
+                        ->where('game_type', $tempScore->game_type)
+                        ->where('date_id', $tempScore->date_id)
+                        ->where('difficulty', $tempScore->difficulty)
+                        ->exists();
+                    if (!$alreadyHas) {
+                        $tempScore->update(['player_id' => $player->id]);
+                    } else {
+                        $tempScore->delete();
+                    }
+                }
+                $existingTemp->tokens()->delete();
+                $existingTemp->delete();
+            }
+
+            $player->device_id = $newDeviceId;
+        }
+
+        $player->last_active_at = now();
+        $player->save();
+
+        $player->tokens()->delete();
+        $token = $player->createToken('guest_token')->plainTextToken;
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Hesabınız ve tüm zeka seriniz başarıyla geri yüklendi!',
+            'token' => $token,
+            'recovery_code' => $player->recovery_code,
+            'synced_at' => $player->progress_synced_at?->toIso8601String(),
+            'player' => [
+                'id' => $player->id,
+                'device_id' => $player->device_id,
+                'nickname' => $player->nickname,
+                'avatar_id' => $player->avatar_id,
+                'league_tier' => $player->league_tier,
+                'recovery_code' => $player->recovery_code,
+            ],
+            'progress_payload' => $player->progress_payload ?? [],
         ]);
     }
 }

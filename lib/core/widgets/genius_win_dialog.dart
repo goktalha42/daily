@@ -11,6 +11,7 @@ import 'screen_shake.dart';
 import 'sketch_badge_icons.dart';
 import 'sketch_decorations.dart';
 import 'head_to_head_share_dialog.dart';
+import '../services/sound_haptic_service.dart';
 
 /// Zühtü - Tamamen Organik Kara Kalem Skeç Defteri Zafer Ekranı Diyaloğu.
 /// Sert skeç gölgeleri, 2.5px siyah kontur, el çizimi SketchCard yapısı.
@@ -66,9 +67,12 @@ class _GeniusWinDialogState extends State<GeniusWinDialog> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(milliseconds: 150), () {
+    Future.delayed(const Duration(milliseconds: 120), () {
       if (mounted) {
-        HapticFeedback.heavyImpact();
+        final hasMilestone = widget.statsResult?.milestone != null;
+        SoundHapticService.instance.playVictory(
+          isMilestoneOrPersonalBest: widget.isPersonalBest || hasMilestone,
+        );
       }
     });
   }

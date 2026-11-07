@@ -13,6 +13,7 @@ import '../../core/services/game_stats_service.dart';
 import '../../core/services/badge_service.dart';
 import '../../core/services/daily_play_service.dart';
 import '../../core/services/game_session_service.dart';
+import '../../core/services/sound_haptic_service.dart';
 import '../../core/widgets/genius_win_dialog.dart';
 import '../../core/widgets/sketch_decorations.dart';
 import '../common/base_game.dart';
@@ -271,8 +272,12 @@ class _TangoScreenState extends ConsumerState<TangoScreen> with WidgetsBindingOb
   void _onCellTap(int r, int c) {
     if (_isSolved || _grid[r][c].isFixed) return;
 
-    HapticFeedback.selectionClick();
     final current = _grid[r][c].symbol;
+    if (current == TangoSymbol.moon) {
+      SoundHapticService.instance.playErase();
+    } else {
+      SoundHapticService.instance.playSymbolPlace();
+    }
     _history.add(_TangoHistoryItem(r, c, current));
 
     setState(() {
@@ -291,7 +296,7 @@ class _TangoScreenState extends ConsumerState<TangoScreen> with WidgetsBindingOb
 
   void _undoMove() {
     if (_history.isEmpty || _isSolved) return;
-    HapticFeedback.lightImpact();
+    SoundHapticService.instance.playErase();
 
     setState(() {
       final last = _history.removeLast();

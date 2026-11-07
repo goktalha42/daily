@@ -370,6 +370,45 @@ class DailyPlayNotifier extends StateNotifier<DailyPlayState> {
       isFirstCompletion: isFirst,
     );
   }
+
+  /// Bulut yedekleme için tüm günlük oyun ve seri kayıtlarını JSON haritası olarak döner.
+  Map<String, dynamic> exportBackupMap() {
+    return state.records.map((k, v) => MapEntry(k, v.toJson()));
+  }
+
+  /// Buluttan veya yedek anahtarından gelen kayıtları geri yükler (mevcutlarla güvenli birleştirir).
+  Future<void> restoreFromBackupMap(
+    Map<String, dynamic> rawMap, {
+    bool merge = true,
+  }) async {
+    final merged = merge
+        ? Map<String, DailyPlayRecord>.from(state.records)
+        : <String, DailyPlayRecord>{};
+
+    rawMap.forEach((key, value) {
+      if (value is Map<String, dynamic>) {
+        try {
+          final incoming = DailyPlayRecord.fromJson(value);
+          final existing = merged[key];
+          if (existing == null ||
+              incoming.score > existing.score ||
+              (incoming.score == existing.score &&
+                  incoming.durationMs < existing.durationMs)) {
+            merged[key] = incoming;
+          }
+        } catch (_) {}
+      }
+    });
+
+    final sanitized = _sanitizeLegacyDuplicates(merged);
+    state = DailyPlayState(records: sanitized);
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final mapToSave = sanitized.map((k, v) => MapEntry(k, v.toJson()));
+      await prefs.setString(_prefKey, jsonEncode(mapToSave));
+    } catch (_) {}
+  }
 }
 
 final dailyPlayServiceProvider =

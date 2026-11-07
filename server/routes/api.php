@@ -6,11 +6,13 @@ use App\Http\Controllers\Api\LeaderboardController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
-    // 1. Cihaz / Misafir Girişi, Zorunlu Benzersiz İsim ve Profil
+    // 1. Cihaz / Misafir Girişi, Zorunlu Benzersiz İsim, Bulut Yedekleme ve Profil
     Route::get('/auth/check-nickname', [AuthController::class, 'checkNickname']);
     Route::post('/auth/set-nickname', [AuthController::class, 'setNickname']);
     Route::post('/auth/guest', [AuthController::class, 'guest']);
     Route::post('/auth/profile', [AuthController::class, 'updateProfile']);
+    Route::post('/auth/sync-progress', [AuthController::class, 'syncProgress']);
+    Route::post('/auth/restore-progress', [AuthController::class, 'restoreProgress']);
 
     // 2. Zaman Senkronizasyonu (Hile ve saat manipülasyonu engelleme)
     Route::get('/time', [GameController::class, 'time']);
