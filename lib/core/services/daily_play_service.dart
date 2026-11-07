@@ -12,6 +12,7 @@ class DailyPlayRecord {
   final int durationMs;
   final DateTime completedAt;
   final String? subKey;
+  final bool isArchivePlay;
 
   const DailyPlayRecord({
     required this.gameType,
@@ -20,6 +21,7 @@ class DailyPlayRecord {
     required this.durationMs,
     required this.completedAt,
     this.subKey,
+    this.isArchivePlay = false,
   });
 
   Map<String, dynamic> toJson() => {
@@ -29,6 +31,7 @@ class DailyPlayRecord {
         'durationMs': durationMs,
         'completedAt': completedAt.toIso8601String(),
         if (subKey != null) 'subKey': subKey,
+        if (isArchivePlay) 'isArchivePlay': true,
       };
 
   factory DailyPlayRecord.fromJson(Map<String, dynamic> json) => DailyPlayRecord(
@@ -41,6 +44,7 @@ class DailyPlayRecord {
         durationMs: json['durationMs'] as int,
         completedAt: DateTime.parse(json['completedAt'] as String),
         subKey: json['subKey'] as String?,
+        isArchivePlay: json['isArchivePlay'] == true,
       );
 }
 
@@ -197,7 +201,7 @@ class DailyPlayState {
   int getCurrentStreak([GameType? game]) {
     final distinctDates = <String>{};
     for (final r in records.values) {
-      if (game == null || r.gameType == game) {
+      if (!r.isArchivePlay && (game == null || r.gameType == game)) {
         distinctDates.add(r.dateId);
       }
     }
@@ -229,7 +233,7 @@ class DailyPlayState {
   int getMaxStreak([GameType? game]) {
     final distinctDates = <String>{};
     for (final r in records.values) {
-      if (game == null || r.gameType == game) {
+      if (!r.isArchivePlay && (game == null || r.gameType == game)) {
         distinctDates.add(r.dateId);
       }
     }
@@ -330,6 +334,9 @@ class DailyPlayNotifier extends StateNotifier<DailyPlayState> {
     final isNewScore = !isFirst && score > prevBestScore;
     final isNewTime = !isFirst && durationMs > 0 && (prevBestTime == 0 || durationMs < prevBestTime);
 
+    final todayId = GameDateUtils.getTodayLevelId();
+    final isArchive = dateId != todayId;
+
     final record = DailyPlayRecord(
       gameType: game,
       dateId: dateId,
@@ -337,6 +344,7 @@ class DailyPlayNotifier extends StateNotifier<DailyPlayState> {
       durationMs: durationMs,
       completedAt: DateTime.now(),
       subKey: subKey,
+      isArchivePlay: isArchive,
     );
 
     final key = DailyPlayState.makeKey(game, dateId, subKey);

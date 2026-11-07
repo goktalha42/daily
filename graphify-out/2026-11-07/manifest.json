@@ -204,9 +204,9 @@
     "semantic_hash": "8e770919026a0fb9fb8f703d7b1c110d"
   },
   "lib/features/home/home_screen.dart": {
-    "mtime": 1793883947.298662,
-    "seen": 1794056590.1970434,
-    "ast_hash": "2c969ce0583089686fa4b2e4be9744e2",
+    "mtime": 1794058319.5329754,
+    "seen": 1794058528.6953106,
+    "ast_hash": "5a456377c03f6be9a63b18cc68daef6b",
     "semantic_hash": ""
   },
   "lib/features/leaderboard/leaderboard_screen.dart": {
@@ -678,15 +678,15 @@
     "semantic_hash": "30cc1614b16214b66c014af09ba699eb"
   },
   "oyun_hatalari.md": {
-    "mtime": 1794056794.709584,
-    "seen": 1794057016.4463782,
-    "ast_hash": "8d22722599e046df8c3e9f33845e75cd",
+    "mtime": 1794058368.952636,
+    "seen": 1794058528.6955876,
+    "ast_hash": "ea1d47066cd8c15e4b1974ab580ba695",
     "semantic_hash": ""
   },
   "pubspec.yaml": {
-    "mtime": 1794056779.224597,
-    "seen": 1794057016.4463797,
-    "ast_hash": "55f1ecb089a3a85964edb78385bcd1b8",
+    "mtime": 1794058353.7222838,
+    "seen": 1794058528.695589,
+    "ast_hash": "a6afa8109995d2ff4e04fa7fef59911f",
     "semantic_hash": ""
   },
   "rozetler.md": {
@@ -1242,9 +1242,9 @@
     "semantic_hash": ""
   },
   "version.json": {
-    "mtime": 1794056779.2805698,
-    "seen": 1794057016.4463394,
-    "ast_hash": "3b224d4adbbffb99c818ff5c0afcfb64",
+    "mtime": 1794058353.7667582,
+    "seen": 1794058528.6955507,
+    "ast_hash": "9b3610458c275a287b0429bdb1227a8a",
     "semantic_hash": ""
   },
   "VPS_KURULUMU_VE_DURUM.md": {
@@ -1290,9 +1290,9 @@
     "semantic_hash": ""
   },
   "lib/features/home/widgets/home_brain_hero_card.dart": {
-    "mtime": 1794051690.5122287,
-    "seen": 1794056590.1970475,
-    "ast_hash": "b1ad3a259a25db8620b78b34392a585b",
+    "mtime": 1794058320.3350441,
+    "seen": 1794058528.6953154,
+    "ast_hash": "002fbd9f8b37b895b338dde66fa5a43a",
     "semantic_hash": ""
   },
   "test/iq_system_test.dart": {
@@ -1350,9 +1350,21 @@
     "semantic_hash": ""
   },
   "test/head_to_head_share_test.dart": {
-    "mtime": 1794056521.928986,
-    "seen": 1794056590.197264,
-    "ast_hash": "ca5003b35a908a102e2b417ce700b878",
+    "mtime": 1794058321.7032833,
+    "seen": 1794058528.6955128,
+    "ast_hash": "2a27bb1761612ee5be63483590f7f8e4",
+    "semantic_hash": ""
+  },
+  "lib/features/home/widgets/weekly_brain_report_dialog.dart": {
+    "mtime": 1794058321.0485122,
+    "seen": 1794058528.6953175,
+    "ast_hash": "cb0425aeb069252cf5f8f2857f758b7b",
+    "semantic_hash": ""
+  },
+  "test/weekly_brain_report_test.dart": {
+    "mtime": 1794058321.8286607,
+    "seen": 1794058528.6955411,
+    "ast_hash": "4924c91d6fa6c8959989b1c42656ed10",
     "semantic_hash": ""
   }
 }

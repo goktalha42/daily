@@ -64,7 +64,7 @@ Rozetler sistemi anlaşılır değil ve o sayfada tasarımımıza uygun olmayan 
 Oyuncu bir oyunu bitirdiğinde WhatsApp/Instagram hikayesinde paylaşabileceği skeç tarzı bir görsel kart üretildi: "Bugün Zühtü'deki oyuncuların %94'ünden daha hızlı çözdüm! (IQ: 132 🧠)". Tekil zafer ekranı (GeniusWinDialog), liderlik pencereleri ve günlük diploma pencerelerine "Kafa Kafaya Meydan Oku" entegre edildi.
 2-) Arkadaş/Şirket Mini-Liderlik Tabloları:
 Genel 150 kişilik tablonun yanı sıra, kullanıcıların 6 haneli bir kodla kendi arkadaş/iş arkadaşı grubunu kurup sadece birbirleriyle yarışabilecekleri "Ofis Zeka Ligi" özelliği.
-3-) Zaman Makinesi (Arşiv Seviyeleri):
-Geçmiş günleri kaçıranlar için ana sayfada takvimden geçmiş günlerin bulmacalarını çözebilme (ancak günlük seri kazanımı sadece gününde çözülünce verilir).
+3-) [TAMAMLANDI] Zaman Makinesi (Arşiv Seviyeleri):
+Geçmiş günleri kaçıranlar için ana sayfada ve beyin gücü kartı takviminde geçmiş günlerin bulmacalarını çözebilme özelliği eklendi. "Zaman Makinesi" takvim diyaloğu ile herhangi bir geçmiş tarihe ışınlanılabilir. Ana sayfada üstte belirgin Arşiv Modu afişi gösterilir ve "Bugüne Dön" aksiyonu sunulur. Katı seri kuralı korundu: Arşiv oyunları `isArchivePlay = true` olarak kaydedilir ve günlük seri kazanımı/rekoru sadece gününde çözülen oyunlardan beslenir.
 4-) [TAMAMLANDI] Haftalık Zeka Raporu (Pazar Akşamı Özeti):
 Pazar günleri (ve istenildiği an ana sayfadaki "Rapor" butonu veya Beyin Gücü kartından) açılan grafik kartı: "Bu hafta en çok odaklandığın alan Mantık (%45), en zayıf kaldığın alan Kelime Hafızası (%15). Haftalık Seri: 7 Gün!". 6 bilişsel alan yatay skeç çubukları, Pazar akşamı otomatik gösterimi, Zühtü Koç Tavsiyesi ve doğrudan WhatsApp/Instagram paylaşım butonu eklendi.

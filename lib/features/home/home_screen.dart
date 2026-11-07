@@ -34,6 +34,7 @@ import '../../core/services/update_service.dart';
 import '../../core/widgets/update_prompt_dialog.dart';
 import 'widgets/home_brain_hero_card.dart';
 import 'widgets/weekly_brain_report_dialog.dart';
+import 'widgets/time_machine_dialog.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -267,12 +268,24 @@ class _GeniusLobbyTab extends ConsumerStatefulWidget {
 }
 
 class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
-  String get _todayLevelId => GameDateUtils.getTodayLevelId();
+  late String _activeLevelId;
+  String? _lastKnownToday;
+
+  @override
+  void initState() {
+    super.initState();
+    _activeLevelId = GameDateUtils.getTodayLevelId();
+    _lastKnownToday = _activeLevelId;
+  }
+
+  bool get _isArchiveMode => _activeLevelId != GameDateUtils.getTodayLevelId();
 
   void _advanceToNextDay() {
     setState(() {
       GameDateUtils.advanceToNextDay();
       ref.read(timeSyncServiceProvider).advanceDay();
+      _activeLevelId = GameDateUtils.getTodayLevelId();
+      _lastKnownToday = _activeLevelId;
     });
     // Lig servisindeki hafta kontrolünü ve lig atlama durumunu güncelle
     ref.read(leagueServiceProvider.notifier).checkWeekTransition();
@@ -292,6 +305,27 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
     );
   }
 
+  Future<void> _openTimeMachine() async {
+    HapticFeedback.selectionClick();
+    final chosen = await TimeMachineDialog.show(
+      context,
+      dailyPlayState: ref.read(dailyPlayServiceProvider),
+      activeLevelId: _activeLevelId,
+    );
+    if (chosen != null && mounted) {
+      setState(() {
+        _activeLevelId = chosen;
+      });
+    }
+  }
+
+  void _returnToToday() {
+    HapticFeedback.selectionClick();
+    setState(() {
+      _activeLevelId = GameDateUtils.getTodayLevelId();
+    });
+  }
+
   void _showCompletedDialog(GameType game, DailyPlayRecord record) {
     showDialog(
       context: context,
@@ -300,7 +334,7 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
         score: record.score,
         durationMs: record.durationMs,
         title: '${game.title} Tamamlandı!',
-        levelId: _todayLevelId,
+        levelId: _activeLevelId,
       ),
     );
   }
@@ -311,40 +345,44 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
     if (game == GameType.queens) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (_) => QueensLobbyScreen(levelId: _todayLevelId)),
-      );
+        MaterialPageRoute(builder: (_) => QueensLobbyScreen(levelId: _activeLevelId)),
+      ).then((_) {
+        if (mounted) setState(() {});
+      });
       return;
     }
 
     // Günlük tek oynama kuralı: tamamlandıysa kilitli diyalog aç
     final dailyPlay = ref.read(dailyPlayServiceProvider);
-    if (dailyPlay.isCompleted(game, _todayLevelId)) {
-      final record = dailyPlay.getRecord(game, _todayLevelId)!;
+    if (dailyPlay.isCompleted(game, _activeLevelId)) {
+      final record = dailyPlay.getRecord(game, _activeLevelId)!;
       _showCompletedDialog(game, record);
       return;
     }
     Widget screen;
     switch (game) {
       case GameType.queens:
-        screen = QueensLobbyScreen(levelId: _todayLevelId);
+        screen = QueensLobbyScreen(levelId: _activeLevelId);
         break;
       case GameType.pinpoint:
-        screen = PinpointScreen(levelId: _todayLevelId);
+        screen = PinpointScreen(levelId: _activeLevelId);
         break;
       case GameType.crossclimb:
-        screen = CrossclimbScreen(levelId: _todayLevelId);
+        screen = CrossclimbScreen(levelId: _activeLevelId);
         break;
       case GameType.tango:
-        screen = TangoScreen(levelId: _todayLevelId);
+        screen = TangoScreen(levelId: _activeLevelId);
         break;
       case GameType.zipPath:
-        screen = ZipScreen(levelId: _todayLevelId);
+        screen = ZipScreen(levelId: _activeLevelId);
         break;
       case GameType.patches:
-        screen = PatchesScreen(levelId: _todayLevelId);
+        screen = PatchesScreen(levelId: _activeLevelId);
         break;
     }
-    Navigator.push(context, MaterialPageRoute(builder: (_) => screen));
+    Navigator.push(context, MaterialPageRoute(builder: (_) => screen)).then((_) {
+      if (mounted) setState(() {});
+    });
   }
 
   @override
@@ -353,13 +391,19 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
     final headerPencil = isDark ? AppColors.pencilWhite : AppColors.pencilBlack;
     final headerGraphite = isDark ? AppColors.pencilGraphiteDark : AppColors.pencilGraphite;
 
+    final todayKey = GameDateUtils.getTodayLevelId();
+    if (_lastKnownToday != todayKey && _activeLevelId == _lastKnownToday) {
+      _activeLevelId = todayKey;
+      _lastKnownToday = todayKey;
+    }
+
     final activeDate = GameDateUtils.getActiveDate();
     final formattedDate = GameDateUtils.getFormattedDate(activeDate);
     final statsMap = ref.watch(gameStatsServiceProvider);
     final statsNotifier = ref.read(gameStatsServiceProvider.notifier);
     final userIQ = statsNotifier.getOverallIQ();
     final dailyPlayState = ref.watch(dailyPlayServiceProvider);
-    final activeDateKey = GameDateUtils.getTodayLevelId();
+    final activeDateKey = _activeLevelId;
 
     final isSunday = activeDate.weekday == DateTime.sunday;
 
@@ -511,6 +555,16 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
           ),
         ),
 
+        // Zaman Makinesi Arşiv Modu Bildirim Kartı (Sadece aktif gün arşiv olduğunda görünür)
+        if (_isArchiveMode)
+          SliverToBoxAdapter(
+            child: _ArchiveModeBanner(
+              dateId: _activeLevelId,
+              onReturnToday: _returnToToday,
+              onChangeDate: _openTimeMachine,
+            ),
+          ),
+
         // 2. DİNAMİK & ANİMASYONLU BEYİN GÜCÜ HERO KARTI
         SliverToBoxAdapter(
           child: HomeBrainHeroCard(
@@ -518,6 +572,12 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
             statsMap: statsMap,
             dailyPlayState: dailyPlayState,
             activeDateKey: activeDateKey,
+            onDateSelected: (dateKey) {
+              setState(() {
+                _activeLevelId = dateKey;
+              });
+            },
+            onOpenTimeMachine: _openTimeMachine,
           ),
         ),
 
@@ -525,14 +585,45 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
           child: Padding(
             padding: const EdgeInsets.only(left: 22, right: 22, top: 16, bottom: 8),
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'GÜNLÜK YARIŞMALAR (6 BÖLÜM)',
+                  _isArchiveMode
+                      ? 'ARŞİV YARIŞMALARI (6 BÖLÜM)'
+                      : 'GÜNLÜK YARIŞMALAR (6 BÖLÜM)',
                   style: GoogleFonts.patrickHand(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
                     color: isDark ? Colors.white : AppColors.pencilGraphite,
                     letterSpacing: 1.0,
+                  ),
+                ),
+                SketchCard(
+                  onTap: _openTimeMachine,
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  borderRadius: 10,
+                  borderWidth: 1.8,
+                  shadowOffset: const Offset(1.5, 1.5),
+                  backgroundColor: _isArchiveMode
+                      ? AppColors.sunYellow
+                      : (isDark ? AppColors.surfaceSecondaryDark : AppColors.surfaceSecondaryLight),
+                  borderColor: isDark ? AppColors.pencilWhite : AppColors.pencilBlack,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text('⏳', style: TextStyle(fontSize: 13)),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Zaman Makinesi',
+                        style: GoogleFonts.patrickHand(
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w700,
+                          color: _isArchiveMode
+                              ? AppColors.inkBlack
+                              : (isDark ? AppColors.pencilWhite : AppColors.pencilBlack),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -560,8 +651,8 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
                         geniusTitle: 'Zühtü Ustası',
                       );
                   final dailyPlay = ref.watch(dailyPlayServiceProvider);
-                  final isCompleted = dailyPlay.isCompleted(game, _todayLevelId);
-                  final record = dailyPlay.getRecord(game, _todayLevelId);
+                  final isCompleted = dailyPlay.isCompleted(game, _activeLevelId);
+                  final record = dailyPlay.getRecord(game, _activeLevelId);
 
                   return Padding(
                     padding: const EdgeInsets.only(bottom: gap),
@@ -837,4 +928,121 @@ class _LadderPathPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _LadderPathPainter old) =>
       old.period != period || old.color != color;
+}
+
+/// Zaman Makinesi Arşiv Seviyeleri Modu Bildirim Kartı.
+/// Kullanıcı geçmiş bir tarihi incelerken veya çözerken ana sayfada üstte belirir.
+class _ArchiveModeBanner extends StatelessWidget {
+  final String dateId;
+  final VoidCallback onReturnToday;
+  final VoidCallback onChangeDate;
+
+  const _ArchiveModeBanner({
+    required this.dateId,
+    required this.onReturnToday,
+    required this.onChangeDate,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final pencilColor = isDark ? AppColors.pencilWhite : AppColors.pencilBlack;
+    final parsedDate = DateTime.tryParse(dateId);
+    final displayDate = parsedDate != null ? GameDateUtils.getFormattedDate(parsedDate) : dateId;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+      child: SketchCard(
+        backgroundColor: isDark ? const Color(0xFF2E2616) : const Color(0xFFFEF3C7),
+        borderColor: pencilColor,
+        borderWidth: 2.2,
+        borderRadius: 14,
+        shadowOffset: const Offset(3, 3),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(7),
+              decoration: BoxDecoration(
+                color: AppColors.sunYellow,
+                shape: BoxShape.circle,
+                border: Border.all(color: pencilColor, width: 1.5),
+              ),
+              child: const Text('⏳', style: TextStyle(fontSize: 16)),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'ZAMAN MAKİNESİ (ARŞİV)',
+                    style: GoogleFonts.patrickHand(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: isDark ? AppColors.sunYellow : const Color(0xFF92400E),
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  Text(
+                    displayDate,
+                    style: GoogleFonts.patrickHand(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: pencilColor,
+                    ),
+                  ),
+                  Text(
+                    'Arşiv seviyesi çözülüyor. Seri gününde çözünce kazanılır.',
+                    style: GoogleFonts.patrickHand(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? AppColors.pencilGraphiteDark : AppColors.pencilGraphite,
+                      height: 1.1,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SketchCard(
+                  onTap: onReturnToday,
+                  backgroundColor: AppColors.skyBlue,
+                  borderColor: pencilColor,
+                  borderWidth: 1.6,
+                  borderRadius: 8,
+                  shadowOffset: const Offset(1.5, 1.5),
+                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+                  child: Text(
+                    'Bugüne Dön',
+                    style: GoogleFonts.patrickHand(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.inkBlack,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                GestureDetector(
+                  onTap: onChangeDate,
+                  child: Text(
+                    'Tarih Değiş',
+                    style: GoogleFonts.patrickHand(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w600,
+                      color: pencilColor,
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

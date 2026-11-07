@@ -24,6 +24,8 @@ class HomeBrainHeroCard extends StatefulWidget {
   final DailyPlayState dailyPlayState;
   final String activeDateKey;
   final VoidCallback? onStreakTap;
+  final ValueChanged<String>? onDateSelected;
+  final VoidCallback? onOpenTimeMachine;
 
   const HomeBrainHeroCard({
     super.key,
@@ -32,6 +34,8 @@ class HomeBrainHeroCard extends StatefulWidget {
     required this.dailyPlayState,
     required this.activeDateKey,
     this.onStreakTap,
+    this.onDateSelected,
+    this.onOpenTimeMachine,
   });
 
   @override
@@ -606,6 +610,9 @@ class _HomeBrainHeroCardState extends State<HomeBrainHeroCard>
                                 pencilColor: pencilColor,
                                 graphiteColor: graphiteColor,
                                 isDark: isDark,
+                                activeDateKey: widget.activeDateKey,
+                                onDateSelected: widget.onDateSelected,
+                                onOpenTimeMachine: widget.onOpenTimeMachine,
                               )
                             : const SizedBox.shrink(),
                       ),
@@ -1268,6 +1275,9 @@ class _ExpandedCognitiveNotebook extends StatelessWidget {
   final Color pencilColor;
   final Color graphiteColor;
   final bool isDark;
+  final String activeDateKey;
+  final ValueChanged<String>? onDateSelected;
+  final VoidCallback? onOpenTimeMachine;
 
   const _ExpandedCognitiveNotebook({
     required this.statsMap,
@@ -1280,6 +1290,9 @@ class _ExpandedCognitiveNotebook extends StatelessWidget {
     required this.pencilColor,
     required this.graphiteColor,
     required this.isDark,
+    required this.activeDateKey,
+    this.onDateSelected,
+    this.onOpenTimeMachine,
   });
 
   static const List<String> _weekdayShort = [
@@ -1351,15 +1364,43 @@ class _ExpandedCognitiveNotebook extends StatelessWidget {
                   letterSpacing: 0.4,
                 ),
               ),
-              Text(
-                'Aktif: $currentStreak Gün • Rekor: $maxStreak Gün',
-                style: GoogleFonts.patrickHand(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: graphiteColor,
+              if (onOpenTimeMachine != null)
+                InkWell(
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    onOpenTimeMachine?.call();
+                  },
+                  borderRadius: BorderRadius.circular(6),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.history_rounded, size: 14, color: pencilColor),
+                        const SizedBox(width: 3),
+                        Text(
+                          'Tüm Arşiv ⏳',
+                          style: GoogleFonts.patrickHand(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: pencilColor,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
             ],
+          ),
+          const SizedBox(height: 2),
+          Text(
+            'Aktif: $currentStreak Gün • Rekor: $maxStreak Gün (Arşiv oyunları seriyi etkilemez)',
+            style: GoogleFonts.patrickHand(
+              fontSize: 11.5,
+              fontWeight: FontWeight.w600,
+              color: graphiteColor,
+            ),
           ),
           const SizedBox(height: 6),
           Row(
@@ -1369,49 +1410,65 @@ class _ExpandedCognitiveNotebook extends StatelessWidget {
               final key = _dateKey(day);
               final played = _hasAnyPlayOnDate(key);
               final isToday = i == last7Days.length - 1;
+              final isSelected = key == activeDateKey;
               final dayName = _weekdayShort[day.weekday - 1];
 
               return Expanded(
                 child: Padding(
                   padding: EdgeInsets.only(right: i < 6 ? 5 : 0),
-                  child: SketchCard(
-                    padding: const EdgeInsets.symmetric(vertical: 5),
-                    borderRadius: 9,
-                    borderWidth: isToday ? 2.0 : 1.3,
-                    shadowOffset: played
-                        ? const Offset(1.8, 1.8)
-                        : const Offset(0.8, 0.8),
-                    backgroundColor: played
-                        ? AppColors.sunYellow
-                        : (isDark
-                            ? AppColors.surfaceSecondaryDark
-                            : Colors.white),
-                    borderColor: isToday
-                        ? pencilColor
-                        : pencilColor.withValues(alpha: 0.6),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          dayName,
-                          style: GoogleFonts.patrickHand(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            color: played ? AppColors.inkBlack : graphiteColor,
+                  child: InkWell(
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      onDateSelected?.call(key);
+                    },
+                    borderRadius: BorderRadius.circular(9),
+                    child: SketchCard(
+                      padding: const EdgeInsets.symmetric(vertical: 5),
+                      borderRadius: 9,
+                      borderWidth: isSelected ? 2.4 : (isToday ? 2.0 : 1.3),
+                      shadowOffset: isSelected
+                          ? const Offset(2.2, 2.2)
+                          : (played
+                              ? const Offset(1.8, 1.8)
+                              : const Offset(0.8, 0.8)),
+                      backgroundColor: isSelected
+                          ? AppColors.skyBlue
+                          : (played
+                              ? AppColors.sunYellow
+                              : (isDark
+                                  ? AppColors.surfaceSecondaryDark
+                                  : Colors.white)),
+                      borderColor: isSelected
+                          ? pencilColor
+                          : (isToday
+                              ? pencilColor
+                              : pencilColor.withValues(alpha: 0.6)),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            dayName,
+                            style: GoogleFonts.patrickHand(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: (isSelected || played)
+                                  ? AppColors.inkBlack
+                                  : graphiteColor,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          played ? '✓' : '${day.day}',
-                          style: GoogleFonts.patrickHand(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                            color: played
-                                ? AppColors.inkBlack
-                                : pencilColor.withValues(alpha: 0.55),
+                          const SizedBox(height: 2),
+                          Text(
+                            isSelected ? '🎯' : (played ? '✓' : '${day.day}'),
+                            style: GoogleFonts.patrickHand(
+                              fontSize: isSelected ? 12 : 13,
+                              fontWeight: FontWeight.w700,
+                              color: (isSelected || played)
+                                  ? AppColors.inkBlack
+                                  : pencilColor.withValues(alpha: 0.55),
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
