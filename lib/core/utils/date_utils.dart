@@ -2,10 +2,19 @@ import 'package:intl/intl.dart';
 
 class GameDateUtils {
   static int _dayOffset = 0;
+  static int _clockDriftSeconds = 0;
   static DateTime? _customDate;
 
   /// Gün simülatörü için gün ötelemesini döndürür
   static int get dayOffset => _dayOffset;
+
+  /// Sunucu saat senkronizasyon farkını (saniye) döndürür
+  static int get clockDriftSeconds => _clockDriftSeconds;
+
+  /// Sunucu ile cihaz arasındaki saat farkını (drift) ayarlar
+  static void setClockDriftSeconds(int driftSeconds) {
+    _clockDriftSeconds = driftSeconds;
+  }
 
   /// Testler veya simülasyonlar için sabit bir referans tarihi belirler
   static void setCustomDate(DateTime? date) {
@@ -20,16 +29,18 @@ class GameDateUtils {
   /// Gün ötelemesini ve özel tarihi sıfırlar
   static void resetDayOffset() {
     _dayOffset = 0;
+    _clockDriftSeconds = 0;
     _customDate = null;
   }
 
-  /// Mevcut aktif tarihi (özel tarih ve gün ötelemesi uygulanmış) döner
+  /// Mevcut aktif yerel tarihi (özel tarih, sunucu drift ve gün ötelemesi uygulanmış) döner
   static DateTime getActiveDate() {
-    final base = _customDate ?? DateTime.now();
+    final base = _customDate ??
+        DateTime.now().add(Duration(seconds: _clockDriftSeconds));
     return base.add(Duration(days: _dayOffset));
   }
 
-  /// Returns today's level ID format, e.g. "2026-08-20"
+  /// Returns today's level ID format in local time (00:00 reset), e.g. "2026-08-20"
   static String getTodayLevelId() {
     final active = getActiveDate();
     return DateFormat('yyyy-MM-dd').format(active);
@@ -59,11 +70,12 @@ class GameDateUtils {
     return '${date.day} ${months[date.month - 1]} ${date.year}';
   }
 
-  /// Calculates duration remaining until next midnight (UTC / Local)
+  /// Calculates duration remaining until next local midnight (00:00:00)
   static Duration getTimeUntilMidnight() {
-    final now = DateTime.now();
+    final now = getActiveDate();
     final tomorrow = DateTime(now.year, now.month, now.day + 1);
-    return tomorrow.difference(now);
+    final diff = tomorrow.difference(now);
+    return diff.isNegative ? Duration.zero : diff;
   }
 
   /// Formats duration to "HH:MM:SS" countdown format

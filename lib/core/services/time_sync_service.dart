@@ -1,12 +1,13 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../utils/date_utils.dart';
 
-/// Güvenilir UTC zaman yönetimi ve sunucu saat senkronizasyonu servisi.
+/// Güvenilir yerel/İstanbul zaman yönetimi ve sunucu saat senkronizasyonu servisi.
 ///
-/// README Bölüm 7 standartları:
-/// 1. UTC pivot: Günlük sıfırlama UTC 00:00:00 bazlıdır.
-/// 2. Cihaz saatinin kurcalanmasını önlemek için clockDrift kullanılır.
-/// 3. Aşama A'da yerel simülasyon ve drift desteği, Aşama B'de sunucu REST API senkronizasyonu.
+/// Standartlar:
+/// 1. Yerel Gece Yarısı (00:00:00) Pivotu: Günlük oyun sıfırlaması gece 03:00 (UTC)
+///    yerine tam gece 00:00:00 yerel (Türkiye / İstanbul) saatinde gerçekleşir.
+/// 2. Cihaz saatinin kurcalanmasını önlemek için sunucu epoch farkı (clockDrift) kullanılır.
 class TimeSyncService {
   int _clockDriftSeconds = 0;
   int _dayOffset = 0;
@@ -18,11 +19,13 @@ class TimeSyncService {
   void syncWithServerTime(int serverEpochSeconds) {
     final clientEpochSeconds = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
     _clockDriftSeconds = serverEpochSeconds - clientEpochSeconds;
+    GameDateUtils.setClockDriftSeconds(_clockDriftSeconds);
   }
 
   /// Manuel drift atama (test ve simülasyon için)
   void setClockDrift(int driftSeconds) {
     _clockDriftSeconds = driftSeconds;
+    GameDateUtils.setClockDriftSeconds(_clockDriftSeconds);
   }
 
   /// Gün simülasyonu için günü bir ileri alır
@@ -43,25 +46,27 @@ class TimeSyncService {
         .add(Duration(days: _dayOffset));
   }
 
-  /// Gösterim için güvenilir yerel saat
+  /// Gösterim ve günlük sıfırlama için güvenilir yerel saat (00:00 bazlı)
   DateTime getTrustedTimeLocal() {
     return getTrustedTimeUtc().toLocal();
   }
 
-  /// Günlük bulmaca için geçerli gün kimliği (`YYYY-MM-DD`, UTC bazlı)
+  /// Günlük bulmaca için geçerli gün kimliği (`YYYY-MM-DD`, yerel 00:00 bazlı)
   String getTodayDateId() {
-    final t = getTrustedTimeUtc();
+    final t = getTrustedTimeLocal();
     final y = t.year.toString().padLeft(4, '0');
     final m = t.month.toString().padLeft(2, '0');
     final d = t.day.toString().padLeft(2, '0');
     return '$y-$m-$d';
   }
 
-  /// Bir sonraki UTC 00:00:00 sıfırlanmasına kalan süreyi hesaplar.
+  /// Bir sonraki yerel gece yarısı (00:00:00) sıfırlanmasına kalan süreyi hesaplar.
   Duration getTimeUntilNextReset([DateTime? targetTime]) {
-    final now = targetTime ?? getTrustedTimeUtc();
-    final nextResetUtc = DateTime.utc(now.year, now.month, now.day + 1);
-    final diff = nextResetUtc.difference(now);
+    final now = targetTime ?? getTrustedTimeLocal();
+    final nextReset = now.isUtc
+        ? DateTime.utc(now.year, now.month, now.day + 1)
+        : DateTime(now.year, now.month, now.day + 1);
+    final diff = nextReset.difference(now);
     return diff.isNegative ? Duration.zero : diff;
   }
 

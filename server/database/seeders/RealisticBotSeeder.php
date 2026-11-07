@@ -45,7 +45,7 @@ class RealisticBotSeeder extends Seeder
 
     public function run(): void
     {
-        $todayUtc = Carbon::now('UTC');
+        $todayUtc = Carbon::now('Europe/Istanbul');
         $todayDateId = $todayUtc->format('Y-m-d');
 
         $games = ['pinpoint', 'crossclimb', 'tango', 'zip_path', 'patches'];

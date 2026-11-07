@@ -399,6 +399,9 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
     final headerPencil = isDark ? AppColors.pencilWhite : AppColors.pencilBlack;
     final headerGraphite = isDark ? AppColors.pencilGraphiteDark : AppColors.pencilGraphite;
 
+    // Gece 00:00 (yerel saat) geçişinde lobi ekranını otomatik olarak yeni güne geçir
+    ref.watch(nextResetCountdownProvider);
+
     final todayKey = GameDateUtils.getTodayLevelId();
     if (_lastKnownToday != todayKey && _activeLevelId == _lastKnownToday) {
       _activeLevelId = todayKey;

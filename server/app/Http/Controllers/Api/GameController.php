@@ -12,19 +12,21 @@ use Illuminate\Http\Request;
 class GameController extends Controller
 {
     /**
-     * Güvenilir UTC sunucu saatini döner (TimeSyncService için).
+     * Güvenilir sunucu saatini ve İstanbul (UTC+3) gece yarısı sıfırlama bilgisini döner (TimeSyncService için).
      */
     public function time(): JsonResponse
     {
-        $nowUtc = Carbon::now('UTC');
-        $tomorrowMidnight = $nowUtc->copy()->addDay()->startOfDay();
-        $secondsUntilReset = $nowUtc->diffInSeconds($tomorrowMidnight);
+        $nowIst = Carbon::now('Europe/Istanbul');
+        $tomorrowMidnight = $nowIst->copy()->addDay()->startOfDay();
+        $secondsUntilReset = $nowIst->diffInSeconds($tomorrowMidnight);
 
         return response()->json([
             'status' => 'success',
-            'server_time_utc' => $nowUtc->toIso8601String(),
-            'timestamp' => $nowUtc->timestamp,
-            'date_id' => $nowUtc->format('Y-m-d'),
+            'server_time_utc' => $nowIst->copy()->setTimezone('UTC')->toIso8601String(),
+            'server_time_local' => $nowIst->toIso8601String(),
+            'timezone' => 'Europe/Istanbul',
+            'timestamp' => $nowIst->timestamp,
+            'date_id' => $nowIst->format('Y-m-d'),
             'seconds_until_midnight' => $secondsUntilReset,
         ]);
     }
@@ -81,9 +83,9 @@ class GameController extends Controller
         $durationMs = $validated['duration_ms'];
         $moveCount = $validated['move_count'] ?? 0;
 
-        // Geçmiş oyun kuralı: Oyunlar sadece ait oldukları günde puan kazandırır
-        $todayUtc = Carbon::now('UTC')->format('Y-m-d');
-        $isPastDate = ($dateId !== $todayUtc);
+        // Geçmiş oyun kuralı: Oyunlar sadece ait oldukları günde (Türkiye saati 00:00 bazlı) puan kazandırır
+        $todayIst = Carbon::now('Europe/Istanbul')->format('Y-m-d');
+        $isPastDate = ($dateId !== $todayIst);
         $score = $isPastDate ? 0 : $validated['score'];
 
         $existing = GameScore::where('player_id', $player->id)

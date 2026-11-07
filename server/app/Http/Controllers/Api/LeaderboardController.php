@@ -32,10 +32,10 @@ class LeaderboardController extends Controller
         $gameType = $validated['game_type'];
         $timeframe = $validated['timeframe'] ?? 'daily';
         $difficulty = $validated['difficulty'] ?? null;
-        $dateId = ($validated['date_id'] ?? null) ?: Carbon::now('UTC')->format('Y-m-d');
+        $dateId = ($validated['date_id'] ?? null) ?: Carbon::now('Europe/Istanbul')->format('Y-m-d');
         $limit = $validated['limit'] ?? 150;
 
-        $targetDate = Carbon::parse($dateId, 'UTC');
+        $targetDate = Carbon::parse($dateId, 'Europe/Istanbul');
 
         // Zaman aralıklarını belirle
         $query = GameScore::query()
@@ -162,7 +162,7 @@ class LeaderboardController extends Controller
      */
     public function league(Request $request): JsonResponse
     {
-        $targetDate = Carbon::now('UTC');
+        $targetDate = Carbon::now('Europe/Istanbul');
         $weekStart = $targetDate->copy()->startOfWeek(Carbon::MONDAY)->startOfDay();
         $endOfDay = $targetDate->copy()->endOfDay();
         $limit = $request->input('limit', 150);

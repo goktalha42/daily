@@ -1,9 +1,9 @@
 ﻿{
-    "version":  "1.1.6",
-    "build_number":  14,
-    "title":  "Zühtü v1.1.6: Seri Koruma Bildirimleri, Bulut Yedekleme \u0026 Ses Efektleri",
-    "changelog":  "🔥 Akşam 20:00 Günlük Seri Koruma ve Pazar 20:00 Haftalık Zeka Raporu bildirimleri eklendi.\n☁️ Kurtarma Kodu (ZHT-XXXX-XXXX) ve Taşınabilir Yedek Anahtarı ile Bulut Yedekleme \u0026 Cihaz Taşıma sistemi eklendi.\n🔊 Kara Kalem Eskiz Defteri konseptine özel kalem, sembol, hata ve zafer ses efektleri (SFX) ile titreşim ayarları eklendi.",
-    "apk_url":  "https://raw.githubusercontent.com/goktalha42/daily/main/releases/Zuhtu_v1.1.6_b14.apk",
-    "release_url":  "https://github.com/goktalha42/daily/releases/tag/v1.1.6",
+    "version":  "1.1.7",
+    "build_number":  15,
+    "title":  "ZÃ¼htÃ¼ v1.1.7 GÃ¼ncellemesi",
+    "changelog":  "Gece 03:00 (UTC) yerine tam Gece 00:00 (Turkiye / Istanbul Yerel Saati) oyun sifirlama ve geri sayim sayaci duzeltmesi, 00:00-03:00 arasi sunucu puan kaybi onlemesi ve Oyuncu Tutundurma (Retention) ozellikleri.",
+    "apk_url":  "https://raw.githubusercontent.com/goktalha42/daily/main/releases/Zuhtu_v1.1.7_b15.apk",
+    "release_url":  "https://github.com/goktalha42/daily/releases/tag/v1.1.7",
     "force_update":  false
 }

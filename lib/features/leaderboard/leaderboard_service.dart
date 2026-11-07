@@ -585,11 +585,14 @@ class LeaderboardService extends ChangeNotifier {
     notifyListeners();
 
     try {
+      final effectiveDateId = timeframe == LeaderboardTimeframe.daily
+          ? (levelId ?? GameDateUtils.getTodayLevelId())
+          : levelId;
       final remoteEntries = await apiClient!.fetchLeaderboard(
         gameType: gameType,
         timeframe: timeframe,
         difficulty: difficulty,
-        dateId: levelId,
+        dateId: effectiveDateId,
       );
 
       if (remoteEntries != null) {
