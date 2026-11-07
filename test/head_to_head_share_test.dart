@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:daily_games/core/services/game_stats_service.dart';
 import 'package:daily_games/core/widgets/head_to_head_share_dialog.dart';
 import 'package:daily_games/games/common/base_game.dart';
 

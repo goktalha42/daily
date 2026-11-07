@@ -1,9 +1,9 @@
 ﻿{
-    "version":  "1.1.2",
-    "build_number":  10,
-    "title":  "Zühtü v1.1.2 Güncellemesi",
-    "changelog":  "• LinkedIn/Hikaye Tarzı Günlük Kafa Kafaya Karşılaştırma Kartı: Oyun sonlarında ve liderlik pencerelerinde açılan, nüfus yüzdeliği ve zeka unvanı içeren skeç meydan okuma kartı.\n• Doğrudan WhatsApp, Instagram ve sosyal medya paylaşım entegrasyonu.\n• Günlük Zeka Sertifikası tek tıkla paylaşım desteği.",
-    "apk_url":  "https://raw.githubusercontent.com/goktalha42/daily/main/releases/Zuhtu_v1.1.2_b10.apk",
-    "release_url":  "https://github.com/goktalha42/daily/releases/tag/v1.1.2",
+    "version":  "1.1.3",
+    "build_number":  11,
+    "title":  "Zühtü v1.1.3 Güncellemesi",
+    "changelog":  "• Haftalık Zeka Raporu (Pazar Akşamı Özeti): Pazartesi-Pazar 6 bilişsel alan odak grafiği, en güçlü ve gelişime açık alan analizi, haftalık seri karnesi eklendi.\n• Pazar günleri otomatik karşılama ve ana sayfada dilediğiniz an tek dokunuşla inceleme desteği.\n• WhatsApp ve Instagram için emojili haftalık karne paylaşım desteği.",
+    "apk_url":  "https://raw.githubusercontent.com/goktalha42/daily/main/releases/Zuhtu_v1.1.3_b11.apk",
+    "release_url":  "https://github.com/goktalha42/daily/releases/tag/v1.1.3",
     "force_update":  false
 }

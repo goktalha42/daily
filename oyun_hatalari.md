@@ -8,7 +8,8 @@ yeni apk ler yaptıkca versiyonu v1.0.1, v1.0.2 olarak değişiklik büyüklüğ
 - **v1.0.4 (Güncel):** WAIS-IV gerçekçi psikometrik IQ motoru (148+ katı Einstein kriteri), koreografili & %100 el çizimi dinamik ana sayfa Beyin Gücü kartı (7 günlük seri takvimi ve 6 bilişsel alan karnesi), tek tıkla OTA güncelleme sistemi.
 - **v1.1.0:** Vezirler tek oyun sayımı (6/6 dengesi), 31 adet %100 el çizimi rozet ve IQ mertebesi madalyonu, tam otomatik uygulama içi OTA güncelleme hattı.
 - **v1.1.1:** Kişisel Günlük Rekor ("Yeni Zirve! 🏆") kutlama rozeti ve animasyonu, Günlük Zeka Defteri Özeti (Günün 6/6 Tamamlanış Karnesi & Paylaşılabilir Sertifika).
-- **v1.1.2 (Güncel):** LinkedIn & Hikaye benzeri Günlük "Kafa Kafaya" Karşılaştırma ve Meydan Okuma Kartı (Head-to-Head Share), WhatsApp/Instagram doğrudan viral paylaşım entegrasyonu ve Günlük Sertifika paylaşım motoru.
+- **v1.1.2:** LinkedIn & Hikaye benzeri Günlük "Kafa Kafaya" Karşılaştırma ve Meydan Okuma Kartı (Head-to-Head Share).
+- **v1.1.3 (Güncel):** Haftalık Zeka Raporu (Pazar Akşamı Özeti), 6 bilişsel alan odak dağılım grafiği, haftalık seri karnesi, Pazar akşamı otomatik karşılama ve doğrudan sosyal medya paylaşım motoru.
 
 
 
@@ -65,5 +66,5 @@ Oyuncu bir oyunu bitirdiğinde WhatsApp/Instagram hikayesinde paylaşabileceği 
 Genel 150 kişilik tablonun yanı sıra, kullanıcıların 6 haneli bir kodla kendi arkadaş/iş arkadaşı grubunu kurup sadece birbirleriyle yarışabilecekleri "Ofis Zeka Ligi" özelliği.
 3-) Zaman Makinesi (Arşiv Seviyeleri):
 Geçmiş günleri kaçıranlar için ana sayfada takvimden geçmiş günlerin bulmacalarını çözebilme (ancak günlük seri kazanımı sadece gününde çözülünce verilir).
-4-) Haftalık Zeka Raporu (Pazar Akşamı Özeti):
-Pazar günleri açılan bir grafik kartı: "Bu hafta en çok odaklandığın alan Mantık (%45), en zayıf kaldığın alan Kelime Hafızası (%15). Haftalık Seri: 7 Gün!"
+4-) [TAMAMLANDI] Haftalık Zeka Raporu (Pazar Akşamı Özeti):
+Pazar günleri (ve istenildiği an ana sayfadaki "Rapor" butonu veya Beyin Gücü kartından) açılan grafik kartı: "Bu hafta en çok odaklandığın alan Mantık (%45), en zayıf kaldığın alan Kelime Hafızası (%15). Haftalık Seri: 7 Gün!". 6 bilişsel alan yatay skeç çubukları, Pazar akşamı otomatik gösterimi, Zühtü Koç Tavsiyesi ve doğrudan WhatsApp/Instagram paylaşım butonu eklendi.

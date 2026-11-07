@@ -12,6 +12,7 @@ import '../../../core/widgets/sketch_countdown_timer.dart';
 import '../../../core/widgets/sketch_decorations.dart';
 import '../../../games/common/base_game.dart';
 import 'daily_genius_certificate_dialog.dart';
+import 'weekly_brain_report_dialog.dart';
 
 /// Zühtü Arenası Ana Sayfa Canlı, Koreografili & %100 El Çizimi Beyin Gücü Hero Kartı.
 /// - Sıfır sabit/sahte veri: tüm değerler gerçek oyun kayıtlarından ve psikometrik IQ motorundan akar.
@@ -1523,6 +1524,42 @@ class _ExpandedCognitiveNotebook extends StatelessWidget {
                       fontWeight: FontWeight.w700,
                       color: pencilColor,
                       height: 1.2,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 10),
+
+          // Haftalık Zeka Raporu Açma Butonu (Pazar Akşamı Özeti)
+          SketchCard(
+            onTap: () {
+              HapticFeedback.mediumImpact();
+              WeeklyBrainReportDialog.show(
+                context,
+                dailyPlayState: dailyPlayState,
+                overallIQ: userIQ,
+              );
+            },
+            backgroundColor: AppColors.sunYellow,
+            borderColor: pencilColor,
+            borderWidth: 2.0,
+            borderRadius: 12,
+            shadowOffset: const Offset(2.0, 2.0),
+            padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.insights_rounded, size: 18, color: AppColors.inkBlack),
+                const SizedBox(width: 6),
+                Flexible(
+                  child: Text(
+                    'Haftalık Zeka Raporu (Pazar Özeti) ➔',
+                    style: GoogleFonts.patrickHand(
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.inkBlack,
                     ),
                   ),
                 ),

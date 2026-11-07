@@ -29,9 +29,11 @@ import '../league/league_screen.dart';
 import '../../core/services/league_service.dart';
 import '../../core/network/api_client.dart';
 import '../../core/widgets/nickname_prompt_dialog.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/services/update_service.dart';
 import '../../core/widgets/update_prompt_dialog.dart';
 import 'widgets/home_brain_hero_card.dart';
+import 'widgets/weekly_brain_report_dialog.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -51,7 +53,36 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       if (mounted) {
         await _checkAppUpdate();
       }
+      if (mounted) {
+        await _checkSundayWeeklyReport();
+      }
     });
+  }
+
+  Future<void> _checkSundayWeeklyReport() async {
+    final activeDate = GameDateUtils.getActiveDate();
+    if (activeDate.weekday == DateTime.sunday) {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final sundayKey = GameDateUtils.getTodayLevelId();
+        final seenKey = 'zuhtu_weekly_report_seen_$sundayKey';
+        if (prefs.getBool(seenKey) != true && mounted) {
+          await prefs.setBool(seenKey, true);
+          final dailyPlay = ref.read(dailyPlayServiceProvider);
+          final statsNotifier = ref.read(gameStatsServiceProvider.notifier);
+          final userIQ = statsNotifier.getOverallIQ();
+          if (mounted) {
+            await WeeklyBrainReportDialog.show(
+              context,
+              dailyPlayState: dailyPlay,
+              overallIQ: userIQ,
+            );
+          }
+        }
+      } catch (e) {
+        debugPrint('[HomeScreen] Pazar raporu kontrol hatası: $e');
+      }
+    }
   }
 
   Future<void> _checkMandatoryNickname() async {
@@ -330,6 +361,8 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
     final dailyPlayState = ref.watch(dailyPlayServiceProvider);
     final activeDateKey = GameDateUtils.getTodayLevelId();
 
+    final isSunday = activeDate.weekday == DateTime.sunday;
+
     return CustomScrollView(
       physics: const BouncingScrollPhysics(),
       slivers: [
@@ -340,48 +373,96 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          width: 8,
-                          height: 8,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: AppColors.sunYellow,
-                            border: Border.fromBorderSide(
-                              BorderSide(color: headerPencil, width: 1.5),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            width: 8,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: AppColors.sunYellow,
+                              border: Border.fromBorderSide(
+                                BorderSide(color: headerPencil, width: 1.5),
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          formattedDate.toUpperCase(),
+                          const SizedBox(width: 6),
+                          Flexible(
+                            child: Text(
+                              formattedDate.toUpperCase(),
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.patrickHand(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: headerGraphite,
+                                letterSpacing: 1.0,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 2),
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Zühtü Arenası',
                           style: GoogleFonts.patrickHand(
-                            fontSize: 14,
+                            fontSize: 34,
                             fontWeight: FontWeight.w700,
-                            color: headerGraphite,
-                            letterSpacing: 1.0,
+                            color: headerPencil,
+                            letterSpacing: -0.5,
                           ),
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'Zühtü Arenası',
-                      style: GoogleFonts.patrickHand(
-                        fontSize: 34,
-                        fontWeight: FontWeight.w700,
-                        color: headerPencil,
-                        letterSpacing: -0.5,
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
+                const SizedBox(width: 10),
                 Row(
                   children: [
+                    // Haftalık Zeka Raporu Butonu
+                    SketchCard(
+                      onTap: () {
+                        HapticFeedback.mediumImpact();
+                        WeeklyBrainReportDialog.show(
+                          context,
+                          dailyPlayState: dailyPlayState,
+                          overallIQ: userIQ,
+                        );
+                      },
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                      backgroundColor: isSunday
+                          ? (isDark ? const Color(0xFFB45309) : AppColors.sunYellow)
+                          : (isDark ? AppColors.surfaceSecondaryDark : AppColors.surfaceSecondaryLight),
+                      borderRadius: 10,
+                      borderWidth: 2.0,
+                      shadowOffset: const Offset(2.0, 2.0),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.insights_rounded,
+                            size: 16,
+                            color: isSunday ? AppColors.inkBlack : headerPencil,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            isSunday ? 'Pazar Raporu' : 'Rapor',
+                            style: GoogleFonts.patrickHand(
+                              fontSize: 14.5,
+                              fontWeight: FontWeight.w700,
+                              color: isSunday ? AppColors.inkBlack : headerPencil,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
                     // Hızlı Tema Değiştirici Butonu
                     SketchCard(
                       onTap: () {
