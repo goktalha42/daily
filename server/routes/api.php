@@ -11,6 +11,7 @@ Route::prefix('v1')->group(function () {
     Route::post('/auth/set-nickname', [AuthController::class, 'setNickname']);
     Route::post('/auth/guest', [AuthController::class, 'guest']);
     Route::post('/auth/profile', [AuthController::class, 'updateProfile']);
+    Route::get('/player/stats', [AuthController::class, 'playerStats']);
     Route::post('/auth/sync-progress', [AuthController::class, 'syncProgress']);
     Route::post('/auth/restore-progress', [AuthController::class, 'restoreProgress']);
 

@@ -1,9 +1,9 @@
 ﻿{
-    "version":  "1.1.9",
-    "build_number":  17,
-    "title":  "Zühtü v1.1.9 Güncellemesi 🎯📊",
-    "changelog":  "Lig skoru ve profil toplam puan hesaplamaları düzeltildi; haftalık lig önbellek temizliği ve Vezirler 3 seviye (Kolay+Zor+Master) puan toplamı sağlandı.",
-    "apk_url":  "https://raw.githubusercontent.com/goktalha42/daily/main/releases/Zuhtu_v1.1.9_b17.apk",
-    "release_url":  "https://github.com/goktalha42/daily/releases/tag/v1.1.9",
+    "version":  "1.2.0",
+    "build_number":  18,
+    "title":  "Zühtü v1.2.0 Güncellemesi 🌐🏆",
+    "changelog":  "Sunucu ve profil puanları %100 eşitlendi. Profil toplam kariyer skoru, haftalık lig ve liderlik tablosu tek merkezden canlı sunucu verisiyle senkronize edildi.",
+    "apk_url":  "https://raw.githubusercontent.com/goktalha42/daily/main/releases/Zuhtu_v1.2.0_b18.apk",
+    "release_url":  "https://github.com/goktalha42/daily/releases/tag/v1.2.0",
     "force_update":  false
 }

@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Player;
+use App\Models\GameScore;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -402,6 +404,111 @@ class AuthController extends Controller
                 'recovery_code' => $player->recovery_code,
             ],
             'progress_payload' => $player->progress_payload ?? [],
+        ]);
+    }
+
+    /**
+     * Oyuncunun sunucu tarafındaki tüm geçmiş istatistiklerini, toplam kariyer puanını,
+     * haftalık lig skorunu ve oyun bazlı dökümünü tek bir doğrulanmış kaynak olarak döner.
+     */
+    public function playerStats(Request $request): JsonResponse
+    {
+        $player = $request->user();
+        $deviceId = $request->header('X-Device-Id') ?: $request->query('device_id');
+        $nickname = $request->query('nickname');
+
+        if (!$player && $deviceId) {
+            $player = Player::where('device_id', $deviceId)->first();
+        }
+
+        if (!$player && $nickname) {
+            $norm = Player::normalizeNickname($nickname);
+            $player = Player::where('normalized_nickname', $norm)->first();
+        }
+
+        if (!$player) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Oyuncu bulunamadı.',
+            ], 404);
+        }
+
+        $targetDate = Carbon::now('Europe/Istanbul');
+        $todayIst = $targetDate->format('Y-m-d');
+        $weekStart = $targetDate->copy()->startOfWeek(Carbon::MONDAY)->startOfDay();
+        $monthStart = $targetDate->copy()->startOfMonth()->startOfDay();
+        $endOfDay = $targetDate->copy()->endOfDay();
+
+        // 1. Toplam Kariyer Puanı (Kümülatif tüm zamanlar)
+        $totalCareerScore = (int) GameScore::where('player_id', $player->id)->sum('score');
+
+        // 2. Çözülen Oyun Sayısı (Tüm tekil tamamlanan seviyeler)
+        $totalGamesPlayed = (int) GameScore::where('player_id', $player->id)->count();
+
+        // 3. Haftalık Toplam Puan (Lig puanı ile %100 birebir)
+        $weeklyScore = (int) GameScore::where('player_id', $player->id)
+            ->whereBetween('completed_at', [$weekStart, $endOfDay])
+            ->sum('score');
+
+        // 4. Aylık ve Günlük Toplam Puan
+        $monthlyScore = (int) GameScore::where('player_id', $player->id)
+            ->whereBetween('completed_at', [$monthStart, $endOfDay])
+            ->sum('score');
+
+        $todayScore = (int) GameScore::where('player_id', $player->id)
+            ->where('date_id', $todayIst)
+            ->sum('score');
+
+        // 5. Ortalama Reaksiyon Süresi (Milisaniye)
+        $avgDurationMs = (int) round(GameScore::where('player_id', $player->id)
+            ->where('duration_ms', '>', 0)
+            ->avg('duration_ms') ?? 0);
+
+        // 6. 6 Temel Oyun Bazlı Detaylı İstatistikler
+        $games = ['queens', 'crossclimb', 'pinpoint', 'tango', 'zip_path', 'patches'];
+        $gameStats = [];
+
+        foreach ($games as $g) {
+            $scoresQuery = GameScore::where('player_id', $player->id)->where('game_type', $g);
+            $allTimeScore = (int) $scoresQuery->sum('score');
+            $bestScore = (int) ($scoresQuery->max('score') ?? 0);
+            $bestTimeMs = (int) ($scoresQuery->where('score', '>', 0)->min('duration_ms') ?? 0);
+            $played = (int) $scoresQuery->count();
+            $weeklyGameScore = (int) GameScore::where('player_id', $player->id)
+                ->where('game_type', $g)
+                ->whereBetween('completed_at', [$weekStart, $endOfDay])
+                ->sum('score');
+            $todayGameScore = (int) GameScore::where('player_id', $player->id)
+                ->where('game_type', $g)
+                ->where('date_id', $todayIst)
+                ->sum('score');
+
+            $gameStats[$g] = [
+                'all_time_score' => $allTimeScore,
+                'best_score' => $bestScore,
+                'best_time_ms' => $bestTimeMs,
+                'games_played' => $played,
+                'weekly_score' => $weeklyGameScore,
+                'today_score' => $todayGameScore,
+            ];
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'player' => [
+                'id' => $player->id,
+                'device_id' => $player->device_id,
+                'nickname' => $player->nickname,
+                'avatar_id' => $player->avatar_id,
+                'league_tier' => $player->league_tier,
+                'total_career_score' => $totalCareerScore,
+                'total_games_played' => $totalGamesPlayed,
+                'weekly_score' => $weeklyScore,
+                'monthly_score' => $monthlyScore,
+                'today_score' => $todayScore,
+                'avg_duration_ms' => $avgDurationMs,
+                'games' => $gameStats,
+            ],
         ]);
     }
 }

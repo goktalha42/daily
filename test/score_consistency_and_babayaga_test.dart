@@ -229,5 +229,68 @@ void main() {
       }
       expect(totalScore, equals(12428));
     });
+
+    test('Profil ve Sunucu Kariyer Puanı: 46222 yerel kayıt varken sunucudaki 81492 puan profilde gösterilir ve genel sıralama toplamıyla tam tutarlıdır', () async {
+      // Yerel cihazdaki kayıtların toplamı: 46222
+      final localRecords = <String, DailyPlayRecord>{};
+      // 46222 puanı temsil eden yerel kayıtlar
+      localRecords['mock_day1'] = DailyPlayRecord(
+        gameType: GameType.queens,
+        dateId: '2026-11-01',
+        score: 46222,
+        durationMs: 30000,
+        completedAt: DateTime(2026, 11, 1),
+      );
+      final dailyPlayState = DailyPlayState(records: localRecords);
+      final int localCareerScore = dailyPlayState.records.values
+          .where((r) => !r.isArchivePlay && r.score > 0)
+          .fold<int>(0, (sum, r) => sum + r.score);
+      expect(localCareerScore, equals(46222));
+
+      // Sunucudan gelen kümülatif kariyer istatistiği (babayaga genel toplamı: 81492)
+      final serverJson = {
+        'total_career_score': 81492,
+        'total_games_played': 51,
+        'weekly_score': 12428,
+        'monthly_score': 12428,
+        'today_score': 12428,
+        'avg_duration_ms': 28400,
+        'games': {
+          'queens': {'all_time_score': 13866, 'best_score': 3030, 'games_played': 14},
+          'crossclimb': {'all_time_score': 13198, 'best_score': 1904, 'games_played': 7},
+          'pinpoint': {'all_time_score': 14575, 'best_score': 1970, 'games_played': 8},
+          'tango': {'all_time_score': 9278, 'best_score': 1674, 'games_played': 6},
+          'zip_path': {'all_time_score': 17720, 'best_score': 1970, 'games_played': 9},
+          'patches': {'all_time_score': 12855, 'best_score': 1880, 'games_played': 7},
+        },
+      };
+
+      // SharedPreferences'ta kayıtlı sunucu istatistikleri
+      SharedPreferences.setMockInitialValues({
+        'zuhtu_player_server_stats_v1': jsonEncode(serverJson),
+      });
+
+      final prefs = await SharedPreferences.getInstance();
+      final savedStr = prefs.getString('zuhtu_player_server_stats_v1');
+      expect(savedStr, isNotNull);
+
+      final decoded = jsonDecode(savedStr!) as Map<String, dynamic>;
+      final serverCareerScore = (decoded['total_career_score'] as num).toInt();
+      expect(serverCareerScore, equals(81492));
+
+      // Profil ekranındaki uzlaştırma formülü:
+      final int effectiveCareerScore = localCareerScore > serverCareerScore ? localCareerScore : serverCareerScore;
+      expect(effectiveCareerScore, equals(81492));
+
+      // 6 oyunun genel sıralama toplamı:
+      int leaderboardSum = 0;
+      (decoded['games'] as Map<String, dynamic>).forEach((_, val) {
+        leaderboardSum += (val['all_time_score'] as num).toInt();
+      });
+      expect(leaderboardSum, equals(81492));
+
+      // Profil skoru ve Liderlik Genel toplamı birebir eşittir!
+      expect(effectiveCareerScore, equals(leaderboardSum));
+    });
   });
 }

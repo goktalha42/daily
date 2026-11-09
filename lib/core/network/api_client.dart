@@ -8,6 +8,7 @@ import 'package:uuid/uuid.dart';
 
 import '../services/time_sync_service.dart';
 import '../../games/common/base_game.dart';
+import '../models/player_server_stats.dart';
 
 final apiClientProvider = Provider<ApiClient>((ref) {
   final timeSync = ref.watch(timeSyncServiceProvider);
@@ -351,6 +352,107 @@ class ApiClient {
     } catch (e) {
       debugPrint('[ApiClient] Liderlik tablosu çekme hatası (Local fallback): $e');
     }
+    return null;
+  }
+
+  /// Canlı sunucudan oyuncunun tüm zamanlardaki kümülatif kariyer istatistiklerini çeker.
+  /// Sunucu ve yerel önbellek arasındaki tüm puan uyuşmazlıklarını ortadan kaldırır.
+  Future<PlayerServerStats?> fetchPlayerStats({String? nickname}) async {
+    try {
+      final baseUrl = await getBaseUrl();
+      final deviceId = await getDeviceId();
+      final nick = nickname ?? await getNickname();
+      final token = await ensureAuthenticated();
+
+      final uri = Uri.parse('$baseUrl/player/stats').replace(
+        queryParameters: {
+          if (deviceId.isNotEmpty) 'device_id': deviceId,
+          if (nick != null && nick.isNotEmpty) 'nickname': nick,
+        },
+      );
+
+      final headers = {
+        'Accept': 'application/json',
+        'X-Device-Id': deviceId,
+        if (token != null) 'Authorization': 'Bearer $token',
+      };
+
+      final res = await _client.get(uri, headers: headers).timeout(const Duration(seconds: 4));
+
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body) as Map<String, dynamic>;
+        final player = data['player'] as Map<String, dynamic>?;
+        if (player != null) {
+          return PlayerServerStats.fromJson(player);
+        }
+      }
+    } catch (e) {
+      debugPrint('[ApiClient] fetchPlayerStats hatası: $e');
+    }
+
+    // Dayanıklı Geriye Dönük Uyumluluk (Fallback):
+    // Eğer sunucu henüz yeni /player/stats endpointine güncellenmemişse,
+    // 6 oyunun all_time liderlik tablosunu çekip toplam kariyer puanını ve oyunları eksiksiz birleştirir!
+    try {
+      final nick = (nickname ?? await getNickname())?.trim().toLowerCase();
+      if (nick != null && nick.isNotEmpty) {
+        final games = [
+          GameType.queens,
+          GameType.crossclimb,
+          GameType.pinpoint,
+          GameType.tango,
+          GameType.zipPath,
+          GameType.patches,
+        ];
+        int fallbackTotalCareer = 0;
+        int fallbackTotalPlayed = 0;
+        final Map<String, GameServerStats> gameStatsMap = {};
+
+        final results = await Future.wait(
+          games.map((g) => fetchLeaderboard(gameType: g, timeframe: LeaderboardTimeframe.allTime)),
+        );
+
+        for (int i = 0; i < games.length; i++) {
+          final g = games[i];
+          final list = results[i];
+          if (list != null) {
+            final myEntry = list.firstWhere(
+              (e) => e.userName.trim().toLowerCase() == nick,
+              orElse: () => LeaderboardEntry(
+                rank: 0,
+                userId: '',
+                userName: '',
+                totalScore: 0,
+                bestTimeMs: 0,
+                gamesPlayed: 0,
+              ),
+            );
+            if (myEntry.totalScore > 0) {
+              fallbackTotalCareer += myEntry.totalScore;
+              fallbackTotalPlayed += myEntry.gamesPlayed;
+              gameStatsMap[g.id] = GameServerStats(
+                allTimeScore: myEntry.totalScore,
+                bestScore: myEntry.totalScore,
+                bestTimeMs: myEntry.bestTimeMs,
+                gamesPlayed: myEntry.gamesPlayed,
+              );
+            }
+          }
+        }
+
+        if (fallbackTotalCareer > 0) {
+          return PlayerServerStats(
+            totalCareerScore: fallbackTotalCareer,
+            totalGamesPlayed: fallbackTotalPlayed,
+            games: gameStatsMap,
+            isSynced: true,
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('[ApiClient] fetchPlayerStats fallback hatası: $e');
+    }
+
     return null;
   }
 

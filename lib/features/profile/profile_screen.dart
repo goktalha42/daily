@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,6 +6,8 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../core/network/network_checker.dart';
 import '../../core/services/game_stats_service.dart';
 import '../../core/services/daily_play_service.dart';
+import '../../core/services/player_stats_service.dart';
+import '../../core/services/league_service.dart';
 import '../../core/services/theme_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/date_utils.dart';
@@ -44,6 +47,7 @@ class ProfileScreen extends ConsumerWidget {
     final hasGrandmaster = badgeNotifier.isUnlocked('belt_grandmaster') || userIQ >= 120;
 
     final dailyPlay = ref.watch(dailyPlayServiceProvider);
+    final serverStats = ref.watch(playerStatsServiceProvider);
 
     // Toplam istatistik ve dinamik reaksiyon hesaplamaları
     int totalPlayed = 0;
@@ -68,21 +72,35 @@ class ProfileScreen extends ConsumerWidget {
         durationGamesCount++;
       }
     }
-    final int avgReactionMs = durationGamesCount > 0 ? (totalBestDurationMs / durationGamesCount).round() : 0;
+
+    final int effectiveTotalPlayed = math.max(totalPlayed, serverStats.totalGamesPlayed);
+
+    final int avgReactionMs = serverStats.avgDurationMs > 0
+        ? serverStats.avgDurationMs
+        : (durationGamesCount > 0 ? (totalBestDurationMs / durationGamesCount).round() : 0);
     final String avgReactionStr = avgReactionMs > 0 ? '${(avgReactionMs / 1000).toStringAsFixed(1)} sn' : '--';
     final String avgReactionSubtitle = avgReactionMs > 0
         ? (avgReactionMs < 30000 ? 'Işık Hızı' : (avgReactionMs < 60000 ? 'Yüksek Hız' : 'Dengeli'))
         : 'Henüz Veri Yok';
 
-    // Gerçek kariyer toplam puanı: Tüm tamamlanan gün oyunlarının kümülatif puanı
-    final int careerTotalScore = dailyPlay.records.values
+    // Gerçek kariyer toplam puanı: Sunucudaki doğrulanmış kümülatif puan ile yerel kayıtların en yükseği
+    // (Böylece liderlik tablosundaki tüm oyunların toplamı ile profil skoru %100 birebir aynı ve tutarlı olur)
+    final int localCareerScore = dailyPlay.records.values
         .where((r) => !r.isArchivePlay && r.score > 0)
         .fold<int>(0, (sum, r) => sum + r.score);
-    final int displayTotalScore = careerTotalScore > 0 ? careerTotalScore : totalScore;
+    final int effectiveCareerScore = math.max(localCareerScore, serverStats.totalCareerScore);
+    final int displayTotalScore = effectiveCareerScore > 0 ? effectiveCareerScore : totalScore;
 
-    return CustomScrollView(
-      physics: const BouncingScrollPhysics(),
-      slivers: [
+    return RefreshIndicator(
+      color: AppColors.sunYellow,
+      backgroundColor: isDark ? AppColors.cardBgDark : Colors.white,
+      onRefresh: () async {
+        await ref.read(playerStatsServiceProvider.notifier).refreshStats();
+        await ref.read(leagueServiceProvider.notifier).fetchLiveLeagueData();
+      },
+      child: CustomScrollView(
+        physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+        slivers: [
         // 1. ÜST BAŞLIK
         SliverToBoxAdapter(
           child: Padding(
@@ -472,7 +490,7 @@ class ProfileScreen extends ConsumerWidget {
                     icon: Icons.sports_esports_rounded,
                     fillColor: AppColors.highlighterCyan,
                     title: 'ÇÖZÜLEN OYUN',
-                    value: '$totalPlayed Oyun',
+                    value: '$effectiveTotalPlayed Oyun',
                     subtitle: 'Tamamlandı',
                   ),
                 ),
@@ -553,11 +571,16 @@ class ProfileScreen extends ConsumerWidget {
                       geniusTitle: 'Zühtü Çırağı',
                     );
 
+                final serverGameKey = game == GameType.zipPath ? 'zip_path' : game.id;
+                final serverGame = serverStats.games[serverGameKey] ?? serverStats.games[game.id];
+                final int serverBestScore = serverGame?.bestScore ?? 0;
+                final int serverBestDuration = serverGame?.bestTimeMs ?? 0;
+
                 final int displayBestScore;
                 final int displayBestDuration;
                 if (game == GameType.queens) {
-                  int maxQueensScore = perf.bestScore;
-                  int bestQueensDuration = perf.bestDurationMs;
+                  int maxQueensScore = math.max(perf.bestScore, serverBestScore);
+                  int bestQueensDuration = perf.bestDurationMs > 0 ? perf.bestDurationMs : serverBestDuration;
                   for (final dateKey in dailyPlay.records.values.map((r) => r.dateId).toSet()) {
                     final qRec = dailyPlay.getRecord(GameType.queens, dateKey);
                     if (qRec != null && qRec.score > maxQueensScore) {
@@ -570,9 +593,13 @@ class ProfileScreen extends ConsumerWidget {
                   displayBestScore = maxQueensScore;
                   displayBestDuration = bestQueensDuration;
                 } else {
-                  displayBestScore = perf.bestScore;
-                  displayBestDuration = perf.bestDurationMs;
+                  displayBestScore = math.max(perf.bestScore, serverBestScore);
+                  displayBestDuration = (perf.bestDurationMs > 0 && serverBestDuration > 0)
+                      ? math.min(perf.bestDurationMs, serverBestDuration)
+                      : (perf.bestDurationMs > 0 ? perf.bestDurationMs : serverBestDuration);
                 }
+
+                final bool hasGamePlayed = perf.hasPlayed || (serverGame != null && serverGame.gamesPlayed > 0) || displayBestScore > 0;
 
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 10),
@@ -615,7 +642,7 @@ class ProfileScreen extends ConsumerWidget {
                                 ),
                               ),
                               Text(
-                                perf.hasPlayed
+                                hasGamePlayed
                                     ? 'En İyi: ${GameDateUtils.formatGameTime(displayBestDuration)} • $displayBestScore Puan'
                                     : 'Henüz bugün çözülmedi',
                                 style: GoogleFonts.patrickHand(
@@ -838,8 +865,9 @@ class ProfileScreen extends ConsumerWidget {
           child: SizedBox(height: 120), // Floating nav bar için pay
         ),
       ],
-    );
-  }
+    ),
+  );
+}
 }
 
 class _ThemeModeChip extends StatelessWidget {
