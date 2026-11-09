@@ -43,6 +43,8 @@ class ProfileScreen extends ConsumerWidget {
     final hasEinstein = badgeNotifier.isUnlocked('belt_einstein') || userIQ >= 148;
     final hasGrandmaster = badgeNotifier.isUnlocked('belt_grandmaster') || userIQ >= 120;
 
+    final dailyPlay = ref.watch(dailyPlayServiceProvider);
+
     // Toplam istatistik ve dinamik reaksiyon hesaplamaları
     int totalPlayed = 0;
     int totalScore = 0;
@@ -50,7 +52,17 @@ class ProfileScreen extends ConsumerWidget {
     int durationGamesCount = 0;
     for (var perf in statsMap.values) {
       totalPlayed += perf.totalGamesPlayed;
-      totalScore += perf.bestScore;
+      int gameBestScore = perf.bestScore;
+      if (perf.gameType == GameType.queens) {
+        // Vezirler için günlük toplam skoru (Kolay + Zor + Master) kontrol et
+        for (final dateKey in dailyPlay.records.values.map((r) => r.dateId).toSet()) {
+          final qRec = dailyPlay.getRecord(GameType.queens, dateKey);
+          if (qRec != null && qRec.score > gameBestScore) {
+            gameBestScore = qRec.score;
+          }
+        }
+      }
+      totalScore += gameBestScore;
       if (perf.bestDurationMs > 0) {
         totalBestDurationMs += perf.bestDurationMs;
         durationGamesCount++;
@@ -61,6 +73,12 @@ class ProfileScreen extends ConsumerWidget {
     final String avgReactionSubtitle = avgReactionMs > 0
         ? (avgReactionMs < 30000 ? 'Işık Hızı' : (avgReactionMs < 60000 ? 'Yüksek Hız' : 'Dengeli'))
         : 'Henüz Veri Yok';
+
+    // Gerçek kariyer toplam puanı: Tüm tamamlanan gün oyunlarının kümülatif puanı
+    final int careerTotalScore = dailyPlay.records.values
+        .where((r) => !r.isArchivePlay && r.score > 0)
+        .fold<int>(0, (sum, r) => sum + r.score);
+    final int displayTotalScore = careerTotalScore > 0 ? careerTotalScore : totalScore;
 
     return CustomScrollView(
       physics: const BouncingScrollPhysics(),
@@ -482,8 +500,8 @@ class ProfileScreen extends ConsumerWidget {
                     icon: Icons.military_tech_rounded,
                     fillColor: AppColors.sunYellow,
                     title: 'TOPLAM PUAN',
-                    value: '$totalScore P',
-                    subtitle: 'Zirve Sıralama',
+                    value: '$displayTotalScore P',
+                    subtitle: 'Kariyer Skoru',
                   ),
                 ),
               ],
@@ -535,6 +553,27 @@ class ProfileScreen extends ConsumerWidget {
                       geniusTitle: 'Zühtü Çırağı',
                     );
 
+                final int displayBestScore;
+                final int displayBestDuration;
+                if (game == GameType.queens) {
+                  int maxQueensScore = perf.bestScore;
+                  int bestQueensDuration = perf.bestDurationMs;
+                  for (final dateKey in dailyPlay.records.values.map((r) => r.dateId).toSet()) {
+                    final qRec = dailyPlay.getRecord(GameType.queens, dateKey);
+                    if (qRec != null && qRec.score > maxQueensScore) {
+                      maxQueensScore = qRec.score;
+                      if (qRec.durationMs > 0) {
+                        bestQueensDuration = qRec.durationMs;
+                      }
+                    }
+                  }
+                  displayBestScore = maxQueensScore;
+                  displayBestDuration = bestQueensDuration;
+                } else {
+                  displayBestScore = perf.bestScore;
+                  displayBestDuration = perf.bestDurationMs;
+                }
+
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 10),
                   child: SketchCard(
@@ -577,7 +616,7 @@ class ProfileScreen extends ConsumerWidget {
                               ),
                               Text(
                                 perf.hasPlayed
-                                    ? 'En İyi: ${GameDateUtils.formatGameTime(perf.bestDurationMs)} • ${perf.bestScore} Puan'
+                                    ? 'En İyi: ${GameDateUtils.formatGameTime(displayBestDuration)} • $displayBestScore Puan'
                                     : 'Henüz bugün çözülmedi',
                                 style: GoogleFonts.patrickHand(
                                   fontSize: 13,

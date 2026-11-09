@@ -36,6 +36,17 @@ class LeaderboardService extends ChangeNotifier {
   static const String _prefsCacheKey = 'zuhtu_server_leaderboard_cache_v2';
 
   String _buildCacheKey(GameType gameType, LeaderboardTimeframe timeframe, String? difficulty, String? levelId) {
+    if (timeframe == LeaderboardTimeframe.weekly) {
+      final activeDate = GameDateUtils.getActiveDate();
+      final weekStart = GameDateUtils.getStartOfWeek(activeDate);
+      final weekId = '${weekStart.year}-W${((weekStart.difference(DateTime(weekStart.year, 1, 1)).inDays) / 7).floor() + 1}';
+      return '${gameType.id}_${timeframe.name}_${difficulty ?? ""}_$weekId';
+    }
+    if (timeframe == LeaderboardTimeframe.monthly) {
+      final activeDate = GameDateUtils.getActiveDate();
+      final monthId = '${activeDate.year}-${activeDate.month.toString().padLeft(2, '0')}';
+      return '${gameType.id}_${timeframe.name}_${difficulty ?? ""}_$monthId';
+    }
     return '${gameType.id}_${timeframe.name}_${difficulty ?? ""}_${levelId ?? ""}';
   }
 
@@ -56,7 +67,19 @@ class LeaderboardService extends ChangeNotifier {
       final jsonStr = prefs.getString(_prefsCacheKey);
       if (jsonStr != null && jsonStr.isNotEmpty) {
         final decoded = jsonDecode(jsonStr) as Map<String, dynamic>;
+        final activeDate = GameDateUtils.getActiveDate();
+        final weekStart = GameDateUtils.getStartOfWeek(activeDate);
+        final currentWeekId = '${weekStart.year}-W${((weekStart.difference(DateTime(weekStart.year, 1, 1)).inDays) / 7).floor() + 1}';
+        final currentMonthId = '${activeDate.year}-${activeDate.month.toString().padLeft(2, '0')}';
+
         decoded.forEach((key, val) {
+          // Eski sürümlerden kalan tarihsiz ("_weekly__" veya "_monthly__") veya eski haftalara/aylara ait bozuk önbellekleri yükleme
+          if (key.contains('_weekly_')) {
+            if (!key.endsWith('_$currentWeekId')) return;
+          } else if (key.contains('_monthly_')) {
+            if (!key.endsWith('_$currentMonthId')) return;
+          }
+
           if (val is List) {
             final entries = val
                 .map((e) => LeaderboardEntry.fromJson(e as Map<String, dynamic>))

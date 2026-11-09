@@ -570,6 +570,47 @@ class GameStatsNotifier extends StateNotifier<Map<GameType, GamePerformanceData>
           await prefs.setBool(_queensCountMigrationKey, true);
         }
 
+        // Vezirler günlük toplam skor uzlaştırması (Kolay + Zor + Master toplamı):
+        final dailyRaw = prefs.getString(_dailyPlayPrefKey);
+        final queensPerf = current[GameType.queens];
+        if (dailyRaw != null && queensPerf != null && queensPerf.hasPlayed) {
+          try {
+            final dailyDecoded = jsonDecode(dailyRaw) as Map<String, dynamic>;
+            final Map<String, int> queensDayScores = {};
+            final Map<String, int> queensDayDurations = {};
+
+            dailyDecoded.forEach((_, val) {
+              if (val is Map<String, dynamic> && val['gameType'] == GameType.queens.id) {
+                final dId = val['dateId'] as String?;
+                final sc = val['score'] as int? ?? 0;
+                final dur = val['durationMs'] as int? ?? 0;
+                final isArchive = val['isArchivePlay'] == true;
+                if (dId != null && dId.isNotEmpty && !isArchive && sc > 0) {
+                  queensDayScores[dId] = (queensDayScores[dId] ?? 0) + sc;
+                  queensDayDurations[dId] = (queensDayDurations[dId] ?? 0) + dur;
+                }
+              }
+            });
+
+            int maxQueensScore = queensPerf.bestScore;
+            int bestQueensDur = queensPerf.bestDurationMs;
+            queensDayScores.forEach((dId, dayScore) {
+              if (dayScore > maxQueensScore) {
+                maxQueensScore = dayScore;
+                bestQueensDur = queensDayDurations[dId] ?? queensPerf.bestDurationMs;
+              }
+            });
+
+            if (maxQueensScore > queensPerf.bestScore) {
+              current[GameType.queens] = queensPerf.copyWith(
+                bestScore: maxQueensScore,
+                bestDurationMs: bestQueensDur > 0 ? bestQueensDur : queensPerf.bestDurationMs,
+              );
+              needsSave = true;
+            }
+          } catch (_) {}
+        }
+
         state = current;
 
         if (needsSave) {

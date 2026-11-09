@@ -461,6 +461,14 @@ class LeagueNotifier extends StateNotifier<LeagueState> {
         }
       }
 
+      if (savedPlayers.isNotEmpty) {
+        final currentWeeklyScore = _calculateUserWeeklyScore();
+        final userIdx = savedPlayers.indexWhere((p) => p.isUser);
+        if (userIdx != -1) {
+          savedPlayers[userIdx] = savedPlayers[userIdx].copyWith(weeklyScore: currentWeeklyScore);
+        }
+      }
+
       final players = savedPlayers.isNotEmpty
           ? savedPlayers
           : _buildLeaguePlayers(savedLevel, currentWeekId);
@@ -549,7 +557,7 @@ class LeagueNotifier extends StateNotifier<LeagueState> {
     final sunday = weekStart.add(const Duration(days: 6));
     final endOfWeek = DateTime(sunday.year, sunday.month, sunday.day, 23, 59, 59);
 
-    if (ps != null) {
+    if (ps != null && ps.records.isNotEmpty) {
       for (final record in ps.records.values) {
         if (!record.completedAt.isBefore(weekStart) && !record.completedAt.isAfter(endOfWeek)) {
           // Geçmiş gün oyunları haftalık lig skoruna kesinlikle eklenemez
@@ -560,7 +568,10 @@ class LeagueNotifier extends StateNotifier<LeagueState> {
           total += record.score;
         }
       }
-    }    if (leaderboard != null) {
+      return total;
+    }
+
+    if (leaderboard != null) {
       int lbTotal = 0;
       try {
         for (final game in GameType.values) {

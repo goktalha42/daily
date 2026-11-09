@@ -1533,22 +1533,26 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
       ref.read(leaderboardServiceProvider).submitScore(result);
     }
 
-    final statsResult = await ref.read(gameStatsServiceProvider.notifier).recordGameResult(
-          gameType: GameType.queens,
-          score: score,
-          durationMs: _elapsedMs,
-          moveCount: _moveCount,
-          difficulty: _currentDifficulty.name,
-          dateId: widget.levelId,
-          isArchivePlay: isPastGame,
-        );
-
     final recordResult = await ref.read(dailyPlayServiceProvider.notifier).recordCompletion(
           game: GameType.queens,
           dateId: widget.levelId,
           score: awardedScore,
           durationMs: _elapsedMs,
           subKey: _currentDifficulty.name,
+        );
+
+    final queensDayRecord = ref.read(dailyPlayServiceProvider).getRecord(GameType.queens, widget.levelId);
+    final int effectiveQueensScore = queensDayRecord?.score ?? (isPastGame ? 0 : score);
+    final int effectiveQueensDuration = queensDayRecord?.durationMs ?? _elapsedMs;
+
+    final statsResult = await ref.read(gameStatsServiceProvider.notifier).recordGameResult(
+          gameType: GameType.queens,
+          score: effectiveQueensScore,
+          durationMs: effectiveQueensDuration,
+          moveCount: _moveCount,
+          difficulty: _currentDifficulty.name,
+          dateId: widget.levelId,
+          isArchivePlay: isPastGame,
         );
 
     final isPB = !isPastGame && (recordResult.isNewPersonalBestScore || recordResult.isNewPersonalBestTime);

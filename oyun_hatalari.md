@@ -12,7 +12,8 @@ yeni apk ler yaptıkca versiyonu v1.0.1, v1.0.2 olarak değişiklik büyüklüğ
 - **v1.1.3:** Haftalık Zeka Raporu (Pazar Akşamı Özeti), 6 bilişsel alan odak dağılım grafiği, haftalık seri karnesi, Pazar akşamı otomatik karşılama ve doğrudan sosyal medya paylaşım motoru.
 - **v1.1.6:** Oyuncu Tutundurma (Retention) Paketi: Akşam 20:00 Günlük Seri Koruma ve Pazar 20:00 Zeka Raporu bildirimleri, `ZHT-XXXX-XXXX` Kurtarma Kodu & Bulut Yedekleme / Cihaz Taşıma sistemi, prosedürel Kara Kalem Ses Efektleri (SFX) ve Dokunsal Geri Bildirim (Haptic) motoru.
 - **v1.1.7:** Gece 00:00 (Türkiye saati) tam gün döngüsü ve geri sayım senkronizasyonu, gece 00:00-03:00 arası skor koruması.
-- **v1.1.8 (Güncel):** Haftalık lig sistemi terfi ve hafta geçişi kökten düzeltildi; 1. sırada tamamlayan oyuncuların Demir liginde takılı kalma sorunu giderildi, Riverpod notifier kararlılığı ve SharedPreferences asenkron kilitleri sağlandı, otomatik Bronz telafisi ve tebrik kutlaması eklendi.
+- **v1.1.8:** Haftalık lig sistemi terfi ve hafta geçişi kökten düzeltildi; 1. sırada tamamlayan oyuncuların Demir liginde takılı kalma sorunu giderildi, Riverpod notifier kararlılığı ve SharedPreferences asenkron kilitleri sağlandı, otomatik Bronz telafisi ve tebrik kutlaması eklendi.
+- **v1.1.9 (Güncel):** Lig skoru ve profil toplam puan hesaplamaları düzeltildi; haftalık önbellek anahtarlarına hafta numarası (`weekId`) eklenerek eski haftadan kalan puanların taşınması önlendi, Vezirler 3 seviye (Kolay+Zor+Master) puanının profilde ve ligde eksiksiz toplanması sağlandı.
 
 
 
