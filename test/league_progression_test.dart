@@ -71,6 +71,52 @@ void main() {
       expect(notifier.state.pendingRelegation, equals(LeagueLevel.bronze));
     });
 
+    test('SharedPreferences üzerindeki 1. sıra verisi yeni haftada Bronz lige terfi ettirir', () async {
+      SharedPreferences.setMockInitialValues({
+        'zuhtu_league_state_v3': '{"currentLevel":0,"weekId":"2026-W40","lastRank":1,"players":[{"userId":"user_local","userName":"Sen","weeklyScore":3500,"rank":1,"isUser":true}]}',
+      });
+
+      final notifier = LeagueNotifier();
+      // _initLeague asenkron çalışır, yüklenmesini bekle
+      await Future.delayed(const Duration(milliseconds: 150));
+
+      expect(notifier.state.currentLevel, equals(LeagueLevel.bronze));
+      expect(notifier.state.pendingPromotion, equals(LeagueLevel.bronze));
+    });
+
+    test('Bozuk lastRank (42) kaydedilmiş olsa bile oyuncu listesindeki 1. sıra kurtarılır ve terfi gerçekleşir', () async {
+      SharedPreferences.setMockInitialValues({
+        'zuhtu_league_state_v3': '{"currentLevel":0,"weekId":"2026-W40","lastRank":42,"players":[{"userId":"user_local","userName":"Sen","weeklyScore":3500,"rank":1,"isUser":true}]}',
+      });
+
+      final notifier = LeagueNotifier();
+      await Future.delayed(const Duration(milliseconds: 150));
+
+      expect(notifier.state.currentLevel, equals(LeagueLevel.bronze));
+      expect(notifier.state.pendingPromotion, equals(LeagueLevel.bronze));
+    });
+
+    test('refreshAfterGame hafta geçişinde lig terfisini atlamaz ve tetikler', () async {
+      final leaderboard = LeaderboardService(enableMockBots: true);
+      final notifier = LeagueNotifier(leaderboard);
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      notifier.state = notifier.state.copyWith(
+        players: notifier.state.players.map((p) => p.isUser ? p.copyWith(rank: 1, weeklyScore: 2000) : p).toList(),
+      );
+
+      // Tarihi yeni haftaya al
+      for (int i = 0; i < 7; i++) {
+        GameDateUtils.advanceToNextDay();
+      }
+
+      // Yeni haftada oyun bitişi tetiklenirse doğrudan checkWeekTransition devreye girmeli
+      await notifier.refreshAfterGame();
+
+      expect(notifier.state.currentLevel, equals(LeagueLevel.bronze));
+      expect(notifier.state.pendingPromotion, equals(LeagueLevel.bronze));
+    });
+
     test('Ekim ayının tamamı için her günde skorbord doludur', () {
       final leaderboard = LeaderboardService(enableMockBots: true);
 

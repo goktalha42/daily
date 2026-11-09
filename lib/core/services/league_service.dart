@@ -296,15 +296,20 @@ final leagueServiceProvider =
     StateNotifierProvider<LeagueNotifier, LeagueState>((ref) {
   final leaderboard = ref.watch(leaderboardServiceProvider);
   final apiClient = ref.watch(apiClientProvider);
-  final userNickname = ref.watch(userNicknameProvider);
-  final dailyPlay = ref.watch(dailyPlayServiceProvider);
 
   final notifier = LeagueNotifier(
     leaderboard,
     apiClient,
-    userNickname,
-    dailyPlay,
+    ref.read(userNicknameProvider),
+    ref.read(dailyPlayServiceProvider),
+    () => ref.read(userNicknameProvider),
+    () => ref.read(dailyPlayServiceProvider),
   );
+
+  // Nickname değiştiğinde sadece ismi güncelle, notifier'ı yok etme
+  ref.listen<String>(userNicknameProvider, (prev, next) {
+    notifier.updateNickname(next);
+  });
 
   // Oyun tamamlandığında lig puanını anında yenile
   ref.listen<DailyPlayState>(dailyPlayServiceProvider, (prev, next) {
@@ -322,15 +327,21 @@ class LeagueNotifier extends StateNotifier<LeagueState> {
 
   final LeaderboardService? leaderboard;
   final ApiClient? apiClient;
-  final String userNickname;
+  String _userNickname;
+  final String Function()? userNicknameGetter;
+  final DailyPlayState Function()? dailyPlayGetter;
   DailyPlayState? dailyPlay;
+  bool _isInitialized = false;
 
   LeagueNotifier([
     this.leaderboard,
     this.apiClient,
-    this.userNickname = 'Oyuncu',
+    String userNickname = 'Oyuncu',
     this.dailyPlay,
-  ]) : super(LeagueState(
+    this.userNicknameGetter,
+    this.dailyPlayGetter,
+  ])  : _userNickname = userNickname,
+        super(LeagueState(
           currentLevel: LeagueLevel.iron,
           players: [],
           weekId: _currentWeekId(),
@@ -338,17 +349,29 @@ class LeagueNotifier extends StateNotifier<LeagueState> {
     _initLeague();
   }
 
-  static String _currentWeekId([DateTime? date]) {
-    final active = date ?? GameDateUtils.getActiveDate();
-    final weekNumber = _isoWeekNumber(active);
-    return '${active.year}-W${weekNumber.toString().padLeft(2, '0')}';
+  String get userNickname => userNicknameGetter?.call() ?? _userNickname;
+  DailyPlayState? _getDailyPlay([DailyPlayState? override]) =>
+      override ?? dailyPlayGetter?.call() ?? dailyPlay;
+
+  void updateNickname(String newNickname) {
+    _userNickname = newNickname;
+    final trimmed = newNickname.trim().isEmpty ? 'Sen' : newNickname.trim();
+    final currentPlayers = List<LeaguePlayer>.from(state.players);
+    final userIdx = currentPlayers.indexWhere((p) => p.isUser);
+    if (userIdx != -1) {
+      currentPlayers[userIdx] = currentPlayers[userIdx].copyWith(userName: trimmed);
+      state = state.copyWith(players: currentPlayers);
+    }
   }
 
-  static int _isoWeekNumber(DateTime date) {
-    final startOfYear = DateTime(date.year, 1, 1);
-    final dayOfYear = date.difference(startOfYear).inDays;
-    final weekDay = date.weekday;
-    return ((dayOfYear + startOfYear.weekday - weekDay) / 7).floor() + 1;
+  static String _currentWeekId([DateTime? date]) {
+    final active = date ?? GameDateUtils.getActiveDate();
+    // ISO-8601 standardına göre haftanın ait olduğu Perşembe gününün yılı ve numarası
+    final thursday = active.add(Duration(days: 4 - active.weekday));
+    final firstDayOfYear = DateTime(thursday.year, 1, 1);
+    final dayOfYear = thursday.difference(firstDayOfYear).inDays;
+    final weekNumber = (dayOfYear / 7).floor() + 1;
+    return '${thursday.year}-W${weekNumber.toString().padLeft(2, '0')}';
   }
 
   Future<void> _initLeague() async {
@@ -361,6 +384,7 @@ class LeagueNotifier extends StateNotifier<LeagueState> {
       LeagueLevel? pendingPromotion;
       LeagueLevel? pendingRelegation;
       List<LeaguePlayer> savedPlayers = [];
+      int? lastRank;
 
       if (raw != null) {
         final decoded = jsonDecode(raw) as Map<String, dynamic>;
@@ -370,14 +394,41 @@ class LeagueNotifier extends StateNotifier<LeagueState> {
             ? LeagueLevel.values[levelIndex]
             : LeagueLevel.iron;
 
-        if (savedWeekId != currentWeekId) {
+        lastRank = decoded['lastRank'] as int?;
+
+        // Eğer decoded['players'] listesi varsa ve kullanıcının gerçek sırası kayıtlıysa,
+        // bozuk lastRank (örneğin boş liste nedeniyle 42 kaydedilmişse) yerine gerçek sırayı al
+        if (decoded['players'] is List) {
+          final decodedPlayers = (decoded['players'] as List)
+              .map((p) => LeaguePlayer.fromJson(p as Map<String, dynamic>))
+              .toList();
+          final userP = decodedPlayers.cast<LeaguePlayer?>().firstWhere(
+            (p) => p?.isUser == true,
+            orElse: () => null,
+          );
+          if (userP != null && userP.rank > 0 && userP.weeklyScore > 0) {
+            if (lastRank == null || lastRank == 42 || lastRank > userP.rank) {
+              lastRank = userP.rank;
+            }
+          }
+        }
+
+        if (savedWeekId.isNotEmpty && savedWeekId != currentWeekId) {
           // Yeni hafta: Önceki hafta sonuçlarına göre lig atla/düş
-          final lastRank = decoded['lastRank'] as int? ?? 21;
+          // Eğer lastRank hala belirlenememişse veya 42 ise, önceki haftanın oyun kayıtlarını kontrol et
+          if (lastRank == null || lastRank > promotionCount) {
+            final prevWeekScore = _calculateUserScoreForWeek(savedWeekId);
+            if (prevWeekScore > 0) {
+              lastRank = 1;
+            }
+          }
+
+          final effectiveRank = lastRank ?? 21;
           LeagueLevel newLevel = savedLevel;
-          if (lastRank <= promotionCount && !savedLevel.isMax) {
+          if (effectiveRank <= promotionCount && !savedLevel.isMax) {
             newLevel = savedLevel.next ?? savedLevel;
             pendingPromotion = newLevel;
-          } else if (lastRank > leagueSize - relegationCount &&
+          } else if (effectiveRank > leagueSize - relegationCount &&
               !savedLevel.isMin) {
             newLevel = savedLevel.previous ?? savedLevel;
             pendingRelegation = newLevel;
@@ -399,10 +450,22 @@ class LeagueNotifier extends StateNotifier<LeagueState> {
         }
       }
 
+      // Kullanıcının hakkı olan terfi durumu (otomatik telafi):
+      // Eğer kullanıcı Demir ligindeyse ve bu haftadan önceki günlerde tamamlanmış oyunu varsa,
+      // veya geçen hafta puan toplamış ama bug nedeniyle Demir'de kalmışsa, Bronz'a yükselt!
+      if (savedLevel == LeagueLevel.iron && pendingPromotion == null) {
+        final hasAnyPreviousPlays = _hasPreviousWeekPlays(currentWeekId);
+        if (hasAnyPreviousPlays) {
+          savedLevel = LeagueLevel.bronze;
+          pendingPromotion = LeagueLevel.bronze;
+        }
+      }
+
       final players = savedPlayers.isNotEmpty
           ? savedPlayers
           : _buildLeaguePlayers(savedLevel, currentWeekId);
 
+      _isInitialized = true;
       if (!mounted) return;
       state = LeagueState(
         currentLevel: savedLevel,
@@ -419,6 +482,7 @@ class LeagueNotifier extends StateNotifier<LeagueState> {
         fetchLiveLeagueData();
       }
     } catch (_) {
+      _isInitialized = true;
       if (!mounted) return;
       final players =
           _buildLeaguePlayers(LeagueLevel.iron, _currentWeekId());
@@ -430,15 +494,62 @@ class LeagueNotifier extends StateNotifier<LeagueState> {
     }
   }
 
-  /// Kullanıcının bu haftaki toplam puanını yerel kayıtlardan ve liderlik tablosundan hesaplar
-  int _calculateUserWeeklyScore([DailyPlayState? playState]) {
+  /// Belirli bir haftada kullanıcının tamamladığı oyunlardan kazandığı puanı döner
+  int _calculateUserScoreForWeek(String targetWeekId) {
     int total = 0;
-    final ps = playState ?? dailyPlay;
+    final ps = _getDailyPlay();
     if (ps != null) {
-      final activeDate = GameDateUtils.getActiveDate();
-      final weekStart = GameDateUtils.getStartOfWeek(activeDate);
-      final endOfWeek = DateTime(activeDate.year, activeDate.month, activeDate.day, 23, 59, 59);
+      for (final record in ps.records.values) {
+        if (record.isArchivePlay) continue;
+        final recordWeekId = _currentWeekId(record.completedAt);
+        if (recordWeekId == targetWeekId) {
+          total += record.score;
+        }
+      }
+    }
+    return total;
+  }
 
+  /// Mevcut haftadan önceki herhangi bir haftada oynanmış oyun kaydı olup olmadığını denetler
+  bool _hasPreviousWeekPlays(String currentWeekId) {
+    final ps = _getDailyPlay();
+    if (ps != null) {
+      for (final record in ps.records.values) {
+        if (record.isArchivePlay) continue;
+        final recordWeekId = _currentWeekId(record.completedAt);
+        if (recordWeekId != currentWeekId && record.score > 0) {
+          return true;
+        }
+      }
+    }
+    if (leaderboard != null) {
+      try {
+        for (final game in GameType.values) {
+          final entries = leaderboard!.getLeaderboard(
+            gameType: game,
+            timeframe: LeaderboardTimeframe.allTime,
+          );
+          final userEntries =
+              entries.where((e) => e.userId == 'user_local').toList();
+          if (userEntries.isNotEmpty && userEntries.first.totalScore > 0) {
+            return true;
+          }
+        }
+      } catch (_) {}
+    }
+    return false;
+  }
+
+  /// Kullanıcının bu haftaki toplam puanını yerel kayıtlardan ve liderlik tablosundan hesaplar
+  int _calculateUserWeeklyScore([DailyPlayState? playState, DateTime? date]) {
+    int total = 0;
+    final ps = _getDailyPlay(playState);
+    final targetDate = date ?? GameDateUtils.getActiveDate();
+    final weekStart = GameDateUtils.getStartOfWeek(targetDate);
+    final sunday = weekStart.add(const Duration(days: 6));
+    final endOfWeek = DateTime(sunday.year, sunday.month, sunday.day, 23, 59, 59);
+
+    if (ps != null) {
       for (final record in ps.records.values) {
         if (!record.completedAt.isBefore(weekStart) && !record.completedAt.isAfter(endOfWeek)) {
           // Geçmiş gün oyunları haftalık lig skoruna kesinlikle eklenemez
@@ -449,9 +560,7 @@ class LeagueNotifier extends StateNotifier<LeagueState> {
           total += record.score;
         }
       }
-    }
-
-    if (leaderboard != null) {
+    }    if (leaderboard != null) {
       int lbTotal = 0;
       try {
         for (final game in GameType.values) {
@@ -611,9 +720,13 @@ class LeagueNotifier extends StateNotifier<LeagueState> {
 
   /// Gün değişimi veya yeni haftaya geçiş kontrolü
   Future<void> checkWeekTransition() async {
+    if (!_isInitialized) {
+      await _initLeague();
+      return;
+    }
     final currentWeekId = _currentWeekId();
     if (state.weekId != currentWeekId && state.weekId.isNotEmpty) {
-      final lastRank = state.userRank;
+      final lastRank = state.userPlayer?.rank ?? (state.userWeeklyScore > 0 ? 1 : 21);
       LeagueLevel newLevel = state.currentLevel;
       LeagueLevel? pendingPromotion;
       LeagueLevel? pendingRelegation;
@@ -645,10 +758,18 @@ class LeagueNotifier extends StateNotifier<LeagueState> {
 
   /// Oyun bitişinde ligi hemen yenile
   Future<void> refreshAfterGame([DailyPlayState? updatedDailyPlay]) async {
+    if (!_isInitialized) return;
     if (updatedDailyPlay != null) {
       dailyPlay = updatedDailyPlay;
     }
     final currentWeekId = _currentWeekId();
+
+    // Hafta geçişi olmuşsa önce lig atlamayı uygula
+    if (state.weekId != currentWeekId && state.weekId.isNotEmpty) {
+      await checkWeekTransition();
+      return;
+    }
+
     final updatedScore = _calculateUserWeeklyScore();
 
     // Kullanıcının puanını mevcut oyuncu listesinde hemen güncelle
@@ -657,6 +778,27 @@ class LeagueNotifier extends StateNotifier<LeagueState> {
     if (userIdx != -1) {
       currentPlayers[userIdx] = currentPlayers[userIdx].copyWith(
         weeklyScore: max(currentPlayers[userIdx].weeklyScore, updatedScore),
+      );
+      currentPlayers.sort((a, b) {
+        if (b.weeklyScore != a.weeklyScore) {
+          return b.weeklyScore.compareTo(a.weeklyScore);
+        }
+        return a.userName.compareTo(b.userName);
+      });
+      final ranked = List.generate(currentPlayers.length, (i) {
+        return currentPlayers[i].copyWith(rank: i + 1);
+      });
+      state = state.copyWith(players: ranked, weekId: currentWeekId);
+    } else {
+      final userNick = userNickname.trim().isEmpty ? 'Sen' : userNickname.trim();
+      currentPlayers.add(
+        LeaguePlayer(
+          userId: 'user_local',
+          userName: userNick,
+          weeklyScore: updatedScore,
+          rank: 1,
+          isUser: true,
+        ),
       );
       currentPlayers.sort((a, b) {
         if (b.weeklyScore != a.weeklyScore) {
@@ -686,10 +828,13 @@ class LeagueNotifier extends StateNotifier<LeagueState> {
   }
 
   Future<void> _saveState() async {
+    if (!_isInitialized) return;
     try {
       final prefs = await SharedPreferences.getInstance();
       final json = state.toJson();
-      json['lastRank'] = state.userRank;
+      if (state.userPlayer != null) {
+        json['lastRank'] = state.userRank;
+      }
       await prefs.setString(_prefKey, jsonEncode(json));
     } catch (_) {}
   }

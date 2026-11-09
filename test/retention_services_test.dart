@@ -8,6 +8,7 @@ import 'package:daily_games/core/services/daily_play_service.dart';
 import 'package:daily_games/core/services/game_stats_service.dart';
 import 'package:daily_games/core/services/retention_notification_service.dart';
 import 'package:daily_games/core/services/sound_haptic_service.dart';
+import 'package:daily_games/core/utils/date_utils.dart';
 import 'package:daily_games/games/common/base_game.dart';
 
 void main() {
@@ -84,9 +85,10 @@ void main() {
       addTearDown(container1.dispose);
 
       // 1. Cihazda oyun çöz, seri ve rozet kazan
+      final testDate = GameDateUtils.getTodayLevelId();
       await container1.read(dailyPlayServiceProvider.notifier).recordCompletion(
             game: GameType.queens,
-            dateId: '2026-11-08',
+            dateId: testDate,
             score: 885,
             durationMs: 19000,
             subKey: 'kolay',
@@ -97,7 +99,8 @@ void main() {
             durationMs: 19000,
             moveCount: 12,
             difficulty: 'kolay',
-            dateId: '2026-11-08',
+            dateId: testDate,
+            isArchivePlay: false,
           );
       await container1
           .read(badgeServiceProvider.notifier)
@@ -128,14 +131,14 @@ void main() {
       expect(
         restoredDaily.isCompleted(
           GameType.queens,
-          '2026-11-08',
+          testDate,
           subKey: 'kolay',
         ),
         isTrue,
       );
       expect(
         restoredDaily
-            .getRecord(GameType.queens, '2026-11-08', subKey: 'kolay')
+            .getRecord(GameType.queens, testDate, subKey: 'kolay')
             ?.score,
         885,
       );

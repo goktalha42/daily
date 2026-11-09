@@ -57,6 +57,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       if (mounted) {
         ref.read(retentionNotificationProvider);
         ref.read(cloudBackupProvider);
+        ref.read(leagueServiceProvider.notifier).checkWeekTransition();
       }
       await _checkMandatoryNickname();
       if (mounted) {

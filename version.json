@@ -1,9 +1,9 @@
 ﻿{
-    "version":  "1.1.7",
-    "build_number":  15,
-    "title":  "ZÃ¼htÃ¼ v1.1.7 GÃ¼ncellemesi",
-    "changelog":  "Gece 03:00 (UTC) yerine tam Gece 00:00 (Turkiye / Istanbul Yerel Saati) oyun sifirlama ve geri sayim sayaci duzeltmesi, 00:00-03:00 arasi sunucu puan kaybi onlemesi ve Oyuncu Tutundurma (Retention) ozellikleri.",
-    "apk_url":  "https://raw.githubusercontent.com/goktalha42/daily/main/releases/Zuhtu_v1.1.7_b15.apk",
-    "release_url":  "https://github.com/goktalha42/daily/releases/tag/v1.1.7",
+    "version":  "1.1.8",
+    "build_number":  16,
+    "title":  "Zühtü v1.1.8 Güncellemesi 🏆⛓️",
+    "changelog":  "Haftalık lig sistemi terfi ve hafta geçişi kökten düzeltildi; 1. sırada bitiren oyuncuların Demir liginde takılı kalma sorunu giderildi ve otomatik Bronz terfisi sağlandı.",
+    "apk_url":  "https://raw.githubusercontent.com/goktalha42/daily/main/releases/Zuhtu_v1.1.8_b16.apk",
+    "release_url":  "https://github.com/goktalha42/daily/releases/tag/v1.1.8",
     "force_update":  false
 }
