@@ -14,6 +14,7 @@ import '../../core/utils/date_utils.dart';
 import '../../core/widgets/sketch_badge_icons.dart';
 import '../../core/widgets/sketch_decorations.dart';
 import '../../games/common/base_game.dart';
+import '../home/home_screen.dart';
 import 'widgets/badge_showcase_section.dart';
 import '../../core/services/badge_service.dart';
 import '../league/league_screen.dart';
@@ -463,7 +464,12 @@ class ProfileScreen extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: 6),
-                const LeagueProfileCard(),
+                LeagueProfileCard(
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    ref.read(homeBottomNavIndexProvider.notifier).state = 2;
+                  },
+                ),
               ],
             ),
           ),

@@ -1160,9 +1160,9 @@ class _SketchPlayerRow extends StatelessWidget {
 
     if (isUser) {
       cardBg = isDark
-          ? AppColors.sunYellow.withValues(alpha: 0.22)
-          : AppColors.sunYellow.withValues(alpha: 0.28);
-      borderColor = isDark ? AppColors.sunYellow : basePencil;
+          ? const Color(0xFF1E293B)
+          : const Color(0xFFFEF9C3);
+      borderColor = isDark ? const Color(0xFF38BDF8) : AppColors.sunYellow;
       borderWidth = 2.4;
       shadowOffset = const Offset(3.0, 3.0);
     } else if (isTop3) {

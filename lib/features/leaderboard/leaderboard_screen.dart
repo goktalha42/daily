@@ -5,6 +5,8 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/date_utils.dart';
 import '../../core/widgets/sketch_decorations.dart';
+import '../../core/services/league_service.dart';
+import '../home/home_screen.dart';
 import '../../games/common/base_game.dart';
 import 'leaderboard_service.dart';
 
@@ -29,27 +31,39 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
   }
 
   void _triggerRefresh() {
+    final effectiveQueensDifficulty =
+        (_selectedGame == GameType.queens && _timeframe == LeaderboardTimeframe.daily)
+            ? _selectedQueensDifficulty
+            : null;
     ref.read(leaderboardServiceProvider).refreshFromServer(
       gameType: _selectedGame,
       timeframe: _timeframe,
-      difficulty: _selectedGame == GameType.queens ? _selectedQueensDifficulty : null,
+      difficulty: effectiveQueensDifficulty,
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final service = ref.watch(leaderboardServiceProvider);
+    final league = ref.watch(leagueServiceProvider);
+    final currentTier = league.currentLevel;
+
+    final effectiveQueensDifficulty =
+        (_selectedGame == GameType.queens && _timeframe == LeaderboardTimeframe.daily)
+            ? _selectedQueensDifficulty
+            : null;
+
     final hasServerData = service.hasServerDataFor(
       gameType: _selectedGame,
       timeframe: _timeframe,
-      difficulty: _selectedGame == GameType.queens ? _selectedQueensDifficulty : null,
+      difficulty: effectiveQueensDifficulty,
     );
     final isSyncing = service.isSyncingWithServer;
 
     final entries = service.getLeaderboard(
       gameType: _selectedGame,
       timeframe: _timeframe,
-      difficulty: _selectedGame == GameType.queens ? _selectedQueensDifficulty : null,
+      difficulty: effectiveQueensDifficulty,
     );
 
     // Kullanıcının kendi derecesini bul
@@ -117,7 +131,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                       ),
                     const SizedBox(height: 2),
                     Text(
-                      'Zeka Sıralaması',
+                      'Zühtü Sıralaması',
                       style: GoogleFonts.patrickHand(
                         fontSize: 34,
                         fontWeight: FontWeight.w700,
@@ -127,23 +141,32 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                     ),
                   ],
                 ),
-                // Skeç Lig Rozeti
+                // Skeç Lig Rozeti (Mevcut Lig ve Tıklanınca Lig Sekmesine Geçiş)
                 SketchCard(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    ref.read(homeBottomNavIndexProvider.notifier).state = 2;
+                  },
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   borderRadius: 10,
                   borderWidth: 2.0,
                   shadowOffset: const Offset(2.5, 2.5),
-                  backgroundColor: AppColors.sunYellow,
+                  backgroundColor: currentTier.primaryColor.withValues(alpha: isDark ? 0.35 : 0.22),
+                  borderColor: isDark ? currentTier.primaryColor : AppColors.pencilBlack,
                   child: Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.military_tech_rounded, size: 18, color: AppColors.pencilBlack),
-                      const SizedBox(width: 4),
                       Text(
-                        '1. LİG',
+                        currentTier.emoji,
+                        style: const TextStyle(fontSize: 15),
+                      ),
+                      const SizedBox(width: 5),
+                      Text(
+                        '${currentTier.displayName.toUpperCase()} LİGİ',
                         style: GoogleFonts.patrickHand(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
-                          color: AppColors.pencilBlack,
+                          color: AppColors.pencil(context),
                         ),
                       ),
                     ],
@@ -189,7 +212,12 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                         : InkWell(
                             onTap: () {
                               HapticFeedback.selectionClick();
-                              setState(() => _timeframe = tf);
+                              setState(() {
+                                _timeframe = tf;
+                                if (_timeframe != LeaderboardTimeframe.daily) {
+                                  _selectedQueensDifficulty = null;
+                                }
+                              });
                               _triggerRefresh();
                             },
                             child: Padding(
@@ -264,8 +292,8 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
           ),
         ),
 
-        // 3.1. VEZİRLER ZORLUK SEÇİCİ & BİLGİ BANTLIĞI
-        if (_selectedGame == GameType.queens)
+        // 3.1. VEZİRLER ZORLUK SEÇİCİ (Yalnızca Bugün seçiliyken)
+        if (_selectedGame == GameType.queens && _timeframe == LeaderboardTimeframe.daily)
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
@@ -370,23 +398,30 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
               borderRadius: 14,
               borderWidth: 2.5,
               shadowOffset: const Offset(3.5, 3.5),
+              backgroundColor: isDark ? const Color(0xFF1E293B) : const Color(0xFFFEF9C3),
+              borderColor: isDark ? const Color(0xFF38BDF8) : AppColors.sunYellow,
               padding: const EdgeInsets.all(14),
               child: Row(
                 children: [
-                  // Sol: Sıralama Kutusu
-                  SketchPlaceholderBox(
-                    width: 48,
-                    height: 48,
-                    fillColor: myRank != null ? _selectedGame.color : AppColors.surfaceSecondaryOf(context),
-                    lineColor: AppColors.pencil(context),
-                    borderRadius: 8,
-                    child: Center(
-                      child: Text(
-                        myRank != null ? '#$myRank' : '-',
-                        style: GoogleFonts.patrickHand(
-                          color: myRank != null ? AppColors.pencilBlack : AppColors.pencil(context),
-                          fontWeight: FontWeight.w700,
-                          fontSize: 19,
+                  // Sol: Sıralama Kutusu (Çarpı çizgisi kaldırıldı, temiz ve net kutu)
+                  SketchCard(
+                    padding: EdgeInsets.zero,
+                    borderRadius: 10,
+                    borderWidth: 2.0,
+                    shadowOffset: const Offset(2.0, 2.0),
+                    backgroundColor: myRank != null ? _selectedGame.color : AppColors.surfaceSecondaryOf(context),
+                    borderColor: isDark ? AppColors.pencilWhite : AppColors.pencilBlack,
+                    child: SizedBox(
+                      width: 48,
+                      height: 48,
+                      child: Center(
+                        child: Text(
+                          myRank != null ? '$myRank' : '-',
+                          style: GoogleFonts.patrickHand(
+                            color: myRank != null ? AppColors.pencilBlack : AppColors.pencil(context),
+                            fontWeight: FontWeight.w800,
+                            fontSize: 21,
+                          ),
                         ),
                       ),
                     ),
@@ -667,8 +702,11 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
         borderWidth: isMe ? 2.4 : 1.8,
         shadowOffset: isMe ? const Offset(3.5, 3.5) : const Offset(2.0, 2.0),
         backgroundColor: isMe
-            ? (isDark ? AppColors.sunYellow.withValues(alpha: 0.22) : AppColors.sunYellow.withValues(alpha: 0.35))
+            ? (isDark ? const Color(0xFF1E293B) : const Color(0xFFFEF9C3))
             : AppColors.surfaceOf(context),
+        borderColor: isMe
+            ? (isDark ? const Color(0xFF38BDF8) : AppColors.sunYellow)
+            : (isDark ? AppColors.pencilWhite : AppColors.pencilBlack),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         child: Row(
           children: [

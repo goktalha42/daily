@@ -204,15 +204,15 @@
     "semantic_hash": "8e770919026a0fb9fb8f703d7b1c110d"
   },
   "lib/features/home/home_screen.dart": {
-    "mtime": 1794212752.3276238,
-    "seen": 1794213226.601879,
-    "ast_hash": "efc04943e7cc0977cd4fc1d965418722",
+    "mtime": 1794230244.222267,
+    "seen": 1794230812.0605655,
+    "ast_hash": "67cd602af29123ed18b45ffbefec5daf",
     "semantic_hash": ""
   },
   "lib/features/leaderboard/leaderboard_screen.dart": {
-    "mtime": 1793882141.11286,
-    "seen": 1794209674.2653172,
-    "ast_hash": "395621e56f337f09756a84d40ee51aa4",
+    "mtime": 1794230474.5586164,
+    "seen": 1794230812.0605764,
+    "ast_hash": "9b93e9cf7adcff3ae25b3df868474ef7",
     "semantic_hash": ""
   },
   "lib/features/leaderboard/leaderboard_service.dart": {
@@ -222,9 +222,9 @@
     "semantic_hash": ""
   },
   "lib/features/league/league_screen.dart": {
-    "mtime": 1793882141.1194098,
-    "seen": 1794209674.2653253,
-    "ast_hash": "8152af3ec59c2605f6d0c0fe532b3ed2",
+    "mtime": 1794230487.3034341,
+    "seen": 1794230812.060585,
+    "ast_hash": "d8893d88bd4c24968377d86487ae25b3",
     "semantic_hash": ""
   },
   "lib/features/profile/badges_screen.dart": {
@@ -234,9 +234,9 @@
     "semantic_hash": ""
   },
   "lib/features/profile/profile_screen.dart": {
-    "mtime": 1794225757.6201744,
-    "seen": 1794226142.3247213,
-    "ast_hash": "76fbfabaf2e7f20e62962cf9ed979854",
+    "mtime": 1794230287.9882534,
+    "seen": 1794230812.0605893,
+    "ast_hash": "feb710a3d8fb617712a5dab196b732f1",
     "semantic_hash": ""
   },
   "lib/features/profile/widgets/badge_showcase_section.dart": {
@@ -684,9 +684,9 @@
     "semantic_hash": ""
   },
   "pubspec.yaml": {
-    "mtime": 1794225929.7135613,
-    "seen": 1794226142.3250535,
-    "ast_hash": "1554fc516413844828e4187eeff56278",
+    "mtime": 1794230592.2322104,
+    "seen": 1794230812.061002,
+    "ast_hash": "d32071caa89bb6469f7d7997710a25ad",
     "semantic_hash": ""
   },
   "rozetler.md": {
@@ -924,8 +924,8 @@
     "semantic_hash": "301a7604d45b3e739efc881eb04896ea"
   },
   "lib/core/network/api_client.dart": {
-    "mtime": 1794225677.392064,
-    "seen": 1794226142.324605,
+    "mtime": 1794226389.844191,
+    "seen": 1794230812.0604897,
     "ast_hash": "c1889a61893c638854256679ef0f585d",
     "semantic_hash": ""
   },
@@ -1242,9 +1242,9 @@
     "semantic_hash": ""
   },
   "version.json": {
-    "mtime": 1794225929.76738,
-    "seen": 1794226142.3250062,
-    "ast_hash": "150fe1870149e5f932765533a8b35695",
+    "mtime": 1794230592.2968593,
+    "seen": 1794230812.06096,
+    "ast_hash": "c52f9800fcaaf4c2c3d7a868c0b40190",
     "semantic_hash": ""
   },
   "VPS_KURULUMU_VE_DURUM.md": {
@@ -1434,15 +1434,15 @@
     "semantic_hash": ""
   },
   "lib/core/models/player_server_stats.dart": {
-    "mtime": 1794225420.5100179,
-    "seen": 1794226142.3246012,
-    "ast_hash": "25ba8ffe2584392e1e6b04912ca933a5",
+    "mtime": 1794226211.3918526,
+    "seen": 1794230812.0604868,
+    "ast_hash": "4f3f524ad0bb7fdde7e4cda07de0b788",
     "semantic_hash": ""
   },
   "lib/core/services/player_stats_service.dart": {
-    "mtime": 1794225435.7326152,
-    "seen": 1794226142.32463,
-    "ast_hash": "2139af5f0db5fd0d50f9f252c7b2f704",
+    "mtime": 1794226211.6396952,
+    "seen": 1794230812.0605106,
+    "ast_hash": "8abec5455689dece498e0d3eb5279f29",
     "semantic_hash": ""
   }
 }

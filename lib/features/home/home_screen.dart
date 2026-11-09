@@ -39,6 +39,8 @@ import 'widgets/home_brain_hero_card.dart';
 import 'widgets/weekly_brain_report_dialog.dart';
 import 'widgets/time_machine_dialog.dart';
 
+final homeBottomNavIndexProvider = StateProvider<int>((ref) => 0);
+
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
@@ -47,7 +49,6 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  int _bottomNavIndex = 0;
 
   @override
   void initState() {
@@ -123,6 +124,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bottomNavIndex = ref.watch(homeBottomNavIndexProvider);
 
     return Scaffold(
       backgroundColor: isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
@@ -131,7 +133,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         child: Stack(
           children: [
             IndexedStack(
-              index: _bottomNavIndex,
+              index: bottomNavIndex,
               children: const [
                 _GeniusLobbyTab(),
                 LeaderboardScreen(),
@@ -157,38 +159,38 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     _NavTabItem(
                       icon: Icons.flash_on_rounded,
                       label: 'Oyunlar',
-                      isSelected: _bottomNavIndex == 0,
+                      isSelected: bottomNavIndex == 0,
                       onTap: () {
                         HapticFeedback.selectionClick();
-                        setState(() => _bottomNavIndex = 0);
+                        ref.read(homeBottomNavIndexProvider.notifier).state = 0;
                       },
                     ),
                     _NavTabItem(
                       icon: Icons.emoji_events_rounded,
                       label: 'Sıralama',
-                      isSelected: _bottomNavIndex == 1,
+                      isSelected: bottomNavIndex == 1,
                       onTap: () {
                         HapticFeedback.selectionClick();
-                        setState(() => _bottomNavIndex = 1);
+                        ref.read(homeBottomNavIndexProvider.notifier).state = 1;
                         ref.read(leaderboardServiceProvider).refreshCurrentLeaderboard();
                       },
                     ),
                     _NavTabItem(
                       icon: Icons.workspace_premium_rounded,
                       label: 'Lig',
-                      isSelected: _bottomNavIndex == 2,
+                      isSelected: bottomNavIndex == 2,
                       onTap: () {
                         HapticFeedback.selectionClick();
-                        setState(() => _bottomNavIndex = 2);
+                        ref.read(homeBottomNavIndexProvider.notifier).state = 2;
                       },
                     ),
                     _NavTabItem(
                       icon: Icons.person_rounded,
                       label: 'Profil',
-                      isSelected: _bottomNavIndex == 3,
+                      isSelected: bottomNavIndex == 3,
                       onTap: () {
                         HapticFeedback.selectionClick();
-                        setState(() => _bottomNavIndex = 3);
+                        ref.read(homeBottomNavIndexProvider.notifier).state = 3;
                       },
                     ),
                   ],

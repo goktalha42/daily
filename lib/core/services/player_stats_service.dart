@@ -64,3 +64,4 @@ class PlayerStatsNotifier extends StateNotifier<PlayerServerStats> {
     }
   }
 }
+

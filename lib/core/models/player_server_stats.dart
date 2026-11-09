@@ -89,3 +89,4 @@ class PlayerServerStats {
         'games': games.map((k, v) => MapEntry(k, v.toJson())),
       };
 }
+

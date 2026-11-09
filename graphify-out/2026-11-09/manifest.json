@@ -234,9 +234,9 @@
     "semantic_hash": ""
   },
   "lib/features/profile/profile_screen.dart": {
-    "mtime": 1794220963.5473042,
-    "seen": 1794221297.700328,
-    "ast_hash": "8c47f271a656e416c09ab63a8a881cef",
+    "mtime": 1794225757.6201744,
+    "seen": 1794226142.3247213,
+    "ast_hash": "76fbfabaf2e7f20e62962cf9ed979854",
     "semantic_hash": ""
   },
   "lib/features/profile/widgets/badge_showcase_section.dart": {
@@ -678,15 +678,15 @@
     "semantic_hash": "30cc1614b16214b66c014af09ba699eb"
   },
   "oyun_hatalari.md": {
-    "mtime": 1794221082.0314076,
-    "seen": 1794221297.7006366,
+    "mtime": 1794223048.4776716,
+    "seen": 1794226142.3250513,
     "ast_hash": "4494fec610b8418ccb56c00e36b123cd",
     "semantic_hash": ""
   },
   "pubspec.yaml": {
-    "mtime": 1794221091.1423657,
-    "seen": 1794221297.7006388,
-    "ast_hash": "4fdb03eca2cfc5650b41c3fc1e7c1abc",
+    "mtime": 1794225929.7135613,
+    "seen": 1794226142.3250535,
+    "ast_hash": "1554fc516413844828e4187eeff56278",
     "semantic_hash": ""
   },
   "rozetler.md": {
@@ -924,9 +924,9 @@
     "semantic_hash": "301a7604d45b3e739efc881eb04896ea"
   },
   "lib/core/network/api_client.dart": {
-    "mtime": 1794206908.0783498,
-    "seen": 1794209674.2652345,
-    "ast_hash": "2d92cfe2920067ea586ec8c2786600ad",
+    "mtime": 1794225677.392064,
+    "seen": 1794226142.324605,
+    "ast_hash": "c1889a61893c638854256679ef0f585d",
     "semantic_hash": ""
   },
   "lib/core/services/update_service.dart": {
@@ -966,9 +966,9 @@
     "semantic_hash": ""
   },
   "server/app/Http/Controllers/Api/AuthController.php": {
-    "mtime": 1794206908.6819892,
-    "seen": 1794209674.265419,
-    "ast_hash": "0d28988039df23cce868ea3586e9cd0a",
+    "mtime": 1794225605.9633868,
+    "seen": 1794226142.32483,
+    "ast_hash": "21260e4901a55cf755ef61743ac611ca",
     "semantic_hash": ""
   },
   "server/app/Http/Controllers/Api/GameController.php": {
@@ -1188,9 +1188,9 @@
     "semantic_hash": ""
   },
   "server/routes/api.php": {
-    "mtime": 1794206908.6900067,
-    "seen": 1794209674.2654989,
-    "ast_hash": "9d484aeb47cad2ab843ed95e9a397d3e",
+    "mtime": 1794225624.494762,
+    "seen": 1794226142.3249218,
+    "ast_hash": "9de98f52e9a581ee2585fec9c80acbb4",
     "semantic_hash": ""
   },
   "server/routes/console.php": {
@@ -1242,9 +1242,9 @@
     "semantic_hash": ""
   },
   "version.json": {
-    "mtime": 1794221091.1899168,
-    "seen": 1794221297.700594,
-    "ast_hash": "f4f2777eef3391f4d03aef4943fc1681",
+    "mtime": 1794225929.76738,
+    "seen": 1794226142.3250062,
+    "ast_hash": "150fe1870149e5f932765533a8b35695",
     "semantic_hash": ""
   },
   "VPS_KURULUMU_VE_DURUM.md": {
@@ -1428,9 +1428,21 @@
     "semantic_hash": ""
   },
   "test/score_consistency_and_babayaga_test.dart": {
-    "mtime": 1794220964.3910615,
-    "seen": 1794221297.700574,
-    "ast_hash": "e00b58079ac8cab6eda25fcccb2ae8ff",
+    "mtime": 1794225846.4543295,
+    "seen": 1794226142.324985,
+    "ast_hash": "366fd7371d375fc6d00a3536b9aa8d37",
+    "semantic_hash": ""
+  },
+  "lib/core/models/player_server_stats.dart": {
+    "mtime": 1794225420.5100179,
+    "seen": 1794226142.3246012,
+    "ast_hash": "25ba8ffe2584392e1e6b04912ca933a5",
+    "semantic_hash": ""
+  },
+  "lib/core/services/player_stats_service.dart": {
+    "mtime": 1794225435.7326152,
+    "seen": 1794226142.32463,
+    "ast_hash": "2139af5f0db5fd0d50f9f252c7b2f704",
     "semantic_hash": ""
   }
 }
