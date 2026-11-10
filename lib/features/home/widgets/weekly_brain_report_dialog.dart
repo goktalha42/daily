@@ -342,7 +342,14 @@ class WeeklyBrainReportDialog extends ConsumerWidget {
                       children: [
                         Row(
                           children: [
-                            const Text('🧠 ', style: TextStyle(fontSize: 20)),
+                            Padding(
+                              padding: const EdgeInsets.only(right: 8),
+                              child: SketchDoodleBrain(
+                                size: 24,
+                                color: pencilColor,
+                                fillColor: AppColors.highlighterPink,
+                              ),
+                            ),
                             Expanded(
                               child: Text(
                                 stats.totalPuzzlesSolved > 0
@@ -372,13 +379,24 @@ class WeeklyBrainReportDialog extends ConsumerWidget {
                             spacing: 8,
                             runSpacing: 4,
                             children: [
-                              Text(
-                                '🔥 Haftalık Seri: ${stats.weeklyStreak} Gün!',
-                                style: GoogleFonts.patrickHand(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                  color: stats.weeklyStreak >= 7 ? AppColors.sunYellow : pencilColor,
-                                ),
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  SketchDoodleFlame(
+                                    size: 15,
+                                    color: pencilColor,
+                                    fillColor: stats.weeklyStreak >= 7 ? AppColors.sunYellow : AppColors.highlighterOrange,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'Haftalık Seri: ${stats.weeklyStreak} Gün!',
+                                    style: GoogleFonts.patrickHand(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                      color: stats.weeklyStreak >= 7 ? AppColors.sunYellow : pencilColor,
+                                    ),
+                                  ),
+                                ],
                               ),
                               Text(
                                 '$overallIQ IQ • ${activeMilestone.title}',
@@ -436,7 +454,11 @@ class WeeklyBrainReportDialog extends ConsumerWidget {
                     children: [
                       Expanded(
                         child: _SummaryBox(
-                          icon: Icons.local_fire_department_rounded,
+                          customIcon: SketchDoodleFlame(
+                            size: 22,
+                            color: pencilColor,
+                            fillColor: isDark ? AppColors.highlighterOrange : const Color(0xFFF59E0B),
+                          ),
                           label: 'SERİ',
                           value: '${stats.weeklyStreak}/7 Gün',
                           lightBgColor: const Color(0xFFFEF3C7),
@@ -450,7 +472,11 @@ class WeeklyBrainReportDialog extends ConsumerWidget {
                       const SizedBox(width: 8),
                       Expanded(
                         child: _SummaryBox(
-                          icon: Icons.extension_rounded,
+                          customIcon: SketchDoodlePuzzle(
+                            size: 22,
+                            color: pencilColor,
+                            fillColor: isDark ? AppColors.skyBlue : const Color(0xFF0284C7),
+                          ),
                           label: 'BULMACA',
                           value: '${stats.totalPuzzlesSolved} Adet',
                           lightBgColor: const Color(0xFFE0F2FE),
@@ -464,7 +490,11 @@ class WeeklyBrainReportDialog extends ConsumerWidget {
                       const SizedBox(width: 8),
                       Expanded(
                         child: _SummaryBox(
-                          icon: Icons.psychology_rounded,
+                          customIcon: SketchDoodleBrain(
+                            size: 22,
+                            color: pencilColor,
+                            fillColor: isDark ? AppColors.highlighterPurple : const Color(0xFF7C3AED),
+                          ),
                           label: 'ZEKÂ',
                           value: '$overallIQ IQ',
                           lightBgColor: const Color(0xFFF3E8FF),
@@ -491,7 +521,14 @@ class WeeklyBrainReportDialog extends ConsumerWidget {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('🎯', style: TextStyle(fontSize: 18)),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 2),
+                          child: SketchDoodleTarget(
+                            size: 20,
+                            color: pencilColor,
+                            fillColor: AppColors.highlighterPink,
+                          ),
+                        ),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
@@ -872,7 +909,7 @@ class _HandDrawnDomainBarPainter extends CustomPainter {
 }
 
 class _SummaryBox extends StatelessWidget {
-  final IconData icon;
+  final Widget customIcon;
   final String label;
   final String value;
   final Color lightBgColor;
@@ -883,7 +920,7 @@ class _SummaryBox extends StatelessWidget {
   final bool isDark;
 
   const _SummaryBox({
-    required this.icon,
+    required this.customIcon,
     required this.label,
     required this.value,
     required this.lightBgColor,
@@ -905,11 +942,7 @@ class _SummaryBox extends StatelessWidget {
       shadowOffset: const Offset(2.0, 2.0),
       child: Column(
         children: [
-          Icon(
-            icon,
-            size: 19,
-            color: isDark ? pencilColor : lightIconColor,
-          ),
+          customIcon,
           const SizedBox(height: 2),
           Text(
             label,

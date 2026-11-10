@@ -1366,10 +1366,10 @@ class _ExpandedCognitiveNotebook extends StatelessWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.history_rounded, size: 14, color: pencilColor),
-                        const SizedBox(width: 3),
+                        SketchDoodleHourglass(size: 13, color: pencilColor),
+                        const SizedBox(width: 4),
                         Text(
-                          'Tüm Arşiv ⏳',
+                          'Tüm Arşiv',
                           style: GoogleFonts.patrickHand(
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
@@ -1447,16 +1447,27 @@ class _ExpandedCognitiveNotebook extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 2),
-                          Text(
-                            isSelected ? '🎯' : (played ? '✓' : '${day.day}'),
-                            style: GoogleFonts.patrickHand(
-                              fontSize: isSelected ? 12 : 13,
-                              fontWeight: FontWeight.w700,
-                              color: (isSelected || played)
-                                  ? AppColors.inkBlack
-                                  : pencilColor.withValues(alpha: 0.55),
-                            ),
-                          ),
+                          isSelected
+                              ? const SizedBox(
+                                  height: 16,
+                                  child: Center(
+                                    child: SketchDoodleTarget(
+                                      size: 14,
+                                      color: AppColors.pencilBlack,
+                                      fillColor: AppColors.highlighterPink,
+                                    ),
+                                  ),
+                                )
+                              : Text(
+                                  played ? '✓' : '${day.day}',
+                                  style: GoogleFonts.patrickHand(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                    color: (isSelected || played)
+                                        ? AppColors.inkBlack
+                                        : pencilColor.withValues(alpha: 0.55),
+                                  ),
+                                ),
                         ],
                       ),
                     ),

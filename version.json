@@ -1,9 +1,9 @@
 ﻿{
-    "version":  "1.2.5",
-    "build_number":  23,
-    "title":  "Zühtü v1.2.5 Vezirler Master İpucu \u0026 Çatlak Taç Düzeltmesi 👑✨",
-    "changelog":  "Vezirler oyununda oturum geri yüklendiğinde master seviyesinde vezirlerin çatlak görünmesi sorunu çözüldü. Yanlış vezirlerin ve hatalı ✖ işaretlerinin otomatik tespiti, master seviyesi çift vezir mantıksal çıkarımları ve garantili ipucu rehberi eklendi.",
-    "apk_url":  "https://raw.githubusercontent.com/goktalha42/daily/main/releases/Zuhtu_v1.2.5_b23.apk",
-    "release_url":  "https://github.com/goktalha42/daily/releases/tag/v1.2.5",
+    "version":  "1.2.6",
+    "build_number":  24,
+    "title":  "Zühtü v1.2.6 %100 El Çizimi Skeç İkonları \u0026 Doodle Dönüşümü 🎨✨",
+    "changelog":  "Haftalık zeka raporu emojileri, analiz seçili gün hedefi, zaman makinesi kum saatleri, sıralama madalyaları ve profil skeç karnesi oyun resimleri tamamen el çizimi doodle sanatına dönüştürüldü.",
+    "apk_url":  "https://raw.githubusercontent.com/goktalha42/daily/main/releases/Zuhtu_v1.2.6_b24.apk",
+    "release_url":  "https://github.com/goktalha42/daily/releases/tag/v1.2.6",
     "force_update":  false
 }

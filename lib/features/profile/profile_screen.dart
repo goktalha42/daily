@@ -618,7 +618,7 @@ class ProfileScreen extends ConsumerWidget {
                     borderColor: headerPencil,
                     child: Row(
                       children: [
-                        // Sol Renk İkonu
+                        // Sol Renk İkonu (El Çizimi Skeç Resmi)
                         SketchCard(
                           padding: EdgeInsets.zero,
                           borderRadius: 10,
@@ -629,7 +629,13 @@ class ProfileScreen extends ConsumerWidget {
                           child: SizedBox(
                             width: 44,
                             height: 44,
-                            child: Icon(game.icon, color: AppColors.pencilBlack, size: 24),
+                            child: Center(
+                              child: _GameSketchThumbnail(
+                                game: game,
+                                size: 28,
+                                pencilColor: AppColors.pencilBlack,
+                              ),
+                            ),
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -1517,4 +1523,206 @@ class _CloudBackupProfileCard extends ConsumerWidget {
       ),
     );
   }
+}
+
+/// Oyun Bazlı Skeç Karnesi için %100 El Çizimi Mini Skeç Resmi
+class _GameSketchThumbnail extends StatelessWidget {
+  final GameType game;
+  final double size;
+  final Color pencilColor;
+
+  const _GameSketchThumbnail({
+    required this.game,
+    this.size = 28,
+    required this.pencilColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    switch (game) {
+      case GameType.queens:
+        return SketchDoodleCrown(
+          size: size,
+          color: pencilColor,
+          fillColor: AppColors.sunYellow,
+        );
+      case GameType.pinpoint:
+        return SketchDoodleTarget(
+          size: size,
+          color: pencilColor,
+          fillColor: const Color(0xFF67E8F9),
+        );
+      case GameType.patches:
+        return SketchDoodlePuzzle(
+          size: size,
+          color: pencilColor,
+          fillColor: const Color(0xFFC084FC),
+        );
+      case GameType.tango:
+        return SizedBox(
+          width: size,
+          height: size,
+          child: CustomPaint(
+            painter: _DoodleTangoPainter(color: pencilColor),
+          ),
+        );
+      case GameType.crossclimb:
+        return SizedBox(
+          width: size,
+          height: size,
+          child: CustomPaint(
+            painter: _DoodleCrossclimbPainter(color: pencilColor),
+          ),
+        );
+      case GameType.zipPath:
+        return SizedBox(
+          width: size,
+          height: size,
+          child: CustomPaint(
+            painter: _DoodleZipPathPainter(color: pencilColor),
+          ),
+        );
+    }
+  }
+}
+
+class _DoodleTangoPainter extends CustomPainter {
+  final Color color;
+
+  const _DoodleTangoPainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
+    final stroke = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.4
+      ..strokeCap = StrokeCap.round;
+
+    // 1. Sol Güneş (Sarı dolgulu yarım el çizimi çember + ışınlar)
+    final sunPath = Path();
+    sunPath.moveTo(w * 0.40, h * 0.18);
+    sunPath.quadraticBezierTo(w * 0.12, h * 0.28, w * 0.12, h * 0.52);
+    sunPath.quadraticBezierTo(w * 0.12, h * 0.76, w * 0.40, h * 0.86);
+    sunPath.close();
+
+    canvas.drawPath(sunPath, Paint()..color = AppColors.sunYellow..style = PaintingStyle.fill);
+    canvas.drawPath(sunPath, stroke);
+
+    // Güneş Işınları
+    canvas.drawLine(Offset(w * 0.08, h * 0.50), Offset(0, h * 0.50), stroke);
+    canvas.drawLine(Offset(w * 0.14, h * 0.28), Offset(w * 0.04, h * 0.20), stroke);
+    canvas.drawLine(Offset(w * 0.14, h * 0.74), Offset(w * 0.04, h * 0.82), stroke);
+    canvas.drawLine(Offset(w * 0.32, h * 0.14), Offset(w * 0.28, h * 0.04), stroke);
+    canvas.drawLine(Offset(w * 0.32, h * 0.90), Offset(w * 0.28, 1.0), stroke);
+
+    // 2. Sağ Hilal Ay (Açık gece mavisi dolgulu el çizimi hilal)
+    final moonPath = Path();
+    moonPath.moveTo(w * 0.52, h * 0.15);
+    moonPath.quadraticBezierTo(w * 0.88, h * 0.25, w * 0.88, h * 0.54);
+    moonPath.quadraticBezierTo(w * 0.88, h * 0.82, w * 0.52, h * 0.90);
+    moonPath.quadraticBezierTo(w * 0.70, h * 0.68, w * 0.70, h * 0.52);
+    moonPath.quadraticBezierTo(w * 0.70, h * 0.35, w * 0.52, h * 0.15);
+    moonPath.close();
+
+    canvas.drawPath(moonPath, Paint()..color = const Color(0xFF60A5FA)..style = PaintingStyle.fill);
+    canvas.drawPath(moonPath, stroke);
+  }
+
+  @override
+  bool shouldRepaint(covariant _DoodleTangoPainter oldDelegate) => oldDelegate.color != color;
+}
+
+class _DoodleCrossclimbPainter extends CustomPainter {
+  final Color color;
+
+  const _DoodleCrossclimbPainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
+    final stroke = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5
+      ..strokeCap = StrokeCap.round;
+
+    // İki dikey ahşap direk (hafif eğik tırmanış merdiveni)
+    final leftRail = Path()
+      ..moveTo(w * 0.30, h * 0.90)
+      ..quadraticBezierTo(w * 0.34, h * 0.50, w * 0.38, h * 0.12);
+    final rightRail = Path()
+      ..moveTo(w * 0.68, h * 0.90)
+      ..quadraticBezierTo(w * 0.72, h * 0.50, w * 0.76, h * 0.12);
+
+    canvas.drawPath(leftRail, stroke);
+    canvas.drawPath(rightRail, stroke);
+
+    // 4 adet yatay basamak
+    canvas.drawLine(Offset(w * 0.31, h * 0.78), Offset(w * 0.69, h * 0.78), stroke);
+    canvas.drawLine(Offset(w * 0.33, h * 0.58), Offset(w * 0.71, h * 0.58), stroke);
+    canvas.drawLine(Offset(w * 0.35, h * 0.38), Offset(w * 0.73, h * 0.38), stroke);
+    canvas.drawLine(Offset(w * 0.37, h * 0.20), Offset(w * 0.75, h * 0.20), stroke);
+
+    // En tepede ışıltı yıldızı
+    final starPaint = Paint()
+      ..color = AppColors.sunYellow
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(Offset(w * 0.58, h * 0.08), 2.2, starPaint);
+    canvas.drawCircle(Offset(w * 0.58, h * 0.08), 2.2, stroke..strokeWidth = 1.0);
+  }
+
+  @override
+  bool shouldRepaint(covariant _DoodleCrossclimbPainter oldDelegate) => oldDelegate.color != color;
+}
+
+class _DoodleZipPathPainter extends CustomPainter {
+  final Color color;
+
+  const _DoodleZipPathPainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
+    final stroke = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.6
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    final dot1 = Offset(w * 0.24, h * 0.76);
+    final dot2 = Offset(w * 0.76, h * 0.52);
+    final dot3 = Offset(w * 0.32, h * 0.22);
+
+    // Birleştiren zikzak el çizimi rota yolu
+    final path = Path()
+      ..moveTo(dot1.dx, dot1.dy)
+      ..quadraticBezierTo(w * 0.48, h * 0.68, dot2.dx, dot2.dy)
+      ..quadraticBezierTo(w * 0.58, h * 0.34, dot3.dx, dot3.dy);
+
+    canvas.drawPath(path, stroke);
+
+    // 3 adet el çizimi daire düğüm
+    final fillDot = Paint()..color = const Color(0xFF38BDF8)..style = PaintingStyle.fill;
+    canvas.drawCircle(dot1, 4.5, fillDot);
+    canvas.drawCircle(dot2, 4.5, fillDot);
+    canvas.drawCircle(dot3, 4.5, fillDot);
+
+    canvas.drawCircle(dot1, 4.5, stroke..strokeWidth = 1.3);
+    canvas.drawCircle(dot2, 4.5, stroke);
+    canvas.drawCircle(dot3, 4.5, stroke);
+
+    // Merkez minik noktalar
+    canvas.drawCircle(dot1, 1.2, Paint()..color = Colors.white);
+    canvas.drawCircle(dot2, 1.2, Paint()..color = Colors.white);
+    canvas.drawCircle(dot3, 1.2, Paint()..color = Colors.white);
+  }
+
+  @override
+  bool shouldRepaint(covariant _DoodleZipPathPainter oldDelegate) => oldDelegate.color != color;
 }

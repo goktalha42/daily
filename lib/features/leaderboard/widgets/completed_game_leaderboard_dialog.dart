@@ -307,19 +307,49 @@ class _CompletedGameLeaderboardDialogState
                               borderColor: isDark
                                   ? AppColors.sunYellow
                                   : AppColors.pencilBlack,
-                              child: Text(
-                                myRank <= 3
-                                    ? '🏆 Podyumdasın!'
-                                    : (myRank <= 10
-                                        ? '🔥 İlk 10\'dasın!'
-                                        : 'İlk %${((myRank / entries.length) * 100).ceil()}\'desin'),
-                                style: GoogleFonts.patrickHand(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w700,
-                                  color: isDark
-                                      ? AppColors.sunYellow
-                                      : AppColors.pencilBlack,
-                                ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  if (myRank <= 3) ...[
+                                    SketchDoodleTrophy(
+                                      size: 14,
+                                      color: isDark ? AppColors.sunYellow : AppColors.pencilBlack,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      'Podyumdasın!',
+                                      style: GoogleFonts.patrickHand(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w700,
+                                        color: isDark ? AppColors.sunYellow : AppColors.pencilBlack,
+                                      ),
+                                    ),
+                                  ] else if (myRank <= 10) ...[
+                                    SketchDoodleFlame(
+                                      size: 13,
+                                      color: isDark ? AppColors.sunYellow : AppColors.pencilBlack,
+                                      fillColor: AppColors.highlighterOrange,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      'İlk 10\'dasın!',
+                                      style: GoogleFonts.patrickHand(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w700,
+                                        color: isDark ? AppColors.sunYellow : AppColors.pencilBlack,
+                                      ),
+                                    ),
+                                  ] else ...[
+                                    Text(
+                                      'İlk %${((myRank / entries.length) * 100).ceil()}\'desin',
+                                      style: GoogleFonts.patrickHand(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w700,
+                                        color: isDark ? AppColors.sunYellow : AppColors.pencilBlack,
+                                      ),
+                                    ),
+                                  ],
+                                ],
                               ),
                             ),
                         ],

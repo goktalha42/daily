@@ -1529,3 +1529,497 @@ class _HandDrawnBadgePainter extends CustomPainter {
         oldDelegate.showHatching != showHatching;
   }
 }
+
+/// 1. El Çizimi Kum Saati Doodle (Zaman Makinesi ve Arşiv Simgesi)
+class SketchDoodleHourglass extends StatelessWidget {
+  final double size;
+  final Color? color;
+  final Color? fillColor;
+
+  const SketchDoodleHourglass({
+    super.key,
+    this.size = 20,
+    this.color,
+    this.fillColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final effectiveColor = color ??
+        (Theme.of(context).brightness == Brightness.dark
+            ? Colors.white
+            : AppColors.pencilBlack);
+    final effectiveFill = fillColor ?? AppColors.sunYellow;
+
+    return SizedBox(
+      width: size,
+      height: size,
+      child: CustomPaint(
+        painter: _DoodleHourglassPainter(
+          color: effectiveColor,
+          fillColor: effectiveFill,
+        ),
+      ),
+    );
+  }
+}
+
+class _DoodleHourglassPainter extends CustomPainter {
+  final Color color;
+  final Color fillColor;
+
+  const _DoodleHourglassPainter({
+    required this.color,
+    required this.fillColor,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
+
+    final stroke = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.6
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    final sand = Paint()
+      ..color = fillColor
+      ..style = PaintingStyle.fill;
+
+    // Sert gölge
+    final shadowPaint = Paint()
+      ..color = color.withValues(alpha: 0.18)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.6
+      ..strokeCap = StrokeCap.round;
+
+    // Üst ve alt tablalar (ahşap el çizimi kapaklar)
+    final topBar = Path()
+      ..moveTo(w * 0.15, h * 0.10)
+      ..quadraticBezierTo(w * 0.50, h * 0.08, w * 0.85, h * 0.10);
+    final btmBar = Path()
+      ..moveTo(w * 0.15, h * 0.90)
+      ..quadraticBezierTo(w * 0.50, h * 0.92, w * 0.85, h * 0.90);
+
+    canvas.drawPath(topBar.shift(const Offset(0.8, 0.8)), shadowPaint);
+    canvas.drawPath(btmBar.shift(const Offset(0.8, 0.8)), shadowPaint);
+    canvas.drawPath(topBar, stroke..strokeWidth = 2.0);
+    canvas.drawPath(btmBar, stroke);
+
+    // Cam Gövde (Üst ve alt hazneler, ortada dar boğum)
+    final glass = Path();
+    glass.moveTo(w * 0.22, h * 0.12);
+    // Sol üstten ortaya iniş
+    glass.quadraticBezierTo(w * 0.28, h * 0.35, w * 0.46, h * 0.50);
+    // Sol ortadan alt sola iniş
+    glass.quadraticBezierTo(w * 0.28, h * 0.65, w * 0.22, h * 0.88);
+    // Alt taban birleşimi
+    glass.lineTo(w * 0.78, h * 0.88);
+    // Sağ alttan ortaya çıkış
+    glass.quadraticBezierTo(w * 0.72, h * 0.65, w * 0.54, h * 0.50);
+    // Sağ ortadan üst sağa çıkış
+    glass.quadraticBezierTo(w * 0.72, h * 0.35, w * 0.78, h * 0.12);
+    glass.close();
+
+    // Alt haznedeki biriken kum
+    final btmSand = Path();
+    btmSand.moveTo(w * 0.28, h * 0.85);
+    btmSand.quadraticBezierTo(w * 0.50, h * 0.64, w * 0.72, h * 0.85);
+    btmSand.close();
+    canvas.drawPath(btmSand, sand);
+
+    // Üst haznede kalan kum
+    final topSand = Path();
+    topSand.moveTo(w * 0.30, h * 0.24);
+    topSand.quadraticBezierTo(w * 0.50, h * 0.26, w * 0.70, h * 0.24);
+    topSand.quadraticBezierTo(w * 0.60, h * 0.42, w * 0.50, h * 0.48);
+    topSand.quadraticBezierTo(w * 0.40, h * 0.42, w * 0.30, h * 0.24);
+    topSand.close();
+    canvas.drawPath(topSand, sand);
+
+    // Ortadan damlayan kum çizgisi
+    final dropStream = Paint()
+      ..color = fillColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.2
+      ..strokeCap = StrokeCap.round;
+    canvas.drawLine(Offset(w * 0.50, h * 0.48), Offset(w * 0.50, h * 0.72), dropStream);
+
+    // Cam dış hat
+    canvas.drawPath(glass.shift(const Offset(0.8, 0.8)), shadowPaint);
+    canvas.drawPath(glass, stroke..strokeWidth = 1.5);
+
+    // İkinci serbest el eskiz hattı
+    final sketchLine = Paint()
+      ..color = color.withValues(alpha: 0.35)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.8;
+    canvas.drawLine(Offset(w * 0.26, h * 0.16), Offset(w * 0.44, h * 0.46), sketchLine);
+    canvas.drawLine(Offset(w * 0.56, h * 0.54), Offset(w * 0.74, h * 0.84), sketchLine);
+  }
+
+  @override
+  bool shouldRepaint(covariant _DoodleHourglassPainter oldDelegate) =>
+      oldDelegate.color != color || oldDelegate.fillColor != fillColor;
+}
+
+/// 2. El Çizimi Hedef / Nişangah Doodle (Analiz Seçili Gün ve Tavsiye Simgesi)
+class SketchDoodleTarget extends StatelessWidget {
+  final double size;
+  final Color? color;
+  final Color? fillColor;
+
+  const SketchDoodleTarget({
+    super.key,
+    this.size = 20,
+    this.color,
+    this.fillColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final effectiveColor = color ??
+        (Theme.of(context).brightness == Brightness.dark
+            ? Colors.white
+            : AppColors.pencilBlack);
+    final effectiveFill = fillColor ?? AppColors.highlighterPink;
+
+    return SizedBox(
+      width: size,
+      height: size,
+      child: CustomPaint(
+        painter: _DoodleTargetPainter(
+          color: effectiveColor,
+          fillColor: effectiveFill,
+        ),
+      ),
+    );
+  }
+}
+
+class _DoodleTargetPainter extends CustomPainter {
+  final Color color;
+  final Color fillColor;
+
+  const _DoodleTargetPainter({
+    required this.color,
+    required this.fillColor,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final cx = size.width / 2;
+    final cy = size.height / 2;
+    final rOut = size.width * 0.42;
+    final rMid = size.width * 0.26;
+    final rIn = size.width * 0.12;
+
+    final stroke = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.4
+      ..strokeCap = StrokeCap.round;
+
+    final centerDot = Paint()
+      ..color = fillColor
+      ..style = PaintingStyle.fill;
+
+    // Dış Halka (Organik serbest el çemberi)
+    final outPath = Path();
+    for (int i = 0; i <= 10; i++) {
+      final angle = (i * 2 * math.pi) / 10;
+      final wobble = (i % 2 == 0 ? 0.6 : -0.5);
+      final x = cx + (rOut + wobble) * math.cos(angle);
+      final y = cy + (rOut + wobble) * math.sin(angle);
+      if (i == 0) {
+        outPath.moveTo(x, y);
+      } else {
+        outPath.lineTo(x, y);
+      }
+    }
+    outPath.close();
+    canvas.drawPath(outPath, stroke);
+
+    // Orta Halka
+    final midPath = Path();
+    for (int i = 0; i <= 8; i++) {
+      final angle = (i * 2 * math.pi) / 8 + 0.2;
+      final wobble = (i % 2 == 0 ? -0.4 : 0.5);
+      final x = cx + (rMid + wobble) * math.cos(angle);
+      final y = cy + (rMid + wobble) * math.sin(angle);
+      if (i == 0) {
+        midPath.moveTo(x, y);
+      } else {
+        midPath.lineTo(x, y);
+      }
+    }
+    midPath.close();
+    canvas.drawPath(midPath, stroke..strokeWidth = 1.2);
+
+    // Boğa Gözü (Merkez kırmızı/renkli nokta)
+    canvas.drawCircle(Offset(cx, cy), rIn, centerDot);
+    canvas.drawCircle(Offset(cx, cy), rIn, stroke..strokeWidth = 1.2);
+
+    // Dışarı taşan 4 nişangah çizgisi (üst, alt, sol, sağ)
+    final crossHair = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.4
+      ..strokeCap = StrokeCap.round;
+
+    canvas.drawLine(Offset(cx, cy - rOut - 2.5), Offset(cx, cy - rMid + 1), crossHair);
+    canvas.drawLine(Offset(cx, cy + rMid - 1), Offset(cx, cy + rOut + 2.5), crossHair);
+    canvas.drawLine(Offset(cx - rOut - 2.5, cy), Offset(cx - rMid + 1, cy), crossHair);
+    canvas.drawLine(Offset(cx + rMid - 1, cy), Offset(cx + rOut + 2.5, cy), crossHair);
+  }
+
+  @override
+  bool shouldRepaint(covariant _DoodleTargetPainter oldDelegate) =>
+      oldDelegate.color != color || oldDelegate.fillColor != fillColor;
+}
+
+/// 3. El Çizimi Madalya Doodle (Sıralama Podyumu 2. Gümüş & 3. Bronz)
+class SketchDoodleMedal extends StatelessWidget {
+  final int rank; // 1, 2, 3
+  final double size;
+  final Color? pencilColor;
+
+  const SketchDoodleMedal({
+    super.key,
+    required this.rank,
+    this.size = 24,
+    this.pencilColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final effectivePencil = pencilColor ??
+        (Theme.of(context).brightness == Brightness.dark
+            ? Colors.white
+            : AppColors.pencilBlack);
+
+    final medalFill = rank == 2
+        ? const Color(0xFFCBD5E1) // Gümüş
+        : (rank == 3
+            ? const Color(0xFFFDBA74) // Bronz
+            : AppColors.sunYellow); // Altın
+
+    final ribbonFill = rank == 2
+        ? const Color(0xFF38BDF8) // Gök mavisi kurdele
+        : (rank == 3
+            ? const Color(0xFFF87171) // Kırmızı kurdele
+            : const Color(0xFFA855F7)); // Mor kurdele
+
+    return SizedBox(
+      width: size,
+      height: size,
+      child: CustomPaint(
+        painter: _DoodleMedalPainter(
+          rank: rank,
+          pencilColor: effectivePencil,
+          medalFill: medalFill,
+          ribbonFill: ribbonFill,
+        ),
+      ),
+    );
+  }
+}
+
+class _DoodleMedalPainter extends CustomPainter {
+  final int rank;
+  final Color pencilColor;
+  final Color medalFill;
+  final Color ribbonFill;
+
+  const _DoodleMedalPainter({
+    required this.rank,
+    required this.pencilColor,
+    required this.medalFill,
+    required this.ribbonFill,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
+
+    final stroke = Paint()
+      ..color = pencilColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.4
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    // 1. V Kurdele
+    final leftRibbon = Path()
+      ..moveTo(w * 0.22, 0)
+      ..lineTo(w * 0.44, h * 0.45)
+      ..lineTo(w * 0.32, h * 0.45)
+      ..lineTo(w * 0.12, 0)
+      ..close();
+    final rightRibbon = Path()
+      ..moveTo(w * 0.78, 0)
+      ..lineTo(w * 0.56, h * 0.45)
+      ..lineTo(w * 0.68, h * 0.45)
+      ..lineTo(w * 0.88, 0)
+      ..close();
+
+    canvas.drawPath(leftRibbon, Paint()..color = ribbonFill..style = PaintingStyle.fill);
+    canvas.drawPath(rightRibbon, Paint()..color = ribbonFill.withValues(alpha: 0.85)..style = PaintingStyle.fill);
+    canvas.drawPath(leftRibbon, stroke..strokeWidth = 1.1);
+    canvas.drawPath(rightRibbon, stroke);
+
+    // 2. Madalyon Dairesi
+    final mcx = w * 0.50;
+    final mcy = h * 0.62;
+    final mr = w * 0.34;
+
+    // Sert gölge
+    canvas.drawCircle(Offset(mcx + 1.2, mcy + 1.2), mr, Paint()..color = pencilColor.withValues(alpha: 0.25)..style = PaintingStyle.fill);
+
+    // Madalya Gövdesi
+    canvas.drawCircle(Offset(mcx, mcy), mr, Paint()..color = medalFill..style = PaintingStyle.fill);
+
+    // İç halka & dış kontur
+    canvas.drawCircle(Offset(mcx, mcy), mr, stroke..strokeWidth = 1.5);
+    canvas.drawCircle(Offset(mcx, mcy), mr * 0.72, Paint()..color = pencilColor.withValues(alpha: 0.35)..style = PaintingStyle.stroke..strokeWidth = 0.8);
+
+    // 3. İç Yazı ("2" veya "3")
+    final textPainter = TextPainter(
+      text: TextSpan(
+        text: '$rank',
+        style: GoogleFonts.patrickHand(
+          fontSize: size.width * 0.44,
+          fontWeight: FontWeight.w800,
+          color: AppColors.pencilBlack,
+          height: 1.0,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+
+    textPainter.paint(
+      canvas,
+      Offset(mcx - textPainter.width / 2, mcy - textPainter.height / 2),
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _DoodleMedalPainter oldDelegate) =>
+      oldDelegate.rank != rank ||
+      oldDelegate.pencilColor != pencilColor ||
+      oldDelegate.medalFill != medalFill;
+}
+
+/// 4. El Çizimi Yapboz (Puzzle) Parçası Doodle (Rapor Bulmaca Simgesi)
+class SketchDoodlePuzzle extends StatelessWidget {
+  final double size;
+  final Color? color;
+  final Color? fillColor;
+
+  const SketchDoodlePuzzle({
+    super.key,
+    this.size = 20,
+    this.color,
+    this.fillColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final effectiveColor = color ??
+        (Theme.of(context).brightness == Brightness.dark
+            ? Colors.white
+            : AppColors.pencilBlack);
+    final effectiveFill = fillColor ?? AppColors.skyBlue;
+
+    return SizedBox(
+      width: size,
+      height: size,
+      child: CustomPaint(
+        painter: _DoodlePuzzlePainter(
+          color: effectiveColor,
+          fillColor: effectiveFill,
+        ),
+      ),
+    );
+  }
+}
+
+class _DoodlePuzzlePainter extends CustomPainter {
+  final Color color;
+  final Color fillColor;
+
+  const _DoodlePuzzlePainter({
+    required this.color,
+    required this.fillColor,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
+
+    final stroke = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    final fill = Paint()
+      ..color = fillColor
+      ..style = PaintingStyle.fill;
+
+    // Organik yapboz parçası (üst çıkıntı, sağ çıkıntı)
+    final path = Path();
+    path.moveTo(w * 0.15, h * 0.25);
+    // Üst kenar & çıkıntı
+    path.lineTo(w * 0.38, h * 0.25);
+    path.quadraticBezierTo(w * 0.32, h * 0.04, w * 0.50, h * 0.04);
+    path.quadraticBezierTo(w * 0.68, h * 0.04, w * 0.62, h * 0.25);
+    path.lineTo(w * 0.85, h * 0.25);
+
+    // Sağ kenar & çıkıntı
+    path.lineTo(w * 0.85, h * 0.42);
+    path.quadraticBezierTo(w * 1.05, h * 0.36, w * 1.05, h * 0.52);
+    path.quadraticBezierTo(w * 1.05, h * 0.68, w * 0.85, h * 0.62);
+    path.lineTo(w * 0.85, h * 0.85);
+
+    // Alt kenar & içe girinti
+    path.lineTo(w * 0.62, h * 0.85);
+    path.quadraticBezierTo(w * 0.66, h * 0.68, w * 0.50, h * 0.68);
+    path.quadraticBezierTo(w * 0.34, h * 0.68, w * 0.38, h * 0.85);
+    path.lineTo(w * 0.15, h * 0.85);
+
+    // Sol kenar
+    path.lineTo(w * 0.15, h * 0.25);
+    path.close();
+
+    // Sert gölge
+    canvas.drawPath(path.shift(const Offset(1.2, 1.2)), Paint()..color = color.withValues(alpha: 0.20)..style = PaintingStyle.fill);
+
+    // Dolgu
+    canvas.drawPath(path, fill);
+
+    // İnce tarama
+    canvas.save();
+    canvas.clipPath(path);
+    final hatch = Paint()
+      ..color = Colors.black.withValues(alpha: 0.14)
+      ..strokeWidth = 0.9;
+    for (double i = -h; i < w + h; i += 4.5) {
+      canvas.drawLine(Offset(i, 0), Offset(i + h, h), hatch);
+    }
+    canvas.restore();
+
+    // Dış kontur
+    canvas.drawPath(path, stroke);
+  }
+
+  @override
+  bool shouldRepaint(covariant _DoodlePuzzlePainter oldDelegate) =>
+      oldDelegate.color != color || oldDelegate.fillColor != fillColor;
+}

@@ -632,8 +632,14 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Text('⏳', style: TextStyle(fontSize: 13)),
-                      const SizedBox(width: 4),
+                      SketchDoodleHourglass(
+                        size: 15,
+                        color: _isArchiveMode
+                            ? AppColors.inkBlack
+                            : (isDark ? AppColors.pencilWhite : AppColors.pencilBlack),
+                        fillColor: AppColors.sunYellow,
+                      ),
+                      const SizedBox(width: 5),
                       Text(
                         'Zaman Makinesi',
                         style: GoogleFonts.patrickHand(
@@ -957,14 +963,18 @@ class _ArchiveModeBanner extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         child: Row(
           children: [
-            Container(
-              padding: const EdgeInsets.all(7),
-              decoration: BoxDecoration(
-                color: AppColors.sunYellow,
-                shape: BoxShape.circle,
-                border: Border.all(color: pencilColor, width: 1.5),
+            SketchCard(
+              padding: const EdgeInsets.all(6),
+              borderRadius: 20,
+              borderWidth: 1.6,
+              shadowOffset: const Offset(1.5, 1.5),
+              backgroundColor: AppColors.sunYellow,
+              borderColor: pencilColor,
+              child: SketchDoodleHourglass(
+                size: 20,
+                color: AppColors.pencilBlack,
+                fillColor: AppColors.pencilBlack.withValues(alpha: 0.15),
               ),
-              child: const Text('⏳', style: TextStyle(fontSize: 16)),
             ),
             const SizedBox(width: 10),
             Expanded(

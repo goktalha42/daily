@@ -159,10 +159,10 @@ class _TimeMachineDialogState extends State<TimeMachineDialog> {
                         shadowOffset: const Offset(2, 2),
                         backgroundColor: AppColors.skyBlue,
                         borderColor: pencilColor,
-                        child: const Icon(
-                          Icons.hourglass_top_rounded,
+                        child: const SketchDoodleHourglass(
                           size: 24,
                           color: AppColors.inkBlack,
+                          fillColor: AppColors.sunYellow,
                         ),
                       ),
                     ],
@@ -184,7 +184,14 @@ class _TimeMachineDialogState extends State<TimeMachineDialog> {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('⏳', style: TextStyle(fontSize: 18)),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 2),
+                          child: SketchDoodleHourglass(
+                            size: 18,
+                            color: pencilColor,
+                            fillColor: AppColors.sunYellow,
+                          ),
+                        ),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(

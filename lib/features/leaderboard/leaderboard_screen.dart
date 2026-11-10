@@ -547,14 +547,18 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                           rank: 2,
                           fillColor: isDark ? const Color(0xFF3B4252) : const Color(0xFFE2E8F0),
                           pillarHeight: 80,
-                          crownWidget: const Text('🥈', style: TextStyle(fontSize: 18)),
+                          crownWidget: SketchDoodleMedal(
+                            rank: 2,
+                            size: 26,
+                            pencilColor: isDark ? Colors.white : AppColors.pencilBlack,
+                          ),
                         ),
                         _SketchPodiumPillar(
                           entry: entries[0],
                           rank: 1,
                           fillColor: AppColors.sunYellow,
                           pillarHeight: 105,
-                          crownWidget: const SketchDoodleCrown(size: 26, color: AppColors.pencilBlack),
+                          crownWidget: const SketchDoodleCrown(size: 26, color: AppColors.pencilBlack, fillColor: AppColors.sunYellow),
                           isFirst: true,
                         ),
                         _SketchPodiumPillar(
@@ -562,7 +566,11 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                           rank: 3,
                           fillColor: AppColors.highlighterOrange,
                           pillarHeight: 68,
-                          crownWidget: const Text('🥉', style: TextStyle(fontSize: 18)),
+                          crownWidget: SketchDoodleMedal(
+                            rank: 3,
+                            size: 26,
+                            pencilColor: isDark ? Colors.white : AppColors.pencilBlack,
+                          ),
                         ),
                       ],
                     ),
