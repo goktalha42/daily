@@ -117,9 +117,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                           ),
                           const SizedBox(width: 6),
                           Text(
-                            isSyncing
-                                ? 'GÜNCELLENİYOR...'
-                                : (isConnected ? 'CANLI SUNUCU • ÇEVRİMİÇİ' : 'GLOBAL ARENA • GÜNCEL'),
+                            isConnected ? 'CANLI SUNUCU • ÇEVRİMİÇİ' : 'GLOBAL ARENA • GÜNCEL',
                             style: GoogleFonts.patrickHand(
                               fontSize: 13,
                               fontWeight: FontWeight.w700,

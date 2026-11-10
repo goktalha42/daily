@@ -1,9 +1,9 @@
 ﻿{
-    "version":  "1.2.6",
-    "build_number":  24,
-    "title":  "Zühtü v1.2.6 %100 El Çizimi Skeç İkonları \u0026 Doodle Dönüşümü 🎨✨",
-    "changelog":  "Haftalık zeka raporu emojileri, analiz seçili gün hedefi, zaman makinesi kum saatleri, sıralama madalyaları ve profil skeç karnesi oyun resimleri tamamen el çizimi doodle sanatına dönüştürüldü.",
-    "apk_url":  "https://raw.githubusercontent.com/goktalha42/daily/main/releases/Zuhtu_v1.2.6_b24.apk",
-    "release_url":  "https://github.com/goktalha42/daily/releases/tag/v1.2.6",
+    "version":  "1.2.7",
+    "build_number":  25,
+    "title":  "Zühtü v1.2.7 Sıralama \u0026 Lig Stabilizasyonu ⚡",
+    "changelog":  "Sıralama sayfasında oyunlar ve dönemler (Bugün, Haftalık, Aylık, Genel) arasında geçiş yaparken sağ üstteki lig rozetinin anlık Demir Ligi\u0027ne dönme sorunu ve sol üstteki Canlı Sunucu durum yazısının sürekli Güncelleniyor olarak değişmesi giderildi.",
+    "apk_url":  "https://raw.githubusercontent.com/goktalha42/daily/main/releases/Zuhtu_v1.2.7_b25.apk",
+    "release_url":  "https://github.com/goktalha42/daily/releases/tag/v1.2.7",
     "force_update":  false
 }

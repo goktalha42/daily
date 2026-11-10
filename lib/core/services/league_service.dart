@@ -294,8 +294,8 @@ class LeagueState {
 
 final leagueServiceProvider =
     StateNotifierProvider<LeagueNotifier, LeagueState>((ref) {
-  final leaderboard = ref.watch(leaderboardServiceProvider);
-  final apiClient = ref.watch(apiClientProvider);
+  final leaderboard = ref.read(leaderboardServiceProvider);
+  final apiClient = ref.read(apiClientProvider);
 
   final notifier = LeagueNotifier(
     leaderboard,
