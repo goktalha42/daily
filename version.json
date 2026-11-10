@@ -1,9 +1,9 @@
 ﻿{
-    "version":  "1.2.2",
-    "build_number":  20,
-    "title":  "Zühtü v1.2.2 El Çizimi \u0026 Ses Performansı Güncellemesi 🎨⚡",
-    "changelog":  "• Haftalık Zeka Raporu ve Karne tasarımlarındaki tüm kutular ve bilişsel dağılım çubukları %100 el çizimi skeç tasarımına kavuşturuldu.\n• Sayı Yolu ve tüm oyunlarda ses gecikmesi, birikmesi ve ana sayfaya taşma sorunu SoundPool mimarisiyle sıfır gecikmeye indirildi.",
-    "apk_url":  "https://raw.githubusercontent.com/goktalha42/daily/main/releases/Zuhtu_v1.2.2_b20.apk",
-    "release_url":  "https://github.com/goktalha42/daily/releases/tag/v1.2.2",
+    "version":  "1.2.3",
+    "build_number":  21,
+    "title":  "Zühtü v1.2.3 - Skeç İnce İşçiliği ve Aydınlık Tema Mükemmelliği 🎨✨",
+    "changelog":  "Haftalık zeka raporu ve dâhi sertifikasındaki özet metrik kutuları aydınlık temada yüksek kontrastlı, okunaklı ve pastel skeç tonlarına kavuşturuldu. Bilişsel odak dağılımı çubukları ve sertifikadaki 6 yeşil onay tiki %100 el çizimi ve taramalı skeç sanatına dönüştürüldü.",
+    "apk_url":  "https://raw.githubusercontent.com/goktalha42/daily/main/releases/Zuhtu_v1.2.3_b21.apk",
+    "release_url":  "https://github.com/goktalha42/daily/releases/tag/v1.2.3",
     "force_update":  false
 }

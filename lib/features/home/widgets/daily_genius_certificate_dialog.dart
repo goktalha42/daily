@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -177,8 +178,12 @@ class DailyGeniusCertificateDialog extends StatelessWidget {
                           label: 'Beyin Gücü',
                           value: '$overallIQ IQ',
                           subValue: activeMilestone.title,
-                          bgColor: AppColors.highlighterPurple,
+                          isDark: isDark,
                           pencilColor: pencilColor,
+                          darkBgColor: AppColors.highlighterPurple.withValues(alpha: 0.25),
+                          lightBgColor: const Color(0xFFF3E8FF),
+                          lightLabelColor: const Color(0xFF6D28D9),
+                          lightSubColor: const Color(0xFF5B21B6),
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -187,8 +192,12 @@ class DailyGeniusCertificateDialog extends StatelessWidget {
                           label: 'Günün Puanı',
                           value: '$totalDayScore',
                           subValue: '6 Bölüm Toplamı',
-                          bgColor: AppColors.sunYellow,
+                          isDark: isDark,
                           pencilColor: pencilColor,
+                          darkBgColor: AppColors.sunYellow.withValues(alpha: 0.25),
+                          lightBgColor: const Color(0xFFFEF3C7),
+                          lightLabelColor: const Color(0xFFB45309),
+                          lightSubColor: const Color(0xFF92400E),
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -197,8 +206,12 @@ class DailyGeniusCertificateDialog extends StatelessWidget {
                           label: 'Toplam Süre',
                           value: GameDateUtils.formatGameTime(totalDayDurationMs),
                           subValue: 'Odaklanma',
-                          bgColor: AppColors.skyBlue,
+                          isDark: isDark,
                           pencilColor: pencilColor,
+                          darkBgColor: AppColors.skyBlue.withValues(alpha: 0.25),
+                          lightBgColor: const Color(0xFFE0F2FE),
+                          lightLabelColor: const Color(0xFF0369A1),
+                          lightSubColor: const Color(0xFF075985),
                         ),
                       ),
                     ],
@@ -240,21 +253,11 @@ class DailyGeniusCertificateDialog extends StatelessWidget {
                           padding: const EdgeInsets.symmetric(vertical: 4),
                           child: Row(
                             children: [
-                              Container(
-                                width: 22,
-                                height: 22,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: isDone ? AppColors.success : Colors.grey.shade400,
-                                  border: Border.all(color: pencilColor, width: 1.2),
-                                ),
-                                child: Center(
-                                  child: Icon(
-                                    isDone ? Icons.check : Icons.lock_outline,
-                                    size: 13,
-                                    color: Colors.white,
-                                  ),
-                                ),
+                              _HandDrawnCheckBadge(
+                                isDone: isDone,
+                                pencilColor: pencilColor,
+                                isDark: isDark,
+                                seed: game.index * 13 + 19,
                               ),
                               const SizedBox(width: 8),
                               Expanded(
@@ -463,22 +466,35 @@ class _CertificateMetricCard extends StatelessWidget {
   final String label;
   final String value;
   final String subValue;
-  final Color bgColor;
+  final bool isDark;
   final Color pencilColor;
+  final Color darkBgColor;
+  final Color lightBgColor;
+  final Color lightLabelColor;
+  final Color lightSubColor;
 
   const _CertificateMetricCard({
     required this.label,
     required this.value,
     required this.subValue,
-    required this.bgColor,
+    required this.isDark,
     required this.pencilColor,
+    required this.darkBgColor,
+    required this.lightBgColor,
+    required this.lightLabelColor,
+    required this.lightSubColor,
   });
 
   @override
   Widget build(BuildContext context) {
+    final bgColor = isDark ? darkBgColor : lightBgColor;
+    final labelColor = isDark ? pencilColor.withValues(alpha: 0.85) : lightLabelColor;
+    final valueColor = isDark ? pencilColor : AppColors.inkBlack;
+    final subColor = isDark ? pencilColor.withValues(alpha: 0.7) : lightSubColor;
+
     return SketchCard(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
-      backgroundColor: bgColor.withValues(alpha: 0.3),
+      backgroundColor: bgColor,
       borderColor: pencilColor,
       borderWidth: 1.8,
       borderRadius: 12,
@@ -490,7 +506,7 @@ class _CertificateMetricCard extends StatelessWidget {
             style: GoogleFonts.patrickHand(
               fontSize: 12,
               fontWeight: FontWeight.bold,
-              color: pencilColor.withValues(alpha: 0.8),
+              color: labelColor,
               height: 1.0,
             ),
           ),
@@ -500,7 +516,7 @@ class _CertificateMetricCard extends StatelessWidget {
             style: GoogleFonts.patrickHand(
               fontSize: 17,
               fontWeight: FontWeight.bold,
-              color: pencilColor,
+              color: valueColor,
               height: 1.1,
             ),
           ),
@@ -510,12 +526,208 @@ class _CertificateMetricCard extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: GoogleFonts.patrickHand(
               fontSize: 10.5,
-              color: pencilColor.withValues(alpha: 0.7),
+              fontWeight: isDark ? FontWeight.normal : FontWeight.w600,
+              color: subColor,
               height: 1.1,
             ),
           ),
         ],
       ),
     );
+  }
+}
+
+class _HandDrawnCheckBadge extends StatelessWidget {
+  final bool isDone;
+  final Color pencilColor;
+  final bool isDark;
+  final int seed;
+
+  const _HandDrawnCheckBadge({
+    required this.isDone,
+    required this.pencilColor,
+    required this.isDark,
+    this.seed = 0,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 24,
+      height: 24,
+      child: CustomPaint(
+        painter: _HandDrawnCheckBadgePainter(
+          isDone: isDone,
+          pencilColor: pencilColor,
+          isDark: isDark,
+          seed: seed,
+        ),
+      ),
+    );
+  }
+}
+
+class _HandDrawnCheckBadgePainter extends CustomPainter {
+  final bool isDone;
+  final Color pencilColor;
+  final bool isDark;
+  final int seed;
+
+  _HandDrawnCheckBadgePainter({
+    required this.isDone,
+    required this.pencilColor,
+    required this.isDark,
+    required this.seed,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rng = math.Random(seed);
+    final cx = size.width / 2;
+    final cy = size.height / 2;
+    final baseRadius = (math.min(size.width, size.height) / 2) - 2.5;
+
+    // 1. Organik Wobbly Daire Yolu
+    const pointsCount = 12;
+    final path = Path();
+    for (int i = 0; i < pointsCount; i++) {
+      final angle = (i * 2 * math.pi) / pointsCount;
+      final jitter = (rng.nextDouble() - 0.5) * 1.6;
+      final r = baseRadius + jitter;
+      final x = cx + r * math.cos(angle);
+      final y = cy + r * math.sin(angle);
+      if (i == 0) {
+        path.moveTo(x, y);
+      } else {
+        path.lineTo(x, y);
+      }
+    }
+    path.close();
+
+    // 2. Sert El Çizimi Eskiz Gölgesi
+    final shadowPath = path.shift(const Offset(1.5, 1.5));
+    final shadowPaint = Paint()
+      ..color = pencilColor.withValues(alpha: isDark ? 0.35 : 0.85)
+      ..style = PaintingStyle.fill;
+    canvas.drawPath(shadowPath, shadowPaint);
+
+    // 3. Arka Plan Dolgusu
+    if (isDone) {
+      final fillPaint = Paint()
+        ..color = isDark ? const Color(0xFF16A34A) : const Color(0xFF22C55E)
+        ..style = PaintingStyle.fill;
+      canvas.drawPath(path, fillPaint);
+
+      // Skeç taraması (hatching)
+      canvas.save();
+      canvas.clipPath(path);
+      final hatchPaint = Paint()
+        ..color = (isDark ? const Color(0xFF14532D) : const Color(0xFF15803D)).withValues(alpha: 0.45)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.0
+        ..strokeCap = StrokeCap.round;
+
+      for (double x = -10; x < size.width + 10; x += 3.5) {
+        canvas.drawLine(
+          Offset(x, 0),
+          Offset(x + 8, size.height),
+          hatchPaint,
+        );
+      }
+      canvas.restore();
+    } else {
+      final emptyPaint = Paint()
+        ..color = isDark ? Colors.white12 : const Color(0xFFE2E8F0)
+        ..style = PaintingStyle.fill;
+      canvas.drawPath(path, emptyPaint);
+    }
+
+    // 4. Ana Eskiz Dış Konturu
+    final borderPaint = Paint()
+      ..color = pencilColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.6
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+    canvas.drawPath(path, borderPaint);
+
+    // 5. İkinci Serbest El Eskiz Konturu (Taslak Havası)
+    final sketchBorderPaint = Paint()
+      ..color = pencilColor.withValues(alpha: 0.4)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.8
+      ..strokeCap = StrokeCap.round;
+    final secondaryPath = Path();
+    for (int i = 0; i < 8; i++) {
+      final angle = (i * 2 * math.pi) / 8 + 0.3;
+      final jitter = (rng.nextDouble() - 0.5) * 1.8;
+      final r = baseRadius + jitter;
+      final x = cx + r * math.cos(angle);
+      final y = cy + r * math.sin(angle);
+      if (i == 0) {
+        secondaryPath.moveTo(x, y);
+      } else {
+        secondaryPath.lineTo(x, y);
+      }
+    }
+    canvas.drawPath(secondaryPath, sketchBorderPaint);
+
+    // 6. İç İkon: El Çizimi Kaligrafik Tik (Check) ya da Pasif Çizgi
+    if (isDone) {
+      final tickPath = Path();
+      final p1 = Offset(cx - 4.6 + (rng.nextDouble() - 0.5) * 0.4, cy + 0.2);
+      final p2 = Offset(cx - 1.2 + (rng.nextDouble() - 0.5) * 0.4, cy + 4.2);
+      final p3 = Offset(cx + 4.8 + (rng.nextDouble() - 0.5) * 0.4, cy - 3.8);
+
+      tickPath.moveTo(p1.dx, p1.dy);
+      tickPath.lineTo(p2.dx, p2.dy);
+      tickPath.lineTo(p3.dx, p3.dy);
+
+      final tickShadowPaint = Paint()
+        ..color = Colors.black.withValues(alpha: 0.25)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.4
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round;
+      canvas.drawPath(tickPath.shift(const Offset(0.6, 0.6)), tickShadowPaint);
+
+      final tickPaint = Paint()
+        ..color = Colors.white
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.3
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round;
+      canvas.drawPath(tickPath, tickPaint);
+
+      final tickSubPaint = Paint()
+        ..color = Colors.white.withValues(alpha: 0.6)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.0
+        ..strokeCap = StrokeCap.round;
+      canvas.drawLine(
+        Offset(p2.dx - 0.3, p2.dy - 0.2),
+        Offset(p3.dx - 0.8, p3.dy + 0.5),
+        tickSubPaint,
+      );
+    } else {
+      final dashPaint = Paint()
+        ..color = pencilColor.withValues(alpha: 0.6)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.8
+        ..strokeCap = StrokeCap.round;
+      canvas.drawLine(
+        Offset(cx - 3.5, cy),
+        Offset(cx + 3.5, cy),
+        dashPaint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _HandDrawnCheckBadgePainter oldDelegate) {
+    return oldDelegate.isDone != isDone ||
+        oldDelegate.pencilColor != pencilColor ||
+        oldDelegate.isDark != isDark ||
+        oldDelegate.seed != seed;
   }
 }

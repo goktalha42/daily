@@ -319,6 +319,19 @@ class _WobblySketchBoxPainter extends CustomPainter {
     // 2. GÖVDE DOLGUSU (İç renk)
     final mainRect = Rect.fromLTWH(0, 0, w, h);
     final fillPath = _buildWobblyPath(mainRect, wobbleSeed: 0.0);
+
+    // EĞER İÇ RENK YARI SAYDAMLIK (ALPHA) İÇERİYORSA:
+    // Alttaki siyah gölgenin saydamlıktan sızıp rengi çamurlaştırmaması için
+    // gövde yolunun altına önce temiz opak kağıt/kart tabanı çekilir.
+    if (fillColor.a < 1.0) {
+      final basePaint = Paint()
+        ..color = (strokeColor.computeLuminance() > 0.5)
+            ? AppColors.surfaceDark
+            : Colors.white
+        ..style = PaintingStyle.fill;
+      canvas.drawPath(fillPath, basePaint);
+    }
+
     final fillPaint = Paint()
       ..color = fillColor
       ..style = PaintingStyle.fill;

@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -415,7 +416,7 @@ class WeeklyBrainReportDialog extends ConsumerWidget {
                     final color = _getGameColor(game);
 
                     return Padding(
-                      padding: const EdgeInsets.only(bottom: 7),
+                      padding: const EdgeInsets.only(bottom: 8),
                       child: _CognitiveDomainBar(
                         gameTitle: '${game.title} ($domainName)',
                         percent: percent,
@@ -423,6 +424,7 @@ class WeeklyBrainReportDialog extends ConsumerWidget {
                         barColor: color,
                         pencilColor: pencilColor,
                         isDark: isDark,
+                        seed: game.index * 7 + 19,
                       ),
                     );
                   }),
@@ -437,7 +439,10 @@ class WeeklyBrainReportDialog extends ConsumerWidget {
                           icon: Icons.local_fire_department_rounded,
                           label: 'SERİ',
                           value: '${stats.weeklyStreak}/7 Gün',
-                          bgColor: AppColors.highlighterOrange,
+                          lightBgColor: const Color(0xFFFEF3C7),
+                          darkBgColor: AppColors.highlighterOrange.withValues(alpha: 0.22),
+                          lightLabelColor: const Color(0xFFB45309),
+                          lightIconColor: const Color(0xFFD97706),
                           pencilColor: pencilColor,
                           isDark: isDark,
                         ),
@@ -448,7 +453,10 @@ class WeeklyBrainReportDialog extends ConsumerWidget {
                           icon: Icons.extension_rounded,
                           label: 'BULMACA',
                           value: '${stats.totalPuzzlesSolved} Adet',
-                          bgColor: AppColors.skyBlue,
+                          lightBgColor: const Color(0xFFE0F2FE),
+                          darkBgColor: AppColors.skyBlue.withValues(alpha: 0.22),
+                          lightLabelColor: const Color(0xFF0369A1),
+                          lightIconColor: const Color(0xFF0284C7),
                           pencilColor: pencilColor,
                           isDark: isDark,
                         ),
@@ -459,7 +467,10 @@ class WeeklyBrainReportDialog extends ConsumerWidget {
                           icon: Icons.psychology_rounded,
                           label: 'ZEKÂ',
                           value: '$overallIQ IQ',
-                          bgColor: AppColors.highlighterPurple,
+                          lightBgColor: const Color(0xFFF3E8FF),
+                          darkBgColor: AppColors.highlighterPurple.withValues(alpha: 0.22),
+                          lightLabelColor: const Color(0xFF6D28D9),
+                          lightIconColor: const Color(0xFF7C3AED),
                           pencilColor: pencilColor,
                           isDark: isDark,
                         ),
@@ -643,6 +654,7 @@ class _CognitiveDomainBar extends StatelessWidget {
   final Color barColor;
   final Color pencilColor;
   final bool isDark;
+  final int seed;
 
   const _CognitiveDomainBar({
     required this.gameTitle,
@@ -651,6 +663,7 @@ class _CognitiveDomainBar extends StatelessWidget {
     required this.barColor,
     required this.pencilColor,
     required this.isDark,
+    this.seed = 23,
   });
 
   @override
@@ -668,7 +681,7 @@ class _CognitiveDomainBar extends StatelessWidget {
                 gameTitle,
                 overflow: TextOverflow.ellipsis,
                 style: GoogleFonts.patrickHand(
-                  fontSize: 13,
+                  fontSize: 13.5,
                   fontWeight: FontWeight.w700,
                   color: isDark ? AppColors.pencilWhite : AppColors.pencilBlack,
                 ),
@@ -678,7 +691,7 @@ class _CognitiveDomainBar extends StatelessWidget {
             Text(
               '%${percent.toStringAsFixed(0)} ($solvedCount oyun)',
               style: GoogleFonts.patrickHand(
-                fontSize: 12.5,
+                fontSize: 13,
                 fontWeight: FontWeight.bold,
                 color: percent > 0
                     ? (isDark ? AppColors.pencilWhite : AppColors.pencilBlack)
@@ -689,13 +702,14 @@ class _CognitiveDomainBar extends StatelessWidget {
         ),
         const SizedBox(height: 3),
         SizedBox(
-          height: 12,
+          height: 13.5,
           child: CustomPaint(
             painter: _HandDrawnDomainBarPainter(
               ratio: clampedRatio,
               barColor: barColor,
-              trackColor: isDark ? AppColors.surfaceSecondaryDark : const Color(0xFFE2E8F0),
+              trackColor: isDark ? AppColors.surfaceSecondaryDark : const Color(0xFFF1EFE9),
               strokeColor: pencilColor,
+              seed: seed,
             ),
           ),
         ),
@@ -704,57 +718,147 @@ class _CognitiveDomainBar extends StatelessWidget {
   }
 }
 
-/// Bilişsel Alan Odak Dağılımı Çubuğu (El Çizimi & Gölgeli)
+/// Bilişsel Alan Odak Dağılımı Çubuğu (El Çizimi, Çift Hatlı & Taramalı)
 class _HandDrawnDomainBarPainter extends CustomPainter {
   final double ratio;
   final Color barColor;
   final Color trackColor;
   final Color strokeColor;
+  final int seed;
 
   _HandDrawnDomainBarPainter({
     required this.ratio,
     required this.barColor,
     required this.trackColor,
     required this.strokeColor,
+    this.seed = 23,
   });
+
+  Path _buildWobblyBarPath(Size size, {double inset = 0.8, int s = 0}) {
+    final w = size.width - (inset * 2);
+    final h = size.height - (inset * 2);
+    final r = h / 2;
+    final left = inset;
+    final top = inset;
+    final right = size.width - inset;
+    final bottom = size.height - inset;
+
+    final rnd = math.Random(seed + s);
+    final wobbleTop1 = (rnd.nextDouble() - 0.5) * 1.5;
+    final wobbleTop2 = (rnd.nextDouble() - 0.5) * 1.5;
+    final wobbleBot1 = (rnd.nextDouble() - 0.5) * 1.5;
+    final wobbleBot2 = (rnd.nextDouble() - 0.5) * 1.5;
+
+    final path = Path();
+    path.moveTo(left + r, top + wobbleTop1);
+    path.cubicTo(
+      left + w * 0.35, top + wobbleTop1,
+      left + w * 0.65, top + wobbleTop2,
+      right - r, top + wobbleTop2,
+    );
+    path.quadraticBezierTo(
+      right + (rnd.nextDouble() - 0.5) * 1.1,
+      top + h * 0.5,
+      right - r,
+      bottom + wobbleBot2,
+    );
+    path.cubicTo(
+      left + w * 0.65, bottom + wobbleBot2,
+      left + w * 0.35, bottom + wobbleBot1,
+      left + r, bottom + wobbleBot1,
+    );
+    path.quadraticBezierTo(
+      left - (rnd.nextDouble() - 0.5) * 1.1,
+      top + h * 0.5,
+      left + r,
+      top + wobbleTop1,
+    );
+    path.close();
+    return path;
+  }
 
   @override
   void paint(Canvas canvas, Size size) {
     if (size.width <= 0 || size.height <= 0) return;
-    final r = Rect.fromLTWH(0, 0, size.width, size.height);
-    final trackRRect = RRect.fromRectAndRadius(r, const Radius.circular(6));
 
-    // Arka plan zemin
-    final bgPaint = Paint()
-      ..color = trackColor
-      ..style = PaintingStyle.fill;
-    canvas.drawRRect(trackRRect, bgPaint);
+    final trackPath = _buildWobblyBarPath(size, inset: 1.0, s: 0);
 
-    // İlerleme dolgusu
-    if (ratio > 0.0) {
-      final fillW = (size.width * ratio).clamp(0.0, size.width);
-      final fillR = Rect.fromLTWH(0, 0, fillW, size.height);
-      final fillRRect = RRect.fromRectAndRadius(fillR, const Radius.circular(5.5));
-      final fillPaint = Paint()
-        ..color = barColor
-        ..style = PaintingStyle.fill;
-      canvas.drawRRect(fillRRect, fillPaint);
+    // 1. Sert eskiz alt gölgesi
+    canvas.save();
+    canvas.translate(1.4, 1.4);
+    canvas.drawPath(
+      trackPath,
+      Paint()
+        ..color = strokeColor.withValues(alpha: 0.16)
+        ..style = PaintingStyle.fill,
+    );
+    canvas.restore();
+
+    // 2. Track Zemin Dolgusu
+    canvas.drawPath(
+      trackPath,
+      Paint()
+        ..color = trackColor
+        ..style = PaintingStyle.fill,
+    );
+
+    // 3. İlerleme Dolgusu + Kurşun Kalem Tarama Çizgileri
+    final clamped = ratio.clamp(0.0, 1.0);
+    if (clamped > 0.005) {
+      final fillW = size.width * clamped;
+      canvas.save();
+      canvas.clipPath(trackPath);
+
+      // Ana renk dolgusu
+      canvas.drawRect(
+        Rect.fromLTWH(0, 0, fillW, size.height),
+        Paint()..color = barColor,
+      );
+
+      // Çapraz kurşun kalem eskiz taraması (Hatching)
+      final hatchPaint = Paint()
+        ..color = strokeColor.withValues(alpha: 0.22)
+        ..strokeWidth = 1.0;
+      for (double x = -size.height; x < fillW + size.height; x += 5.5) {
+        canvas.drawLine(
+          Offset(x, size.height),
+          Offset(x + size.height * 0.7, 0),
+          hatchPaint,
+        );
+      }
+
+      // İlerleme bitişine el çizimi dik ayırıcı çizgi
+      if (clamped < 0.98) {
+        final capPaint = Paint()
+          ..color = strokeColor.withValues(alpha: 0.6)
+          ..strokeWidth = 1.2
+          ..strokeCap = StrokeCap.round;
+        canvas.drawLine(
+          Offset(fillW, 1),
+          Offset(fillW, size.height - 1),
+          capPaint,
+        );
+      }
+      canvas.restore();
     }
 
-    // El çizimi hafif organik kara kalem dış çerçevesi
-    final strokePaint = Paint()
+    // 4. Ana Dış Serbest El Çizgisi (Wobbly Contour)
+    final mainStroke = Paint()
       ..color = strokeColor
-      ..strokeWidth = 1.3
-      ..style = PaintingStyle.stroke;
-    canvas.drawRRect(trackRRect, strokePaint);
+      ..strokeWidth = 1.4
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+    canvas.drawPath(trackPath, mainStroke);
 
-    // İkinci serbest el eskiz çizgisi
-    final draftPaint = Paint()
-      ..color = strokeColor.withValues(alpha: 0.3)
+    // 5. İkinci Serbest El Taslak Çizgisi (Eskiz Defteri Havası)
+    final draftPath = _buildWobblyBarPath(size, inset: 1.5, s: 13);
+    final draftStroke = Paint()
+      ..color = strokeColor.withValues(alpha: 0.32)
       ..strokeWidth = 0.8
-      ..style = PaintingStyle.stroke;
-    final draftR = Rect.fromLTWH(0.5, 0.5, size.width - 1.0, size.height - 1.0);
-    canvas.drawRRect(RRect.fromRectAndRadius(draftR, const Radius.circular(5)), draftPaint);
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+    canvas.drawPath(draftPath, draftStroke);
   }
 
   @override
@@ -762,7 +866,8 @@ class _HandDrawnDomainBarPainter extends CustomPainter {
     return oldDelegate.ratio != ratio ||
         oldDelegate.barColor != barColor ||
         oldDelegate.trackColor != trackColor ||
-        oldDelegate.strokeColor != strokeColor;
+        oldDelegate.strokeColor != strokeColor ||
+        oldDelegate.seed != seed;
   }
 }
 
@@ -770,7 +875,10 @@ class _SummaryBox extends StatelessWidget {
   final IconData icon;
   final String label;
   final String value;
-  final Color bgColor;
+  final Color lightBgColor;
+  final Color darkBgColor;
+  final Color lightLabelColor;
+  final Color lightIconColor;
   final Color pencilColor;
   final bool isDark;
 
@@ -778,7 +886,10 @@ class _SummaryBox extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.value,
-    required this.bgColor,
+    required this.lightBgColor,
+    required this.darkBgColor,
+    required this.lightLabelColor,
+    required this.lightIconColor,
     required this.pencilColor,
     required this.isDark,
   });
@@ -787,29 +898,34 @@ class _SummaryBox extends StatelessWidget {
   Widget build(BuildContext context) {
     return SketchCard(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
-      backgroundColor: bgColor.withValues(alpha: isDark ? 0.22 : 0.28),
+      backgroundColor: isDark ? darkBgColor : lightBgColor,
       borderColor: pencilColor,
       borderWidth: 1.6,
       borderRadius: 12,
       shadowOffset: const Offset(2.0, 2.0),
       child: Column(
         children: [
-          Icon(icon, size: 18, color: pencilColor),
+          Icon(
+            icon,
+            size: 19,
+            color: isDark ? pencilColor : lightIconColor,
+          ),
           const SizedBox(height: 2),
           Text(
             label,
             style: GoogleFonts.patrickHand(
-              fontSize: 11,
+              fontSize: 11.5,
               fontWeight: FontWeight.bold,
-              color: isDark ? AppColors.pencilLightDark : AppColors.pencilGraphite,
+              color: isDark ? AppColors.pencilLightDark : lightLabelColor,
+              letterSpacing: 0.4,
             ),
           ),
           Text(
             value,
             style: GoogleFonts.patrickHand(
-              fontSize: 14.5,
+              fontSize: 15,
               fontWeight: FontWeight.w900,
-              color: pencilColor,
+              color: isDark ? AppColors.pencilWhite : AppColors.inkBlack,
             ),
           ),
         ],
