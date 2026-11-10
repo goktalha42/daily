@@ -42,13 +42,15 @@ class ZipGenerator {
       final checkpoints = _placeCheckpoints(path, difficulty, rng);
       if (checkpoints == null) continue;
 
-      // 4. Tek çözüm garantisi doğrula
+      // 4. Tek çözüm garantisi doğrula (son noktadan erken geçip boşlukları
+      // sonradan dolduran yanıltıcı ikincil Hamiltonian yolları da eler)
       final solCount = ZipLogic.countSolutions(
         n,
         checkpoints,
         walls: const {},
         edgeWalls: edgeWalls,
         maxCount: 2,
+        allowPassThroughMax: true,
       );
 
       if (solCount == 1) {

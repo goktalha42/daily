@@ -99,5 +99,44 @@ void main() {
       expect(level, isNotNull);
       expect(level.numberPoints.isNotEmpty, isTrue);
     });
+
+    test('10 Kasım (2026-11-10) dahil hiçbir seviyede son noktadan erken geçilen yanıltıcı yol yoktur', () {
+      for (final dateId in ['2026-11-08', '2026-11-09', '2026-11-10', '2026-11-11']) {
+        final level = ZipLevelRepository.getLevelForDate(dateId);
+        final solCount = ZipLogic.countSolutions(
+          level.gridSize,
+          level.numberPoints,
+          walls: level.walls,
+          edgeWalls: level.edgeWalls,
+          maxCount: 2,
+          allowPassThroughMax: true,
+        );
+        expect(solCount, equals(1), reason: '$dateId seviyesinde son noktadan devam eden ikincil yol olmamalı.');
+      }
+    });
+
+    test('validatePath son numaranın (maxNumber) son karede olmamasını reddeder', () {
+      final numberPoints = <Point, int>{
+        const Point(0, 0): 1,
+        const Point(1, 0): 2,
+      };
+      // 2x2 tahtada 2 numaradan (1,0) erken geçip (1,1) -> (0,1) ile biten yol geçersiz olmalı
+      final invalidPath = const [
+        Point(0, 0),
+        Point(1, 0),
+        Point(1, 1),
+        Point(0, 1),
+      ];
+      expect(ZipLogic.validatePath(invalidPath, numberPoints, 2), isFalse);
+
+      // 2 numaranın en sonda olduğu yol geçerli olmalı
+      final validPath = const [
+        Point(0, 0),
+        Point(0, 1),
+        Point(1, 1),
+        Point(1, 0),
+      ];
+      expect(ZipLogic.validatePath(validPath, numberPoints, 2), isTrue);
+    });
   });
 }

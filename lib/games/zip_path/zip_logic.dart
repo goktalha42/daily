@@ -19,8 +19,9 @@ class ZipLogic {
 
     final maxNumber = numberPoints.values.reduce((a, b) => a > b ? a : b);
 
-    // Yol 1 numaralı noktadan başlamalı
+    // Yol 1 numaralı noktadan başlamalı ve son numaralı noktada (Bitiş Bayrağı) bitmeli
     if (numberPoints[path.first] != 1) return false;
+    if (numberPoints[path.last] != maxNumber) return false;
 
     int currentTarget = 1;
 
@@ -30,6 +31,10 @@ class ZipLogic {
       // Nokta bir numara içeriyor mu?
       if (numberPoints.containsKey(point)) {
         final numVal = numberPoints[point]!;
+        // Son numara (Bitiş Bayrağı) yalnızca yolun en son karesinde ziyaret edilebilir
+        if (numVal == maxNumber && i != path.length - 1) {
+          return false;
+        }
         if (numVal == currentTarget) {
           currentTarget++;
         } else if (numVal > currentTarget) {
@@ -59,12 +64,16 @@ class ZipLogic {
 
   /// 1'den başlayıp maxNumber'a kadar tüm açık kareleri gezen yolları sayar.
   /// [maxCount]: 2 çözüm bulunduğunda erken döner.
+  /// [allowPassThroughMax]: true ise son numaradan (maxNumber) erken geçip
+  /// kalan boş kareleri sonradan dolduran "yanıltıcı/sahte" Hamiltonian yolları da
+  /// sayar; jeneratörde bu tür ikincil yolları elemek için kullanılır.
   static int countSolutions(
     int gridSize,
     Map<Point, int> numberPoints, {
     Set<Point> walls = const {},
     Set<ZipEdgeWall> edgeWalls = const {},
     int maxCount = 2,
+    bool allowPassThroughMax = false,
   }) {
     if (numberPoints.isEmpty) return 0;
 
@@ -91,12 +100,15 @@ class ZipLogic {
     ];
 
     bool backtrack(Point current, int target) {
-      if (numberPoints[current] == maxNumber) {
-        if (target > maxNumber) {
-          if (visited.length == targetTotal) {
-            solutions++;
-          }
+      if (visited.length == targetTotal) {
+        if (target > maxNumber &&
+            (allowPassThroughMax || numberPoints[current] == maxNumber)) {
+          solutions++;
         }
+        return solutions >= maxCount;
+      }
+
+      if (!allowPassThroughMax && numberPoints[current] == maxNumber) {
         return solutions >= maxCount;
       }
 

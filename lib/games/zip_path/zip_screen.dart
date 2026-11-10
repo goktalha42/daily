@@ -36,7 +36,9 @@ class _ZipScreenState extends ConsumerState<ZipScreen> with WidgetsBindingObserv
   int _elapsedMs = 0;
   int _tickCount = 0;
   Timer? _timer;
+  Timer? _warningTimer;
   bool _isSolved = false;
+  bool _showIncompleteWarning = false;
 
   @override
   void initState() {
@@ -77,15 +79,58 @@ class _ZipScreenState extends ConsumerState<ZipScreen> with WidgetsBindingObserv
             return Point(coords[0] as int, coords[1] as int);
           }).toList();
 
+          final sanitized = _sanitizePath(loadedPath);
+
           setState(() {
             _path.clear();
-            _path.addAll(loadedPath);
+            _path.addAll(sanitized);
             _elapsedMs = savedElapsed;
             _checkState();
           });
         }
       }
     } catch (_) {}
+  }
+
+  List<Point> _sanitizePath(List<Point> raw) {
+    if (raw.isEmpty) return const [];
+    final maxNumber = _level.numberPoints.values.reduce((a, b) => a > b ? a : b);
+    final totalCells = (_level.gridSize * _level.gridSize) - _level.walls.length;
+    final first = raw.first;
+    if (_level.numberPoints[first] != 1) return const [];
+
+    final valid = <Point>[first];
+    int nextTarget = 2;
+
+    for (int i = 1; i < raw.length; i++) {
+      final prev = valid.last;
+      final curr = raw[i];
+      if (curr.row < 0 ||
+          curr.row >= _level.gridSize ||
+          curr.col < 0 ||
+          curr.col >= _level.gridSize) {
+        break;
+      }
+      if (_level.walls.contains(curr)) break;
+      if (valid.contains(curr)) break;
+      if (_level.numberPoints[prev] == maxNumber) break;
+
+      final dr = (prev.row - curr.row).abs();
+      final dc = (prev.col - curr.col).abs();
+      if (dr + dc != 1) break;
+      if (_level.edgeWalls.contains(ZipEdgeWall(prev, curr))) break;
+
+      final cellNum = _level.numberPoints[curr];
+      if (cellNum != null) {
+        if (cellNum > nextTarget) break;
+        if (cellNum == maxNumber && valid.length < totalCells - 1) break;
+        if (cellNum == nextTarget) {
+          nextTarget++;
+        }
+      }
+      valid.add(curr);
+    }
+    return valid;
   }
 
   void _saveSession() {
@@ -128,8 +173,25 @@ class _ZipScreenState extends ConsumerState<ZipScreen> with WidgetsBindingObserv
     WidgetsBinding.instance.removeObserver(this);
     _saveSession();
     _timer?.cancel();
+    _warningTimer?.cancel();
     SoundHapticService.instance.stopAll();
     super.dispose();
+  }
+
+  void _triggerIncompleteWarning() {
+    _warningTimer?.cancel();
+    if (mounted) {
+      setState(() {
+        _showIncompleteWarning = true;
+      });
+    }
+    _warningTimer = Timer(const Duration(seconds: 2), () {
+      if (mounted) {
+        setState(() {
+          _showIncompleteWarning = false;
+        });
+      }
+    });
   }
 
   int _getNextTargetNumber() {
@@ -157,6 +219,7 @@ class _ZipScreenState extends ConsumerState<ZipScreen> with WidgetsBindingObserv
         HapticFeedback.selectionClick();
         setState(() {
           _path.removeRange(idx + 1, _path.length);
+          _showIncompleteWarning = false;
           _checkState();
         });
         _saveSession();
@@ -179,6 +242,15 @@ class _ZipScreenState extends ConsumerState<ZipScreen> with WidgetsBindingObserv
       final dc = (last.col - c).abs();
 
       if (dr + dc == 1) {
+        final maxNumber = _level.numberPoints.values.reduce((a, b) => a > b ? a : b);
+        final totalCells = (_level.gridSize * _level.gridSize) - _level.walls.length;
+
+        // Kural: Son numaralı noktaya (Bitiş Bayrağı) ulaşıldıktan sonra yol devam ettirilemez!
+        if (_level.numberPoints[last] == maxNumber) {
+          SoundHapticService.instance.playError();
+          return;
+        }
+
         // LinkedIn Zip: İki kare arasındaki hat/çit üzerinden geçilemez!
         if (_level.edgeWalls.contains(ZipEdgeWall(last, targetPoint))) {
           SoundHapticService.instance.playError();
@@ -193,8 +265,16 @@ class _ZipScreenState extends ConsumerState<ZipScreen> with WidgetsBindingObserv
           return;
         }
 
+        // Kural: Son noktaya (Bitiş Bayrağı) gelene kadar tüm boş kareler doldurulmuş olmalıdır!
+        if (cellNum == maxNumber && _path.length < totalCells - 1) {
+          SoundHapticService.instance.playError();
+          _triggerIncompleteWarning();
+          return;
+        }
+
         SoundHapticService.instance.playPencilTap();
         setState(() {
+          _showIncompleteWarning = false;
           _path.add(targetPoint);
           _checkState();
         });
@@ -621,20 +701,28 @@ class _ZipScreenState extends ConsumerState<ZipScreen> with WidgetsBindingObserv
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
-                          color: (nextTarget > maxNumber && _path.length == totalCells)
-                              ? const Color(0xFF34D399)
-                              : AppColors.sunYellow,
+                          color: _showIncompleteWarning
+                              ? const Color(0xFFFCA5A5)
+                              : ((nextTarget > maxNumber && _path.length == totalCells)
+                                  ? const Color(0xFF34D399)
+                                  : AppColors.sunYellow),
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(color: isDark ? Colors.white38 : AppColors.pencilBlack, width: 1.5),
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.flag_rounded, size: 16, color: AppColors.inkBlack),
+                            Icon(
+                              _showIncompleteWarning ? Icons.warning_amber_rounded : Icons.flag_rounded,
+                              size: 16,
+                              color: AppColors.inkBlack,
+                            ),
                             const SizedBox(width: 4),
                             Text(
-                              (nextTarget > maxNumber && _path.length == totalCells)
-                                  ? 'Tamamlandı! 🏁'
-                                  : 'Sıradaki: $nextTarget / $maxNumber',
+                              _showIncompleteWarning
+                                  ? 'Önce Tüm Kareleri Doldur!'
+                                  : ((nextTarget > maxNumber && _path.length == totalCells)
+                                      ? 'Tamamlandı! 🏁'
+                                      : 'Sıradaki: ${nextTarget.clamp(1, maxNumber)} / $maxNumber'),
                               style: GoogleFonts.patrickHand(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w700,
