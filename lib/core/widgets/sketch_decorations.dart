@@ -1132,3 +1132,400 @@ class SketchText extends StatelessWidget {
     );
   }
 }
+
+/// Tamamen el çizimi, wobbly kenarlı, taramalı ve organik kaligrafik tik damgası.
+class HandDrawnCheckBadge extends StatelessWidget {
+  final bool isDone;
+  final Color pencilColor;
+  final bool isDark;
+  final int seed;
+  final double size;
+  final Color? checkColor;
+  final Color? fillColor;
+
+  const HandDrawnCheckBadge({
+    super.key,
+    required this.isDone,
+    required this.pencilColor,
+    required this.isDark,
+    this.seed = 0,
+    this.size = 24,
+    this.checkColor,
+    this.fillColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: size,
+      height: size,
+      child: CustomPaint(
+        painter: _HandDrawnCheckBadgePainter(
+          isDone: isDone,
+          pencilColor: pencilColor,
+          isDark: isDark,
+          seed: seed,
+          checkColor: checkColor,
+          fillColor: fillColor,
+        ),
+      ),
+    );
+  }
+}
+
+class _HandDrawnCheckBadgePainter extends CustomPainter {
+  final bool isDone;
+  final Color pencilColor;
+  final bool isDark;
+  final int seed;
+  final Color? checkColor;
+  final Color? fillColor;
+
+  _HandDrawnCheckBadgePainter({
+    required this.isDone,
+    required this.pencilColor,
+    required this.isDark,
+    required this.seed,
+    this.checkColor,
+    this.fillColor,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rng = math.Random(seed);
+    final cx = size.width / 2;
+    final cy = size.height / 2;
+    final baseRadius = (math.min(size.width, size.height) / 2) - 2.5;
+
+    // 1. Organik Wobbly Daire Yolu
+    const pointsCount = 12;
+    final path = Path();
+    for (int i = 0; i < pointsCount; i++) {
+      final angle = (i * 2 * math.pi) / pointsCount;
+      final jitter = (rng.nextDouble() - 0.5) * 1.6;
+      final r = baseRadius + jitter;
+      final x = cx + r * math.cos(angle);
+      final y = cy + r * math.sin(angle);
+      if (i == 0) {
+        path.moveTo(x, y);
+      } else {
+        path.lineTo(x, y);
+      }
+    }
+    path.close();
+
+    // 2. Sert El Çizimi Eskiz Gölgesi
+    final shadowPath = path.shift(const Offset(1.5, 1.5));
+    final shadowPaint = Paint()
+      ..color = pencilColor.withValues(alpha: isDark ? 0.35 : 0.85)
+      ..style = PaintingStyle.fill;
+    canvas.drawPath(shadowPath, shadowPaint);
+
+    // 3. Arka Plan Dolgusu
+    if (isDone) {
+      final effectiveFill = fillColor ??
+          (isDark ? const Color(0xFF16A34A) : const Color(0xFF22C55E));
+      final fillPaint = Paint()
+        ..color = effectiveFill
+        ..style = PaintingStyle.fill;
+      canvas.drawPath(path, fillPaint);
+
+      // Skeç taraması (hatching)
+      canvas.save();
+      canvas.clipPath(path);
+      final hatchPaint = Paint()
+        ..color = (isDark ? const Color(0xFF14532D) : const Color(0xFF15803D))
+            .withValues(alpha: 0.45)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.0
+        ..strokeCap = StrokeCap.round;
+
+      for (double x = -10; x < size.width + 10; x += 3.5) {
+        canvas.drawLine(
+          Offset(x, 0),
+          Offset(x + 8, size.height),
+          hatchPaint,
+        );
+      }
+      canvas.restore();
+    } else {
+      final emptyPaint = Paint()
+        ..color = isDark ? Colors.white12 : const Color(0xFFE2E8F0)
+        ..style = PaintingStyle.fill;
+      canvas.drawPath(path, emptyPaint);
+    }
+
+    // 4. Ana Eskiz Dış Konturu
+    final borderPaint = Paint()
+      ..color = pencilColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.6
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+    canvas.drawPath(path, borderPaint);
+
+    // 5. İkinci Serbest El Eskiz Konturu (Taslak Havası)
+    final sketchBorderPaint = Paint()
+      ..color = pencilColor.withValues(alpha: 0.4)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.8
+      ..strokeCap = StrokeCap.round;
+    final secondaryPath = Path();
+    for (int i = 0; i < 8; i++) {
+      final angle = (i * 2 * math.pi) / 8 + 0.3;
+      final jitter = (rng.nextDouble() - 0.5) * 1.8;
+      final r = baseRadius + jitter;
+      final x = cx + r * math.cos(angle);
+      final y = cy + r * math.sin(angle);
+      if (i == 0) {
+        secondaryPath.moveTo(x, y);
+      } else {
+        secondaryPath.lineTo(x, y);
+      }
+    }
+    canvas.drawPath(secondaryPath, sketchBorderPaint);
+
+    // 6. İç İkon: El Çizimi Kaligrafik Tik ya da Pasif Çizgi
+    if (isDone) {
+      final effectiveCheck = checkColor ?? Colors.white;
+      final tickPath = Path();
+      final p1 = Offset(cx - 4.6 + (rng.nextDouble() - 0.5) * 0.4, cy + 0.2);
+      final p2 = Offset(cx - 1.2 + (rng.nextDouble() - 0.5) * 0.4, cy + 4.2);
+      final p3 = Offset(cx + 4.8 + (rng.nextDouble() - 0.5) * 0.4, cy - 3.8);
+
+      tickPath.moveTo(p1.dx, p1.dy);
+      tickPath.lineTo(p2.dx, p2.dy);
+      tickPath.lineTo(p3.dx, p3.dy);
+
+      final tickShadowPaint = Paint()
+        ..color = Colors.black.withValues(alpha: 0.25)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.4
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round;
+      canvas.drawPath(tickPath.shift(const Offset(0.6, 0.6)), tickShadowPaint);
+
+      final tickPaint = Paint()
+        ..color = effectiveCheck
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.3
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round;
+      canvas.drawPath(tickPath, tickPaint);
+
+      final tickSubPaint = Paint()
+        ..color = effectiveCheck.withValues(alpha: 0.6)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.0
+        ..strokeCap = StrokeCap.round;
+      canvas.drawLine(
+        Offset(p2.dx - 0.3, p2.dy - 0.2),
+        Offset(p3.dx - 0.8, p3.dy + 0.5),
+        tickSubPaint,
+      );
+    } else {
+      final dashPaint = Paint()
+        ..color = pencilColor.withValues(alpha: 0.6)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.8
+        ..strokeCap = StrokeCap.round;
+      canvas.drawLine(
+        Offset(cx - 3.5, cy),
+        Offset(cx + 3.5, cy),
+        dashPaint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _HandDrawnCheckBadgePainter oldDelegate) {
+    return oldDelegate.isDone != isDone ||
+        oldDelegate.pencilColor != pencilColor ||
+        oldDelegate.isDark != isDark ||
+        oldDelegate.seed != seed ||
+        oldDelegate.checkColor != checkColor ||
+        oldDelegate.fillColor != fillColor;
+  }
+}
+
+/// Tamamen el çizimi, wobbly hatlı, sert gölgeli ve taramalı skeç rozeti/kutusu (Badge).
+/// Oyun kartlarının altındaki "BİTTİ • 1940P" veya seviye rozetleri için kullanılır.
+class HandDrawnBadge extends StatelessWidget {
+  final Widget child;
+  final Color fillColor;
+  final Color borderColor;
+  final bool isDark;
+  final int seed;
+  final EdgeInsetsGeometry padding;
+  final bool showHatching;
+
+  const HandDrawnBadge({
+    super.key,
+    required this.child,
+    required this.fillColor,
+    required this.borderColor,
+    this.isDark = false,
+    this.seed = 0,
+    this.padding = const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+    this.showHatching = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      painter: _HandDrawnBadgePainter(
+        fillColor: fillColor,
+        borderColor: borderColor,
+        isDark: isDark,
+        seed: seed,
+        showHatching: showHatching,
+      ),
+      child: Padding(
+        padding: padding,
+        child: child,
+      ),
+    );
+  }
+}
+
+class _HandDrawnBadgePainter extends CustomPainter {
+  final Color fillColor;
+  final Color borderColor;
+  final bool isDark;
+  final int seed;
+  final bool showHatching;
+
+  _HandDrawnBadgePainter({
+    required this.fillColor,
+    required this.borderColor,
+    required this.isDark,
+    required this.seed,
+    required this.showHatching,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (size.width <= 0 || size.height <= 0) return;
+
+    final rng = math.Random(seed);
+    const double radius = 7.0;
+    final w = size.width;
+    final h = size.height;
+
+    // Organik wobbly yuvarlatılmış dikdörtgen
+    final path = Path();
+    // Sol üstten sağ üste
+    path.moveTo(radius + (rng.nextDouble() - 0.5) * 1.2, (rng.nextDouble() - 0.5) * 1.0);
+    path.quadraticBezierTo(
+      w * 0.5,
+      (rng.nextDouble() - 0.5) * 1.5,
+      w - radius + (rng.nextDouble() - 0.5) * 1.2,
+      (rng.nextDouble() - 0.5) * 1.0,
+    );
+    // Sağ üst köşe
+    path.quadraticBezierTo(w + (rng.nextDouble() - 0.5) * 1.0, 0, w, radius);
+    // Sağ kenar
+    path.quadraticBezierTo(
+      w + (rng.nextDouble() - 0.5) * 1.5,
+      h * 0.5,
+      w + (rng.nextDouble() - 0.5) * 0.8,
+      h - radius,
+    );
+    // Sağ alt köşe
+    path.quadraticBezierTo(w, h + (rng.nextDouble() - 0.5) * 1.0, w - radius, h);
+    // Alt kenar
+    path.quadraticBezierTo(
+      w * 0.5,
+      h + (rng.nextDouble() - 0.5) * 1.5,
+      radius + (rng.nextDouble() - 0.5) * 1.2,
+      h + (rng.nextDouble() - 0.5) * 0.8,
+    );
+    // Sol alt köşe
+    path.quadraticBezierTo(0, h + (rng.nextDouble() - 0.5) * 1.0, 0, h - radius);
+    // Sol kenar
+    path.quadraticBezierTo(
+      (rng.nextDouble() - 0.5) * 1.5,
+      h * 0.5,
+      (rng.nextDouble() - 0.5) * 0.8,
+      radius,
+    );
+    // Sol üst köşe kapanışı
+    path.quadraticBezierTo(0, 0, radius, (rng.nextDouble() - 0.5) * 1.0);
+    path.close();
+
+    // 1. Sert Eskiz Gölgesi
+    final shadowOffset = const Offset(1.8, 1.8);
+    final shadowPath = path.shift(shadowOffset);
+    final shadowPaint = Paint()
+      ..color = isDark ? AppColors.cardShadowDark : borderColor.withValues(alpha: 0.85)
+      ..style = PaintingStyle.fill;
+    canvas.drawPath(shadowPath, shadowPaint);
+
+    // 2. Opak taban (saydamlık durumunda gölgenin çamurlaşmasını engeller)
+    if (fillColor.a < 1.0) {
+      final baseColor = isDark ? const Color(0xFF1C1917) : Colors.white;
+      canvas.drawPath(path, Paint()..color = baseColor..style = PaintingStyle.fill);
+    }
+
+    // 3. Gövde Renk Dolgusu
+    canvas.drawPath(path, Paint()..color = fillColor..style = PaintingStyle.fill);
+
+    // 4. İnce Skeç Taraması (Hatching)
+    if (showHatching) {
+      canvas.save();
+      canvas.clipPath(path);
+      final hatchPaint = Paint()
+        ..color = (isDark ? Colors.white : AppColors.inkBlack).withValues(alpha: 0.12)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 0.9
+        ..strokeCap = StrokeCap.round;
+
+      for (double x = -h; x < w + h; x += 5.0) {
+        canvas.drawLine(
+          Offset(x, 0),
+          Offset(x + h * 0.8, h),
+          hatchPaint,
+        );
+      }
+      canvas.restore();
+    }
+
+    // 5. Ana Kurşun Kalem Dış Kontur
+    final strokePaint = Paint()
+      ..color = borderColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.8
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+    canvas.drawPath(path, strokePaint);
+
+    // 6. İkinci Serbest El Taslak Konturu (Köşelerde hafif kaçıklık)
+    final sketchStrokePaint = Paint()
+      ..color = borderColor.withValues(alpha: 0.38)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.8
+      ..strokeCap = StrokeCap.round;
+
+    final secondPath = Path();
+    secondPath.moveTo(radius + 1, -0.5);
+    secondPath.lineTo(w - radius - 1, 0.5);
+    secondPath.quadraticBezierTo(w + 0.8, 0.5, w - 0.5, radius);
+    secondPath.lineTo(w + 0.5, h - radius);
+    secondPath.quadraticBezierTo(w + 0.5, h + 0.8, w - radius, h - 0.5);
+    secondPath.lineTo(radius, h + 0.5);
+    secondPath.quadraticBezierTo(-0.5, h - 0.5, 0.5, h - radius);
+    secondPath.lineTo(-0.5, radius);
+    secondPath.close();
+
+    canvas.drawPath(secondPath, sketchStrokePaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _HandDrawnBadgePainter oldDelegate) {
+    return oldDelegate.fillColor != fillColor ||
+        oldDelegate.borderColor != borderColor ||
+        oldDelegate.isDark != isDark ||
+        oldDelegate.seed != seed ||
+        oldDelegate.showHatching != showHatching;
+  }
+}

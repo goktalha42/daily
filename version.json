@@ -1,9 +1,9 @@
 ﻿{
-    "version":  "1.2.3",
-    "build_number":  21,
-    "title":  "Zühtü v1.2.3 - Skeç İnce İşçiliği ve Aydınlık Tema Mükemmelliği 🎨✨",
-    "changelog":  "Haftalık zeka raporu ve dâhi sertifikasındaki özet metrik kutuları aydınlık temada yüksek kontrastlı, okunaklı ve pastel skeç tonlarına kavuşturuldu. Bilişsel odak dağılımı çubukları ve sertifikadaki 6 yeşil onay tiki %100 el çizimi ve taramalı skeç sanatına dönüştürüldü.",
-    "apk_url":  "https://raw.githubusercontent.com/goktalha42/daily/main/releases/Zuhtu_v1.2.3_b21.apk",
-    "release_url":  "https://github.com/goktalha42/daily/releases/tag/v1.2.3",
+    "version":  "1.2.4",
+    "build_number":  22,
+    "title":  "Zühtü v1.2.4 Ana Sayfa El Çizimi Rozet ve Tikler 🎨✨",
+    "changelog":  "Ana sayfadaki 6 oyun kutusunda yer alan yeşil onay tikleri ve BİTTİ etiketleri %100 el çizimi, wobbly hatlı ve taramalı skeç tarzına dönüştürüldü.",
+    "apk_url":  "https://raw.githubusercontent.com/goktalha42/daily/main/releases/Zuhtu_v1.2.4_b22.apk",
+    "release_url":  "https://github.com/goktalha42/daily/releases/tag/v1.2.4",
     "force_update":  false
 }

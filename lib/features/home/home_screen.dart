@@ -806,29 +806,14 @@ class _GeniusGameButtonState extends State<_GeniusGameButton> {
                 ),
                 if (widget.isCompleted)
                   Positioned(
-                    top: 10,
-                    right: 10,
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        color: AppColors.success,
-                        shape: BoxShape.circle,
-                        border: Border.fromBorderSide(
-                          BorderSide(color: cardBorder, width: 2.0),
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: isDark ? AppColors.cardShadowDark : AppColors.pencilBlack,
-                            offset: const Offset(1.5, 1.5),
-                            blurRadius: 0,
-                          ),
-                        ],
-                      ),
-                      child: const Icon(
-                        Icons.check,
-                        size: 14,
-                        color: AppColors.pencilBlack,
-                      ),
+                    top: 9,
+                    right: 9,
+                    child: HandDrawnCheckBadge(
+                      isDone: true,
+                      pencilColor: cardBorder,
+                      isDark: isDark,
+                      size: 26,
+                      seed: game.index * 17 + 5,
                     ),
                   ),
                 Padding(
@@ -848,29 +833,19 @@ class _GeniusGameButtonState extends State<_GeniusGameButton> {
                         ),
                         overflow: TextOverflow.ellipsis,
                       ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: widget.isCompleted
-                              ? AppColors.success
-                              : (perf.hasPlayed
-                                  ? (perf.percentile! <= 1
-                                      ? AppColors.sunYellow
-                                      : game.color)
-                                  : (isDark ? AppColors.surfaceSecondaryDark : AppColors.surfaceSecondaryLight)),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: cardBorder,
-                            width: 1.8,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: isDark ? AppColors.cardShadowDark : AppColors.pencilBlack,
-                              offset: const Offset(1.5, 1.5),
-                              blurRadius: 0,
-                            ),
-                          ],
-                        ),
+                      HandDrawnBadge(
+                        fillColor: widget.isCompleted
+                            ? (isDark ? const Color(0xFF16A34A) : AppColors.success)
+                            : (perf.hasPlayed
+                                ? (perf.percentile! <= 1
+                                    ? AppColors.sunYellow
+                                    : game.color)
+                                : (isDark ? AppColors.surfaceSecondaryDark : AppColors.surfaceSecondaryLight)),
+                        borderColor: cardBorder,
+                        isDark: isDark,
+                        seed: game.index * 11 + 3,
+                        showHatching: widget.isCompleted,
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                         child: Text(
                           widget.isCompleted
                               ? 'BİTTİ • ${widget.record?.score ?? 0}P'
