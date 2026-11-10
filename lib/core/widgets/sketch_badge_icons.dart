@@ -136,8 +136,8 @@ class SketchBadgeIcon extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final defaultStroke = isLocked
         ? (isDark
-            ? AppColors.pencilWhite.withValues(alpha: 0.42)
-            : AppColors.pencilGraphite.withValues(alpha: 0.50))
+            ? AppColors.pencilWhite.withValues(alpha: 0.65)
+            : AppColors.pencilGraphite.withValues(alpha: 0.55))
         : (strokeColor ?? (isDark ? AppColors.pencilWhite : AppColors.pencilBlack));
 
     return CustomPaint(
@@ -383,7 +383,7 @@ class _WobblyBadgeMedallionPainter extends CustomPainter {
     } else {
       // Kilitli: Eskiz kağıdı üzerinde hafif taslak çemberi
       final draftFill = isDark
-          ? Colors.white.withValues(alpha: 0.04)
+          ? AppColors.surfaceSecondaryDark.withValues(alpha: 0.90)
           : const Color(0xFFF3EFE6).withValues(alpha: 0.75);
       canvas.drawPath(
         mainPath,

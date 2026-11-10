@@ -97,7 +97,8 @@ class BadgeShowcaseSection extends ConsumerWidget {
             borderRadius: 16,
             borderWidth: 2.0,
             shadowOffset: const Offset(3.0, 3.0),
-            backgroundColor: AppColors.surfaceOf(context),
+            backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+            borderColor: isDark ? const Color(0xFF475569) : AppColors.pencilBlack,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -109,6 +110,7 @@ class BadgeShowcaseSection extends ConsumerWidget {
                       borderWidth: 1.5,
                       shadowOffset: Offset(1.5, 1.5),
                       backgroundColor: AppColors.sunYellow,
+                      borderColor: AppColors.inkBlack,
                       child: SketchBadgeIcon(
                         type: BadgeArtType.honorMedal,
                         size: 24,
@@ -125,20 +127,24 @@ class BadgeShowcaseSection extends ConsumerWidget {
                             style: GoogleFonts.patrickHand(
                               fontSize: 18,
                               fontWeight: FontWeight.w700,
-                              color: AppColors.pencil(context),
+                              color: isDark ? Colors.white : AppColors.pencilBlack,
                             ),
                           ),
                           Text(
                             '%${(progressPercent * 100).toInt()} Tamamlandı • Detaylar için tıkla',
                             style: GoogleFonts.patrickHand(
                               fontSize: 13,
-                              color: AppColors.gray(context),
+                              color: isDark ? const Color(0xFFCBD5E1) : AppColors.pencilGraphite,
                             ),
                           ),
                         ],
                       ),
                     ),
-                    const Icon(Icons.arrow_forward_ios_rounded, size: 16),
+                    Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      size: 16,
+                      color: isDark ? Colors.white70 : AppColors.pencilBlack,
+                    ),
                   ],
                 ),
 

@@ -234,7 +234,10 @@ class SketchCard extends StatelessWidget {
         resolvedBg = backgroundColor!;
       }
 
-      isLightBg = resolvedBg.computeLuminance() > 0.35;
+      final effectiveBg = resolvedBg.a < 1.0
+          ? Color.alphaBlend(resolvedBg, AppColors.surfaceDark)
+          : resolvedBg;
+      isLightBg = effectiveBg.computeLuminance() > 0.35;
       onBgTextColor = isLightBg ? AppColors.inkBlack : AppColors.inkWhite;
       onBgSubtitleColor = isLightBg ? const Color(0xFF44403C) : const Color(0xFFE2E8F0);
       resolvedBorder = borderColor ?? (isLightBg ? AppColors.inkBlack : AppColors.inkWhite);
@@ -250,6 +253,7 @@ class SketchCard extends StatelessWidget {
         shadowOffset: shadowOffset,
         borderRadius: borderRadius,
         enableHatching: enableHatching,
+        isDark: isDark,
       ),
       child: Padding(
         padding: padding,
@@ -288,6 +292,7 @@ class _WobblySketchBoxPainter extends CustomPainter {
   final Offset shadowOffset;
   final double borderRadius;
   final bool enableHatching;
+  final bool isDark;
 
   _WobblySketchBoxPainter({
     required this.fillColor,
@@ -297,6 +302,7 @@ class _WobblySketchBoxPainter extends CustomPainter {
     required this.shadowOffset,
     required this.borderRadius,
     this.enableHatching = false,
+    this.isDark = false,
   });
 
   @override
@@ -325,9 +331,7 @@ class _WobblySketchBoxPainter extends CustomPainter {
     // gövde yolunun altına önce temiz opak kağıt/kart tabanı çekilir.
     if (fillColor.a < 1.0) {
       final basePaint = Paint()
-        ..color = (strokeColor.computeLuminance() > 0.5)
-            ? AppColors.surfaceDark
-            : Colors.white
+        ..color = isDark ? AppColors.surfaceDark : Colors.white
         ..style = PaintingStyle.fill;
       canvas.drawPath(fillPath, basePaint);
     }

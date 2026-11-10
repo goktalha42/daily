@@ -449,6 +449,7 @@ class _BadgesScreenState extends ConsumerState<BadgesScreen> {
     required bool isSelected,
     required VoidCallback onTap,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return SketchCard(
       onTap: () {
         HapticFeedback.selectionClick();
@@ -456,11 +457,15 @@ class _BadgesScreenState extends ConsumerState<BadgesScreen> {
       },
       padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
       borderRadius: 10,
-      borderWidth: isSelected ? 2.0 : 1.4,
+      borderWidth: isSelected ? 2.0 : 1.5,
       shadowOffset:
           isSelected ? const Offset(2.0, 2.0) : const Offset(1.5, 1.5),
-      backgroundColor:
-          isSelected ? AppColors.sunYellow : AppColors.surfaceOf(context),
+      backgroundColor: isSelected
+          ? AppColors.sunYellow
+          : (isDark ? const Color(0xFF1E293B) : Colors.white),
+      borderColor: isSelected
+          ? AppColors.inkBlack
+          : (isDark ? const Color(0xFF475569) : AppColors.pencilBlack),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -473,7 +478,9 @@ class _BadgesScreenState extends ConsumerState<BadgesScreen> {
             style: GoogleFonts.patrickHand(
               fontSize: 14,
               fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-              color: isSelected ? AppColors.inkBlack : AppColors.pencil(context),
+              color: isSelected
+                  ? AppColors.inkBlack
+                  : (isDark ? Colors.white : AppColors.pencilBlack),
             ),
           ),
         ],
@@ -530,6 +537,28 @@ class _BadgesScreenState extends ConsumerState<BadgesScreen> {
             statsMap: statsMap,
           );
 
+    final cardBg = isUnlocked
+        ? (isDark
+            ? Color.lerp(const Color(0xFF1E293B), badge.color, 0.14)!
+            : Color.lerp(Colors.white, badge.color, 0.16)!)
+        : (isDark ? const Color(0xFF151E2E) : Colors.white);
+
+    final cardBorder = isUnlocked
+        ? (isDark
+            ? Color.lerp(badge.color, Colors.white, 0.25)!
+            : AppColors.pencilBlack)
+        : (isDark
+            ? const Color(0xFF334155)
+            : AppColors.pencilBlack);
+
+    final titleColor = isDark
+        ? (isUnlocked ? Colors.white : const Color(0xFFE2E8F0))
+        : AppColors.inkBlack;
+    final subTextColor = isDark
+        ? (isUnlocked ? const Color(0xFFCBD5E1) : const Color(0xFF94A3B8))
+        : AppColors.pencilGraphite;
+    final progressColor = isDark ? AppColors.sunYellow : AppColors.inkBlack;
+
     return SketchCard(
       onTap: () {
         HapticFeedback.selectionClick();
@@ -546,9 +575,8 @@ class _BadgesScreenState extends ConsumerState<BadgesScreen> {
       borderWidth: isUnlocked ? 2.2 : 1.5,
       shadowOffset:
           isUnlocked ? const Offset(2.5, 2.5) : const Offset(1.5, 1.5),
-      backgroundColor: isUnlocked
-          ? badge.color.withValues(alpha: isDark ? 0.16 : 0.18)
-          : AppColors.surfaceOf(context),
+      backgroundColor: cardBg,
+      borderColor: cardBorder,
       child: Row(
         children: [
           // %100 El Çizimi Dalgalı Madalyon Rozet Simgesi
@@ -570,7 +598,7 @@ class _BadgesScreenState extends ConsumerState<BadgesScreen> {
                   style: GoogleFonts.patrickHand(
                     fontSize: 17,
                     fontWeight: isUnlocked ? FontWeight.w800 : FontWeight.w700,
-                    color: AppColors.pencil(context),
+                    color: titleColor,
                   ),
                 ),
                 Text(
@@ -578,7 +606,7 @@ class _BadgesScreenState extends ConsumerState<BadgesScreen> {
                   style: GoogleFonts.patrickHand(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.gray(context),
+                    color: subTextColor,
                   ),
                 ),
                 if (progressText != null) ...[
@@ -588,7 +616,7 @@ class _BadgesScreenState extends ConsumerState<BadgesScreen> {
                     style: GoogleFonts.patrickHand(
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.pencil(context),
+                      color: progressColor,
                     ),
                   ),
                 ],
@@ -605,8 +633,12 @@ class _BadgesScreenState extends ConsumerState<BadgesScreen> {
             shadowOffset: const Offset(1, 1),
             backgroundColor: isUnlocked
                 ? AppColors.sunYellow
-                : (isDark ? Colors.white10 : const Color(0xFFF1EDE4)),
-            borderColor: AppColors.pencil(context),
+                : (isDark ? AppColors.surfaceSecondaryDark : const Color(0xFFF1EDE4)),
+            borderColor: isUnlocked
+                ? AppColors.inkBlack
+                : (isDark
+                    ? AppColors.pencilWhite.withValues(alpha: 0.45)
+                    : AppColors.pencilBlack),
             child: isUnlocked
                 ? Text(
                     '✓ AÇILDI',
@@ -621,7 +653,7 @@ class _BadgesScreenState extends ConsumerState<BadgesScreen> {
                     children: [
                       SketchDoodleLock(
                         size: 12,
-                        color: AppColors.gray(context),
+                        color: subTextColor,
                       ),
                       const SizedBox(width: 4),
                       Text(
@@ -629,7 +661,7 @@ class _BadgesScreenState extends ConsumerState<BadgesScreen> {
                         style: GoogleFonts.patrickHand(
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
-                          color: AppColors.gray(context),
+                          color: subTextColor,
                         ),
                       ),
                     ],
@@ -647,6 +679,7 @@ class _BadgesScreenState extends ConsumerState<BadgesScreen> {
     String? progressText,
     DateTime? unlockedAt,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     showDialog(
       context: context,
       builder: (ctx) => Dialog(
@@ -657,7 +690,10 @@ class _BadgesScreenState extends ConsumerState<BadgesScreen> {
           constraints: const BoxConstraints(maxWidth: 380),
           child: SketchCard(
             enableHatching: true,
-            backgroundColor: AppColors.surfaceOf(context),
+            backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+            borderColor: isDark
+                ? (isUnlocked ? Color.lerp(badge.color, Colors.white, 0.30)! : const Color(0xFF475569))
+                : AppColors.pencilBlack,
             borderRadius: 18,
             borderWidth: 2.4,
             shadowOffset: const Offset(4, 4),
@@ -678,7 +714,7 @@ class _BadgesScreenState extends ConsumerState<BadgesScreen> {
                   style: GoogleFonts.patrickHand(
                     fontSize: 23,
                     fontWeight: FontWeight.w800,
-                    color: AppColors.pencil(context),
+                    color: isDark ? Colors.white : AppColors.inkBlack,
                   ),
                 ),
                 const SizedBox(height: 6),
@@ -690,14 +726,17 @@ class _BadgesScreenState extends ConsumerState<BadgesScreen> {
                   shadowOffset: const Offset(1.2, 1.2),
                   backgroundColor: isUnlocked
                       ? AppColors.sunYellow
-                      : AppColors.surfaceSecondaryOf(context),
+                      : (isDark ? const Color(0xFF0F172A) : AppColors.surfaceSecondaryLight),
+                  borderColor: isUnlocked
+                      ? AppColors.inkBlack
+                      : (isDark ? const Color(0xFF475569) : AppColors.pencilBlack),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       if (!isUnlocked) ...[
                         SketchDoodleLock(
                           size: 12,
-                          color: AppColors.gray(context),
+                          color: isDark ? const Color(0xFFCBD5E1) : AppColors.pencilGraphite,
                         ),
                         const SizedBox(width: 4),
                       ],
@@ -712,7 +751,7 @@ class _BadgesScreenState extends ConsumerState<BadgesScreen> {
                           fontWeight: FontWeight.w700,
                           color: isUnlocked
                               ? AppColors.inkBlack
-                              : AppColors.gray(context),
+                              : (isDark ? const Color(0xFFCBD5E1) : AppColors.pencilGraphite),
                         ),
                       ),
                     ],
@@ -724,7 +763,7 @@ class _BadgesScreenState extends ConsumerState<BadgesScreen> {
                   textAlign: TextAlign.center,
                   style: GoogleFonts.patrickHand(
                     fontSize: 14.5,
-                    color: AppColors.gray(context),
+                    color: isDark ? const Color(0xFFE2E8F0) : AppColors.pencilGraphite,
                     height: 1.25,
                   ),
                 ),
@@ -735,14 +774,15 @@ class _BadgesScreenState extends ConsumerState<BadgesScreen> {
                   borderRadius: 10,
                   borderWidth: 1.4,
                   shadowOffset: const Offset(1.5, 1.5),
-                  backgroundColor: AppColors.surfaceSecondaryOf(context),
+                  backgroundColor: isDark ? const Color(0xFF0F172A) : AppColors.surfaceSecondaryLight,
+                  borderColor: isDark ? const Color(0xFF475569) : AppColors.pencilBlack,
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
                         Icons.flag_rounded,
                         size: 16,
-                        color: AppColors.pencil(context),
+                        color: isDark ? AppColors.sunYellow : AppColors.pencilBlack,
                       ),
                       const SizedBox(width: 6),
                       Flexible(
@@ -751,7 +791,7 @@ class _BadgesScreenState extends ConsumerState<BadgesScreen> {
                           style: GoogleFonts.patrickHand(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.pencil(context),
+                            color: isDark ? Colors.white : AppColors.pencilBlack,
                           ),
                         ),
                       ),

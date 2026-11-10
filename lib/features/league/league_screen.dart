@@ -527,11 +527,11 @@ class _SketchMainLeagueCard extends StatelessWidget {
 
     switch (zone) {
       case LeagueZone.promotion:
-        noteTitle = 'Yükselme Potasındasın! 🎉';
+        noteTitle = 'Yükselme Potasındasın!';
         noteDesc = league.pointsSafetyMargin > 0
             ? '11. sıradaki rakibinden ${league.pointsSafetyMargin} LP öndesin. Pozisyonunu koru!'
             : 'İlk 10 sıradasın! Haftayı burada tamamlarsan üst lige çıkacaksın.';
-        noteBg = isDark ? const Color(0xFF064E3B).withValues(alpha: 0.45) : const Color(0xFFDCFCE7);
+        noteBg = isDark ? const Color(0xFF064E3B) : const Color(0xFFDCFCE7);
         noteIcon = SketchDoodleCrown(
           size: 24,
           color: isDark ? AppColors.pencilWhite : AppColors.pencilBlack,
@@ -540,7 +540,7 @@ class _SketchMainLeagueCard extends StatelessWidget {
         break;
       case LeagueZone.safe:
         final pts = league.pointsToPromotion;
-        noteTitle = 'Güvenli Bölgedesin 🛡️';
+        noteTitle = 'Güvenli Bölgedesin';
         noteDesc = pts > 0
             ? 'Yükselme potasına girmek için $pts LP daha kazanmalısın!'
             : 'Ligde kalmayı garantiledin. Şimdi üst sıralara oynama zamanı!';
@@ -552,9 +552,9 @@ class _SketchMainLeagueCard extends StatelessWidget {
         );
         break;
       case LeagueZone.relegation:
-        noteTitle = 'Düşme Tehlikesi! ⚠️';
+        noteTitle = 'Düşme Tehlikesi!';
         noteDesc = 'Son 10 sıradasın! Bir alt lige gerilememek için hemen oyun oyna!';
-        noteBg = isDark ? const Color(0xFF7F1D1D).withValues(alpha: 0.45) : AppColors.errorBgLight;
+        noteBg = isDark ? const Color(0xFF450A0A) : AppColors.errorBgLight;
         noteIcon = const Icon(
           Icons.warning_amber_rounded,
           size: 24,
@@ -781,7 +781,7 @@ class _SketchHandDrawnProgressBar extends StatelessWidget {
                   style: GoogleFonts.patrickHand(
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
-                    color: isDark ? AppColors.success : AppColors.successDark,
+                    color: isDark ? const Color(0xFF6EE7B7) : AppColors.successDark,
                   ),
                 ),
               ],
@@ -1077,16 +1077,36 @@ class _SketchZoneDivider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardBg = isPromotion
-        ? (isDark ? const Color(0xFF064E3B).withValues(alpha: 0.5) : const Color(0xFFDCFCE7))
-        : AppColors.surfaceOf(context);
+    final bool isRelegation = color == AppColors.error;
+
+    final Color cardBg;
+    final Color effectiveBorderColor;
+    final Color effectiveTextColor;
+    final Color effectiveLineColor;
+
+    if (isPromotion) {
+      cardBg = isDark ? const Color(0xFF064E3B) : const Color(0xFFDCFCE7);
+      effectiveBorderColor = isDark ? const Color(0xFF34D399) : AppColors.successDark;
+      effectiveTextColor = isDark ? const Color(0xFFECFDF5) : AppColors.successDark;
+      effectiveLineColor = isDark ? const Color(0xFF34D399) : AppColors.success;
+    } else if (isRelegation) {
+      cardBg = isDark ? const Color(0xFF450A0A) : AppColors.errorBgLight;
+      effectiveBorderColor = isDark ? const Color(0xFFF87171) : AppColors.error;
+      effectiveTextColor = isDark ? const Color(0xFFFEF2F2) : AppColors.error;
+      effectiveLineColor = isDark ? const Color(0xFFF87171) : AppColors.error;
+    } else {
+      cardBg = isDark ? AppColors.surfaceSecondaryDark : Colors.white;
+      effectiveBorderColor = isDark ? const Color(0xFF94A3B8) : color;
+      effectiveTextColor = isDark ? Colors.white : color;
+      effectiveLineColor = isDark ? const Color(0xFF94A3B8) : color;
+    }
 
     return Row(
       children: [
         Expanded(
           child: CustomPaint(
             size: const Size(double.infinity, 10),
-            painter: _WobblyLinePainter(color: color),
+            painter: _WobblyLinePainter(color: effectiveLineColor),
           ),
         ),
         const SizedBox(width: 8),
@@ -1096,13 +1116,13 @@ class _SketchZoneDivider extends StatelessWidget {
           borderWidth: 1.6,
           shadowOffset: const Offset(1.5, 1.5),
           backgroundColor: cardBg,
-          borderColor: color,
+          borderColor: effectiveBorderColor,
           child: Text(
             label,
             style: GoogleFonts.patrickHand(
               fontSize: 12,
               fontWeight: FontWeight.w700,
-              color: isPromotion && isDark ? AppColors.success : color,
+              color: effectiveTextColor,
               letterSpacing: 0.4,
             ),
           ),
@@ -1111,7 +1131,7 @@ class _SketchZoneDivider extends StatelessWidget {
         Expanded(
           child: CustomPaint(
             size: const Size(double.infinity, 10),
-            painter: _WobblyLinePainter(color: color),
+            painter: _WobblyLinePainter(color: effectiveLineColor),
           ),
         ),
       ],
@@ -1194,16 +1214,20 @@ class _SketchPlayerRow extends StatelessWidget {
       shadowOffset = const Offset(2.0, 2.0);
     } else if (isPromotion) {
       cardBg = isDark
-          ? const Color(0xFF064E3B).withValues(alpha: 0.28)
+          ? const Color(0xFF132A25)
           : const Color(0xFFF0FDF4); // Çok hafif yeşil kağıt
-      borderColor = basePencil.withValues(alpha: isDark ? 0.6 : 0.5);
+      borderColor = isDark
+          ? const Color(0xFF34D399).withValues(alpha: 0.7)
+          : basePencil.withValues(alpha: 0.5);
       borderWidth = 1.6;
       shadowOffset = const Offset(1.5, 1.5);
     } else if (isRelegation) {
       cardBg = isDark
-          ? const Color(0xFF7F1D1D).withValues(alpha: 0.25)
+          ? const Color(0xFF2A161B)
           : const Color(0xFFFFF1F2); // Çok hafif kırmızımtırak kağıt
-      borderColor = basePencil.withValues(alpha: isDark ? 0.55 : 0.45);
+      borderColor = isDark
+          ? const Color(0xFFF87171).withValues(alpha: 0.65)
+          : basePencil.withValues(alpha: 0.45);
       borderWidth = 1.5;
       shadowOffset = const Offset(1.5, 1.5);
     } else {
@@ -1305,7 +1329,7 @@ class _SketchPlayerRow extends StatelessWidget {
                   style: GoogleFonts.patrickHand(
                     fontSize: 10,
                     fontWeight: FontWeight.w700,
-                    color: isDark ? AppColors.success : AppColors.successDark,
+                    color: isDark ? const Color(0xFF6EE7B7) : AppColors.successDark,
                   ),
                 )
               else if (isRelegation)
@@ -1314,7 +1338,7 @@ class _SketchPlayerRow extends StatelessWidget {
                   style: GoogleFonts.patrickHand(
                     fontSize: 10,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.error,
+                    color: isDark ? const Color(0xFFFCA5A5) : AppColors.error,
                   ),
                 ),
             ],
@@ -1408,9 +1432,9 @@ class _SketchPlayerRow extends StatelessWidget {
             fontSize: 14,
             fontWeight: FontWeight.w700,
             color: rank <= 10
-                ? (isDark ? AppColors.success : AppColors.successDark)
+                ? (isDark ? const Color(0xFF6EE7B7) : AppColors.successDark)
                 : rank > 32
-                    ? AppColors.error
+                    ? (isDark ? const Color(0xFFFCA5A5) : AppColors.error)
                     : AppColors.gray(context),
           ),
         ),
@@ -1446,27 +1470,45 @@ class LeagueProfileCard extends ConsumerWidget {
 
     String zonePillText;
     Color zonePillBg;
+    Color zonePillBorder;
     Color zonePillColor;
 
     switch (zone) {
       case LeagueZone.promotion:
         zonePillText = '↑ YÜKSELME POTASINDA';
         zonePillBg = isDark
-            ? const Color(0xFF064E3B).withValues(alpha: 0.45)
+            ? const Color(0xFF064E3B)
             : const Color(0xFFDCFCE7);
-        zonePillColor = isDark ? AppColors.success : AppColors.successDark;
+        zonePillBorder = isDark
+            ? const Color(0xFF34D399)
+            : AppColors.success;
+        zonePillColor = isDark
+            ? const Color(0xFFECFDF5)
+            : AppColors.successDark;
         break;
       case LeagueZone.safe:
         zonePillText = '— GÜVENLİ BÖLGE';
-        zonePillBg = AppColors.surfaceSecondaryOf(context);
-        zonePillColor = AppColors.graphite(context);
+        zonePillBg = isDark
+            ? const Color(0xFF1E293B)
+            : AppColors.surfaceSecondaryOf(context);
+        zonePillBorder = isDark
+            ? const Color(0xFF64748B)
+            : AppColors.graphite(context);
+        zonePillColor = isDark
+            ? const Color(0xFFF1F5F9)
+            : AppColors.graphite(context);
         break;
       case LeagueZone.relegation:
         zonePillText = '↓ DÜŞME TEHLİKESİ';
         zonePillBg = isDark
-            ? const Color(0xFF7F1D1D).withValues(alpha: 0.45)
+            ? const Color(0xFF450A0A)
             : AppColors.errorBgLight;
-        zonePillColor = AppColors.error;
+        zonePillBorder = isDark
+            ? const Color(0xFFF87171)
+            : AppColors.error;
+        zonePillColor = isDark
+            ? const Color(0xFFFEF2F2)
+            : AppColors.error;
         break;
     }
 
@@ -1513,7 +1555,7 @@ class LeagueProfileCard extends ConsumerWidget {
                           borderWidth: 1.4,
                           shadowOffset: const Offset(1.0, 1.0),
                           backgroundColor: zonePillBg,
-                          borderColor: zonePillColor,
+                          borderColor: zonePillBorder,
                           child: Text(
                             zonePillText,
                             style: GoogleFonts.patrickHand(

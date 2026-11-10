@@ -1,9 +1,9 @@
 ﻿{
-    "version":  "1.2.8",
-    "build_number":  26,
-    "title":  "Zühtü v1.2.8 El Çizimi Lig Armaları \u0026 Terfi Düzeltmesi 🛡️✨",
-    "changelog":  "10 lig kademesinin tamamı (Demir\u0027den Şampiyonluk\u0027a) özel tasarım el çizimi armalar ve madalyonlarla yenilendi. Lig yükselme tebrik kartının onaylandıktan sonra tekrar görünme sorunu kalıcı olarak düzeltildi.",
-    "apk_url":  "https://raw.githubusercontent.com/goktalha42/daily/main/releases/Zuhtu_v1.2.8_b26.apk",
-    "release_url":  "https://github.com/goktalha42/daily/releases/tag/v1.2.8",
+    "version":  "1.2.9",
+    "build_number":  27,
+    "title":  "Zühtü v1.2.9 Karanlık Tema Rozet \u0026 Lig Kontrast İyileştirmesi 🌙✨",
+    "changelog":  "Karanlık temada Rozetler ve Başarılar ekranındaki kartların, kilitli/açık rozet etiketlerinin ve Lig ekranındaki Yükselme Bölgesi (İlk 10) ile durum rozetlerinin okunabilirliği ve kontrastı tamamen yenilendi.",
+    "apk_url":  "https://raw.githubusercontent.com/goktalha42/daily/main/releases/Zuhtu_v1.2.9_b27.apk",
+    "release_url":  "https://github.com/goktalha42/daily/releases/tag/v1.2.9",
     "force_update":  false
 }
