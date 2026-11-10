@@ -179,7 +179,7 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
               }
             }
           }
-          QueensLogic.validateGrid(_grid, _level.gridSize);
+          QueensLogic.validateGrid(_grid, _level.gridSize, queensPerUnit: _level.queensPerUnit);
         }
         final moves = data['moveCount'] as int?;
         if (moves != null) {
@@ -568,7 +568,7 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
                 _history.clear();
                 _moveCount = 0;
                 // Süre sıfırlanmaz, o ana kadar geçen süre akmaya devam eder.
-                QueensLogic.validateGrid(_grid, _level.gridSize);
+                QueensLogic.validateGrid(_grid, _level.gridSize, queensPerUnit: _level.queensPerUnit);
               });
               _saveSession();
             },
@@ -782,7 +782,7 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
   int _getHintCooldown() {
     if (_lastHintTime == null) return 0;
     final diff = DateTime.now().difference(_lastHintTime!).inSeconds;
-    return (8 - diff).clamp(0, 8);
+    return (4 - diff).clamp(0, 4);
   }
 
   void _clearHighlights() {
@@ -825,8 +825,8 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
     if (_isSolved) return;
 
     final now = DateTime.now();
-    if (_lastHintTime != null && now.difference(_lastHintTime!).inSeconds < 8) {
-      final remaining = 8 - now.difference(_lastHintTime!).inSeconds;
+    if (_lastHintTime != null && now.difference(_lastHintTime!).inSeconds < 4) {
+      final remaining = 4 - now.difference(_lastHintTime!).inSeconds;
       _showHintBanner('Yeni ipucu için $remaining saniye beklemelisin.', isWarning: true);
       return;
     }
@@ -837,13 +837,13 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
     final reqQueens = _level.queensPerUnit;
     final size = _level.gridSize;
 
-    // ADIM 1: Çakışan veya kural hatası yapan vezir varsa kaldır, ✖ koy ve nedenini açıkla
+    // ADIM 1: Çözümde yer almayan veya kural hatası / çakışma yapan yanlış vezirleri kaldır, yerine ✖ koy
     for (var r = 0; r < size; r++) {
       for (var c = 0; c < size; c++) {
         if (_grid[r][c].content == CellContent.queen) {
           final isTrueQueen = _level.solution.any((pt) => pt[0] == r && pt[1] == c);
           if (!isTrueQueen || _grid[r][c].isConflict) {
-            String reason = 'kuralları ihlal ettiği için';
+            String reason = 'kurallara ve tahtanın çözüm mantığına uymadığı';
             QueensCell? touchingQueen;
             for (var dr = -1; dr <= 1; dr++) {
               for (var dc = -1; dc <= 1; dc++) {
@@ -883,6 +883,8 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
                   }
                   if (inReg > reqQueens) {
                     reason = 'kendi renk bölgesindeki $reqQueens vezir kotasını aştığı';
+                  } else {
+                    reason = 'bu bölgenin tek geçerli çözümüyle uyuşmadığı';
                   }
                 }
               }
@@ -895,14 +897,53 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
               _grid[r][c].content = CellContent.cross;
               _checkState();
             });
+            // Hata düzeltildiğinde cooldown'ı hafiflet (hemen ardından ipucu alabilsin)
+            _lastHintTime = now.subtract(const Duration(seconds: 3));
             _highlightCells({math.Point(r, c)});
             _showHintBanner(
-              '${r + 1}. Satır, ${c + 1}. Sütun\'daki vezir $reason için kural hatası oluşturuyordu. Bu vezir kaldırıldı ve yerine ✖ konuldu.',
-              title: '🚨 Kural Hatası Düzeltildi',
+              '${r + 1}. Satır, ${c + 1}. Sütun\'daki vezir $reason için hatalıydı. Bu vezir kaldırıldı ve yerine ✖ konuldu.',
+              title: '🚨 Yanlış Vezir Düzeltildi',
             );
             return;
           }
         }
+      }
+    }
+
+    // ADIM 2: Çözümde gerçek vezir olan bir kareye kullanıcı yanlışlıkla ✖ koymuşsa bunu düzelt ve vezir koy!
+    for (final pt in _level.solution) {
+      final r = pt[0];
+      final c = pt[1];
+      if (_grid[r][c].content == CellContent.cross) {
+        _history.add(_QueensHistoryItem(
+          changes: {math.Point(r, c): CellContent.cross},
+        ));
+        _triggerBoardRipple(r, c);
+        setState(() {
+          _grid[r][c].content = CellContent.queen;
+          // Etrafındaki 8 komşuya otomatik ✖ yerleştir
+          for (var dr = -1; dr <= 1; dr++) {
+            for (var dc = -1; dc <= 1; dc++) {
+              if (dr == 0 && dc == 0) continue;
+              final nr = r + dr;
+              final nc = c + dc;
+              if (nr >= 0 && nr < size && nc >= 0 && nc < size) {
+                if (_grid[nr][nc].content == CellContent.empty) {
+                  _grid[nr][nc].content = CellContent.cross;
+                }
+              }
+            }
+          }
+          _moveCount++;
+          _checkState();
+        });
+        _lastHintTime = now.subtract(const Duration(seconds: 3));
+        _highlightCells({math.Point(r, c)});
+        _showHintBanner(
+          '(${r + 1}. Satır, ${c + 1}. Sütun) karesinde yanlışlıkla ✖ bulunuyordu. Burası ${reqQueens == 2 ? "Master seviyenin çift vezir kuralına" : "bölgeye"} ait kesin bir vezir konumudur! Çarpı kaldırıldı ve doğru vezir yerleştirildi.',
+          title: '✨ Hatalı ✖ Düzeltildi & Vezir Konuldu',
+        );
+        return;
       }
     }
 
@@ -1487,6 +1528,19 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
         _triggerBoardRipple(r, c);
         setState(() {
           _grid[r][c].content = CellContent.queen;
+          // 8-yönlü komşulara otomatik ✖ yerleştir
+          for (var dr = -1; dr <= 1; dr++) {
+            for (var dc = -1; dc <= 1; dc++) {
+              if (dr == 0 && dc == 0) continue;
+              final nr = r + dr;
+              final nc = c + dc;
+              if (nr >= 0 && nr < size && nc >= 0 && nc < size) {
+                if (_grid[nr][nc].content == CellContent.empty) {
+                  _grid[nr][nc].content = CellContent.cross;
+                }
+              }
+            }
+          }
           _moveCount++;
           _checkState();
         });
@@ -1496,11 +1550,30 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
             : 'Tahtanın kısıtlamaları ve renk dengesi incelendiğinde, (${r + 1}. Satır, ${c + 1}. Sütun) karesi bu bölgenin kesin vezir konumudur. Buraya vezir yerleştirildi!';
         _showHintBanner(
           hintText,
-          title: reqQueens == 2 ? '👑 Çift Vezir Stratejisi' : '💡 Stratejik Vezir Konumu',
+          title: reqQueens == 2 ? '👑 Çift Vezir Stratejisi (Master)' : '💡 Stratejik Vezir Konumu',
         );
         return;
       }
     }
+
+    // ADIM 9 (GARANTİ SON ADIM): Tahtadaki tüm vezir ve çarpıları doğrula, varsa fazlalıkları temizle
+    setState(() {
+      for (var r = 0; r < size; r++) {
+        for (var c = 0; c < size; c++) {
+          final isTrueQueen = _level.solution.any((pt) => pt[0] == r && pt[1] == c);
+          if (isTrueQueen) {
+            _grid[r][c].content = CellContent.queen;
+          } else {
+            _grid[r][c].content = CellContent.cross;
+          }
+        }
+      }
+      _checkState();
+    });
+    _showHintBanner(
+      'Tüm vezir konumları ve temas kuralları doğrulandı! Bulmaca çözüldü.',
+      title: '🏆 Harika Çözüm!',
+    );
   }
 
   void _handleWin() async {

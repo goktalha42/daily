@@ -1,9 +1,9 @@
 ﻿{
-    "version":  "1.2.4",
-    "build_number":  22,
-    "title":  "Zühtü v1.2.4 Ana Sayfa El Çizimi Rozet ve Tikler 🎨✨",
-    "changelog":  "Ana sayfadaki 6 oyun kutusunda yer alan yeşil onay tikleri ve BİTTİ etiketleri %100 el çizimi, wobbly hatlı ve taramalı skeç tarzına dönüştürüldü.",
-    "apk_url":  "https://raw.githubusercontent.com/goktalha42/daily/main/releases/Zuhtu_v1.2.4_b22.apk",
-    "release_url":  "https://github.com/goktalha42/daily/releases/tag/v1.2.4",
+    "version":  "1.2.5",
+    "build_number":  23,
+    "title":  "Zühtü v1.2.5 Vezirler Master İpucu \u0026 Çatlak Taç Düzeltmesi 👑✨",
+    "changelog":  "Vezirler oyununda oturum geri yüklendiğinde master seviyesinde vezirlerin çatlak görünmesi sorunu çözüldü. Yanlış vezirlerin ve hatalı ✖ işaretlerinin otomatik tespiti, master seviyesi çift vezir mantıksal çıkarımları ve garantili ipucu rehberi eklendi.",
+    "apk_url":  "https://raw.githubusercontent.com/goktalha42/daily/main/releases/Zuhtu_v1.2.5_b23.apk",
+    "release_url":  "https://github.com/goktalha42/daily/releases/tag/v1.2.5",
     "force_update":  false
 }
