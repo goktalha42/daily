@@ -160,6 +160,7 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> with Widget
     _inputController.dispose();
     _focusNode.dispose();
     _scrollController.dispose();
+    SoundHapticService.instance.stopAll();
     super.dispose();
   }
 

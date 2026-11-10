@@ -266,6 +266,7 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
     _timer?.cancel();
     _highlightTimer?.cancel();
     _rippleController.dispose();
+    SoundHapticService.instance.stopAll();
     super.dispose();
   }
 

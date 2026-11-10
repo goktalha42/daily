@@ -16,6 +16,14 @@ yeni apk ler yaptıkca versiyonu v1.0.1, v1.0.2 olarak değişiklik büyüklüğ
 - **v1.1.9 (Güncel):** Lig skoru ve profil toplam puan hesaplamaları düzeltildi; haftalık önbellek anahtarlarına hafta numarası (`weekId`) eklenerek eski haftadan kalan puanların taşınması önlendi, Vezirler 3 seviye (Kolay+Zor+Master) puanının profilde ve ligde eksiksiz toplanması sağlandı.
 
 
+Ana sayfa için: 
+Haftalık zeka raporu özeti ve karne tasarımlarında el çizimi olmayan kutular var. bu ikiside tamamen el çizimi olsun.
+Haftalık zeka raporu için:
+1-) Bilişsel alan odak dağılımı kısmında vezirler oyunu için kolay, zor ve master seviyelerini ayrı ayrı sayıyor. burada bu sıkıntı değil ama 
+Oyunlar için: 
+Oyunların bazılarında ses, dokunmalara yetişemiyor. Örneğin: sayı yolu oyununda parmağımı sürükleyerek oyunu bitiroyrum ve ana sayfaya dönüyorum ama hala ses efektleri geriden geliyor ve ben ana sayfadayken anca bitmiş oluyor, buna mükemmel biz çözüm bulmamız lazım.
+
+
 
 ---
 

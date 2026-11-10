@@ -154,6 +154,7 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> with WidgetsBin
     _timer?.cancel();
     _guessController.dispose();
     _focusNode.dispose();
+    SoundHapticService.instance.stopAll();
     super.dispose();
   }
 

@@ -36,6 +36,8 @@ class SoundHapticService {
   bool _soundEnabled = true;
   bool _hapticEnabled = true;
   bool _loaded = false;
+  DateTime? _lastTapTime;
+  static const int _minTapIntervalMs = 40; // Çok hızlı sürüklemeler için akustik debouncer (40ms)
 
   bool get soundEnabled => _soundEnabled;
   bool get hapticEnabled => _hapticEnabled;
@@ -83,8 +85,16 @@ class SoundHapticService {
     }
   }
 
-  /// Kalem dokunuşu / hücre seçimi / çarpı işaretleme
+  /// Kalem dokunuşu / hücre seçimi / çarpı işaretleme (hızlı sürüklemede akıllı filtreleme)
   Future<void> playPencilTap() async {
+    final now = DateTime.now();
+    if (_lastTapTime != null &&
+        now.difference(_lastTapTime!).inMilliseconds < _minTapIntervalMs) {
+      // Hızlı sürüklemelerde (ör. Sayı Yolu) seslerin birikmesini önle
+      return;
+    }
+    _lastTapTime = now;
+
     if (_hapticEnabled) {
       HapticFeedback.selectionClick();
     }
@@ -95,6 +105,7 @@ class SoundHapticService {
 
   /// Vezir, Güneş/Ay, Harf veya Alan yerleştirme
   Future<void> playSymbolPlace() async {
+    _lastTapTime = DateTime.now();
     if (_hapticEnabled) {
       HapticFeedback.lightImpact();
     }
@@ -105,6 +116,7 @@ class SoundHapticService {
 
   /// Silgi / geri alma (Undo) / temizleme
   Future<void> playErase() async {
+    _lastTapTime = DateTime.now();
     if (_hapticEnabled) {
       HapticFeedback.selectionClick();
     }
@@ -115,6 +127,7 @@ class SoundHapticService {
 
   /// Kural hatası / yanlış tahmin
   Future<void> playError() async {
+    _lastTapTime = DateTime.now();
     if (_hapticEnabled) {
       HapticFeedback.heavyImpact();
     }
@@ -123,14 +136,26 @@ class SoundHapticService {
     }
   }
 
-  /// Oyun kazanıldığında kutlama fanfarı
+  /// Oyun kazanıldığında kutlama fanfarı (Önceki tüm kalem tıklamalarını anında susturur)
   Future<void> playVictory({bool isMilestoneOrPersonalBest = false}) async {
+    _lastTapTime = DateTime.now();
     if (_hapticEnabled) {
       HapticFeedback.heavyImpact();
     }
     if (_soundEnabled) {
+      await stopAll();
       await _triggerSound(isMilestoneOrPersonalBest ? 'milestone' : 'victory');
     }
+  }
+
+  /// Çalan ve kuyrukta bekleyen tüm ses efektlerini anında durdur
+  /// (Örn: Sayı Yolu veya diğer oyunlardan ana sayfaya dönüldüğünde)
+  Future<void> stopAll() async {
+    try {
+      if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+        await _channel.invokeMethod('stopAllSounds');
+      }
+    } catch (_) {}
   }
 
   Future<void> _triggerSound(String type) async {

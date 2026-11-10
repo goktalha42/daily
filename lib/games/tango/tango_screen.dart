@@ -171,6 +171,7 @@ class _TangoScreenState extends ConsumerState<TangoScreen> with WidgetsBindingOb
     _saveSession();
     _timer?.cancel();
     _conflictDebounceTimer?.cancel();
+    SoundHapticService.instance.stopAll();
     super.dispose();
   }
 

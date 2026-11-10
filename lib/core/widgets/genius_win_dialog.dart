@@ -400,6 +400,7 @@ class _GeniusWinDialogState extends State<GeniusWinDialog> {
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   onTap: () {
                     HapticFeedback.lightImpact();
+                    SoundHapticService.instance.stopAll();
                     Navigator.pop(context);
                     Navigator.pop(context);
                   },

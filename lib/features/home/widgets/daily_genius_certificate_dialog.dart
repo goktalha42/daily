@@ -220,12 +220,12 @@ class DailyGeniusCertificateDialog extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
 
-                  Container(
-                    decoration: BoxDecoration(
-                      color: isDark ? AppColors.surfaceSecondaryDark : const Color(0xFFFBF9F3),
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: pencilColor.withValues(alpha: 0.4), width: 1.5),
-                    ),
+                  SketchCard(
+                    backgroundColor: isDark ? AppColors.surfaceSecondaryDark : const Color(0xFFFBF9F3),
+                    borderColor: pencilColor,
+                    borderWidth: 1.8,
+                    borderRadius: 14,
+                    shadowOffset: const Offset(2.5, 2.5),
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                     child: Column(
                       children: GameType.values.map((game) {
@@ -323,13 +323,13 @@ class DailyGeniusCertificateDialog extends StatelessWidget {
                       spacing: 8,
                       runSpacing: 6,
                       children: todayBadges.map((b) {
-                        return Container(
+                        return SketchCard(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: b.color.withValues(alpha: 0.25),
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: pencilColor, width: 1.4),
-                          ),
+                          backgroundColor: b.color.withValues(alpha: 0.25),
+                          borderColor: pencilColor,
+                          borderWidth: 1.4,
+                          borderRadius: 10,
+                          shadowOffset: const Offset(1.5, 1.5),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -360,29 +360,24 @@ class DailyGeniusCertificateDialog extends StatelessWidget {
                   Row(
                     children: [
                       Expanded(
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: () {
-                              HapticFeedback.lightImpact();
-                              Navigator.pop(context);
-                            },
-                            borderRadius: BorderRadius.circular(12),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 11),
-                              decoration: BoxDecoration(
-                                color: isDark ? Colors.white10 : const Color(0xFFE2E8F0),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: pencilColor, width: 2.0),
-                              ),
-                              alignment: Alignment.center,
-                              child: Text(
-                                'Kapat',
-                                style: GoogleFonts.patrickHand(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: pencilColor,
-                                ),
+                        child: SketchCard(
+                          onTap: () {
+                            HapticFeedback.lightImpact();
+                            Navigator.pop(context);
+                          },
+                          padding: const EdgeInsets.symmetric(vertical: 11),
+                          backgroundColor: isDark ? Colors.white10 : const Color(0xFFE2E8F0),
+                          borderColor: pencilColor,
+                          borderWidth: 2.0,
+                          borderRadius: 12,
+                          shadowOffset: const Offset(2.0, 2.0),
+                          child: Center(
+                            child: Text(
+                              'Kapat',
+                              style: GoogleFonts.patrickHand(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: pencilColor,
                               ),
                             ),
                           ),
@@ -390,79 +385,65 @@ class DailyGeniusCertificateDialog extends StatelessWidget {
                       ),
                       const SizedBox(width: 10),
                       Expanded(
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: () async {
-                              HapticFeedback.heavyImpact();
-                              final certText = StringBuffer();
-                              certText.writeln('🎓 ZÜHTÜ GÜNÜN DÂHİSİ SERTİFİKASI (6/6 TAM DENGESİ) ⚡');
-                              certText.writeln('📅 Tarih: $formattedDate');
-                              certText.writeln('🧠 Genel Bilişsel Seviye: $overallIQ IQ (${activeMilestone.title})');
-                              certText.writeln('🏆 Günlük Toplam Skor: $totalDayScore P');
-                              certText.writeln('⏱️ Toplam Çözüm Süresi: ${GameDateUtils.formatGameTime(totalDayDurationMs)}');
-                              if (todayBadges.isNotEmpty) {
-                                certText.writeln('🎖️ Kazanılan Rozetler: ${todayBadges.map((b) => b.title).join(", ")}');
-                              }
-                              certText.writeln('');
-                              certText.writeln('Bugünün 6 bulmacasını da çözüp zeka karnemi tamamladım! 🧠🔥');
-                              certText.writeln('Sen de zihnini sına: 👉 https://zuhtu.app');
+                        child: SketchCard(
+                          onTap: () async {
+                            HapticFeedback.heavyImpact();
+                            final certText = StringBuffer();
+                            certText.writeln('🎓 ZÜHTÜ GÜNÜN DÂHİSİ SERTİFİKASI (6/6 TAM DENGESİ) ⚡');
+                            certText.writeln('📅 Tarih: $formattedDate');
+                            certText.writeln('🧠 Genel Bilişsel Seviye: $overallIQ IQ (${activeMilestone.title})');
+                            certText.writeln('🏆 Günlük Toplam Skor: $totalDayScore P');
+                            certText.writeln('⏱️ Toplam Çözüm Süresi: ${GameDateUtils.formatGameTime(totalDayDurationMs)}');
+                            if (todayBadges.isNotEmpty) {
+                              certText.writeln('🎖️ Kazanılan Rozetler: ${todayBadges.map((b) => b.title).join(", ")}');
+                            }
+                            certText.writeln('');
+                            certText.writeln('Bugünün 6 bulmacasını da çözüp zeka karnemi tamamladım! 🧠🔥');
+                            certText.writeln('Sen de zihnini sına: 👉 https://zuhtu.app');
 
-                              try {
-                                await SharePlus.instance.share(
-                                  ShareParams(
-                                    text: certText.toString(),
-                                    subject: '🎓 Zühtü Günün Dâhisi Sertifikası: $overallIQ IQ',
+                            try {
+                              await SharePlus.instance.share(
+                                ShareParams(
+                                  text: certText.toString(),
+                                  subject: '🎓 Zühtü Günün Dâhisi Sertifikası: $overallIQ IQ',
+                                ),
+                              );
+                            } catch (e) {
+                              await Clipboard.setData(ClipboardData(text: certText.toString()));
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      '🎉 Sertifika metni panoya kopyalandı!',
+                                      style: GoogleFonts.patrickHand(fontSize: 15),
+                                    ),
+                                    behavior: SnackBarBehavior.floating,
+                                    duration: const Duration(seconds: 3),
                                   ),
                                 );
-                              } catch (e) {
-                                await Clipboard.setData(ClipboardData(text: certText.toString()));
-                                if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        '🎉 Sertifika metni panoya kopyalandı!',
-                                        style: GoogleFonts.patrickHand(fontSize: 15),
-                                      ),
-                                      behavior: SnackBarBehavior.floating,
-                                      duration: const Duration(seconds: 3),
-                                    ),
-                                  );
-                                }
                               }
-                            },
-                            borderRadius: BorderRadius.circular(12),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 11),
-                              decoration: BoxDecoration(
-                                color: AppColors.sunYellow,
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: pencilColor, width: 2.2),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: pencilColor.withValues(alpha: 0.18),
-                                    offset: const Offset(2.5, 2.5),
-                                    blurRadius: 0,
-                                  ),
-                                ],
+                            }
+                          },
+                          padding: const EdgeInsets.symmetric(vertical: 11),
+                          backgroundColor: AppColors.sunYellow,
+                          borderColor: pencilColor,
+                          borderWidth: 2.2,
+                          borderRadius: 12,
+                          shadowOffset: const Offset(2.5, 2.5),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.share_rounded, size: 18, color: pencilColor),
+                              const SizedBox(width: 6),
+                              Text(
+                                'Paylaş',
+                                style: GoogleFonts.patrickHand(
+                                  fontSize: 16.5,
+                                  fontWeight: FontWeight.bold,
+                                  color: pencilColor,
+                                ),
                               ),
-                              alignment: Alignment.center,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.share_rounded, size: 18, color: pencilColor),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    'Paylaş',
-                                    style: GoogleFonts.patrickHand(
-                                      fontSize: 16.5,
-                                      fontWeight: FontWeight.bold,
-                                      color: pencilColor,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
+                            ],
                           ),
                         ),
                       ),
@@ -495,13 +476,13 @@ class _CertificateMetricCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SketchCard(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
-      decoration: BoxDecoration(
-        color: bgColor.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: pencilColor, width: 1.8),
-      ),
+      backgroundColor: bgColor.withValues(alpha: 0.3),
+      borderColor: pencilColor,
+      borderWidth: 1.8,
+      borderRadius: 12,
+      shadowOffset: const Offset(2.0, 2.0),
       child: Column(
         children: [
           Text(

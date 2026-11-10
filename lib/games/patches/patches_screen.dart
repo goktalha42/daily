@@ -161,6 +161,7 @@ class _PatchesScreenState extends ConsumerState<PatchesScreen> with WidgetsBindi
     WidgetsBinding.instance.removeObserver(this);
     _saveSession();
     _timer?.cancel();
+    SoundHapticService.instance.stopAll();
     super.dispose();
   }
 

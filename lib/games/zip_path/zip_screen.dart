@@ -128,6 +128,7 @@ class _ZipScreenState extends ConsumerState<ZipScreen> with WidgetsBindingObserv
     WidgetsBinding.instance.removeObserver(this);
     _saveSession();
     _timer?.cancel();
+    SoundHapticService.instance.stopAll();
     super.dispose();
   }
 

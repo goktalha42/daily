@@ -518,7 +518,7 @@ class _HomeBrainHeroCardState extends State<HomeBrainHeroCard>
                             ),
                             const SizedBox(width: 6),
                             if (todayCompleted == 6) ...[
-                              InkWell(
+                              SketchCard(
                                 onTap: () {
                                   DailyGeniusCertificateDialog.show(
                                     context,
@@ -528,40 +528,30 @@ class _HomeBrainHeroCardState extends State<HomeBrainHeroCard>
                                     dailyPlayState: widget.dailyPlayState,
                                   );
                                 },
-                                borderRadius: BorderRadius.circular(8),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.sunYellow,
-                                    borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(color: pencilColor, width: 1.4),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: pencilColor.withValues(alpha: 0.18),
-                                        offset: const Offset(1, 1),
-                                        blurRadius: 0,
+                                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                                backgroundColor: AppColors.sunYellow,
+                                borderColor: pencilColor,
+                                borderWidth: 1.4,
+                                borderRadius: 8,
+                                shadowOffset: const Offset(1.2, 1.2),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    SketchBadgeIcon(
+                                      type: BadgeArtType.centuryLaurel,
+                                      size: 13,
+                                      strokeColor: AppColors.inkBlack,
+                                    ),
+                                    const SizedBox(width: 3),
+                                    Text(
+                                      'Karne',
+                                      style: GoogleFonts.patrickHand(
+                                        fontSize: 11.5,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColors.inkBlack,
                                       ),
-                                    ],
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      SketchBadgeIcon(
-                                        type: BadgeArtType.centuryLaurel,
-                                        size: 13,
-                                        strokeColor: AppColors.inkBlack,
-                                      ),
-                                      const SizedBox(width: 3),
-                                      Text(
-                                        'Karne',
-                                        style: GoogleFonts.patrickHand(
-                                          fontSize: 11.5,
-                                          fontWeight: FontWeight.bold,
-                                          color: AppColors.inkBlack,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                                    ),
+                                  ],
                                 ),
                               ),
                               const SizedBox(width: 4),

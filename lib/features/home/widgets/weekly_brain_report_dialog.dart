@@ -358,13 +358,13 @@ class WeeklyBrainReportDialog extends ConsumerWidget {
                           ],
                         ),
                         const SizedBox(height: 8),
-                        Container(
+                        SketchCard(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: isDark ? AppColors.surfaceDark : Colors.white,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: pencilColor, width: 1.5),
-                          ),
+                          backgroundColor: isDark ? AppColors.surfaceDark : Colors.white,
+                          borderColor: pencilColor,
+                          borderWidth: 1.5,
+                          borderRadius: 8,
+                          shadowOffset: const Offset(1.5, 1.5),
                           child: Wrap(
                             alignment: WrapAlignment.spaceBetween,
                             crossAxisAlignment: WrapCrossAlignment.center,
@@ -470,16 +470,13 @@ class WeeklyBrainReportDialog extends ConsumerWidget {
                   const SizedBox(height: 14),
 
                   // 5. Zühtü Koç Tavsiyesi Post-it Notu
-                  Container(
+                  SketchCard(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-                    decoration: BoxDecoration(
-                      color: isDark ? Colors.white.withValues(alpha: 0.05) : const Color(0xFFF1F5F9),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: pencilColor.withValues(alpha: 0.35),
-                        width: 1.4,
-                      ),
-                    ),
+                    backgroundColor: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+                    borderColor: pencilColor.withValues(alpha: 0.6),
+                    borderWidth: 1.5,
+                    borderRadius: 12,
+                    shadowOffset: const Offset(2.0, 2.0),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -509,128 +506,94 @@ class WeeklyBrainReportDialog extends ConsumerWidget {
                     children: [
                       // Metni Kopyala Butonu
                       Expanded(
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: () async {
-                              HapticFeedback.mediumImpact();
-                              await Clipboard.setData(ClipboardData(text: shareText));
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      '📋 Haftalık zeka raporu kopyalandı!',
-                                      style: GoogleFonts.patrickHand(fontSize: 15),
-                                    ),
-                                    behavior: SnackBarBehavior.floating,
-                                    duration: const Duration(seconds: 3),
+                        child: SketchCard(
+                          onTap: () async {
+                            HapticFeedback.mediumImpact();
+                            await Clipboard.setData(ClipboardData(text: shareText));
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    '📋 Haftalık zeka raporu kopyalandı!',
+                                    style: GoogleFonts.patrickHand(fontSize: 15),
                                   ),
-                                );
-                              }
-                            },
-                            borderRadius: BorderRadius.circular(12),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              decoration: BoxDecoration(
-                                color: AppColors.skyBlue,
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: pencilColor, width: 2.0),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: pencilColor.withValues(alpha: 0.2),
-                                    offset: const Offset(2, 2),
-                                    blurRadius: 0,
-                                  ),
-                                ],
-                              ),
-                              alignment: Alignment.center,
-                              child: FittedBox(
-                                fit: BoxFit.scaleDown,
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    const Icon(Icons.copy_rounded, size: 17, color: AppColors.inkBlack),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      'Kopyala',
-                                      style: GoogleFonts.patrickHand(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: AppColors.inkBlack,
-                                      ),
-                                    ),
-                                  ],
+                                  behavior: SnackBarBehavior.floating,
+                                  duration: const Duration(seconds: 3),
+                                ),
+                              );
+                            }
+                          },
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          backgroundColor: AppColors.skyBlue,
+                          borderColor: pencilColor,
+                          borderWidth: 2.0,
+                          borderRadius: 12,
+                          shadowOffset: const Offset(2.2, 2.2),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.copy_rounded, size: 17, color: AppColors.inkBlack),
+                              const SizedBox(width: 6),
+                              Text(
+                                'Kopyala',
+                                style: GoogleFonts.patrickHand(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.inkBlack,
                                 ),
                               ),
-                            ),
+                            ],
                           ),
                         ),
                       ),
                       const SizedBox(width: 10),
                       // Raporu Paylaş Butonu (WhatsApp / Instagram / Sosyal Medya)
                       Expanded(
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: () async {
-                              HapticFeedback.heavyImpact();
-                              try {
-                                await SharePlus.instance.share(
-                                  ShareParams(
-                                    text: shareText,
-                                    subject: '📊 Zühtü Haftalık Zeka Raporum: @$nickname',
+                        child: SketchCard(
+                          onTap: () async {
+                            HapticFeedback.heavyImpact();
+                            try {
+                              await SharePlus.instance.share(
+                                ShareParams(
+                                  text: shareText,
+                                  subject: '📊 Zühtü Haftalık Zeka Raporum: @$nickname',
+                                ),
+                              );
+                            } catch (e) {
+                              debugPrint('[WeeklyBrainReportDialog] Paylaşım hatası: $e');
+                              await Clipboard.setData(ClipboardData(text: shareText));
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      'Haftalık rapor metni panoya kopyalandı!',
+                                      style: GoogleFonts.patrickHand(fontSize: 15),
+                                    ),
                                   ),
                                 );
-                              } catch (e) {
-                                debugPrint('[WeeklyBrainReportDialog] Paylaşım hatası: $e');
-                                await Clipboard.setData(ClipboardData(text: shareText));
-                                if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        'Haftalık rapor metni panoya kopyalandı!',
-                                        style: GoogleFonts.patrickHand(fontSize: 15),
-                                      ),
-                                    ),
-                                  );
-                                }
                               }
-                            },
-                            borderRadius: BorderRadius.circular(12),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              decoration: BoxDecoration(
-                                color: AppColors.sunYellow,
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: pencilColor, width: 2.2),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: pencilColor.withValues(alpha: 0.25),
-                                    offset: const Offset(2.5, 2.5),
-                                    blurRadius: 0,
-                                  ),
-                                ],
-                              ),
-                              alignment: Alignment.center,
-                              child: FittedBox(
-                                fit: BoxFit.scaleDown,
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    const Icon(Icons.share_rounded, size: 18, color: AppColors.inkBlack),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      'Paylaş',
-                                      style: GoogleFonts.patrickHand(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: AppColors.inkBlack,
-                                      ),
-                                    ),
-                                  ],
+                            }
+                          },
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          backgroundColor: AppColors.sunYellow,
+                          borderColor: pencilColor,
+                          borderWidth: 2.2,
+                          borderRadius: 12,
+                          shadowOffset: const Offset(2.5, 2.5),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.share_rounded, size: 18, color: AppColors.inkBlack),
+                              const SizedBox(width: 6),
+                              Text(
+                                'Paylaş',
+                                style: GoogleFonts.patrickHand(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.inkBlack,
                                 ),
                               ),
-                            ),
+                            ],
                           ),
                         ),
                       ),
@@ -640,30 +603,24 @@ class WeeklyBrainReportDialog extends ConsumerWidget {
                   const SizedBox(height: 10),
 
                   // Kapat Butonu
-                  Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: () {
-                        HapticFeedback.lightImpact();
-                        Navigator.pop(context);
-                      },
-                      borderRadius: BorderRadius.circular(12),
-                      child: Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(vertical: 11),
-                        decoration: BoxDecoration(
-                          color: isDark ? Colors.white10 : const Color(0xFFE2E8F0),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: pencilColor, width: 1.8),
-                        ),
-                        alignment: Alignment.center,
-                        child: Text(
-                          'Kapat',
-                          style: GoogleFonts.patrickHand(
-                            fontSize: 15.5,
-                            fontWeight: FontWeight.bold,
-                            color: pencilColor,
-                          ),
+                  SketchCard(
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      Navigator.pop(context);
+                    },
+                    padding: const EdgeInsets.symmetric(vertical: 11),
+                    backgroundColor: isDark ? Colors.white10 : const Color(0xFFE2E8F0),
+                    borderColor: pencilColor,
+                    borderWidth: 1.8,
+                    borderRadius: 12,
+                    shadowOffset: const Offset(2.0, 2.0),
+                    child: Center(
+                      child: Text(
+                        'Kapat',
+                        style: GoogleFonts.patrickHand(
+                          fontSize: 15.5,
+                          fontWeight: FontWeight.bold,
+                          color: pencilColor,
                         ),
                       ),
                     ),
@@ -731,34 +688,81 @@ class _CognitiveDomainBar extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 3),
-        Container(
+        SizedBox(
           height: 12,
-          decoration: BoxDecoration(
-            color: isDark ? AppColors.surfaceSecondaryDark : const Color(0xFFE2E8F0),
-            borderRadius: BorderRadius.circular(6),
-            border: Border.all(color: pencilColor, width: 1.4),
-          ),
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final fillW = constraints.maxWidth * clampedRatio;
-              if (fillW <= 0) return const SizedBox.shrink();
-
-              return Align(
-                alignment: Alignment.centerLeft,
-                child: Container(
-                  width: fillW,
-                  height: double.infinity,
-                  decoration: BoxDecoration(
-                    color: barColor,
-                    borderRadius: BorderRadius.circular(4.5),
-                  ),
-                ),
-              );
-            },
+          child: CustomPaint(
+            painter: _HandDrawnDomainBarPainter(
+              ratio: clampedRatio,
+              barColor: barColor,
+              trackColor: isDark ? AppColors.surfaceSecondaryDark : const Color(0xFFE2E8F0),
+              strokeColor: pencilColor,
+            ),
           ),
         ),
       ],
     );
+  }
+}
+
+/// Bilişsel Alan Odak Dağılımı Çubuğu (El Çizimi & Gölgeli)
+class _HandDrawnDomainBarPainter extends CustomPainter {
+  final double ratio;
+  final Color barColor;
+  final Color trackColor;
+  final Color strokeColor;
+
+  _HandDrawnDomainBarPainter({
+    required this.ratio,
+    required this.barColor,
+    required this.trackColor,
+    required this.strokeColor,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (size.width <= 0 || size.height <= 0) return;
+    final r = Rect.fromLTWH(0, 0, size.width, size.height);
+    final trackRRect = RRect.fromRectAndRadius(r, const Radius.circular(6));
+
+    // Arka plan zemin
+    final bgPaint = Paint()
+      ..color = trackColor
+      ..style = PaintingStyle.fill;
+    canvas.drawRRect(trackRRect, bgPaint);
+
+    // İlerleme dolgusu
+    if (ratio > 0.0) {
+      final fillW = (size.width * ratio).clamp(0.0, size.width);
+      final fillR = Rect.fromLTWH(0, 0, fillW, size.height);
+      final fillRRect = RRect.fromRectAndRadius(fillR, const Radius.circular(5.5));
+      final fillPaint = Paint()
+        ..color = barColor
+        ..style = PaintingStyle.fill;
+      canvas.drawRRect(fillRRect, fillPaint);
+    }
+
+    // El çizimi hafif organik kara kalem dış çerçevesi
+    final strokePaint = Paint()
+      ..color = strokeColor
+      ..strokeWidth = 1.3
+      ..style = PaintingStyle.stroke;
+    canvas.drawRRect(trackRRect, strokePaint);
+
+    // İkinci serbest el eskiz çizgisi
+    final draftPaint = Paint()
+      ..color = strokeColor.withValues(alpha: 0.3)
+      ..strokeWidth = 0.8
+      ..style = PaintingStyle.stroke;
+    final draftR = Rect.fromLTWH(0.5, 0.5, size.width - 1.0, size.height - 1.0);
+    canvas.drawRRect(RRect.fromRectAndRadius(draftR, const Radius.circular(5)), draftPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _HandDrawnDomainBarPainter oldDelegate) {
+    return oldDelegate.ratio != ratio ||
+        oldDelegate.barColor != barColor ||
+        oldDelegate.trackColor != trackColor ||
+        oldDelegate.strokeColor != strokeColor;
   }
 }
 
@@ -781,13 +785,13 @@ class _SummaryBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SketchCard(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
-      decoration: BoxDecoration(
-        color: bgColor.withValues(alpha: isDark ? 0.22 : 0.28),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: pencilColor, width: 1.6),
-      ),
+      backgroundColor: bgColor.withValues(alpha: isDark ? 0.22 : 0.28),
+      borderColor: pencilColor,
+      borderWidth: 1.6,
+      borderRadius: 12,
+      shadowOffset: const Offset(2.0, 2.0),
       child: Column(
         children: [
           Icon(icon, size: 18, color: pencilColor),
