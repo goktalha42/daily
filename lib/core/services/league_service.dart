@@ -267,14 +267,15 @@ class LeagueState {
     String? weekId,
     LeagueLevel? pendingPromotion,
     LeagueLevel? pendingRelegation,
+    bool clearPendingChanges = false,
     bool? isSyncing,
   }) {
     return LeagueState(
       currentLevel: currentLevel ?? this.currentLevel,
       players: players ?? this.players,
       weekId: weekId ?? this.weekId,
-      pendingPromotion: pendingPromotion ?? this.pendingPromotion,
-      pendingRelegation: pendingRelegation ?? this.pendingRelegation,
+      pendingPromotion: clearPendingChanges ? null : (pendingPromotion ?? this.pendingPromotion),
+      pendingRelegation: clearPendingChanges ? null : (pendingRelegation ?? this.pendingRelegation),
       isSyncing: isSyncing ?? this.isSyncing,
     );
   }
@@ -332,6 +333,8 @@ class LeagueNotifier extends StateNotifier<LeagueState> {
   final DailyPlayState Function()? dailyPlayGetter;
   DailyPlayState? dailyPlay;
   bool _isInitialized = false;
+  Future<void>? _initFuture;
+  int? _dismissedTransitionLevelIndex;
 
   LeagueNotifier([
     this.leaderboard,
@@ -346,7 +349,7 @@ class LeagueNotifier extends StateNotifier<LeagueState> {
           players: [],
           weekId: _currentWeekId(),
         )) {
-    _initLeague();
+    _initFuture = _initLeague();
   }
 
   String get userNickname => userNicknameGetter?.call() ?? _userNickname;
@@ -393,6 +396,7 @@ class LeagueNotifier extends StateNotifier<LeagueState> {
         savedLevel = levelIndex < LeagueLevel.values.length
             ? LeagueLevel.values[levelIndex]
             : LeagueLevel.iron;
+        _dismissedTransitionLevelIndex = decoded['dismissedTransitionLevelIndex'] as int?;
 
         lastRank = decoded['lastRank'] as int?;
 
@@ -459,6 +463,13 @@ class LeagueNotifier extends StateNotifier<LeagueState> {
           savedLevel = LeagueLevel.bronze;
           pendingPromotion = LeagueLevel.bronze;
         }
+      }
+
+      // Eğer kullanıcı bu lig seviyesindeki geçiş bildirimini daha önce onaylayıp kapattıysa,
+      // lig seviyesi tekrar değişene kadar bildirimi bir daha gösterme!
+      if (_dismissedTransitionLevelIndex == savedLevel.index) {
+        pendingPromotion = null;
+        pendingRelegation = null;
       }
 
       if (savedPlayers.isNotEmpty) {
@@ -732,7 +743,7 @@ class LeagueNotifier extends StateNotifier<LeagueState> {
   /// Gün değişimi veya yeni haftaya geçiş kontrolü
   Future<void> checkWeekTransition() async {
     if (!_isInitialized) {
-      await _initLeague();
+      await (_initFuture ??= _initLeague());
       return;
     }
     final currentWeekId = _currentWeekId();
@@ -831,10 +842,8 @@ class LeagueNotifier extends StateNotifier<LeagueState> {
 
   /// Bekleyen yükselme/düşme bildirimini temizle
   Future<void> clearPendingLeagueChange() async {
-    state = state.copyWith(
-      pendingPromotion: null,
-      pendingRelegation: null,
-    );
+    _dismissedTransitionLevelIndex = state.currentLevel.index;
+    state = state.copyWith(clearPendingChanges: true);
     await _saveState();
   }
 
@@ -845,6 +854,9 @@ class LeagueNotifier extends StateNotifier<LeagueState> {
       final json = state.toJson();
       if (state.userPlayer != null) {
         json['lastRank'] = state.userRank;
+      }
+      if (_dismissedTransitionLevelIndex != null) {
+        json['dismissedTransitionLevelIndex'] = _dismissedTransitionLevelIndex;
       }
       await prefs.setString(_prefKey, jsonEncode(json));
     } catch (_) {}

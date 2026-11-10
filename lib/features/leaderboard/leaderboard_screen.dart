@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/date_utils.dart';
 import '../../core/widgets/sketch_decorations.dart';
+import '../../core/widgets/sketch_league_emblems.dart';
 import '../../core/services/league_service.dart';
 import '../home/home_screen.dart';
 import '../../games/common/base_game.dart';
@@ -154,11 +155,11 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(
-                        currentTier.emoji,
-                        style: const TextStyle(fontSize: 15),
+                      SketchLeagueEmblem(
+                        level: currentTier,
+                        size: 20,
                       ),
-                      const SizedBox(width: 5),
+                      const SizedBox(width: 6),
                       Text(
                         '${currentTier.displayName.toUpperCase()} LİGİ',
                         style: GoogleFonts.patrickHand(

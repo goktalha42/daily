@@ -1,9 +1,9 @@
 ﻿{
-    "version":  "1.2.7",
-    "build_number":  25,
-    "title":  "Zühtü v1.2.7 Sıralama \u0026 Lig Stabilizasyonu ⚡",
-    "changelog":  "Sıralama sayfasında oyunlar ve dönemler (Bugün, Haftalık, Aylık, Genel) arasında geçiş yaparken sağ üstteki lig rozetinin anlık Demir Ligi\u0027ne dönme sorunu ve sol üstteki Canlı Sunucu durum yazısının sürekli Güncelleniyor olarak değişmesi giderildi.",
-    "apk_url":  "https://raw.githubusercontent.com/goktalha42/daily/main/releases/Zuhtu_v1.2.7_b25.apk",
-    "release_url":  "https://github.com/goktalha42/daily/releases/tag/v1.2.7",
+    "version":  "1.2.8",
+    "build_number":  26,
+    "title":  "Zühtü v1.2.8 El Çizimi Lig Armaları \u0026 Terfi Düzeltmesi 🛡️✨",
+    "changelog":  "10 lig kademesinin tamamı (Demir\u0027den Şampiyonluk\u0027a) özel tasarım el çizimi armalar ve madalyonlarla yenilendi. Lig yükselme tebrik kartının onaylandıktan sonra tekrar görünme sorunu kalıcı olarak düzeltildi.",
+    "apk_url":  "https://raw.githubusercontent.com/goktalha42/daily/main/releases/Zuhtu_v1.2.8_b26.apk",
+    "release_url":  "https://github.com/goktalha42/daily/releases/tag/v1.2.8",
     "force_update":  false
 }

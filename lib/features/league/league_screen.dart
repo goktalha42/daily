@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../core/services/league_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/sketch_decorations.dart';
+import '../../core/widgets/sketch_league_emblems.dart';
 
 // ============================================================================
 // ANA LİG EKRANI (Hand-Drawn Sketch Theme)
@@ -192,8 +193,13 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen>
                 padding: const EdgeInsets.fromLTRB(20, 10, 20, 4),
                 child: Row(
                   children: [
+                    SketchLeagueEmblem(
+                      level: level,
+                      size: 24,
+                    ),
+                    const SizedBox(width: 7),
                     Text(
-                      '${level.emoji} ${level.displayName} Ligi Sıralaması',
+                      '${level.displayName} Ligi Sıralaması',
                       style: GoogleFonts.patrickHand(
                         fontSize: 19,
                         fontWeight: FontWeight.w700,
@@ -302,11 +308,12 @@ class _SketchLeagueTopBadge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            level.emoji,
-            style: const TextStyle(fontSize: 16),
+          SketchLeagueEmblem(
+            level: level,
+            size: 20,
+            strokeColor: AppColors.inkBlack,
           ),
-          const SizedBox(width: 5),
+          const SizedBox(width: 6),
           Text(
             level.displayName.toUpperCase(),
             style: GoogleFonts.patrickHand(
@@ -406,14 +413,13 @@ class _SketchLeagueStepItem extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            level.emoji,
-            style: TextStyle(
-              fontSize: 16,
-              color: isCompleted || isCurrent ? null : (isDark ? Colors.white38 : Colors.black45),
-            ),
+          SketchLeagueEmblem(
+            level: level,
+            size: 24,
+            isLocked: !isCompleted && !isCurrent,
+            strokeColor: isCurrent ? AppColors.inkBlack : null,
           ),
-          const SizedBox(width: 5),
+          const SizedBox(width: 6),
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -567,20 +573,12 @@ class _SketchMainLeagueCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ─── ÜST SATIR: Skeç kutu içinde emoji + Başlık & Sıra ───────
+          // ─── ÜST SATIR: El çizimi lig madalyonu + Başlık & Sıra ───────
           Row(
             children: [
-              // El çizimi çapraz X'li kutu içine yerleşen lig emojisi
-              SketchPlaceholderBox(
-                width: 58,
-                height: 58,
-                fillColor: AppColors.sunYellow,
-                lineColor: AppColors.pencil(context),
-                borderRadius: 10,
-                child: Text(
-                  level.emoji,
-                  style: const TextStyle(fontSize: 28),
-                ),
+              SketchLeagueCrestMedallion(
+                level: level,
+                size: 62,
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -617,12 +615,36 @@ class _SketchMainLeagueCard extends StatelessWidget {
                       ),
                     ),
                     if (!level.isMax && level.next != null)
-                      Text(
-                        'Hedef: ${level.next!.emoji} ${level.next!.displayName} Ligi',
-                        style: GoogleFonts.patrickHand(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.gray(context),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 2),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'Hedef: ',
+                              style: GoogleFonts.patrickHand(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.gray(context),
+                              ),
+                            ),
+                            SketchLeagueEmblem(
+                              level: level.next!,
+                              size: 16,
+                            ),
+                            const SizedBox(width: 4),
+                            Flexible(
+                              child: Text(
+                                '${level.next!.displayName} Ligi',
+                                overflow: TextOverflow.ellipsis,
+                                style: GoogleFonts.patrickHand(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.gray(context),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                   ],
@@ -1209,11 +1231,13 @@ class _SketchPlayerRow extends StatelessWidget {
 
           const SizedBox(width: 8),
 
-          // ─── 2. EL ÇİZİMİ AVATAR KUTUSU ─────────────────────────────
-          SketchPlaceholderBox(
-            width: 36,
-            height: 36,
-            fillColor: isUser
+          // ─── 2. EL ÇİZİMİ LİG ARMA KUTUSU ────────────────────────────
+          SketchCard(
+            padding: const EdgeInsets.all(6),
+            borderRadius: 8,
+            borderWidth: 1.5,
+            shadowOffset: const Offset(1.5, 1.5),
+            backgroundColor: isUser
                 ? AppColors.sunYellow
                 : isTop3
                     ? (rank == 1
@@ -1222,12 +1246,11 @@ class _SketchPlayerRow extends StatelessWidget {
                             ? const Color(0xFFCBD5E1)
                             : const Color(0xFFFED7AA))
                     : AppColors.surfaceSecondaryOf(context),
-            lineColor: basePencil,
-            lineWidth: 1.6,
-            borderRadius: 7,
-            child: Text(
-              isUser ? '😎' : _avatarEmoji(player.userName),
-              style: const TextStyle(fontSize: 17),
+            borderColor: basePencil,
+            child: SketchLeagueEmblem(
+              level: league.currentLevel,
+              size: 22,
+              strokeColor: (isUser || isTop3) ? AppColors.inkBlack : null,
             ),
           ),
 
@@ -1395,14 +1418,6 @@ class _SketchPlayerRow extends StatelessWidget {
     );
   }
 
-  String _avatarEmoji(String name) {
-    const emojis = [
-      '🦊', '🐼', '🦁', '🐯', '🦅', '🦉', '🦋',
-      '🐉', '🦚', '🦜', '🦈', '🐬', '🦞', '🦝'
-    ];
-    return emojis[name.length % emojis.length];
-  }
-
   String _formatScore(int score) {
     if (score >= 1000) {
       return '${(score / 1000).toStringAsFixed(score % 1000 == 0 ? 0 : 1)}K';
@@ -1469,16 +1484,9 @@ class LeagueProfileCard extends ConsumerWidget {
           // Başlık satırı
           Row(
             children: [
-              SketchPlaceholderBox(
-                width: 48,
-                height: 48,
-                fillColor: AppColors.sunYellow,
-                lineColor: AppColors.pencil(context),
-                borderRadius: 8,
-                child: Text(
-                  level.emoji,
-                  style: const TextStyle(fontSize: 24),
-                ),
+              SketchLeagueCrestMedallion(
+                level: level,
+                size: 52,
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -1647,11 +1655,11 @@ class _SketchLeagueTransitionBanner extends StatelessWidget {
 
     final bgColor = isPromotion ? const Color(0xFFDCFCE7) : AppColors.errorBgLight;
     final title = isPromotion
-        ? 'TEBRİKLER! BİR ÜST LİGE YÜKSELDİN! 🎉'
-        : 'DİKKAT! BİR ALT LİGE GERİLEDİN ⚠️';
+        ? 'TEBRİKLER! BİR ÜST LİGE YÜKSELDİN!'
+        : 'DİKKAT! BİR ALT LİGE GERİLEDİN';
     final desc = isPromotion
-        ? 'Geçen haftayı ilk 10 sırada tamamlayarak ${level.emoji} ${level.displayName} Ligine terfi ettin!'
-        : 'Geçen haftayı son 10 sırada bitirdiğin için ${level.emoji} ${level.displayName} Ligine geriledin. Bu hafta puanları topla ve geri dön!';
+        ? 'Geçen haftayı ilk 10 sırada tamamlayarak ${level.displayName} Ligine terfi ettin!'
+        : 'Geçen haftayı son 10 sırada bitirdiğin için ${level.displayName} Ligine geriledin. Bu hafta puanları topla ve geri dön!';
 
     return SketchCard(
       enableHatching: true,
@@ -1667,18 +1675,10 @@ class _SketchLeagueTransitionBanner extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              if (isPromotion)
-                const SketchDoodleCrown(
-                  size: 26,
-                  color: AppColors.pencilBlack,
-                  fillColor: AppColors.sunYellow,
-                )
-              else
-                const Icon(
-                  Icons.warning_amber_rounded,
-                  size: 26,
-                  color: AppColors.error,
-                ),
+              SketchLeagueCrestMedallion(
+                level: level,
+                size: 38,
+              ),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
@@ -1713,7 +1713,7 @@ class _SketchLeagueTransitionBanner extends StatelessWidget {
               shadowOffset: const Offset(1.5, 1.5),
               backgroundColor: isPromotion ? AppColors.sunYellow : Colors.white,
               child: Text(
-                isPromotion ? 'Harika! 🚀' : 'Anladım 👍',
+                isPromotion ? 'Harika!' : 'Anladım',
                 style: GoogleFonts.patrickHand(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
