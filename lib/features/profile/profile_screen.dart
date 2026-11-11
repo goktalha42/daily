@@ -240,7 +240,7 @@ class ProfileScreen extends ConsumerWidget {
                                 SketchPlaceholderBox(
                                   width: 64,
                                   height: 64,
-                                  fillColor: currentAvatar.accentColor.withAlpha(isDark ? 80 : 110),
+                                  fillColor: currentAvatar.accentColor.withAlpha(isDark ? 95 : 130),
                                   lineColor: headerPencil,
                                   borderRadius: 12,
                                   child: Center(

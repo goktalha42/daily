@@ -610,7 +610,7 @@ class _SketchMainLeagueCard extends ConsumerWidget {
                         Container(
                           padding: const EdgeInsets.all(3),
                           decoration: BoxDecoration(
-                            color: userAvatar.accentColor.withAlpha(isDark ? 80 : 110),
+                            color: userAvatar.accentColor.withAlpha(isDark ? 95 : 130),
                             borderRadius: BorderRadius.circular(6),
                             border: Border.all(color: AppColors.pencil(context), width: 1.2),
                           ),
@@ -1285,17 +1285,17 @@ class _SketchPlayerRow extends ConsumerWidget {
             borderRadius: 8,
             borderWidth: 1.5,
             shadowOffset: const Offset(1.5, 1.5),
-            backgroundColor: isUser
-                ? AppColors.sunYellow
-                : avatarModel.accentColor.withAlpha(isDark ? 60 : 75),
-            borderColor: isUser ? AppColors.pencilBlack : basePencil,
+            backgroundColor: avatarModel.accentColor.withAlpha(
+              isUser ? (isDark ? 95 : 130) : (isDark ? 65 : 85),
+            ),
+            borderColor: basePencil,
             child: SizedBox(
               width: 24,
               height: 24,
               child: Center(
                 child: avatarModel.buildWidget(
                   size: 20,
-                  tintColor: isUser ? AppColors.pencilBlack : basePencil,
+                  tintColor: basePencil,
                 ),
               ),
             ),

@@ -2036,3 +2036,165 @@ class _DoodlePuzzlePainter extends CustomPainter {
   bool shouldRepaint(covariant _DoodlePuzzlePainter oldDelegate) =>
       oldDelegate.color != color || oldDelegate.fillColor != fillColor;
 }
+
+/// %100 El Çizimi Küçük Şimşek Simgesi
+class SketchDoodleBolt extends StatelessWidget {
+  final double size;
+  final Color color;
+  final Color fillColor;
+
+  const SketchDoodleBolt({
+    super.key,
+    this.size = 16,
+    this.color = AppColors.pencilBlack,
+    this.fillColor = AppColors.sunYellow,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: size,
+      height: size,
+      child: CustomPaint(
+        painter: _DoodleBoltPainter(color: color, fillColor: fillColor),
+      ),
+    );
+  }
+}
+
+class _DoodleBoltPainter extends CustomPainter {
+  final Color color;
+  final Color fillColor;
+
+  const _DoodleBoltPainter({
+    required this.color,
+    required this.fillColor,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
+    final path = Path()
+      ..moveTo(w * 0.56, h * 0.06)
+      ..lineTo(w * 0.18, h * 0.56)
+      ..lineTo(w * 0.48, h * 0.56)
+      ..lineTo(w * 0.40, h * 0.94)
+      ..lineTo(w * 0.82, h * 0.42)
+      ..lineTo(w * 0.52, h * 0.42)
+      ..close();
+
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = fillColor
+        ..style = PaintingStyle.fill,
+    );
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = color
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.4
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _DoodleBoltPainter oldDelegate) =>
+      oldDelegate.color != color || oldDelegate.fillColor != fillColor;
+}
+
+/// %100 El Çizimi Küçük Pano / Karne Listesi Simgesi
+class SketchDoodleClipboard extends StatelessWidget {
+  final double size;
+  final Color color;
+  final Color fillColor;
+
+  const SketchDoodleClipboard({
+    super.key,
+    this.size = 16,
+    this.color = AppColors.pencilBlack,
+    this.fillColor = const Color(0xFFFEF3C7),
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: size,
+      height: size,
+      child: CustomPaint(
+        painter: _DoodleClipboardPainter(color: color, fillColor: fillColor),
+      ),
+    );
+  }
+}
+
+class _DoodleClipboardPainter extends CustomPainter {
+  final Color color;
+  final Color fillColor;
+
+  const _DoodleClipboardPainter({
+    required this.color,
+    required this.fillColor,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
+    final stroke = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.4
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    final boardRect = RRect.fromRectAndRadius(
+      Rect.fromLTRB(w * 0.16, h * 0.18, w * 0.84, h * 0.92),
+      Radius.circular(w * 0.12),
+    );
+    canvas.drawRRect(
+      boardRect,
+      Paint()
+        ..color = fillColor
+        ..style = PaintingStyle.fill,
+    );
+    canvas.drawRRect(boardRect, stroke);
+
+    // Üst mandal
+    final clipRect = RRect.fromRectAndRadius(
+      Rect.fromLTRB(w * 0.34, h * 0.08, w * 0.66, h * 0.24),
+      Radius.circular(w * 0.06),
+    );
+    canvas.drawRRect(
+      clipRect,
+      Paint()
+        ..color = AppColors.sunYellow
+        ..style = PaintingStyle.fill,
+    );
+    canvas.drawRRect(clipRect, stroke);
+
+    // Mini onay satırları
+    canvas.drawLine(
+      Offset(w * 0.30, h * 0.44),
+      Offset(w * 0.70, h * 0.44),
+      stroke,
+    );
+    canvas.drawLine(
+      Offset(w * 0.30, h * 0.62),
+      Offset(w * 0.66, h * 0.62),
+      stroke,
+    );
+    canvas.drawLine(
+      Offset(w * 0.30, h * 0.78),
+      Offset(w * 0.56, h * 0.78),
+      stroke,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _DoodleClipboardPainter oldDelegate) =>
+      oldDelegate.color != color || oldDelegate.fillColor != fillColor;
+}

@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../features/profile/profile_screen.dart' show GameSketchThumbnail;
 import '../../games/common/base_game.dart';
 import '../models/user_avatar.dart';
 import '../services/daily_play_service.dart';
@@ -249,8 +250,11 @@ class _DailySocialShareDialogState extends ConsumerState<DailySocialShareDialog>
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    const Text('🧠', style: TextStyle(fontSize: 14)),
-                                    const SizedBox(width: 4),
+                                    const SketchDoodleBrain(
+                                      size: 16,
+                                      color: AppColors.inkBlack,
+                                    ),
+                                    const SizedBox(width: 5),
                                     Text(
                                       'ZÜHTÜ GÜNÜN KARNESİ',
                                       style: GoogleFonts.patrickHand(
@@ -281,20 +285,18 @@ class _DailySocialShareDialogState extends ConsumerState<DailySocialShareDialog>
                             borderColor: pencilColor,
                             child: Row(
                               children: [
-                                Container(
-                                  width: 38,
-                                  height: 38,
-                                  decoration: BoxDecoration(
-                                    color: userAvatar.accentColor
-                                        .withValues(alpha: 0.35),
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                        color: pencilColor, width: 1.8),
-                                  ),
-                                  alignment: Alignment.center,
-                                  child: Text(
-                                    userAvatar.emoji,
-                                    style: const TextStyle(fontSize: 20),
+                                SketchPlaceholderBox(
+                                  width: 40,
+                                  height: 40,
+                                  fillColor: userAvatar.accentColor
+                                      .withAlpha(isDark ? 95 : 130),
+                                  lineColor: pencilColor,
+                                  borderRadius: 10,
+                                  child: Center(
+                                    child: userAvatar.buildWidget(
+                                      size: 23,
+                                      tintColor: pencilColor,
+                                    ),
                                   ),
                                 ),
                                 const SizedBox(width: 8),
@@ -453,16 +455,29 @@ class _DailySocialShareDialogState extends ConsumerState<DailySocialShareDialog>
                                         ],
                                       ),
                                       const SizedBox(height: 2),
-                                      Text(
-                                        '⚡ Günün zihin jimnastiğini tamamladım, kafam pırıl pırıl!',
-                                        style: GoogleFonts.patrickHand(
-                                          fontSize: 12.5,
-                                          fontWeight: FontWeight.w700,
-                                          color: isDark
-                                              ? AppColors.pencilWhite
-                                              : AppColors.pencilGraphite,
-                                          height: 1.15,
-                                        ),
+                                      Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          SketchDoodleBolt(
+                                            size: 14,
+                                            color: pencilColor,
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Expanded(
+                                            child: Text(
+                                              'Günün zihin jimnastiğini tamamladım, kafam pırıl pırıl!',
+                                              style: GoogleFonts.patrickHand(
+                                                fontSize: 12.5,
+                                                fontWeight: FontWeight.w700,
+                                                color: isDark
+                                                    ? AppColors.pencilWhite
+                                                    : AppColors.pencilGraphite,
+                                                height: 1.15,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ],
                                   ),
@@ -474,14 +489,23 @@ class _DailySocialShareDialogState extends ConsumerState<DailySocialShareDialog>
                           const SizedBox(height: 10),
 
                           // 6 BULMACA DURUMU (2 SÜTUNLU EL ÇİZİMİ IZGARA)
-                          Text(
-                            '📋 GÜNÜN 6 BULMACASI ($completedCount/6)',
-                            style: GoogleFonts.patrickHand(
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
-                              color: pencilColor,
-                              letterSpacing: 0.5,
-                            ),
+                          Row(
+                            children: [
+                              SketchDoodleClipboard(
+                                size: 15,
+                                color: pencilColor,
+                              ),
+                              const SizedBox(width: 5),
+                              Text(
+                                'GÜNÜN 6 BULMACASI ($completedCount/6)',
+                                style: GoogleFonts.patrickHand(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                  color: pencilColor,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ],
                           ),
                           const SizedBox(height: 4),
 
@@ -582,11 +606,15 @@ class _DailySocialShareDialogState extends ConsumerState<DailySocialShareDialog>
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const Text('🎯', style: TextStyle(fontSize: 14)),
-                                const SizedBox(width: 5),
+                                SketchDoodleTarget(
+                                  size: 16,
+                                  color: pencilColor,
+                                  fillColor: const Color(0xFF67E8F9),
+                                ),
+                                const SizedBox(width: 6),
                                 Flexible(
                                   child: Text(
-                                    'Beni geçebilir misin? 😉 Zühtü\'ye gel kapışalım!',
+                                    'Beni geçebilir misin? Zühtü\'ye gel kapışalım!',
                                     textAlign: TextAlign.center,
                                     style: GoogleFonts.patrickHand(
                                       fontSize: 12.5,
@@ -599,19 +627,31 @@ class _DailySocialShareDialogState extends ConsumerState<DailySocialShareDialog>
                             ),
                           ),
 
-                          const SizedBox(height: 4),
-                          Center(
-                            child: Text(
-                              '👉 zuhtu.app • Her Gece 00:00\'da Yeni Bulmacalar ⚡',
-                              style: GoogleFonts.patrickHand(
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                                color: isDark
-                                    ? AppColors.pencilWhite.withValues(alpha: 0.7)
-                                    : AppColors.pencilGraphite,
-                                letterSpacing: 0.4,
+                          const SizedBox(height: 5),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              SketchDoodleBolt(
+                                size: 13,
+                                color: pencilColor,
                               ),
-                            ),
+                              const SizedBox(width: 4),
+                              Flexible(
+                                child: Text(
+                                  'zuhtu.app • Her Gece 00:00\'da Yeni Bulmacalar',
+                                  overflow: TextOverflow.ellipsis,
+                                  style: GoogleFonts.patrickHand(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: isDark
+                                        ? AppColors.pencilWhite
+                                            .withValues(alpha: 0.7)
+                                        : AppColors.pencilGraphite,
+                                    letterSpacing: 0.4,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -784,8 +824,12 @@ class _DailySocialShareDialogState extends ConsumerState<DailySocialShareDialog>
       ),
       child: Row(
         children: [
-          Text(_getGameEmoji(type), style: const TextStyle(fontSize: 13)),
-          const SizedBox(width: 4),
+          GameSketchThumbnail(
+            game: type,
+            size: 18,
+            pencilColor: pencilColor,
+          ),
+          const SizedBox(width: 5),
           Expanded(
             child: Text(
               _getGameName(type),
@@ -822,23 +866,6 @@ class _DailySocialShareDialogState extends ConsumerState<DailySocialShareDialog>
         ],
       ),
     );
-  }
-
-  String _getGameEmoji(GameType type) {
-    switch (type) {
-      case GameType.queens:
-        return '👑';
-      case GameType.pinpoint:
-        return '🎯';
-      case GameType.crossclimb:
-        return '🧗';
-      case GameType.tango:
-        return '⚪';
-      case GameType.zipPath:
-        return '🔢';
-      case GameType.patches:
-        return '🧩';
-    }
   }
 
   String _getGameName(GameType type) {

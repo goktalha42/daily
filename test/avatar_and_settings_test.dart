@@ -5,6 +5,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:daily_games/core/models/user_avatar.dart';
 import 'package:daily_games/core/services/user_avatar_provider.dart';
+import 'package:daily_games/core/theme/app_colors.dart';
+import 'package:daily_games/core/widgets/sketch_decorations.dart';
 import 'package:daily_games/features/profile/settings_screen.dart';
 import 'package:daily_games/features/profile/widgets/avatar_picker_dialog.dart';
 import 'package:daily_games/features/league/league_screen.dart';
@@ -65,6 +67,11 @@ void main() {
 
   group('AvatarPickerDialog Widget Tests', () {
     testWidgets('AvatarPickerDialog açılır ve 12 avatarı listeler', (tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
       SharedPreferences.setMockInitialValues({});
 
       await tester.pumpWidget(
@@ -79,9 +86,10 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      expect(find.text('Avatarını Seç'), findsOneWidget);
+      expect(find.text('Avatarını Özelleştir'), findsOneWidget);
       expect(find.text('Kral Taç'), findsOneWidget);
       expect(find.text('Bilge Baykuş'), findsOneWidget);
+      expect(find.text('ARKA PLAN RENGİ'), findsOneWidget);
       expect(find.text('Kaydet & Kullan'), findsOneWidget);
     });
   });
@@ -117,8 +125,8 @@ void main() {
   });
 
   group('LeagueScreen Avatar Tests', () {
-    testWidgets('LeagueScreen kullanıcının seçtiği avatarı gösterir', (tester) async {
-      SharedPreferences.setMockInitialValues({'zuhtu_user_avatar_id': 'owl'});
+    testWidgets('LeagueScreen kullanıcının seçtiği avatarı ve arka plan rengini gösterir', (tester) async {
+      SharedPreferences.setMockInitialValues({'zuhtu_user_avatar_id': 'owl:cyan'});
 
       await tester.pumpWidget(
         const ProviderScope(
@@ -130,8 +138,15 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      // Baykuş emojisi lig ekranında oyuncunun satırında render edilmelidir
+      // Baykuş emojisi ve seçilen turkuaz arka plan rengi lig ekranında gösterilmelidir
       expect(find.text('🦉'), findsWidgets);
+      final cards = tester.widgetList<SketchCard>(find.byType(SketchCard));
+      expect(
+        cards.any(
+          (c) => c.backgroundColor == AppColors.highlighterCyan.withAlpha(130),
+        ),
+        isTrue,
+      );
     });
   });
 }

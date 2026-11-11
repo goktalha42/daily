@@ -210,9 +210,9 @@
     "semantic_hash": ""
   },
   "lib/features/leaderboard/leaderboard_screen.dart": {
-    "mtime": 1794338424.2428873,
-    "seen": 1794419397.3024395,
-    "ast_hash": "29da5f17221a8dfc468211b9aa0549c4",
+    "mtime": 1794425644.5921688,
+    "seen": 1794425876.231658,
+    "ast_hash": "b96aa6c682d1dcce88e6c6e6ca4837be",
     "semantic_hash": ""
   },
   "lib/features/leaderboard/leaderboard_service.dart": {
@@ -684,9 +684,9 @@
     "semantic_hash": ""
   },
   "pubspec.yaml": {
-    "mtime": 1794418794.1024435,
-    "seen": 1794419397.3026106,
-    "ast_hash": "b7b48d8b6367aec251237b2cb4847425",
+    "mtime": 1794425784.748163,
+    "seen": 1794425876.2318764,
+    "ast_hash": "babc1f4d73c6793b251814ce623ac54d",
     "semantic_hash": ""
   },
   "rozetler.md": {
@@ -924,9 +924,9 @@
     "semantic_hash": "301a7604d45b3e739efc881eb04896ea"
   },
   "lib/core/network/api_client.dart": {
-    "mtime": 1794418794.0871272,
-    "seen": 1794419397.3023856,
-    "ast_hash": "63febfbe5af08edd3897b39e54ec1bcf",
+    "mtime": 1794425644.5222836,
+    "seen": 1794425876.2315614,
+    "ast_hash": "2652ac5967f9ebefccd6105d19ab891e",
     "semantic_hash": ""
   },
   "lib/core/services/update_service.dart": {
@@ -1242,9 +1242,9 @@
     "semantic_hash": ""
   },
   "version.json": {
-    "mtime": 1794418794.3180766,
-    "seen": 1794419397.302587,
-    "ast_hash": "64dabc756c83e70b397db2bad551fd6a",
+    "mtime": 1794425784.7812102,
+    "seen": 1794425876.2318478,
+    "ast_hash": "1fc1b4ae2769fdb5a8ba08a9558470b9",
     "semantic_hash": ""
   },
   "VPS_KURULUMU_VE_DURUM.md": {
@@ -1290,8 +1290,8 @@
     "semantic_hash": ""
   },
   "lib/features/home/widgets/home_brain_hero_card.dart": {
-    "mtime": 1794419655.3014133,
-    "seen": 1794419682.0615122,
+    "mtime": 1794419712.385951,
+    "seen": 1794419994.123888,
     "ast_hash": "151c7d4e3f8cd60d387cd50ddea950f7",
     "semantic_hash": ""
   },
@@ -1452,9 +1452,9 @@
     "semantic_hash": ""
   },
   "lib/core/models/user_avatar.dart": {
-    "mtime": 1794418794.0871272,
-    "seen": 1794419397.3023841,
-    "ast_hash": "9ce0a190ea307541bf6420f1b9e28c98",
+    "mtime": 1794425644.4795275,
+    "seen": 1794425876.2315578,
+    "ast_hash": "f7b8eadafaa44faacd0876dc5571cc8c",
     "semantic_hash": ""
   },
   "lib/core/services/user_avatar_provider.dart": {
@@ -1470,9 +1470,9 @@
     "semantic_hash": ""
   },
   "lib/features/profile/widgets/avatar_picker_dialog.dart": {
-    "mtime": 1794418794.0981972,
-    "seen": 1794419397.30245,
-    "ast_hash": "683efbc8a6e66b52b78b6b7e56b657ff",
+    "mtime": 1794425644.6226342,
+    "seen": 1794425876.2316718,
+    "ast_hash": "638881fd7ec7ceafeeb69a09bd13a69d",
     "semantic_hash": ""
   },
   "test/avatar_and_settings_test.dart": {
@@ -1488,9 +1488,9 @@
     "semantic_hash": ""
   },
   "lib/core/utils/share_card_helper.dart": {
-    "mtime": 1794418794.0901444,
-    "seen": 1794419397.3024151,
-    "ast_hash": "feaaea8412a190d1c7f073d30f87088a",
+    "mtime": 1794425644.5652025,
+    "seen": 1794425876.2316186,
+    "ast_hash": "ce328f46d033dd0b10a99631ca961edd",
     "semantic_hash": ""
   },
   "lib/core/widgets/daily_social_share_dialog.dart": {

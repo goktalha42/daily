@@ -267,20 +267,18 @@ class _HeadToHeadShareDialogState extends ConsumerState<HeadToHeadShareDialog> {
                                   builder: (context) {
                                     final avatarId = ref.watch(userAvatarProvider);
                                     final userAvatar = UserAvatar.getById(avatarId);
-                                    return Container(
-                                      width: 36,
-                                      height: 36,
-                                      decoration: BoxDecoration(
-                                        color: userAvatar.accentColor
-                                            .withValues(alpha: 0.35),
-                                        shape: BoxShape.circle,
-                                        border: Border.all(
-                                            color: pencilColor, width: 1.6),
-                                      ),
-                                      alignment: Alignment.center,
-                                      child: Text(
-                                        userAvatar.emoji,
-                                        style: const TextStyle(fontSize: 18),
+                                    return SketchPlaceholderBox(
+                                      width: 38,
+                                      height: 38,
+                                      fillColor: userAvatar.accentColor
+                                          .withAlpha(isDark ? 95 : 130),
+                                      lineColor: pencilColor,
+                                      borderRadius: 10,
+                                      child: Center(
+                                        child: userAvatar.buildWidget(
+                                          size: 21,
+                                          tintColor: pencilColor,
+                                        ),
                                       ),
                                     );
                                   },
@@ -374,8 +372,11 @@ class _HeadToHeadShareDialogState extends ConsumerState<HeadToHeadShareDialog> {
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      const Text('⚡ ',
-                                          style: TextStyle(fontSize: 20)),
+                                      SketchDoodleBolt(
+                                        size: 18,
+                                        color: pencilColor,
+                                      ),
+                                      const SizedBox(width: 5),
                                       Text(
                                         '%$betterThanPercent\'İNDEN DAHA HIZLI!',
                                         textAlign: TextAlign.center,
@@ -402,13 +403,25 @@ class _HeadToHeadShareDialogState extends ConsumerState<HeadToHeadShareDialog> {
                                       ? AppColors.surfaceDark
                                       : Colors.white,
                                   borderColor: pencilColor,
-                                  child: Text(
-                                    'İlk %$solvePercentile\'lik dilim • $currentIQ Zühtü Skoru 🧠',
-                                    style: GoogleFonts.patrickHand(
-                                      fontSize: 12.5,
-                                      fontWeight: FontWeight.bold,
-                                      color: pencilColor,
-                                    ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Flexible(
+                                        child: Text(
+                                          'İlk %$solvePercentile\'lik dilim • $currentIQ Zühtü Skoru',
+                                          style: GoogleFonts.patrickHand(
+                                            fontSize: 12.5,
+                                            fontWeight: FontWeight.bold,
+                                            color: pencilColor,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 5),
+                                      SketchDoodleBrain(
+                                        size: 14,
+                                        color: pencilColor,
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ],
@@ -473,11 +486,15 @@ class _HeadToHeadShareDialogState extends ConsumerState<HeadToHeadShareDialog> {
                             borderColor: pencilColor,
                             child: Row(
                               children: [
-                                const Text('🎯', style: TextStyle(fontSize: 16)),
+                                SketchDoodleTarget(
+                                  size: 16,
+                                  color: pencilColor,
+                                  fillColor: const Color(0xFF67E8F9),
+                                ),
                                 const SizedBox(width: 6),
                                 Expanded(
                                   child: Text(
-                                    'Beni geçebileceğini mi sanıyorsun? 😉 Zühtü\'ye gel kapışalım!',
+                                    'Beni geçebileceğini mi sanıyorsun? Zühtü\'ye gel kapışalım!',
                                     style: GoogleFonts.patrickHand(
                                       fontSize: 12.5,
                                       fontWeight: FontWeight.w700,
@@ -492,18 +509,30 @@ class _HeadToHeadShareDialogState extends ConsumerState<HeadToHeadShareDialog> {
                           const SizedBox(height: 6),
 
                           // WATERMARK
-                          Center(
-                            child: Text(
-                              '👉 zuhtu.app • Her Gece 00:00\'da Yeni Bulmacalar ⚡',
-                              style: GoogleFonts.patrickHand(
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                                color: isDark
-                                    ? AppColors.pencilWhite.withValues(alpha: 0.7)
-                                    : AppColors.pencilGraphite,
-                                letterSpacing: 0.4,
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              SketchDoodleBolt(
+                                size: 13,
+                                color: pencilColor,
                               ),
-                            ),
+                              const SizedBox(width: 4),
+                              Flexible(
+                                child: Text(
+                                  'zuhtu.app • Her Gece 00:00\'da Yeni Bulmacalar',
+                                  overflow: TextOverflow.ellipsis,
+                                  style: GoogleFonts.patrickHand(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: isDark
+                                        ? AppColors.pencilWhite
+                                            .withValues(alpha: 0.7)
+                                        : AppColors.pencilGraphite,
+                                    letterSpacing: 0.4,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),

@@ -79,17 +79,17 @@ class LeaderboardEntryCard extends ConsumerWidget {
               borderRadius: 7,
               borderWidth: 1.4,
               shadowOffset: const Offset(1.0, 1.0),
-              backgroundColor: isMe
-                  ? AppColors.sunYellow
-                  : avatarModel.accentColor.withAlpha(isDark ? 65 : 85),
-              borderColor: isMe ? AppColors.pencilBlack : AppColors.pencil(context),
+              backgroundColor: avatarModel.accentColor.withAlpha(
+                isMe ? (isDark ? 95 : 130) : (isDark ? 65 : 85),
+              ),
+              borderColor: AppColors.pencil(context),
               child: SizedBox(
                 width: 22,
                 height: 22,
                 child: Center(
                   child: avatarModel.buildWidget(
                     size: 18,
-                    tintColor: isMe ? AppColors.pencilBlack : AppColors.pencil(context),
+                    tintColor: AppColors.pencil(context),
                   ),
                 ),
               ),

@@ -233,16 +233,22 @@ class _DailyGeniusCertificateDialogState
                   const SizedBox(height: 16),
 
                   // 4. 6 Oyunluk Karne Izgarası
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      '📋 Günün 6 Bilişsel Alan Karnesi:',
-                      style: GoogleFonts.patrickHand(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                  Row(
+                    children: [
+                      SketchDoodleClipboard(
+                        size: 16,
                         color: pencilColor,
                       ),
-                    ),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Günün 6 Bilişsel Alan Karnesi:',
+                        style: GoogleFonts.patrickHand(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: pencilColor,
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 8),
 
