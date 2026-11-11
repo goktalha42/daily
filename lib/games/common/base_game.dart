@@ -233,6 +233,7 @@ class LeaderboardEntry {
   final int totalScore;
   final int bestTimeMs;
   final int gamesPlayed;
+  final String? avatarId;
 
   LeaderboardEntry({
     required this.rank,
@@ -241,6 +242,7 @@ class LeaderboardEntry {
     required this.totalScore,
     required this.bestTimeMs,
     required this.gamesPlayed,
+    this.avatarId,
   });
 
   Map<String, dynamic> toJson() => {
@@ -250,6 +252,7 @@ class LeaderboardEntry {
     'totalScore': totalScore,
     'bestTimeMs': bestTimeMs,
     'gamesPlayed': gamesPlayed,
+    'avatarId': avatarId,
   };
 
   factory LeaderboardEntry.fromJson(Map<String, dynamic> json) => LeaderboardEntry(
@@ -259,5 +262,6 @@ class LeaderboardEntry {
     totalScore: json['totalScore'] as int,
     bestTimeMs: json['bestTimeMs'] as int,
     gamesPlayed: json['gamesPlayed'] as int? ?? 1,
+    avatarId: json['avatar_id'] as String? ?? json['avatarId'] as String?,
   );
 }

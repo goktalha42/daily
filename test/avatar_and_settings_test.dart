@@ -7,6 +7,7 @@ import 'package:daily_games/core/models/user_avatar.dart';
 import 'package:daily_games/core/services/user_avatar_provider.dart';
 import 'package:daily_games/features/profile/settings_screen.dart';
 import 'package:daily_games/features/profile/widgets/avatar_picker_dialog.dart';
+import 'package:daily_games/features/league/league_screen.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -112,6 +113,25 @@ void main() {
       expect(find.text('GİZLİLİK VE POLİTİKALAR'), findsOneWidget);
       expect(find.text('VERİ YÖNETİMİ VE HESAP SIFIRLAMA'), findsOneWidget);
       expect(find.text('Tüm Verileri ve Hesabı Sıfırla'), findsOneWidget);
+    });
+  });
+
+  group('LeagueScreen Avatar Tests', () {
+    testWidgets('LeagueScreen kullanıcının seçtiği avatarı gösterir', (tester) async {
+      SharedPreferences.setMockInitialValues({'zuhtu_user_avatar_id': 'owl'});
+
+      await tester.pumpWidget(
+        const ProviderScope(
+          child: MaterialApp(
+            home: LeagueScreen(),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Baykuş emojisi lig ekranında oyuncunun satırında render edilmelidir
+      expect(find.text('🦉'), findsWidgets);
     });
   });
 }

@@ -4,6 +4,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../core/models/user_avatar.dart';
+import '../../core/services/user_avatar_provider.dart';
 import '../../core/services/league_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/sketch_decorations.dart';
@@ -507,17 +509,18 @@ class _DoodleArrowConnectorPainter extends CustomPainter {
 // 3. ANA SKEÇ LİG KARTI
 // ============================================================================
 
-class _SketchMainLeagueCard extends StatelessWidget {
+class _SketchMainLeagueCard extends ConsumerWidget {
   final LeagueState league;
 
   const _SketchMainLeagueCard({required this.league});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final level = league.currentLevel;
     final zone = league.userZone;
     final rank = league.userRank;
+    final userAvatar = ref.watch(currentAvatarModelProvider);
 
     // Bölgeye özel el çizimi mesaj ve ikon
     String noteTitle;
@@ -602,6 +605,19 @@ class _SketchMainLeagueCard extends StatelessWidget {
                         _SketchMiniBadge(
                           text: '#$rank. Sıra',
                           backgroundColor: AppColors.sunYellow,
+                        ),
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.all(3),
+                          decoration: BoxDecoration(
+                            color: userAvatar.accentColor.withAlpha(isDark ? 80 : 110),
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(color: AppColors.pencil(context), width: 1.2),
+                          ),
+                          child: userAvatar.buildWidget(
+                            size: 16,
+                            tintColor: AppColors.pencil(context),
+                          ),
                         ),
                       ],
                     ),
@@ -1172,7 +1188,7 @@ class _WobblyLinePainter extends CustomPainter {
 // 6. EL ÇİZİMİ OYUNCU SATIRI (Sketch Player Row Card)
 // ============================================================================
 
-class _SketchPlayerRow extends StatelessWidget {
+class _SketchPlayerRow extends ConsumerWidget {
   final LeaguePlayer player;
   final LeagueState league;
   final int index;
@@ -1184,7 +1200,7 @@ class _SketchPlayerRow extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final rank = player.rank;
     final isUser = player.isUser;
@@ -1199,6 +1215,14 @@ class _SketchPlayerRow extends StatelessWidget {
     Offset shadowOffset;
 
     final basePencil = AppColors.pencil(context);
+
+    // Aktif avatar modeli: Kullanıcı ise ref'ten, rakip ise avatarId veya deterministik avatar
+    final userAvatar = ref.watch(currentAvatarModelProvider);
+    final UserAvatar avatarModel = isUser
+        ? userAvatar
+        : (player.avatarId != null && player.avatarId!.isNotEmpty
+            ? UserAvatar.getById(player.avatarId)
+            : UserAvatar.allAvatars[player.userName.hashCode.abs() % UserAvatar.allAvatars.length]);
 
     if (isUser) {
       cardBg = isDark
@@ -1255,26 +1279,25 @@ class _SketchPlayerRow extends StatelessWidget {
 
           const SizedBox(width: 8),
 
-          // ─── 2. EL ÇİZİMİ LİG ARMA KUTUSU ────────────────────────────
+          // ─── 2. OYUNCU AVATARI (Kullanıcı & Rakipler) ─────────────────
           SketchCard(
-            padding: const EdgeInsets.all(6),
+            padding: const EdgeInsets.all(5),
             borderRadius: 8,
             borderWidth: 1.5,
             shadowOffset: const Offset(1.5, 1.5),
             backgroundColor: isUser
                 ? AppColors.sunYellow
-                : isTop3
-                    ? (rank == 1
-                        ? AppColors.sunYellow
-                        : rank == 2
-                            ? const Color(0xFFCBD5E1)
-                            : const Color(0xFFFED7AA))
-                    : AppColors.surfaceSecondaryOf(context),
-            borderColor: basePencil,
-            child: SketchLeagueEmblem(
-              level: league.currentLevel,
-              size: 22,
-              strokeColor: (isUser || isTop3) ? AppColors.inkBlack : null,
+                : avatarModel.accentColor.withAlpha(isDark ? 60 : 75),
+            borderColor: isUser ? AppColors.pencilBlack : basePencil,
+            child: SizedBox(
+              width: 24,
+              height: 24,
+              child: Center(
+                child: avatarModel.buildWidget(
+                  size: 20,
+                  tintColor: isUser ? AppColors.pencilBlack : basePencil,
+                ),
+              ),
             ),
           ),
 

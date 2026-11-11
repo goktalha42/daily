@@ -156,6 +156,7 @@ class LeaguePlayer {
   final int weeklyScore;
   final int rank;
   final bool isUser;
+  final String? avatarId;
 
   const LeaguePlayer({
     required this.userId,
@@ -163,6 +164,7 @@ class LeaguePlayer {
     required this.weeklyScore,
     required this.rank,
     required this.isUser,
+    this.avatarId,
   });
 
   LeaguePlayer copyWith({
@@ -171,6 +173,7 @@ class LeaguePlayer {
     int? weeklyScore,
     int? rank,
     bool? isUser,
+    String? avatarId,
   }) {
     return LeaguePlayer(
       userId: userId ?? this.userId,
@@ -178,6 +181,7 @@ class LeaguePlayer {
       weeklyScore: weeklyScore ?? this.weeklyScore,
       rank: rank ?? this.rank,
       isUser: isUser ?? this.isUser,
+      avatarId: avatarId ?? this.avatarId,
     );
   }
 
@@ -187,6 +191,7 @@ class LeaguePlayer {
         'weeklyScore': weeklyScore,
         'rank': rank,
         'isUser': isUser,
+        'avatarId': avatarId,
       };
 
   factory LeaguePlayer.fromJson(Map<String, dynamic> json) => LeaguePlayer(
@@ -195,6 +200,7 @@ class LeaguePlayer {
         weeklyScore: json['weeklyScore'] as int? ?? 0,
         rank: json['rank'] as int? ?? 0,
         isUser: json['isUser'] as bool? ?? false,
+        avatarId: json['avatarId'] as String?,
       );
 }
 

@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../../core/models/user_avatar.dart';
+import '../../../core/services/user_avatar_provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/date_utils.dart';
 import '../../../core/widgets/sketch_decorations.dart';
 import '../../../games/common/base_game.dart';
 
-class LeaderboardEntryCard extends StatelessWidget {
+class LeaderboardEntryCard extends ConsumerWidget {
   final LeaderboardEntry entry;
   final bool isMe;
   final String? customDetailText;
@@ -21,10 +24,16 @@ class LeaderboardEntryCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final isDark = AppColors.isDark(context);
     final isTop3 = entry.rank <= 3;
     final detailText = customDetailText ?? 'Süre: ${GameDateUtils.formatGameTime(entry.bestTimeMs)}';
+
+    final UserAvatar avatarModel = isMe
+        ? ref.watch(currentAvatarModelProvider)
+        : (entry.avatarId != null && entry.avatarId!.isNotEmpty
+            ? UserAvatar.getById(entry.avatarId)
+            : UserAvatar.allAvatars[entry.userName.hashCode.abs() % UserAvatar.allAvatars.length]);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
@@ -62,7 +71,30 @@ class LeaderboardEntryCard extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 8),
+
+            // Oyuncu Avatar Kutusu
+            SketchCard(
+              padding: const EdgeInsets.all(4),
+              borderRadius: 7,
+              borderWidth: 1.4,
+              shadowOffset: const Offset(1.0, 1.0),
+              backgroundColor: isMe
+                  ? AppColors.sunYellow
+                  : avatarModel.accentColor.withAlpha(isDark ? 65 : 85),
+              borderColor: isMe ? AppColors.pencilBlack : AppColors.pencil(context),
+              child: SizedBox(
+                width: 22,
+                height: 22,
+                child: Center(
+                  child: avatarModel.buildWidget(
+                    size: 18,
+                    tintColor: isMe ? AppColors.pencilBlack : AppColors.pencil(context),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
 
             // Kullanıcı Bilgisi
             Expanded(

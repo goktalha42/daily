@@ -1,9 +1,9 @@
 ﻿{
-    "version":  "1.2.12",
-    "build_number":  30,
-    "title":  "Zühtü v1.2.12 Profil, Avatar \u0026 Bağımsız Ayarlar Güncellemesi ✨",
-    "changelog":  "• 12 farklı eğlenceli eskiz avatar seçeneği ve Avatar Seçim Diyaloğu eklendi. • Profil ekranı ferahlatıldı, bağımsız ve kapsamlı Ayarlar Ekranı oluşturuldu. • Ana sayfa Beyin Gücü kartındaki çizgiler kaldırılarak sadeleştirildi. • Google Play Store uyumluluğu için Gizlilik Politikası ve Hesap/Veri Sıfırlama entegre edildi.",
-    "apk_url":  "https://raw.githubusercontent.com/goktalha42/daily/main/releases/Zuhtu_v1.2.12_b30.apk",
-    "release_url":  "https://github.com/goktalha42/daily/releases/tag/v1.2.12",
+    "version":  "1.2.13",
+    "build_number":  31,
+    "title":  "Zühtü v1.2.13 Lig \u0026 Sıralama Avatar Entegrasyonu ✨",
+    "changelog":  "• Seçilen profil avatarı ve karakterler artık Lig Sıralaması (League) ve Liderlik Tablosunda (Leaderboard) eksiksiz olarak görünüyor. • Rakipler ve kullanıcılar için dinamik eskiz karakter kartları eklendi.",
+    "apk_url":  "https://raw.githubusercontent.com/goktalha42/daily/main/releases/Zuhtu_v1.2.13_b31.apk",
+    "release_url":  "https://github.com/goktalha42/daily/releases/tag/v1.2.13",
     "force_update":  false
 }
