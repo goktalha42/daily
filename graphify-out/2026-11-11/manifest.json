@@ -108,9 +108,9 @@
     "semantic_hash": ""
   },
   "lib/core/services/league_service.dart": {
-    "mtime": 1794377188.1437323,
-    "seen": 1794378907.2369506,
-    "ast_hash": "967eecbc43ab58d840327a8af8f84134",
+    "mtime": 1794391325.5424745,
+    "seen": 1794391690.1392448,
+    "ast_hash": "8e3b807e5606eacbe9a2988ac1d4b80d",
     "semantic_hash": ""
   },
   "lib/core/services/theme_service.dart": {
@@ -222,9 +222,9 @@
     "semantic_hash": ""
   },
   "lib/features/league/league_screen.dart": {
-    "mtime": 1794377188.1497447,
-    "seen": 1794378907.237024,
-    "ast_hash": "21b56aa19ea7ada55e6a44e9cc1332b0",
+    "mtime": 1794391549.1499329,
+    "seen": 1794391690.1393197,
+    "ast_hash": "a3abd1ae55dca80b94be127d7f93019e",
     "semantic_hash": ""
   },
   "lib/features/profile/badges_screen.dart": {
@@ -246,9 +246,9 @@
     "semantic_hash": ""
   },
   "lib/games/common/base_game.dart": {
-    "mtime": 1793882141.1255372,
-    "seen": 1794378907.2370322,
-    "ast_hash": "f55f7e524305905b03801837dd2ad48c",
+    "mtime": 1794391338.9599924,
+    "seen": 1794391690.1393337,
+    "ast_hash": "249ef7278043d9a7e39af2f252af117e",
     "semantic_hash": ""
   },
   "lib/games/common/neo_game_layout.dart": {
@@ -684,9 +684,9 @@
     "semantic_hash": ""
   },
   "pubspec.yaml": {
-    "mtime": 1794389607.7703643,
-    "seen": 1794389794.0029645,
-    "ast_hash": "b5c5247af481926694b385e6ce95fc2d",
+    "mtime": 1794391724.9949565,
+    "seen": 1794391907.3880732,
+    "ast_hash": "a13ee67aca7627cca5f266588359c4dc",
     "semantic_hash": ""
   },
   "rozetler.md": {
@@ -960,9 +960,9 @@
     "semantic_hash": ""
   },
   "lib/features/leaderboard/widgets/leaderboard_entry_card.dart": {
-    "mtime": 1793882141.117415,
-    "seen": 1794378907.237022,
-    "ast_hash": "af910fbc834d773349be5afc9fb9d63b",
+    "mtime": 1794391584.0751612,
+    "seen": 1794391690.1393175,
+    "ast_hash": "c5dfe9b814f4df26b6b260515c5dbe38",
     "semantic_hash": ""
   },
   "server/app/Http/Controllers/Api/AuthController.php": {
@@ -1242,9 +1242,9 @@
     "semantic_hash": ""
   },
   "version.json": {
-    "mtime": 1794389607.8494704,
-    "seen": 1794389794.0029204,
-    "ast_hash": "c45e9235b496513bd1a88b7e31590c9e",
+    "mtime": 1794391725.0568135,
+    "seen": 1794391907.3880305,
+    "ast_hash": "22ba5bae916e549573074afc114eaeda",
     "semantic_hash": ""
   },
   "VPS_KURULUMU_VE_DURUM.md": {
@@ -1476,9 +1476,9 @@
     "semantic_hash": ""
   },
   "test/avatar_and_settings_test.dart": {
-    "mtime": 1794389506.8299282,
-    "seen": 1794389794.0028682,
-    "ast_hash": "abf9a0cad2ee413d516c56b0b0aebe03",
+    "mtime": 1794391650.129112,
+    "seen": 1794391690.1395059,
+    "ast_hash": "c6665a22f71b4dc763c99afa63f71661",
     "semantic_hash": ""
   },
   "PRIVACY_POLICY.md": {

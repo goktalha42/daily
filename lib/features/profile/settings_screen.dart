@@ -22,6 +22,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/widgets/backup_restore_dialog.dart';
 import '../../core/widgets/sketch_decorations.dart';
 import '../../core/widgets/update_prompt_dialog.dart';
+import '../onboarding/onboarding_screen.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -432,6 +433,71 @@ class SettingsScreen extends ConsumerWidget {
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                 child: _SettingsAppVersionCard(),
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                child: SketchCard(
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        fullscreenDialog: true,
+                        builder: (_) => const OnboardingScreen(isRevisit: true),
+                      ),
+                    );
+                  },
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  borderRadius: 14,
+                  borderWidth: 2.0,
+                  shadowOffset: const Offset(3.0, 3.0),
+                  backgroundColor: cardBg,
+                  borderColor: pencilColor,
+                  child: Row(
+                    children: [
+                      SketchCard(
+                        padding: const EdgeInsets.all(8),
+                        borderRadius: 10,
+                        borderWidth: 1.5,
+                        shadowOffset: const Offset(1.5, 1.5),
+                        backgroundColor: AppColors.highlighterPurple
+                            .withAlpha(isDark ? 60 : 40),
+                        borderColor: pencilColor,
+                        child: const Text('📖', style: TextStyle(fontSize: 20)),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Tanıtım Turunu Tekrar İzle',
+                              style: GoogleFonts.patrickHand(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                color: pencilColor,
+                              ),
+                            ),
+                            Text(
+                              'Zühtü\'nün 6 oyununu, IQ sistemini ve ligleri incele',
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: graphiteColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Icon(
+                        Icons.arrow_forward_ios_rounded,
+                        size: 14,
+                        color: pencilColor,
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
 

@@ -3,20 +3,22 @@ import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:share_plus/share_plus.dart';
 
 import '../../games/common/base_game.dart';
+import '../models/user_avatar.dart';
 import '../services/game_stats_service.dart';
+import '../services/user_avatar_provider.dart';
 import '../services/user_nickname_provider.dart';
 import '../theme/app_colors.dart';
 import '../utils/date_utils.dart';
+import '../utils/share_card_helper.dart';
 import 'sketch_badge_icons.dart';
 import 'sketch_decorations.dart';
 
 /// LinkedIn & Instagram Benzeri Günlük "Kafa Kafaya" Karşılaştırma ve Meydan Okuma Kartı.
 /// Oyuncunun tekil oyun zaferini, WAIS-IV tabanlı yüzdelik başarısını ve zeka skorunu
 /// sosyal medyada (WhatsApp, Instagram, X vb.) organik paylaşabileceği skeç tarzı diyalog.
-class HeadToHeadShareDialog extends ConsumerWidget {
+class HeadToHeadShareDialog extends ConsumerStatefulWidget {
   final GameType gameType;
   final String gameTitle;
   final int score;
@@ -70,6 +72,15 @@ class HeadToHeadShareDialog extends ConsumerWidget {
     );
   }
 
+  @override
+  ConsumerState<HeadToHeadShareDialog> createState() =>
+      _HeadToHeadShareDialogState();
+}
+
+class _HeadToHeadShareDialogState extends ConsumerState<HeadToHeadShareDialog> {
+  final GlobalKey _cardKey = GlobalKey();
+  bool _isSharing = false;
+
   Color _getGameColor(GameType type) {
     switch (type) {
       case GameType.queens:
@@ -98,12 +109,12 @@ class HeadToHeadShareDialog extends ConsumerWidget {
     final buffer = StringBuffer();
     buffer.writeln('🧠 ZÜHTÜ GÜNLÜK ZEKA MEYDAN OKUMASI ⚡');
     buffer.writeln('👤 Oyuncu: @$nickname ($geniusTitle)');
-    buffer.writeln('🎮 Oyun: $gameTitle');
+    buffer.writeln('🎮 Oyun: ${widget.gameTitle}');
     buffer.writeln('');
     buffer.writeln('📊 "Bugün Zühtü\'deki oyuncuların %$betterThanPercent\'inden daha hızlı çözdüm!"');
     buffer.writeln('🏆 Derece: İlk %$solvePercentile\'lik elit dilim');
     buffer.writeln('⏱️ Süre: $formattedTime');
-    buffer.writeln('🎯 Hamle: $moveCount');
+    buffer.writeln('🎯 Hamle: ${widget.moveCount}');
     buffer.writeln('🧠 Bilişsel Seviye: $currentIQ IQ');
     buffer.writeln('');
     buffer.writeln('Beni geçebileceğini mi sanıyorsun? 😉');
@@ -113,31 +124,31 @@ class HeadToHeadShareDialog extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final pencilColor = isDark ? AppColors.pencilWhite : AppColors.pencilBlack;
     final cardBg = isDark ? AppColors.surfaceDark : AppColors.backgroundLight;
     final nickname = ref.watch(userNicknameProvider);
 
-    final int currentIQ = statsResult?.currentIQ ?? fallbackIQ ?? 105;
+    final int currentIQ = widget.statsResult?.currentIQ ?? widget.fallbackIQ ?? 105;
     final double fallbackZ = PsychometricIQCalculator.evaluateSingleSolveZ(
-      gameType: gameType,
-      score: score,
-      durationMs: durationMs,
-      difficulty: difficulty,
+      gameType: widget.gameType,
+      score: widget.score,
+      durationMs: widget.durationMs,
+      difficulty: widget.difficulty,
     );
     final int solvePercentile =
-        statsResult?.percentile ?? PsychometricIQCalculator.zScoreToSolvePercentile(fallbackZ);
+        widget.statsResult?.percentile ?? PsychometricIQCalculator.zScoreToSolvePercentile(fallbackZ);
     final int betterThanPercent = (100 - solvePercentile).clamp(1, 99);
     final String geniusTitle =
-        statsResult?.geniusTitle ?? PsychometricIQCalculator.titleForIQ(currentIQ, playedCategories: 1);
+        widget.statsResult?.geniusTitle ?? PsychometricIQCalculator.titleForIQ(currentIQ, playedCategories: 1);
 
     final activeMilestone =
-        statsResult?.milestone ?? IQMilestone.currentMilestone(currentIQ) ?? IQMilestone.all.first;
+        widget.statsResult?.milestone ?? IQMilestone.currentMilestone(currentIQ) ?? IQMilestone.all.first;
 
-    final formattedTime = GameDateUtils.formatGameTime(durationMs);
-    final String dateString = dateId != null
-        ? GameDateUtils.getFormattedDate(GameDateUtils.parseLevelId(dateId!))
+    final formattedTime = GameDateUtils.formatGameTime(widget.durationMs);
+    final String dateString = widget.dateId != null
+        ? GameDateUtils.getFormattedDate(GameDateUtils.parseLevelId(widget.dateId!))
         : GameDateUtils.getFormattedDate(DateTime.now());
 
     final shareText = _buildShareText(
@@ -156,7 +167,9 @@ class HeadToHeadShareDialog extends ConsumerWidget {
         child: SingleChildScrollView(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 420),
-            child: SketchCard(
+            child: RepaintBoundary(
+              key: _cardKey,
+              child: SketchCard(
               backgroundColor: cardBg,
               borderColor: pencilColor,
               borderWidth: 2.8,
@@ -237,17 +250,25 @@ class HeadToHeadShareDialog extends ConsumerWidget {
                     ),
                     child: Row(
                       children: [
-                        CircleAvatar(
-                          radius: 18,
-                          backgroundColor: AppColors.skyBlue,
-                          child: Text(
-                            nickname.isNotEmpty ? nickname[0].toUpperCase() : 'Z',
-                            style: GoogleFonts.patrickHand(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.inkBlack,
-                            ),
-                          ),
+                        Builder(
+                          builder: (context) {
+                            final avatarId = ref.watch(userAvatarProvider);
+                            final userAvatar = UserAvatar.getById(avatarId);
+                            return Container(
+                              width: 38,
+                              height: 38,
+                              decoration: BoxDecoration(
+                                color: userAvatar.accentColor.withValues(alpha: 0.35),
+                                shape: BoxShape.circle,
+                                border: Border.all(color: pencilColor, width: 1.8),
+                              ),
+                              alignment: Alignment.center,
+                              child: Text(
+                                userAvatar.emoji,
+                                style: const TextStyle(fontSize: 20),
+                              ),
+                            );
+                          },
                         ),
                         const SizedBox(width: 10),
                         Expanded(
@@ -277,16 +298,16 @@ class HeadToHeadShareDialog extends ConsumerWidget {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
-                            color: _getGameColor(gameType),
+                            color: _getGameColor(widget.gameType),
                             borderRadius: BorderRadius.circular(10),
                             border: Border.all(color: pencilColor, width: 1.6),
                           ),
                           child: Text(
-                            gameTitle,
+                            widget.gameTitle,
                             style: GoogleFonts.patrickHand(
                               fontSize: 13.5,
                               fontWeight: FontWeight.bold,
-                              color: AppColors.onColor(_getGameColor(gameType), context: context),
+                              color: AppColors.onColor(_getGameColor(widget.gameType), context: context),
                             ),
                           ),
                         ),
@@ -377,7 +398,7 @@ class HeadToHeadShareDialog extends ConsumerWidget {
                         child: _MetricSketchBox(
                           icon: Icons.touch_app_outlined,
                           label: 'HAMLE',
-                          value: '$moveCount',
+                          value: '${widget.moveCount}',
                           bgColor: AppColors.highlighterOrange,
                           pencilColor: pencilColor,
                           isDark: isDark,
@@ -499,37 +520,65 @@ class HeadToHeadShareDialog extends ConsumerWidget {
                         child: Material(
                           color: Colors.transparent,
                           child: InkWell(
-                            onTap: () async {
-                              HapticFeedback.heavyImpact();
-                              try {
-                                await SharePlus.instance.share(
-                                  ShareParams(
-                                    text: shareText,
-                                    subject: '🧠 Zühtü Zeka Meydan Okuması: @$nickname',
-                                  ),
-                                );
-                              } catch (e) {
-                                debugPrint('[HeadToHeadShareDialog] Paylaşım hatası: $e');
-                                await Clipboard.setData(ClipboardData(text: shareText));
-                                if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        'Meydan okuma metni panoya kopyalandı!',
-                                        style: GoogleFonts.patrickHand(fontSize: 15),
-                                      ),
-                                    ),
-                                  );
-                                }
-                              }
-                            },
+                            onTap: _isSharing
+                                ? null
+                                : () async {
+                                    setState(() => _isSharing = true);
+                                    HapticFeedback.heavyImpact();
+                                    try {
+                                      final success =
+                                          await ShareCardHelper.shareCard(
+                                        boundaryKey: _cardKey,
+                                        shareText: shareText,
+                                        subject:
+                                            '🧠 Zühtü Zeka Meydan Okuması: @$nickname',
+                                        fileName: 'zuhtu_meydan_okuma.png',
+                                      );
+                                      if (!success && mounted) {
+                                        await Clipboard.setData(
+                                            ClipboardData(text: shareText));
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              'Görsel paylaşılamadı, metin panoya kopyalandı! 📋',
+                                              style: GoogleFonts.patrickHand(
+                                                  fontSize: 15),
+                                            ),
+                                          ),
+                                        );
+                                      }
+                                    } catch (e) {
+                                      debugPrint(
+                                          '[HeadToHeadShareDialog] Paylaşım hatası: $e');
+                                      await Clipboard.setData(
+                                          ClipboardData(text: shareText));
+                                      if (mounted) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              'Meydan okuma metni panoya kopyalandı!',
+                                              style: GoogleFonts.patrickHand(
+                                                  fontSize: 15),
+                                            ),
+                                          ),
+                                        );
+                                      }
+                                    } finally {
+                                      if (mounted) {
+                                        setState(() => _isSharing = false);
+                                      }
+                                    }
+                                  },
                             borderRadius: BorderRadius.circular(12),
                             child: Container(
                               padding: const EdgeInsets.symmetric(vertical: 12),
                               decoration: BoxDecoration(
                                 color: AppColors.sunYellow,
                                 borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: pencilColor, width: 2.2),
+                                border:
+                                    Border.all(color: pencilColor, width: 2.2),
                                 boxShadow: [
                                   BoxShadow(
                                     color: pencilColor.withValues(alpha: 0.25),
@@ -544,10 +593,25 @@ class HeadToHeadShareDialog extends ConsumerWidget {
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    const Icon(Icons.share_rounded, size: 18, color: AppColors.inkBlack),
+                                    if (_isSharing)
+                                      const SizedBox(
+                                        width: 16,
+                                        height: 16,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          valueColor:
+                                              AlwaysStoppedAnimation<Color>(
+                                                  AppColors.inkBlack),
+                                        ),
+                                      )
+                                    else
+                                      const Icon(Icons.share_rounded,
+                                          size: 18, color: AppColors.inkBlack),
                                     const SizedBox(width: 6),
                                     Text(
-                                      'Meydan Oku',
+                                      _isSharing
+                                          ? 'Hazırlanıyor...'
+                                          : 'Meydan Oku',
                                       style: GoogleFonts.patrickHand(
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold,
@@ -598,6 +662,7 @@ class HeadToHeadShareDialog extends ConsumerWidget {
                 ],
               ),
             ),
+          ),
           ),
         ),
       ),

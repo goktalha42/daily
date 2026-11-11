@@ -23,6 +23,7 @@ import '../../core/models/user_avatar.dart';
 import '../../core/services/user_avatar_provider.dart';
 import 'widgets/avatar_picker_dialog.dart';
 import 'settings_screen.dart';
+import '../../core/widgets/daily_social_share_dialog.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -439,6 +440,42 @@ class ProfileScreen extends ConsumerWidget {
                                   ),
                                 ),
                               ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      SketchCard(
+                        onTap: () {
+                          HapticFeedback.mediumImpact();
+                          final todayId = GameDateUtils.getTodayLevelId();
+                          DailySocialShareDialog.show(
+                            context,
+                            dateId: todayId,
+                            overallIQ: userIQ,
+                            dailyPlayState: dailyPlay,
+                          );
+                        },
+                        padding: const EdgeInsets.symmetric(vertical: 11),
+                        borderRadius: 12,
+                        borderWidth: 2.0,
+                        shadowOffset: const Offset(2.5, 2.5),
+                        backgroundColor: AppColors.sunYellow,
+                        borderColor: headerPencil,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.share_rounded,
+                                size: 18, color: AppColors.inkBlack),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Zeka Karneni Paylaş (WhatsApp & Insta)',
+                              style: GoogleFonts.patrickHand(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.inkBlack,
+                                letterSpacing: 0.3,
+                              ),
                             ),
                           ],
                         ),

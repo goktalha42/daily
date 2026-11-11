@@ -13,6 +13,7 @@ import '../../../core/widgets/sketch_decorations.dart';
 import '../../../games/common/base_game.dart';
 import 'daily_genius_certificate_dialog.dart';
 import 'weekly_brain_report_dialog.dart';
+import '../../../core/widgets/daily_social_share_dialog.dart';
 
 /// Zühtü Arenası Ana Sayfa Canlı, Koreografili & %100 El Çizimi Beyin Gücü Hero Kartı.
 /// - Sıfır sabit/sahte veri: tüm değerler gerçek oyun kayıtlarından ve psikometrik IQ motorundan akar.
@@ -576,6 +577,44 @@ class _HomeBrainHeroCardState extends State<HomeBrainHeroCard>
                                       ? AppColors.inkBlack
                                       : pencilColor,
                                 ),
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            SketchCard(
+                              onTap: () {
+                                HapticFeedback.lightImpact();
+                                DailySocialShareDialog.show(
+                                  context,
+                                  dateId: widget.activeDateKey,
+                                  overallIQ: widget.userIQ,
+                                  dailyPlayState: widget.dailyPlayState,
+                                  statsMap: widget.statsMap,
+                                );
+                              },
+                              backgroundColor: isDark
+                                  ? AppColors.surfaceDark
+                                  : Colors.white,
+                              borderColor: pencilColor,
+                              borderWidth: 1.4,
+                              borderRadius: 8,
+                              shadowOffset: const Offset(1.2, 1.2),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 7, vertical: 2),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.share_rounded,
+                                      size: 11, color: pencilColor),
+                                  const SizedBox(width: 3),
+                                  Text(
+                                    'Paylaş',
+                                    style: GoogleFonts.patrickHand(
+                                      fontSize: 11.5,
+                                      fontWeight: FontWeight.w700,
+                                      color: pencilColor,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],

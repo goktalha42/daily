@@ -38,6 +38,7 @@ import '../../core/services/cloud_backup_service.dart';
 import 'widgets/home_brain_hero_card.dart';
 import 'widgets/weekly_brain_report_dialog.dart';
 import 'widgets/time_machine_dialog.dart';
+import '../onboarding/onboarding_screen.dart';
 
 final homeBottomNavIndexProvider = StateProvider<int>((ref) => 0);
 
@@ -60,7 +61,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ref.read(cloudBackupProvider);
         ref.read(leagueServiceProvider.notifier).checkWeekTransition();
       }
-      await _checkMandatoryNickname();
+      await _checkOnboarding();
+      if (mounted) {
+        await _checkMandatoryNickname();
+      }
       if (mounted) {
         await _checkAppUpdate();
       }
@@ -68,6 +72,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         await _checkSundayWeeklyReport();
       }
     });
+  }
+
+  Future<void> _checkOnboarding() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final hasCompleted =
+          prefs.getBool(OnboardingScreen.completedPrefKey) ?? false;
+      if (!hasCompleted && mounted) {
+        await Navigator.of(context).push(
+          MaterialPageRoute(
+            fullscreenDialog: true,
+            builder: (ctx) => const OnboardingScreen(),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('[HomeScreen] Onboarding kontrol hatası: $e');
+    }
   }
 
   Future<void> _checkSundayWeeklyReport() async {

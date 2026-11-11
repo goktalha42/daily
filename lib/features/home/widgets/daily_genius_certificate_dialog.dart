@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:share_plus/share_plus.dart';
 
 import '../../../core/models/badge_model.dart';
 import '../../../core/services/daily_play_service.dart';
 import '../../../core/services/game_stats_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/date_utils.dart';
+import '../../../core/utils/share_card_helper.dart';
 import '../../../core/widgets/sketch_badge_icons.dart';
 import '../../../core/widgets/sketch_decorations.dart';
 import '../../../games/common/base_game.dart';
 
 /// Günlük Zeka Defteri Özeti (Günün 6/6 Tamamlanış Sertifikası)
 /// 6 oyunun tamamı bittiğinde oyuncuya özel hazırlanan, paylaşılabilir skeç diploması.
-class DailyGeniusCertificateDialog extends StatelessWidget {
+class DailyGeniusCertificateDialog extends StatefulWidget {
   final String dateId;
   final int overallIQ;
   final Map<GameType, GamePerformanceData> statsMap;
@@ -53,13 +53,23 @@ class DailyGeniusCertificateDialog extends StatelessWidget {
   }
 
   @override
+  State<DailyGeniusCertificateDialog> createState() =>
+      _DailyGeniusCertificateDialogState();
+}
+
+class _DailyGeniusCertificateDialogState
+    extends State<DailyGeniusCertificateDialog> {
+  final GlobalKey _certKey = GlobalKey();
+  bool _isSharing = false;
+
+  @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final pencilColor = isDark ? AppColors.pencilWhite : AppColors.pencilBlack;
     final cardBg = isDark ? AppColors.cardBgDark : AppColors.surfaceLight;
     final subtitleColor = isDark ? AppColors.pencilGraphiteDark : AppColors.pencilGraphite;
 
-    final completedGames = dailyPlayState.getCompletedGamesForDate(dateId);
+    final completedGames = widget.dailyPlayState.getCompletedGamesForDate(widget.dateId);
     int totalDayScore = 0;
     int totalDayDurationMs = 0;
     for (final r in completedGames.values) {
@@ -67,10 +77,12 @@ class DailyGeniusCertificateDialog extends StatelessWidget {
       totalDayDurationMs += r.durationMs;
     }
 
+    final overallIQ = widget.overallIQ;
+    final todayBadges = widget.todayBadges;
     final activeMilestone =
-        IQMilestone.currentMilestone(overallIQ) ?? IQMilestone.all.first;
+        IQMilestone.currentMilestone(widget.overallIQ) ?? IQMilestone.all.first;
     final formattedDate =
-        GameDateUtils.getFormattedDate(GameDateUtils.parseLevelId(dateId));
+        GameDateUtils.getFormattedDate(GameDateUtils.parseLevelId(widget.dateId));
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -80,7 +92,9 @@ class DailyGeniusCertificateDialog extends StatelessWidget {
         child: SingleChildScrollView(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 420),
-            child: SketchCard(
+            child: RepaintBoundary(
+              key: _certKey,
+              child: SketchCard(
               backgroundColor: cardBg,
               borderColor: pencilColor,
               borderWidth: 2.8,
@@ -388,44 +402,76 @@ class DailyGeniusCertificateDialog extends StatelessWidget {
                       const SizedBox(width: 10),
                       Expanded(
                         child: SketchCard(
-                          onTap: () async {
-                            HapticFeedback.heavyImpact();
-                            final certText = StringBuffer();
-                            certText.writeln('🎓 ZÜHTÜ GÜNÜN DÂHİSİ SERTİFİKASI (6/6 TAM DENGESİ) ⚡');
-                            certText.writeln('📅 Tarih: $formattedDate');
-                            certText.writeln('🧠 Genel Bilişsel Seviye: $overallIQ IQ (${activeMilestone.title})');
-                            certText.writeln('🏆 Günlük Toplam Skor: $totalDayScore P');
-                            certText.writeln('⏱️ Toplam Çözüm Süresi: ${GameDateUtils.formatGameTime(totalDayDurationMs)}');
-                            if (todayBadges.isNotEmpty) {
-                              certText.writeln('🎖️ Kazanılan Rozetler: ${todayBadges.map((b) => b.title).join(", ")}');
-                            }
-                            certText.writeln('');
-                            certText.writeln('Bugünün 6 bulmacasını da çözüp zeka karnemi tamamladım! 🧠🔥');
-                            certText.writeln('Sen de zihnini sına: 👉 https://zuhtu.app');
+                          onTap: _isSharing
+                              ? null
+                              : () async {
+                                  setState(() => _isSharing = true);
+                                  HapticFeedback.heavyImpact();
+                                  final certText = StringBuffer();
+                                  certText.writeln(
+                                      '🎓 ZÜHTÜ GÜNÜN DÂHİSİ SERTİFİKASI (6/6 TAM DENGESİ) ⚡');
+                                  certText.writeln('📅 Tarih: $formattedDate');
+                                  certText.writeln(
+                                      '🧠 Genel Bilişsel Seviye: $overallIQ IQ (${activeMilestone.title})');
+                                  certText.writeln(
+                                      '🏆 Günlük Toplam Skor: $totalDayScore P');
+                                  certText.writeln(
+                                      '⏱️ Toplam Çözüm Süresi: ${GameDateUtils.formatGameTime(totalDayDurationMs)}');
+                                  if (todayBadges.isNotEmpty) {
+                                    certText.writeln(
+                                        '🎖️ Kazanılan Rozetler: ${todayBadges.map((b) => b.title).join(", ")}');
+                                  }
+                                  certText.writeln('');
+                                  certText.writeln(
+                                      'Bugünün 6 bulmacasını da çözüp zeka karnemi tamamladım! 🧠🔥');
+                                  certText.writeln(
+                                      'Sen de zihnini sına: 👉 https://zuhtu.app');
 
-                            try {
-                              await SharePlus.instance.share(
-                                ShareParams(
-                                  text: certText.toString(),
-                                  subject: '🎓 Zühtü Günün Dâhisi Sertifikası: $overallIQ IQ',
-                                ),
-                              );
-                            } catch (e) {
-                              await Clipboard.setData(ClipboardData(text: certText.toString()));
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      '🎉 Sertifika metni panoya kopyalandı!',
-                                      style: GoogleFonts.patrickHand(fontSize: 15),
-                                    ),
-                                    behavior: SnackBarBehavior.floating,
-                                    duration: const Duration(seconds: 3),
-                                  ),
-                                );
-                              }
-                            }
-                          },
+                                  try {
+                                    final success =
+                                        await ShareCardHelper.shareCard(
+                                      boundaryKey: _certKey,
+                                      shareText: certText.toString(),
+                                      subject:
+                                          '🎓 Zühtü Günün Dâhisi Sertifikası: $overallIQ IQ',
+                                      fileName:
+                                          'zuhtu_gunun_dahisi_sertifikasi.png',
+                                    );
+                                    if (!success && mounted) {
+                                      await Clipboard.setData(
+                                          ClipboardData(text: certText.toString()));
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            'Görsel paylaşılamadı, sertifika metni panoya kopyalandı! 📋',
+                                            style: GoogleFonts.patrickHand(
+                                                fontSize: 15),
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                  } catch (e) {
+                                    await Clipboard.setData(
+                                        ClipboardData(text: certText.toString()));
+                                    if (mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            '🎉 Sertifika metni panoya kopyalandı!',
+                                            style: GoogleFonts.patrickHand(
+                                                fontSize: 15),
+                                          ),
+                                          behavior: SnackBarBehavior.floating,
+                                          duration: const Duration(seconds: 3),
+                                        ),
+                                      );
+                                    }
+                                  } finally {
+                                    if (mounted) {
+                                      setState(() => _isSharing = false);
+                                    }
+                                  }
+                                },
                           padding: const EdgeInsets.symmetric(vertical: 11),
                           backgroundColor: AppColors.sunYellow,
                           borderColor: pencilColor,
@@ -435,10 +481,22 @@ class DailyGeniusCertificateDialog extends StatelessWidget {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.share_rounded, size: 18, color: pencilColor),
+                              if (_isSharing)
+                                const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                        AppColors.inkBlack),
+                                  ),
+                                )
+                              else
+                                Icon(Icons.share_rounded,
+                                    size: 18, color: pencilColor),
                               const SizedBox(width: 6),
                               Text(
-                                'Paylaş',
+                                _isSharing ? 'Hazırlanıyor...' : 'Paylaş',
                                 style: GoogleFonts.patrickHand(
                                   fontSize: 16.5,
                                   fontWeight: FontWeight.bold,
@@ -454,6 +512,7 @@ class DailyGeniusCertificateDialog extends StatelessWidget {
                 ],
               ),
             ),
+          ),
           ),
         ),
       ),

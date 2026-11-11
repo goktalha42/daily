@@ -1,9 +1,9 @@
 ﻿{
-    "version":  "1.2.13",
-    "build_number":  31,
-    "title":  "Zühtü v1.2.13 Lig \u0026 Sıralama Avatar Entegrasyonu ✨",
-    "changelog":  "• Seçilen profil avatarı ve karakterler artık Lig Sıralaması (League) ve Liderlik Tablosunda (Leaderboard) eksiksiz olarak görünüyor. • Rakipler ve kullanıcılar için dinamik eskiz karakter kartları eklendi.",
-    "apk_url":  "https://raw.githubusercontent.com/goktalha42/daily/main/releases/Zuhtu_v1.2.13_b31.apk",
-    "release_url":  "https://github.com/goktalha42/daily/releases/tag/v1.2.13",
+    "version":  "1.2.14",
+    "build_number":  32,
+    "title":  "Zühtü v1.2.14: WhatsApp/Instagram Şık Paylaşım Görselleri ve Karşılama Turu",
+    "changelog":  "1. WhatsApp ve Instagram için yüksek çözünürlüklü şık zeka karnesi ve kafa kafaya meydan okuma görsel kartları eklendi.\n2. İlk açılış için 3 slaytlı el çizimi interaktif karşılama ve tanıtım turu eklendi (Ayarlardan tekrar izlenebilir).\n3. Profil ve ana sayfaya tek tıkla sosyal medya paylaşım butonları entegre edildi.",
+    "apk_url":  "https://raw.githubusercontent.com/goktalha42/daily/main/releases/Zuhtu_v1.2.14_b32.apk",
+    "release_url":  "https://github.com/goktalha42/daily/releases/tag/v1.2.14",
     "force_update":  false
 }
