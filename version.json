@@ -1,7 +1,7 @@
 ﻿{
     "version":  "1.2.16",
     "build_number":  34,
-    "title":  "ZÃ¼htÃ¼ v1.2.16 GÃ¼ncellemesi",
+    "title":  "Zühtü v1.2.16 Güncellemesi",
     "changelog":  "• Zühtü Rehberi (Onboarding) sayfalarındaki tüm emojiler el çizimi ikonlar ve lig armalarıyla yenilendi.\n• Ana sayfa zihin kartındaki günlük seri damgaları ve aksiyon butonlarının üst üste binme sorunu giderildi.\n• Profil ekranındaki kişisel avatarlar için 8 farklı arka plan rengi seçimi eklendi.\n• WhatsApp ve sosyal medya paylaşım kartlarında metin kaldırılarak yalnızca görsel kart gönderimi sağlandı.\n• Sıralama ekranı canlı sunucu bağlantı göstergesi iyileştirildi.",
     "apk_url":  "https://raw.githubusercontent.com/goktalha42/daily/main/releases/Zuhtu_v1.2.16_b34.apk",
     "release_url":  "https://github.com/goktalha42/daily/releases/tag/v1.2.16",
