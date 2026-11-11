@@ -461,10 +461,10 @@ class _HomeBrainHeroCardState extends State<HomeBrainHeroCard>
 
                       const SizedBox(height: 11),
 
-                      // 4. ALT ŞERİT: 6 El Çizimi Günlük Oyun Mührü + Analiz Defteri Aç/Kapat Rozeti
+                      // 4. ALT ŞERİT: 6 El Çizimi Günlük Oyun Mührü + Analiz / Karne / Paylaş Butonları
                       SketchCard(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 7),
+                            horizontal: 10, vertical: 8),
                         borderRadius: 12,
                         borderWidth: 1.5,
                         shadowOffset: const Offset(1.8, 1.8),
@@ -472,150 +472,175 @@ class _HomeBrainHeroCardState extends State<HomeBrainHeroCard>
                             ? AppColors.surfaceSecondaryDark
                             : const Color(0xFFF5F1E8),
                         borderColor: pencilColor.withValues(alpha: 0.75),
-                        child: Row(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text(
-                              'GÜNLÜK $todayCompleted/6',
-                              style: GoogleFonts.patrickHand(
-                                fontSize: 12.5,
-                                fontWeight: FontWeight.w700,
-                                color: todayCompleted == 6
-                                    ? AppColors.success
-                                    : graphiteColor,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: List.generate(
-                                    GameType.values.length, (index) {
-                                  final game = GameType.values[index];
-                                  final isDone = widget.dailyPlayState
-                                      .isCompleted(game, widget.activeDateKey);
-                                  final double itemStart =
-                                      (0.25 + index * 0.08).clamp(0.0, 0.85);
-                                  final double itemEnd =
-                                      (itemStart + 0.25).clamp(0.0, 1.0);
-                                  final double stampScale = CurvedAnimation(
-                                    parent: _entranceController,
-                                    curve: Interval(itemStart, itemEnd,
-                                        curve: Curves.easeOutBack),
-                                  ).value;
+                            // Üst Satır: GÜNLÜK X/6 ve 6 Oyun Mührü
+                            Row(
+                              children: [
+                                Text(
+                                  'GÜNLÜK $todayCompleted/6',
+                                  style: GoogleFonts.patrickHand(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                    color: todayCompleted == 6
+                                        ? AppColors.success
+                                        : graphiteColor,
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: List.generate(
+                                        GameType.values.length, (index) {
+                                      final game = GameType.values[index];
+                                      final isDone = widget.dailyPlayState
+                                          .isCompleted(
+                                              game, widget.activeDateKey);
+                                      final double itemStart =
+                                          (0.25 + index * 0.08)
+                                              .clamp(0.0, 0.85);
+                                      final double itemEnd =
+                                          (itemStart + 0.25).clamp(0.0, 1.0);
+                                      final double stampScale = CurvedAnimation(
+                                        parent: _entranceController,
+                                        curve: Interval(itemStart, itemEnd,
+                                            curve: Curves.easeOutBack),
+                                      ).value;
 
-                                  return Transform.scale(
-                                    scale: stampScale.clamp(0.0, 1.15),
-                                    child: _HandDrawnGameStamp(
-                                      game: game,
-                                      isDone: isDone,
-                                      pencilColor: pencilColor,
-                                      seed: index + 11,
-                                    ),
-                                  );
-                                }),
-                              ),
+                                      return Transform.scale(
+                                        scale: stampScale.clamp(0.0, 1.15),
+                                        child: _HandDrawnGameStamp(
+                                          game: game,
+                                          isDone: isDone,
+                                          pencilColor: pencilColor,
+                                          seed: index + 11,
+                                        ),
+                                      );
+                                    }),
+                                  ),
+                                ),
+                              ],
                             ),
-                            const SizedBox(width: 6),
-                            if (todayCompleted == 6) ...[
-                              SketchCard(
-                                onTap: () {
-                                  DailyGeniusCertificateDialog.show(
-                                    context,
-                                    dateId: widget.activeDateKey,
-                                    overallIQ: widget.userIQ,
-                                    statsMap: widget.statsMap,
-                                    dailyPlayState: widget.dailyPlayState,
-                                  );
-                                },
-                                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                                backgroundColor: AppColors.sunYellow,
-                                borderColor: pencilColor,
-                                borderWidth: 1.4,
-                                borderRadius: 8,
-                                shadowOffset: const Offset(1.2, 1.2),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    SketchBadgeIcon(
-                                      type: BadgeArtType.centuryLaurel,
-                                      size: 13,
-                                      strokeColor: AppColors.inkBlack,
-                                    ),
-                                    const SizedBox(width: 3),
-                                    Text(
-                                      'Karne',
-                                      style: GoogleFonts.patrickHand(
-                                        fontSize: 11.5,
-                                        fontWeight: FontWeight.bold,
-                                        color: AppColors.inkBlack,
+                            const SizedBox(height: 8),
+                            // Alt Satır: Karne, Analiz ve Paylaş Aksiyon Butonları
+                            Row(
+                              children: [
+                                if (todayCompleted == 6) ...[
+                                  Expanded(
+                                    child: SketchCard(
+                                      onTap: () {
+                                        DailyGeniusCertificateDialog.show(
+                                          context,
+                                          dateId: widget.activeDateKey,
+                                          overallIQ: widget.userIQ,
+                                          statsMap: widget.statsMap,
+                                          dailyPlayState: widget.dailyPlayState,
+                                        );
+                                      },
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 6, vertical: 4),
+                                      backgroundColor: AppColors.sunYellow,
+                                      borderColor: pencilColor,
+                                      borderWidth: 1.4,
+                                      borderRadius: 8,
+                                      shadowOffset: const Offset(1.2, 1.2),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          const SketchBadgeIcon(
+                                            type: BadgeArtType.centuryLaurel,
+                                            size: 13,
+                                            strokeColor: AppColors.inkBlack,
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            'Karne',
+                                            style: GoogleFonts.patrickHand(
+                                              fontSize: 12.5,
+                                              fontWeight: FontWeight.bold,
+                                              color: AppColors.inkBlack,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(width: 4),
-                            ],
-                            SketchCard(
-                              backgroundColor: _isExpanded
-                                  ? AppColors.sunYellow
-                                  : (isDark
-                                      ? AppColors.surfaceDark
-                                      : Colors.white),
-                              borderColor: pencilColor,
-                              borderWidth: 1.4,
-                              borderRadius: 8,
-                              shadowOffset: const Offset(1.2, 1.2),
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 7, vertical: 2),
-                              child: Text(
-                                _isExpanded ? 'Kapat ▴' : 'Analiz ▾',
-                                style: GoogleFonts.patrickHand(
-                                  fontSize: 11.5,
-                                  fontWeight: FontWeight.w700,
-                                  color: _isExpanded
-                                      ? AppColors.inkBlack
-                                      : pencilColor,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            SketchCard(
-                              onTap: () {
-                                HapticFeedback.lightImpact();
-                                DailySocialShareDialog.show(
-                                  context,
-                                  dateId: widget.activeDateKey,
-                                  overallIQ: widget.userIQ,
-                                  dailyPlayState: widget.dailyPlayState,
-                                  statsMap: widget.statsMap,
-                                );
-                              },
-                              backgroundColor: isDark
-                                  ? AppColors.surfaceDark
-                                  : Colors.white,
-                              borderColor: pencilColor,
-                              borderWidth: 1.4,
-                              borderRadius: 8,
-                              shadowOffset: const Offset(1.2, 1.2),
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 7, vertical: 2),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(Icons.share_rounded,
-                                      size: 11, color: pencilColor),
-                                  const SizedBox(width: 3),
-                                  Text(
-                                    'Paylaş',
-                                    style: GoogleFonts.patrickHand(
-                                      fontSize: 11.5,
-                                      fontWeight: FontWeight.w700,
-                                      color: pencilColor,
+                                  ),
+                                  const SizedBox(width: 6),
+                                ],
+                                Expanded(
+                                  child: SketchCard(
+                                    onTap: _toggleExpanded,
+                                    backgroundColor: _isExpanded
+                                        ? AppColors.sunYellow
+                                        : (isDark
+                                            ? AppColors.surfaceDark
+                                            : Colors.white),
+                                    borderColor: pencilColor,
+                                    borderWidth: 1.4,
+                                    borderRadius: 8,
+                                    shadowOffset: const Offset(1.2, 1.2),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 6, vertical: 4),
+                                    child: Center(
+                                      child: Text(
+                                        _isExpanded ? 'Kapat ▴' : 'Analiz ▾',
+                                        style: GoogleFonts.patrickHand(
+                                          fontSize: 12.5,
+                                          fontWeight: FontWeight.w700,
+                                          color: _isExpanded
+                                              ? AppColors.inkBlack
+                                              : pencilColor,
+                                        ),
+                                      ),
                                     ),
                                   ),
-                                ],
-                              ),
+                                ),
+                                const SizedBox(width: 6),
+                                Expanded(
+                                  child: SketchCard(
+                                    onTap: () {
+                                      HapticFeedback.lightImpact();
+                                      DailySocialShareDialog.show(
+                                        context,
+                                        dateId: widget.activeDateKey,
+                                        overallIQ: widget.userIQ,
+                                        dailyPlayState: widget.dailyPlayState,
+                                        statsMap: widget.statsMap,
+                                      );
+                                    },
+                                    backgroundColor: isDark
+                                        ? AppColors.surfaceDark
+                                        : Colors.white,
+                                    borderColor: pencilColor,
+                                    borderWidth: 1.4,
+                                    borderRadius: 8,
+                                    shadowOffset: const Offset(1.2, 1.2),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 6, vertical: 4),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(Icons.share_rounded,
+                                            size: 12, color: pencilColor),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          'Paylaş',
+                                          style: GoogleFonts.patrickHand(
+                                            fontSize: 12.5,
+                                            fontWeight: FontWeight.w700,
+                                            color: pencilColor,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),

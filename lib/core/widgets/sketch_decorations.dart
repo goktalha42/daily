@@ -879,7 +879,7 @@ class SketchDoodleFlame extends StatelessWidget {
     super.key,
     this.size = 28,
     this.color,
-    this.fillColor = AppColors.highlighterOrange,
+    this.fillColor = const Color(0xFFF97316),
   });
 
   @override
@@ -906,10 +906,11 @@ class _DoodleFlamePainter extends CustomPainter {
     final h = size.height;
 
     final outerPath = Path();
-    outerPath.moveTo(w * 0.5, h * 0.08); // Zirve
-    outerPath.cubicTo(w * 0.25, h * 0.30, w * 0.08, h * 0.55, w * 0.20, h * 0.80);
-    outerPath.cubicTo(w * 0.28, h * 0.95, w * 0.75, h * 0.95, w * 0.80, h * 0.80);
-    outerPath.cubicTo(w * 0.92, h * 0.55, w * 0.75, h * 0.30, w * 0.5, h * 0.08);
+    outerPath.moveTo(w * 0.48, h * 0.90);
+    outerPath.cubicTo(w * 0.16, h * 0.90, w * 0.12, h * 0.56, w * 0.30, h * 0.40);
+    outerPath.cubicTo(w * 0.24, h * 0.26, w * 0.40, h * 0.12, w * 0.50, h * 0.06);
+    outerPath.cubicTo(w * 0.60, h * 0.22, w * 0.80, h * 0.30, w * 0.70, h * 0.50);
+    outerPath.cubicTo(w * 0.84, h * 0.62, w * 0.78, h * 0.90, w * 0.48, h * 0.90);
     outerPath.close();
 
     if (fillColor != null) {
@@ -918,19 +919,27 @@ class _DoodleFlamePainter extends CustomPainter {
 
     final strokePaint = Paint()
       ..color = color
-      ..strokeWidth = 2.0
+      ..strokeWidth = (w * 0.075).clamp(1.4, 2.2)
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
     canvas.drawPath(outerPath, strokePaint);
 
-    // İç alev karalaması
+    // İç sarı alev çekirdeği
     final innerPath = Path();
-    innerPath.moveTo(w * 0.5, h * 0.45);
-    innerPath.cubicTo(w * 0.35, h * 0.60, w * 0.32, h * 0.75, w * 0.42, h * 0.84);
-    innerPath.cubicTo(w * 0.58, h * 0.84, w * 0.65, h * 0.75, w * 0.58, h * 0.60);
+    innerPath.moveTo(w * 0.48, h * 0.85);
+    innerPath.cubicTo(w * 0.30, h * 0.85, w * 0.30, h * 0.64, w * 0.42, h * 0.52);
+    innerPath.cubicTo(w * 0.45, h * 0.40, w * 0.50, h * 0.32, w * 0.50, h * 0.28);
+    innerPath.cubicTo(w * 0.56, h * 0.38, w * 0.66, h * 0.45, w * 0.60, h * 0.58);
+    innerPath.cubicTo(w * 0.66, h * 0.68, w * 0.62, h * 0.85, w * 0.48, h * 0.85);
     innerPath.close();
-    canvas.drawPath(innerPath, strokePaint..strokeWidth = 1.3);
+    canvas.drawPath(
+      innerPath,
+      Paint()
+        ..color = AppColors.sunYellow
+        ..style = PaintingStyle.fill,
+    );
+    canvas.drawPath(innerPath, strokePaint..strokeWidth = (w * 0.05).clamp(1.0, 1.5));
   }
 
   @override

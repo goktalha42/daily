@@ -18,11 +18,14 @@ class AvatarPickerDialog extends ConsumerStatefulWidget {
 
 class _AvatarPickerDialogState extends ConsumerState<AvatarPickerDialog> {
   late String _selectedAvatarId;
+  late String _selectedColorId;
 
   @override
   void initState() {
     super.initState();
-    _selectedAvatarId = ref.read(userAvatarProvider);
+    final currentAvatar = UserAvatar.getById(ref.read(userAvatarProvider));
+    _selectedAvatarId = currentAvatar.id;
+    _selectedColorId = currentAvatar.colorId;
   }
 
   @override
@@ -31,36 +34,41 @@ class _AvatarPickerDialogState extends ConsumerState<AvatarPickerDialog> {
     final pencilColor = isDark ? AppColors.pencilWhite : AppColors.pencilBlack;
     final graphiteColor = isDark ? AppColors.pencilGraphiteDark : AppColors.pencilGraphite;
     final cardBg = isDark ? AppColors.cardBgDark : Colors.white;
+    final selectedColorOption = UserAvatar.getColorOptionById(_selectedColorId);
+    final selectedAvatarModel = UserAvatar.getById(
+      UserAvatar.encodeId(_selectedAvatarId, _selectedColorId),
+    );
 
     return Dialog(
       backgroundColor: Colors.transparent,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 440, maxHeight: 620),
+        constraints: const BoxConstraints(maxWidth: 440, maxHeight: 670),
         child: SketchCard(
           borderRadius: 20,
           borderWidth: 2.5,
           shadowOffset: const Offset(4.0, 4.0),
           backgroundColor: cardBg,
           borderColor: pencilColor,
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Başlık Alanı
+              // Başlık & Canlı Önizleme Alanı
               Row(
                 children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: AppColors.sunYellow,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: pencilColor, width: 2.0),
-                    ),
-                    child: const Center(
-                      child: Text('🎨', style: TextStyle(fontSize: 22)),
+                  SketchPlaceholderBox(
+                    width: 48,
+                    height: 48,
+                    fillColor: selectedColorOption.color.withAlpha(isDark ? 95 : 130),
+                    lineColor: pencilColor,
+                    borderRadius: 11,
+                    child: Center(
+                      child: selectedAvatarModel.buildWidget(
+                        size: 28,
+                        tintColor: pencilColor,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -69,7 +77,7 @@ class _AvatarPickerDialogState extends ConsumerState<AvatarPickerDialog> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Avatarını Seç',
+                          'Avatarını Özelleştir',
                           style: GoogleFonts.patrickHand(
                             fontSize: 22,
                             fontWeight: FontWeight.w700,
@@ -77,7 +85,7 @@ class _AvatarPickerDialogState extends ConsumerState<AvatarPickerDialog> {
                           ),
                         ),
                         Text(
-                          'Profilini ve kişiliğini yansıtan eskiz ikonunu belirle',
+                          'İkonunu ve arka plan rengini özgürce belirle',
                           style: GoogleFonts.plusJakartaSans(
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
@@ -94,11 +102,11 @@ class _AvatarPickerDialogState extends ConsumerState<AvatarPickerDialog> {
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               Divider(color: pencilColor.withAlpha(50), height: 1),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
 
-              // Avatar Listesi (3 Sütunlu Grid)
+              // 1. İkon Listesi (3 Sütunlu Grid)
               Expanded(
                 child: GridView.builder(
                   shrinkWrap: true,
@@ -107,12 +115,15 @@ class _AvatarPickerDialogState extends ConsumerState<AvatarPickerDialog> {
                     crossAxisCount: 3,
                     crossAxisSpacing: 10,
                     mainAxisSpacing: 10,
-                    childAspectRatio: 0.95,
+                    childAspectRatio: 0.98,
                   ),
                   itemCount: UserAvatar.allAvatars.length,
                   itemBuilder: (context, index) {
                     final avatar = UserAvatar.allAvatars[index];
                     final isSelected = avatar.id == _selectedAvatarId;
+                    final effectiveAccent = isSelected
+                        ? selectedColorOption.color
+                        : avatar.accentColor;
 
                     return GestureDetector(
                       onTap: () {
@@ -126,17 +137,17 @@ class _AvatarPickerDialogState extends ConsumerState<AvatarPickerDialog> {
                         curve: Curves.easeOutQuad,
                         decoration: BoxDecoration(
                           color: isSelected
-                              ? avatar.accentColor.withAlpha(isDark ? 55 : 45)
+                              ? effectiveAccent.withAlpha(isDark ? 75 : 95)
                               : (isDark ? AppColors.surfaceDark : AppColors.surfaceLight),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: isSelected ? avatar.accentColor : pencilColor.withAlpha(80),
+                            color: isSelected ? effectiveAccent : pencilColor.withAlpha(80),
                             width: isSelected ? 2.5 : 1.5,
                           ),
                           boxShadow: isSelected
                               ? [
                                   BoxShadow(
-                                    color: avatar.accentColor.withAlpha(70),
+                                    color: effectiveAccent.withAlpha(80),
                                     offset: const Offset(2, 2),
                                     blurRadius: 0,
                                   ),
@@ -149,8 +160,8 @@ class _AvatarPickerDialogState extends ConsumerState<AvatarPickerDialog> {
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  avatar.buildWidget(size: 34, tintColor: pencilColor),
-                                  const SizedBox(height: 6),
+                                  avatar.buildWidget(size: 32, tintColor: pencilColor),
+                                  const SizedBox(height: 5),
                                   Padding(
                                     padding: const EdgeInsets.symmetric(horizontal: 4),
                                     child: Text(
@@ -177,7 +188,7 @@ class _AvatarPickerDialogState extends ConsumerState<AvatarPickerDialog> {
                                   height: 18,
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    color: avatar.accentColor,
+                                    color: effectiveAccent,
                                     border: Border.all(color: pencilColor, width: 1.5),
                                   ),
                                   child: const Center(
@@ -197,9 +208,76 @@ class _AvatarPickerDialogState extends ConsumerState<AvatarPickerDialog> {
                 ),
               ),
 
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
+
+              // 2. Arka Plan Rengi Seçici Şerit
+              Text(
+                'ARKA PLAN RENGİ',
+                style: GoogleFonts.patrickHand(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
+                  color: graphiteColor,
+                  letterSpacing: 0.6,
+                ),
+              ),
+              const SizedBox(height: 8),
+              SizedBox(
+                height: 36,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: UserAvatar.bgColorOptions.map((opt) {
+                    final isColorSelected = opt.id == _selectedColorId;
+                    return GestureDetector(
+                      onTap: () {
+                        HapticFeedback.selectionClick();
+                        setState(() {
+                          _selectedColorId = opt.id;
+                        });
+                      },
+                      child: Tooltip(
+                        message: opt.label,
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 180),
+                          width: isColorSelected ? 34 : 30,
+                          height: isColorSelected ? 34 : 30,
+                          decoration: BoxDecoration(
+                            color: opt.color,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: pencilColor,
+                              width: isColorSelected ? 2.4 : 1.5,
+                            ),
+                            boxShadow: isColorSelected
+                                ? [
+                                    BoxShadow(
+                                      color: pencilColor.withAlpha(110),
+                                      offset: const Offset(1.5, 1.5),
+                                      blurRadius: 0,
+                                    ),
+                                  ]
+                                : null,
+                          ),
+                          child: isColorSelected
+                              ? Center(
+                                  child: Icon(
+                                    Icons.check_rounded,
+                                    size: 17,
+                                    color: opt.color.computeLuminance() > 0.35
+                                        ? AppColors.pencilBlack
+                                        : Colors.white,
+                                  ),
+                                )
+                              : null,
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+
+              const SizedBox(height: 14),
               Divider(color: pencilColor.withAlpha(50), height: 1),
-              const SizedBox(height: 16),
+              const SizedBox(height: 14),
 
               // Butonlar
               Row(
@@ -236,7 +314,11 @@ class _AvatarPickerDialogState extends ConsumerState<AvatarPickerDialog> {
                       ),
                       onPressed: () async {
                         HapticFeedback.mediumImpact();
-                        await ref.read(userAvatarProvider.notifier).setAvatar(_selectedAvatarId);
+                        final encoded = UserAvatar.encodeId(
+                          _selectedAvatarId,
+                          _selectedColorId,
+                        );
+                        await ref.read(userAvatarProvider.notifier).setAvatar(encoded);
                         if (mounted) {
                           Navigator.of(context).pop();
                           ScaffoldMessenger.of(context).showSnackBar(
@@ -248,7 +330,7 @@ class _AvatarPickerDialogState extends ConsumerState<AvatarPickerDialog> {
                                 side: BorderSide(color: pencilColor, width: 1.5),
                               ),
                               content: Text(
-                                'Avatarın başarıyla güncellendi! ✨',
+                                'Avatarın ve arka plan rengin güncellendi! ✨',
                                 style: GoogleFonts.patrickHand(
                                   fontSize: 15,
                                   fontWeight: FontWeight.w700,

@@ -738,7 +738,7 @@ class ProfileScreen extends ConsumerWidget {
                             width: 44,
                             height: 44,
                             child: Center(
-                              child: _GameSketchThumbnail(
+                              child: GameSketchThumbnail(
                                 game: game,
                                 size: 28,
                                 pencilColor: AppColors.pencilBlack,
@@ -953,12 +953,13 @@ class _SketchMetricBox extends StatelessWidget {
 
 
 /// Oyun Bazlı Skeç Karnesi için %100 El Çizimi Mini Skeç Resmi
-class _GameSketchThumbnail extends StatelessWidget {
+class GameSketchThumbnail extends StatelessWidget {
   final GameType game;
   final double size;
   final Color pencilColor;
 
-  const _GameSketchThumbnail({
+  const GameSketchThumbnail({
+    super.key,
     required this.game,
     this.size = 28,
     required this.pencilColor,

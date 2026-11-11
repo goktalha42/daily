@@ -78,7 +78,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
     final showUserBottomRow = myEntry != null && !isUserInTop10;
 
     final isDark = AppColors.isDark(context);
-    final isConnected = service.isServerConnected;
+    final isConnected = service.isServerConnected || hasServerData;
 
     return RefreshIndicator(
       color: AppColors.sunYellow,

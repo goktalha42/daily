@@ -190,6 +190,7 @@ class ApiClient {
       final res = await _client.get(url).timeout(const Duration(seconds: 3));
 
       if (res.statusCode == 200) {
+        _isOnlineServerReachable = true;
         final data = jsonDecode(res.body);
         if (data['timestamp'] != null) {
           final serverEpoch = data['timestamp'] as int;
@@ -228,6 +229,7 @@ class ApiClient {
       ).timeout(const Duration(seconds: 4));
 
       if (res.statusCode == 200) {
+        _isOnlineServerReachable = true;
         final data = jsonDecode(res.body);
         final token = data['token'] as String?;
         if (token != null) {
@@ -283,7 +285,11 @@ class ApiClient {
           .post(url, headers: headers, body: jsonEncode(payload))
           .timeout(const Duration(seconds: 4));
 
-      return res.statusCode == 200;
+      if (res.statusCode == 200) {
+        _isOnlineServerReachable = true;
+        return true;
+      }
+      return false;
     } catch (e) {
       debugPrint('[ApiClient] Skor gönderme hatası: $e');
       return false;
@@ -334,6 +340,7 @@ class ApiClient {
       ).timeout(const Duration(seconds: 4));
 
       if (res.statusCode == 200) {
+        _isOnlineServerReachable = true;
         final data = jsonDecode(res.body);
         final list = data['leaderboard'] as List<dynamic>?;
         if (list != null) {

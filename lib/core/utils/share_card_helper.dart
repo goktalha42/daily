@@ -47,12 +47,11 @@ class ShareCardHelper {
     }
   }
 
-  /// Görseli yakalayıp yerel paylaşım sayfası üzerinden paylaşır.
-  /// Görsel yakalanamazsa şık metin formatıyla paylaşımı sürdürür.
+  /// Görseli yakalayıp yerel paylaşım sayfası üzerinden sadece kart görseli olarak paylaşır.
   static Future<bool> shareCard({
     required GlobalKey boundaryKey,
-    required String shareText,
-    required String subject,
+    String? shareText,
+    String? subject,
     String fileName = 'zuhtu_share.png',
   }) async {
     try {
@@ -61,20 +60,11 @@ class ShareCardHelper {
         await SharePlus.instance.share(
           ShareParams(
             files: [XFile(file.path, mimeType: 'image/png')],
-            text: shareText,
-            subject: subject,
-          ),
-        );
-        return true;
-      } else {
-        await SharePlus.instance.share(
-          ShareParams(
-            text: shareText,
-            subject: subject,
           ),
         );
         return true;
       }
+      return false;
     } catch (e) {
       debugPrint('[ShareCardHelper] Paylaşım hatası: $e');
       return false;

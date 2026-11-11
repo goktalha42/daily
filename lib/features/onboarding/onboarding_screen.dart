@@ -4,8 +4,12 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../core/services/league_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/sketch_decorations.dart';
+import '../../core/widgets/sketch_league_emblems.dart';
+import '../../games/common/base_game.dart';
+import '../profile/profile_screen.dart';
 
 /// Zühtü - İlk Açılış Karşılama ve Tanıtım Turu (Onboarding Walkthrough).
 /// 5 adet sade, el çizimi ve samimi slayt ile oyunu tanıtır:
@@ -344,8 +348,24 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
           const SizedBox(height: 18),
 
-          Text(
-            'Her Gece 00:00\'da\n6 Yeni Oyun 🌙',
+          Text.rich(
+            TextSpan(
+              text: 'Her Gece 00:00\'da\n6 Yeni Oyun ',
+              children: [
+                WidgetSpan(
+                  alignment: PlaceholderAlignment.middle,
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 2),
+                    child: CustomPaint(
+                      size: const Size(26, 26),
+                      painter: _DoodleInlineMoonPainter(
+                        pencilColor: pencilColor,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
             textAlign: TextAlign.center,
             style: GoogleFonts.patrickHand(
               fontSize: 28,
@@ -383,7 +403,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   children: [
                     Expanded(
                       child: _buildMiniGamePill(
-                        emoji: '👑',
+                        game: GameType.queens,
                         title: 'Vezirler',
                         desc: 'Strateji',
                         color: AppColors.queensGame,
@@ -394,7 +414,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: _buildMiniGamePill(
-                        emoji: '🎯',
+                        game: GameType.pinpoint,
                         title: 'Nokta Atışı',
                         desc: 'Görsel Hız',
                         color: AppColors.pinpointGame,
@@ -409,7 +429,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   children: [
                     Expanded(
                       child: _buildMiniGamePill(
-                        emoji: '🧗',
+                        game: GameType.crossclimb,
                         title: 'Kelime T.',
                         desc: 'Kelime Dağarcığı',
                         color: AppColors.crossclimbGame,
@@ -420,7 +440,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: _buildMiniGamePill(
-                        emoji: '⚪',
+                        game: GameType.tango,
                         title: 'Tango',
                         desc: 'Akıl Yürütme',
                         color: AppColors.tangoGame,
@@ -435,7 +455,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   children: [
                     Expanded(
                       child: _buildMiniGamePill(
-                        emoji: '🔢',
+                        game: GameType.zipPath,
                         title: 'Sayı Yolu',
                         desc: 'İşlem Hafızası',
                         color: AppColors.zipGame,
@@ -446,7 +466,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: _buildMiniGamePill(
-                        emoji: '🧩',
+                        game: GameType.patches,
                         title: 'Yamalar',
                         desc: 'Şekil Mantığı',
                         color: AppColors.patchesGame,
@@ -582,8 +602,22 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
           const SizedBox(height: 18),
 
-          Text(
-            'Ateşi Söndürme:\nSerini Koru! 🔥',
+          Text.rich(
+            TextSpan(
+              text: 'Ateşi Söndürme:\nSerini Koru! ',
+              children: [
+                WidgetSpan(
+                  alignment: PlaceholderAlignment.middle,
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 2),
+                    child: SketchDoodleFlame(
+                      size: 28,
+                      color: pencilColor,
+                    ),
+                  ),
+                ),
+              ],
+            ),
             textAlign: TextAlign.center,
             style: GoogleFonts.patrickHand(
               fontSize: 28,
@@ -617,7 +651,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             borderColor: pencilColor,
             child: Row(
               children: [
-                const Text('🔥', style: TextStyle(fontSize: 26)),
+                SketchDoodleFlame(
+                  size: 30,
+                  color: pencilColor,
+                ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
@@ -665,8 +702,23 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
           const SizedBox(height: 18),
 
-          Text(
-            'Liglerde Yarış ve\nArkadaşlarına Hava At! 🏆',
+          Text.rich(
+            TextSpan(
+              text: 'Liglerde Yarış ve\nArkadaşlarına Hava At! ',
+              children: [
+                WidgetSpan(
+                  alignment: PlaceholderAlignment.middle,
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 2),
+                    child: SketchDoodleTrophy(
+                      size: 27,
+                      color: pencilColor,
+                      fillColor: AppColors.sunYellow,
+                    ),
+                  ),
+                ),
+              ],
+            ),
             textAlign: TextAlign.center,
             style: GoogleFonts.patrickHand(
               fontSize: 27,
@@ -714,19 +766,19 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    _buildTierBadge('🥉', 'Bronz', pencilColor),
+                    _buildTierBadge(LeagueLevel.bronze, 'Bronz', pencilColor),
                     const Icon(Icons.arrow_forward_ios_rounded,
                         size: 10, color: AppColors.pencilGraphite),
-                    _buildTierBadge('🥈', 'Gümüş', pencilColor),
+                    _buildTierBadge(LeagueLevel.silver, 'Gümüş', pencilColor),
                     const Icon(Icons.arrow_forward_ios_rounded,
                         size: 10, color: AppColors.pencilGraphite),
-                    _buildTierBadge('🥇', 'Altın', pencilColor),
+                    _buildTierBadge(LeagueLevel.gold, 'Altın', pencilColor),
                     const Icon(Icons.arrow_forward_ios_rounded,
                         size: 10, color: AppColors.pencilGraphite),
-                    _buildTierBadge('💎', 'Elmas', pencilColor),
+                    _buildTierBadge(LeagueLevel.diamond, 'Elmas', pencilColor),
                     const Icon(Icons.arrow_forward_ios_rounded,
                         size: 10, color: AppColors.pencilGraphite),
-                    _buildTierBadge('👑', 'Dâhi', pencilColor),
+                    _buildTierBadge(LeagueLevel.champion, 'Dâhi', pencilColor),
                   ],
                 ),
               ],
@@ -767,7 +819,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   Widget _buildMiniGamePill({
-    required String emoji,
+    required GameType game,
     required String title,
     required String desc,
     required Color color,
@@ -783,8 +835,26 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       ),
       child: Row(
         children: [
-          Text(emoji, style: const TextStyle(fontSize: 15)),
-          const SizedBox(width: 5),
+          SketchCard(
+            padding: EdgeInsets.zero,
+            borderRadius: 7,
+            borderWidth: 1.4,
+            shadowOffset: const Offset(1.0, 1.0),
+            backgroundColor: color,
+            borderColor: AppColors.pencilBlack,
+            child: SizedBox(
+              width: 30,
+              height: 30,
+              child: Center(
+                child: GameSketchThumbnail(
+                  game: game,
+                  size: 20,
+                  pencilColor: AppColors.pencilBlack,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 7),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -818,15 +888,18 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
-  Widget _buildTierBadge(String emoji, String name, Color pencilColor) {
+  Widget _buildTierBadge(LeagueLevel level, String name, Color pencilColor) {
     return Column(
       children: [
-        Text(emoji, style: const TextStyle(fontSize: 18)),
-        const SizedBox(height: 2),
+        SketchLeagueCrestMedallion(
+          level: level,
+          size: 36,
+        ),
+        const SizedBox(height: 3),
         Text(
           name,
           style: GoogleFonts.patrickHand(
-            fontSize: 10.5,
+            fontSize: 11,
             fontWeight: FontWeight.bold,
             color: pencilColor,
           ),
@@ -834,6 +907,42 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       ],
     );
   }
+}
+
+/// 2. Slayt Başlığı İçin Satır İçi El Çizimi Hilal Ay
+class _DoodleInlineMoonPainter extends CustomPainter {
+  final Color pencilColor;
+
+  _DoodleInlineMoonPainter({required this.pencilColor});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
+
+    final moonFill = Paint()
+      ..color = AppColors.sunYellow
+      ..style = PaintingStyle.fill;
+    final moonPen = Paint()
+      ..color = pencilColor
+      ..strokeWidth = 1.8
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    final moonPath = Path()
+      ..moveTo(w * 0.62, h * 0.12)
+      ..cubicTo(w * 0.16, h * 0.22, w * 0.16, h * 0.78, w * 0.68, h * 0.88)
+      ..cubicTo(w * 0.42, h * 0.68, w * 0.42, h * 0.32, w * 0.62, h * 0.12)
+      ..close();
+
+    canvas.drawPath(moonPath, moonFill);
+    canvas.drawPath(moonPath, moonPen);
+  }
+
+  @override
+  bool shouldRepaint(covariant _DoodleInlineMoonPainter oldDelegate) =>
+      oldDelegate.pencilColor != pencilColor;
 }
 
 // =============================================================================
