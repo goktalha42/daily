@@ -172,7 +172,7 @@ class _DailyGeniusCertificateDialogState
 
                   // 2. Oyuncu Onur Metni & Tarih
                   Text(
-                    '$formattedDate tarihindeki tüm zihinsel egzersizleri ve psikometrik bulmacaları başarıyla tamamlayarak zihinsel disiplinini kanıtladın.',
+                    '$formattedDate tarihindeki 6 zeka bulmacasını da başarıyla bitirip günün antrenmanını tamamladın! Harika bir zihin performansı sergiledin.',
                     textAlign: TextAlign.center,
                     style: GoogleFonts.patrickHand(
                       fontSize: 15,

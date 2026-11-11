@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:daily_games/core/services/daily_play_service.dart';
 import 'package:daily_games/core/widgets/daily_social_share_dialog.dart';
+import 'package:daily_games/core/widgets/head_to_head_share_dialog.dart';
 import 'package:daily_games/features/onboarding/onboarding_screen.dart';
 import 'package:daily_games/features/profile/settings_screen.dart';
 import 'package:daily_games/games/common/base_game.dart';
@@ -18,7 +19,7 @@ void main() {
   });
 
   group('Onboarding Walkthrough Tests', () {
-    testWidgets('OnboardingScreen 1. slaytı doğru başlık ve oyunlarla render eder',
+    testWidgets('OnboardingScreen 1. slaytı doğru başlık ve metinlerle render eder',
         (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
@@ -29,13 +30,12 @@ void main() {
 
       expect(find.text('ZÜHTÜ REHBERİ'), findsOneWidget);
       expect(find.text('Atla'), findsOneWidget);
-      expect(find.textContaining("Her Gece 00:00'da"), findsOneWidget);
-      expect(find.text('Vezirler'), findsOneWidget);
-      expect(find.text('Nokta Atışı'), findsOneWidget);
+      expect(find.textContaining('Günde Sadece'), findsOneWidget);
+      expect(find.textContaining('10 Dakika! ☕'), findsOneWidget);
       expect(find.text('Devam Et'), findsOneWidget);
     });
 
-    testWidgets('OnboardingScreen slaytlar arası geçiş yapar ve son slaytta Başla butonu gösterir',
+    testWidgets('OnboardingScreen 5 slayt arasında adım adım ilerler ve son slaytta Başla butonu gösterir',
         (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
@@ -44,15 +44,29 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // 1. slayttan 2. slayta geç
+      // 1. slayt -> 2. slayt
       await tester.tap(find.text('Devam Et'));
       await tester.pumpAndSettle();
-      expect(find.textContaining('Bilimsel WAIS-IV'), findsOneWidget);
+      expect(find.textContaining("Her Gece 00:00'da"), findsOneWidget);
+      expect(find.text('Vezirler'), findsOneWidget);
+      expect(find.text('Nokta Atışı'), findsOneWidget);
 
-      // 2. slayttan 3. slayta geç
+      // 2. slayt -> 3. slayt
       await tester.tap(find.text('Devam Et'));
       await tester.pumpAndSettle();
-      expect(find.textContaining('Haftalık Canlı Ligler'), findsOneWidget);
+      expect(find.textContaining('Puanını ve Zeka'), findsOneWidget);
+      expect(find.text('ZÜHTÜ SKORU NEDİR?'), findsOneWidget);
+
+      // 3. slayt -> 4. slayt
+      await tester.tap(find.text('Devam Et'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Ateşi Söndürme'), findsOneWidget);
+      expect(find.textContaining('Serini Koru! 🔥'), findsOneWidget);
+
+      // 4. slayt -> 5. slayt (Son slayt)
+      await tester.tap(find.text('Devam Et'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Liglerde Yarış'), findsOneWidget);
       expect(find.text("Zühtü'ye Başla! 🚀"), findsOneWidget);
 
       // Başla butonuna basıldığında SharedPreferences'a tamamlandı yazar
@@ -123,12 +137,54 @@ void main() {
       await tester.pumpAndSettle();
 
       // Kart bileşenleri
-      expect(find.text('ZÜHTÜ GÜNLÜK ZEKA'), findsOneWidget);
+      expect(find.text('ZÜHTÜ GÜNÜN KARNESİ'), findsOneWidget);
       expect(find.text('@ZekaTestcisi'), findsOneWidget);
       expect(find.text('🦉'), findsOneWidget);
       expect(find.text('135'), findsOneWidget);
       expect(find.text('Görsel Paylaş'), findsOneWidget);
       expect(find.text('Metin'), findsOneWidget);
+      expect(find.text('Kapat'), findsOneWidget);
+    });
+  });
+
+  group('HeadToHeadShareDialog Tests', () {
+    testWidgets('HeadToHeadShareDialog el çizimi kartpostalını ve meydan okuma butonlarını render eder',
+        (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: Builder(
+                builder: (context) {
+                  return ElevatedButton(
+                    onPressed: () {
+                      HeadToHeadShareDialog.show(
+                        context,
+                        gameType: GameType.queens,
+                        gameTitle: 'Vezirler',
+                        score: 950,
+                        durationMs: 45000,
+                        moveCount: 8,
+                        fallbackIQ: 125,
+                      );
+                    },
+                    child: const Text('Meydan Oku Kartı'),
+                  );
+                },
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Meydan Oku Kartı'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('GÜNLÜK KAFA KAFAYA KART'), findsOneWidget);
+      expect(find.text('@ZekaTestcisi'), findsOneWidget);
+      expect(find.text('Vezirler'), findsOneWidget);
+      expect(find.text('Meydan Oku'), findsOneWidget);
+      expect(find.text('Kopyala'), findsOneWidget);
       expect(find.text('Kapat'), findsOneWidget);
     });
   });
