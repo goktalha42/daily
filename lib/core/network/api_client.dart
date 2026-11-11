@@ -586,4 +586,67 @@ class ApiClient {
       };
     }
   }
+
+  /// Oyuncu avatarını sunucuda günceller
+  Future<bool> updateAvatar(String avatarId) async {
+    try {
+      final baseUrl = await getBaseUrl();
+      final deviceId = await getDeviceId();
+      final token = await ensureAuthenticated();
+      final url = Uri.parse('$baseUrl/auth/profile');
+
+      final headers = <String, String>{
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'X-Device-Id': deviceId,
+      };
+      if (token != null) {
+        headers['Authorization'] = 'Bearer $token';
+      }
+
+      final res = await _client.post(
+        url,
+        headers: headers,
+        body: jsonEncode({
+          'avatar_id': avatarId,
+          'device_id': deviceId,
+        }),
+      ).timeout(const Duration(seconds: 4));
+
+      return res.statusCode == 200;
+    } catch (e) {
+      debugPrint('[ApiClient] updateAvatar hatası: $e');
+      return false;
+    }
+  }
+
+  /// Google Play Data Safety: Hesabı ve sunucudaki tüm skor/kayıtları kalıcı olarak siler
+  Future<bool> deleteAccount() async {
+    try {
+      final baseUrl = await getBaseUrl();
+      final deviceId = await getDeviceId();
+      final token = await ensureAuthenticated();
+      final url = Uri.parse('$baseUrl/auth/delete-account');
+
+      final headers = <String, String>{
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'X-Device-Id': deviceId,
+      };
+      if (token != null) {
+        headers['Authorization'] = 'Bearer $token';
+      }
+
+      final res = await _client.post(
+        url,
+        headers: headers,
+        body: jsonEncode({'device_id': deviceId}),
+      ).timeout(const Duration(seconds: 5));
+
+      return res.statusCode == 200;
+    } catch (e) {
+      debugPrint('[ApiClient] deleteAccount sunucu hatası: $e');
+      return false;
+    }
+  }
 }

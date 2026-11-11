@@ -14,6 +14,7 @@ Route::prefix('v1')->group(function () {
     Route::get('/player/stats', [AuthController::class, 'playerStats']);
     Route::post('/auth/sync-progress', [AuthController::class, 'syncProgress']);
     Route::post('/auth/restore-progress', [AuthController::class, 'restoreProgress']);
+    Route::post('/auth/delete-account', [AuthController::class, 'deleteAccount']);
 
     // 2. Zaman Senkronizasyonu (Hile ve saat manipülasyonu engelleme)
     Route::get('/time', [GameController::class, 'time']);

@@ -511,4 +511,29 @@ class AuthController extends Controller
             ],
         ]);
     }
+
+    /**
+     * Google Play Store Data Safety: Oyuncu hesabını ve tüm sunucu verilerini siler.
+     */
+    public function deleteAccount(Request $request): JsonResponse
+    {
+        $player = $request->user();
+        if (!$player && $request->header('X-Device-Id')) {
+            $player = Player::where('device_id', $request->header('X-Device-Id'))->first();
+        }
+        if (!$player && $request->input('device_id')) {
+            $player = Player::where('device_id', $request->input('device_id'))->first();
+        }
+
+        if ($player) {
+            $player->scores()->delete();
+            $player->tokens()->delete();
+            $player->delete();
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Hesap ve ilişkili tüm oyun verileri başarıyla silindi.',
+        ]);
+    }
 }

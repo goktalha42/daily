@@ -1,0 +1,117 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'package:daily_games/core/models/user_avatar.dart';
+import 'package:daily_games/core/services/user_avatar_provider.dart';
+import 'package:daily_games/features/profile/settings_screen.dart';
+import 'package:daily_games/features/profile/widgets/avatar_picker_dialog.dart';
+
+void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  group('UserAvatar Model Tests', () {
+    test('Varsayılan avatar crown olmalıdır', () {
+      expect(UserAvatar.defaultAvatarId, 'crown');
+      final def = UserAvatar.getById(null);
+      expect(def.id, 'crown');
+      expect(def.emoji, '👑');
+    });
+
+    test('Tüm avatarlar benzersiz id ve geçerli bilgilere sahip olmalıdır', () {
+      final ids = UserAvatar.allAvatars.map((a) => a.id).toSet();
+      expect(ids.length, UserAvatar.allAvatars.length);
+      expect(UserAvatar.allAvatars.length, 12);
+
+      for (final a in UserAvatar.allAvatars) {
+        expect(a.id.isNotEmpty, true);
+        expect(a.label.isNotEmpty, true);
+        expect(a.emoji.isNotEmpty, true);
+      }
+    });
+
+    test('getById geçerli ve geçersiz id durumlarını doğru ele alır', () {
+      final owl = UserAvatar.getById('owl');
+      expect(owl.id, 'owl');
+      expect(owl.label, 'Bilge Baykuş');
+
+      final unknown = UserAvatar.getById('non_existent_avatar_id');
+      expect(unknown.id, 'crown'); // Varsayılana döner
+    });
+  });
+
+  group('UserAvatar Provider & Persistence Tests', () {
+    test('Avatar değiştirildiğinde state güncellenir ve SharedPreferences a yazılır', () async {
+      SharedPreferences.setMockInitialValues({'zuhtu_user_avatar_id': 'brain'});
+
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      // İlk yükleme
+      final initial = container.read(userAvatarProvider);
+      expect(initial, isA<String>());
+
+      // Yeni avatar seçimi
+      await container.read(userAvatarProvider.notifier).setAvatar('wizard');
+      expect(container.read(userAvatarProvider), 'wizard');
+
+      final model = container.read(currentAvatarModelProvider);
+      expect(model.id, 'wizard');
+      expect(model.emoji, '🧙‍♂️');
+    });
+  });
+
+  group('AvatarPickerDialog Widget Tests', () {
+    testWidgets('AvatarPickerDialog açılır ve 12 avatarı listeler', (tester) async {
+      SharedPreferences.setMockInitialValues({});
+
+      await tester.pumpWidget(
+        const ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: AvatarPickerDialog(),
+            ),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      expect(find.text('Avatarını Seç'), findsOneWidget);
+      expect(find.text('Kral Taç'), findsOneWidget);
+      expect(find.text('Bilge Baykuş'), findsOneWidget);
+      expect(find.text('Kaydet & Kullan'), findsOneWidget);
+    });
+  });
+
+  group('SettingsScreen Widget Tests', () {
+    testWidgets('SettingsScreen başlık ve tüm yapılandırma bölümlerini eksiksiz gösterir', (tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      SharedPreferences.setMockInitialValues({});
+
+      await tester.pumpWidget(
+        const ProviderScope(
+          child: MaterialApp(
+            home: SettingsScreen(),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      expect(find.text('Ayarlar'), findsOneWidget);
+      expect(find.text('GÖRÜNÜM VE TEMA'), findsOneWidget);
+      expect(find.text('SES VE DOKUNSAL HİSSİYAT'), findsOneWidget);
+      expect(find.text('BİLDİRİMLER VE GÜNLÜK SERİ'), findsOneWidget);
+      expect(find.text('İLERLEME YEDEKLEME VE CİHAZ TAŞIMA'), findsOneWidget);
+      expect(find.text('GİZLİLİK VE POLİTİKALAR'), findsOneWidget);
+      expect(find.text('VERİ YÖNETİMİ VE HESAP SIFIRLAMA'), findsOneWidget);
+      expect(find.text('Tüm Verileri ve Hesabı Sıfırla'), findsOneWidget);
+    });
+  });
+}

@@ -208,7 +208,6 @@ class _HomeBrainHeroCardState extends State<HomeBrainHeroCard>
                     const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
                 child: SketchCard(
                   onTap: _toggleExpanded,
-                  enableHatching: true,
                   borderWidth: 2.6,
                   borderRadius: 20,
                   shadowOffset: const Offset(4.5, 4.5),

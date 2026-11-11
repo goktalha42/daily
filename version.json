@@ -1,9 +1,9 @@
 ﻿{
-    "version":  "1.2.11",
-    "build_number":  29,
-    "title":  "Zühtü v1.2.11 Göz Dinlendirici UI \u0026 Vezirler Güncellemesi ✨",
-    "changelog":  "Kullanıcı geri bildirimleri doğrultusunda: 1) İkili tipografi mimarisi (okunabilir Plus Jakarta Sans) ile göz yorgunluğu giderildi. 2) Karanlık mod kenarlıkları yumuşatıldı. 3) Alt menü çubuğuna belirgin altın sarısı aktif göstergesi eklendi. 4) Master Vezirler tek parça bölge garantisi ve net kurallar sağlandı. 5) Kelime İzleri güncel ipucu odak sahnesi eklendi. 6) Ana sayfa oyun kutuları simetrik 2 sütunlu ızgaraya kavuşturuldu.",
-    "apk_url":  "https://raw.githubusercontent.com/goktalha42/daily/main/releases/Zuhtu_v1.2.11_b29.apk",
-    "release_url":  "https://github.com/goktalha42/daily/releases/tag/v1.2.11",
+    "version":  "1.2.12",
+    "build_number":  30,
+    "title":  "Zühtü v1.2.12 Profil, Avatar \u0026 Bağımsız Ayarlar Güncellemesi ✨",
+    "changelog":  "• 12 farklı eğlenceli eskiz avatar seçeneği ve Avatar Seçim Diyaloğu eklendi. • Profil ekranı ferahlatıldı, bağımsız ve kapsamlı Ayarlar Ekranı oluşturuldu. • Ana sayfa Beyin Gücü kartındaki çizgiler kaldırılarak sadeleştirildi. • Google Play Store uyumluluğu için Gizlilik Politikası ve Hesap/Veri Sıfırlama entegre edildi.",
+    "apk_url":  "https://raw.githubusercontent.com/goktalha42/daily/main/releases/Zuhtu_v1.2.12_b30.apk",
+    "release_url":  "https://github.com/goktalha42/daily/releases/tag/v1.2.12",
     "force_update":  false
 }
