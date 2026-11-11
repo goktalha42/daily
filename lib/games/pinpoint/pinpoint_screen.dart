@@ -412,10 +412,10 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> with WidgetsBin
                 ),
                 Text(
                   desc,
-                  style: GoogleFonts.patrickHand(
-                    fontSize: 14,
-                    color: isDark ? AppColors.pencilLightDark : AppColors.pencilGraphite,
-                    height: 1.15,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 13,
+                    color: isDark ? const Color(0xFFCBD5E1) : AppColors.pencilGraphite,
+                    height: 1.3,
                   ),
                 ),
               ],
@@ -930,30 +930,47 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> with WidgetsBin
 
   Widget _buildClueItem(int index, bool isDark) {
     final isRevealed = index < _revealedClues;
+    final isCurrentLatest = isRevealed && index == _revealedClues - 1 && !_isSolved;
     final clueText = _level.clues[index];
     final badgeColor = _clueBadgeColors[index % _clueBadgeColors.length];
 
+    Color cardBg;
+    if (isCurrentLatest) {
+      cardBg = isDark ? const Color(0xFF222633) : const Color(0xFFFFFBEB);
+    } else if (isRevealed) {
+      cardBg = isDark ? AppColors.surfaceDark : Colors.white;
+    } else {
+      cardBg = isDark
+          ? AppColors.surfaceSecondaryDark.withValues(alpha: 0.4)
+          : AppColors.surfaceSecondaryLight.withValues(alpha: 0.5);
+    }
+
     return SketchCard(
-      backgroundColor: isRevealed
-          ? (isDark ? AppColors.surfaceDark : Colors.white)
-          : (isDark ? AppColors.surfaceSecondaryDark.withValues(alpha: 0.4) : AppColors.surfaceSecondaryLight.withValues(alpha: 0.5)),
-      borderRadius: 12,
-      shadowOffset: isRevealed ? const Offset(2.2, 2.2) : Offset.zero,
-      borderWidth: isRevealed ? 2.0 : 1.2,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      backgroundColor: cardBg,
+      borderColor: isCurrentLatest
+          ? AppColors.sunYellow
+          : (isDark ? AppColors.sketchBorderDark : AppColors.pencilBlack),
+      borderRadius: 14,
+      shadowOffset: isCurrentLatest
+          ? const Offset(3.0, 3.0)
+          : (isRevealed ? const Offset(2.0, 2.0) : Offset.zero),
+      borderWidth: isCurrentLatest ? 2.4 : (isRevealed ? 1.8 : 1.2),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       child: Row(
         children: [
           // Numaralandırma Rozeti (Canlı Renkli Boncuk)
           Container(
-            width: 28,
-            height: 28,
+            width: 32,
+            height: 32,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: isRevealed ? badgeColor : (isDark ? AppColors.surfaceSecondaryDark : AppColors.surfaceSecondaryLight),
+              color: isRevealed
+                  ? (isCurrentLatest ? AppColors.sunYellow : badgeColor)
+                  : (isDark ? AppColors.surfaceSecondaryDark : AppColors.surfaceSecondaryLight),
               shape: BoxShape.circle,
               border: Border.all(
                 color: isDark ? (isRevealed ? Colors.white : Colors.white24) : AppColors.pencilBlack,
-                width: 1.8,
+                width: isCurrentLatest ? 2.2 : 1.8,
               ),
               boxShadow: isRevealed
                   ? [
@@ -966,25 +983,53 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> with WidgetsBin
                   : null,
             ),
             child: Text(
-              '#${index + 1}',
-              style: GoogleFonts.patrickHand(
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-                color: isRevealed ? AppColors.onColor(badgeColor, context: context) : (isDark ? AppColors.pencilLightDark : AppColors.pencilLight),
+              '${index + 1}',
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 14,
+                fontWeight: FontWeight.w800,
+                color: isRevealed
+                    ? AppColors.onColor(isCurrentLatest ? AppColors.sunYellow : badgeColor, context: context)
+                    : (isDark ? AppColors.pencilLightDark : AppColors.pencilLight),
               ),
             ),
           ),
           const SizedBox(width: 12),
-          // İpucu Metni
+          // İpucu Metni (Odak & Net Okunabilirlik)
           Expanded(
-            child: Text(
-              isRevealed ? clueText : '🔒 Kilitli İpucu',
-              style: GoogleFonts.patrickHand(
-                fontSize: 19,
-                fontWeight: isRevealed ? FontWeight.w700 : FontWeight.w600,
-                color: isRevealed ? (isDark ? Colors.white : AppColors.pencilBlack) : (isDark ? AppColors.pencilLightDark : AppColors.pencilLight),
-                letterSpacing: isRevealed ? 0.3 : 0.0,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (isCurrentLatest)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 2),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.lightbulb_rounded, size: 14, color: AppColors.sunYellow),
+                        const SizedBox(width: 4),
+                        Text(
+                          'GÜNCEL İPUCU',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.sunYellow,
+                            letterSpacing: 0.8,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                Text(
+                  isRevealed ? clueText : '🔒 Kilitli İpucu',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: isCurrentLatest ? 18 : 16,
+                    fontWeight: isRevealed ? FontWeight.w700 : FontWeight.w500,
+                    color: isRevealed
+                        ? (isDark ? Colors.white : AppColors.pencilBlack)
+                        : (isDark ? AppColors.pencilLightDark : AppColors.pencilLight),
+                  ),
+                ),
+              ],
             ),
           ),
           if (isRevealed)

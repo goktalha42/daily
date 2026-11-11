@@ -639,7 +639,7 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
               '2',
               isMaster ? 'Her Renk Bölgesinde 2 Vezir' : 'Her Renk Bölgesinde 1 Vezir',
               isMaster
-                  ? 'Kalın skeç çizgileriyle ayrılmış her renkli bölgede tam 2 vezir olmalıdır.'
+                  ? 'Kalın skeç sınırlarıyla çevrili tek parça her renkli alanda tam 2 vezir bulunmalıdır.'
                   : 'Kalın skeç çizgileriyle ayrılmış her renkli bölgede tam 1 vezir olmalıdır.',
               isDark,
             ),
@@ -648,7 +648,7 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
               '3',
               'Temas Yasağı (8-Yönlü)',
               isMaster
-                  ? 'Hiçbir vezir birbirine çapraz, yatay veya dikey temas edemez (aynı satır/sütundaki vezirler de dahil!).'
+                  ? 'Hiçbir vezir birbirine çapraz, yatay veya dikey temas edemez (aynı renk bölgesindeki 2 vezir de birbirine asla dokunamaz!).'
                   : 'Hiçbir vezir birbirine çapraz, yatay veya dikey temas edemez.',
               isDark,
             ),
@@ -668,11 +668,11 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
                       isMaster
                           ? '• Master modda tahtada toplam 18 vezir yer alır (9×9 Izgara).\n• Parmağını sürükle: Hızlıca ✖ boya veya ✖ sil!\n• Çift dokun: 👑 (Vezir koy veya kaldır)\n• Tek dokun: ✖ koy veya kaldır'
                           : '• Parmağını sürükle: Hızlıca ✖ boya veya ✖ sil!\n• Çift dokun: 👑 (Vezir koy veya kaldır)\n• Tek dokun: ✖ koy veya kaldır',
-                      style: GoogleFonts.patrickHand(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
                         color: isDark ? Colors.white : AppColors.pencilBlack,
-                        height: 1.25,
+                        height: 1.35,
                       ),
                     ),
                   ),
@@ -753,10 +753,11 @@ class _QueensScreenState extends ConsumerState<QueensScreen>
                 ),
                 Text(
                   desc,
-                  style: GoogleFonts.patrickHand(
-                    fontSize: 14,
-                    color: isDark ? AppColors.pencilGrayDark : AppColors.pencilGraphite,
-                    height: 1.15,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: isDark ? AppColors.pencilGraphiteDark : AppColors.pencilGraphite,
+                    height: 1.3,
                   ),
                 ),
               ],

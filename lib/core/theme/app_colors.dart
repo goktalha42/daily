@@ -23,12 +23,12 @@ class AppColors {
   static const Color pencilLight = Color(0xFFA8A29E);
   static const Color sketchBorder = Color(0xFF1C1917);
 
-  // Tebeşir & Gümüş Grafit Çizgileri (Koyu Tema Sabitleri)
-  static const Color pencilWhite = Color(0xFFFFFFFF); // Kar beyazı tebeşir / net yazı
-  static const Color pencilGraphiteDark = Color(0xFFFFFFFF); // Koyu temada okunabilirlik için tam beyaz
-  static const Color pencilGrayDark = Color(0xFFE2E8F0); // Çok açık ve net gümüş beyaz
-  static const Color pencilLightDark = Color(0xFF94A3B8); // İnce taslak çizgisi
-  static const Color sketchBorderDark = Color(0xFFFFFFFF);
+  // Tebeşir & Gümüş Grafit Çizgileri (Koyu Tema Sabitleri - Gözü Yormayan Yumuşak Kontrast)
+  static const Color pencilWhite = Color(0xFFFFFFFF); // Kar beyazı tebeşir / net başlık
+  static const Color pencilGraphiteDark = Color(0xFFCBD5E1); // Koyu temada okunabilir yumuşak gümüş gri
+  static const Color pencilGrayDark = Color(0xFF94A3B8); // İkincil metin ve detaylar
+  static const Color pencilLightDark = Color(0xFF64748B); // İnce taslak çizgisi
+  static const Color sketchBorderDark = Color(0xFFCBD5E1); // Yumuşak tebeşir sınır çizgisi
 
   // Sabit Çini Siyahı & Tebeşir Beyazı (Parlak renkli zeminlerde asla beyaz olmaması gereken yerler için)
   static const Color inkBlack = Color(0xFF1C1917);
@@ -85,12 +85,12 @@ class AppColors {
   static const Color textSecondaryLight = Color(0xFF44403C);
   static const Color textMutedLight = Color(0xFF78716C);
 
-  static const Color textPrimaryDark = Color(0xFFFFFFFF); // Beyaz
-  static const Color textSecondaryDark = Color(0xFFFFFFFF); // Beyaz
-  static const Color textMutedDark = Color(0xFFE2E8F0); // Açık gümüş
+  static const Color textPrimaryDark = Color(0xFFFFFFFF); // Beyaz başlık
+  static const Color textSecondaryDark = Color(0xFFCBD5E1); // Yumuşak gümüş gövde metni
+  static const Color textMutedDark = Color(0xFF94A3B8); // Açık kurşun kalem gri
 
   static const Color borderLight = Color(0xFF1C1917);
-  static const Color borderDark = Color(0xFFFFFFFF);
+  static const Color borderDark = Color(0xFFCBD5E1);
 
   // Oyun Özel Skeç Renkleri
   static const Color queensGame = highlighterPink;

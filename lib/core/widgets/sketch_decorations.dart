@@ -240,7 +240,7 @@ class SketchCard extends StatelessWidget {
       isLightBg = effectiveBg.computeLuminance() > 0.35;
       onBgTextColor = isLightBg ? AppColors.inkBlack : AppColors.inkWhite;
       onBgSubtitleColor = isLightBg ? const Color(0xFF44403C) : const Color(0xFFE2E8F0);
-      resolvedBorder = borderColor ?? (isLightBg ? AppColors.inkBlack : AppColors.inkWhite);
+      resolvedBorder = borderColor ?? (isLightBg ? AppColors.inkBlack : AppColors.sketchBorderDark);
       resolvedShadow = shadowColor ?? (isLightBg ? const Color(0xFF000000) : AppColors.cardShadowDark);
     }
 

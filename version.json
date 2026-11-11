@@ -1,9 +1,9 @@
 ﻿{
-    "version":  "1.2.10",
-    "build_number":  28,
-    "title":  "Zühtü v1.2.10 Sayı Yolu Son Nokta \u0026 Rota Düzeltmesi 🏁✨",
-    "changelog":  "Sayı Yolu (Zip) oyununda tüm boş kareler doldurulmadan bitiş bayrağına girilmesi ve son noktadan sonra yolun devam ettirilebilmesi engellendi. 10 Kasım dahil tüm günlük bulmacalarda son noktadan geçen yanıltıcı ikincil rotalar kaldırıldı.",
-    "apk_url":  "https://raw.githubusercontent.com/goktalha42/daily/main/releases/Zuhtu_v1.2.10_b28.apk",
-    "release_url":  "https://github.com/goktalha42/daily/releases/tag/v1.2.10",
+    "version":  "1.2.11",
+    "build_number":  29,
+    "title":  "Zühtü v1.2.11 Göz Dinlendirici UI \u0026 Vezirler Güncellemesi ✨",
+    "changelog":  "Kullanıcı geri bildirimleri doğrultusunda: 1) İkili tipografi mimarisi (okunabilir Plus Jakarta Sans) ile göz yorgunluğu giderildi. 2) Karanlık mod kenarlıkları yumuşatıldı. 3) Alt menü çubuğuna belirgin altın sarısı aktif göstergesi eklendi. 4) Master Vezirler tek parça bölge garantisi ve net kurallar sağlandı. 5) Kelime İzleri güncel ipucu odak sahnesi eklendi. 6) Ana sayfa oyun kutuları simetrik 2 sütunlu ızgaraya kavuşturuldu.",
+    "apk_url":  "https://raw.githubusercontent.com/goktalha42/daily/main/releases/Zuhtu_v1.2.11_b29.apk",
+    "release_url":  "https://github.com/goktalha42/daily/releases/tag/v1.2.11",
     "force_update":  false
 }

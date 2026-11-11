@@ -778,11 +778,11 @@ class _CrossclimbScreenState extends ConsumerState<CrossclimbScreen> with Widget
                 Expanded(
                   child: Text(
                     step.clue,
-                    style: GoogleFonts.patrickHand(
-                      fontSize: 16,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 15,
                       fontWeight: FontWeight.w700,
                       color: isDark ? Colors.white : AppColors.pencilBlack,
-                      height: 1.2,
+                      height: 1.25,
                     ),
                   ),
                 ),

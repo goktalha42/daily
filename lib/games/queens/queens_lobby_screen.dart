@@ -807,9 +807,9 @@ class _QueensLobbyScreenState extends ConsumerState<QueensLobbyScreen> {
                 const SizedBox(height: 12),
                 _buildRuleItem('1', 'Her Satır ve Sütunda Vezir Kuralı', 'Kolay ve Zor modlarda her satır ve sütunda tam 1 vezir; Master modunda ise tam 2 vezir yer almalıdır.'),
                 const SizedBox(height: 8),
-                _buildRuleItem('2', 'Her Renk Bölgesinde Vezir Kuralı', 'Her renkli bölgede moduna göre tam 1 (Master modda tam 2) vezir bulunmalıdır.'),
+                _buildRuleItem('2', 'Her Renk Bölgesinde Vezir Kuralı', 'Kalın skeç sınırlarıyla ayrılmış her renk bölgesinde moduna göre tam 1 (Master modda tam 2) vezir bulunmalıdır.'),
                 const SizedBox(height: 8),
-                _buildRuleItem('3', 'Temas Yasağı (8 Yön)', 'Vezirler birbirine çapraz, dikey veya yatay olarak ASLA komşu olamaz.'),
+                _buildRuleItem('3', 'Temas Yasağı (8 Yön)', 'Vezirler birbirine çapraz, dikey veya yatay olarak ASLA temas edemez (aynı bölgedeki veya satırdaki vezirler de birbirine dokunamaz).'),
                 const SizedBox(height: 12),
                 SketchCard(
                   padding: const EdgeInsets.all(10),

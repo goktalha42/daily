@@ -32,7 +32,7 @@ class SketchCountdownTimer extends ConsumerWidget {
     return SketchCard(
       padding: padding,
       backgroundColor: isDark ? AppColors.surfaceSecondaryDark : AppColors.surfaceSecondaryLight,
-      borderColor: isDark ? Colors.white : AppColors.pencilBlack,
+      borderColor: isDark ? AppColors.sketchBorderDark : AppColors.pencilBlack,
       borderWidth: 1.8,
       borderRadius: 10,
       shadowOffset: const Offset(2.0, 2.0),
@@ -48,16 +48,16 @@ class SketchCountdownTimer extends ConsumerWidget {
           if (showLabel) ...[
             Text(
               'YENİ OYUN: ',
-              style: GoogleFonts.patrickHand(
+              style: GoogleFonts.plusJakartaSans(
                 fontSize: fontSize - 2,
                 fontWeight: FontWeight.w700,
-                color: isDark ? Colors.white : AppColors.pencilGraphite,
+                color: isDark ? const Color(0xFFCBD5E1) : AppColors.pencilGraphite,
               ),
             ),
           ],
           Text(
             formatted,
-            style: GoogleFonts.patrickHand(
+            style: GoogleFonts.plusJakartaSans(
               fontWeight: FontWeight.w700,
               fontSize: fontSize,
               color: textColor,

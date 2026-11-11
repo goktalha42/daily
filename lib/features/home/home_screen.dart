@@ -149,9 +149,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               right: 20,
               child: SketchCard(
                 borderRadius: 18,
-                borderWidth: 2.5,
-                shadowOffset: const Offset(4, 4),
-                backgroundColor: isDark ? AppColors.surfaceDark : Colors.white,
+                borderWidth: 2.2,
+                borderColor: isDark ? AppColors.sketchBorderDark : AppColors.pencilBlack,
+                shadowOffset: const Offset(3.5, 3.5),
+                backgroundColor: isDark ? const Color(0xFF1A1C22) : Colors.white,
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -220,29 +221,29 @@ class _NavTabItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final activeTextColor = isDark ? AppColors.pencilWhite : AppColors.pencilBlack;
-    final inactiveTextColor = isDark ? AppColors.pencilGraphiteDark : AppColors.pencilGraphite;
+    final inactiveIconColor = isDark ? const Color(0xFF94A3B8) : AppColors.pencilGray;
 
     if (isSelected) {
       return Expanded(
         child: SketchCard(
           onTap: onTap,
-          borderRadius: 10,
+          borderRadius: 12,
           borderWidth: 2.0,
+          borderColor: isDark ? AppColors.sunYellow : AppColors.pencilBlack,
           shadowOffset: const Offset(2.0, 2.0),
-          backgroundColor: isDark ? AppColors.surfaceSecondaryDark : AppColors.surfaceSecondaryLight,
-          padding: const EdgeInsets.symmetric(vertical: 6),
+          backgroundColor: AppColors.sunYellow,
+          padding: const EdgeInsets.symmetric(vertical: 7),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, color: activeTextColor, size: 20),
+              Icon(icon, color: AppColors.inkBlack, size: 19),
               const SizedBox(width: 6),
               Text(
                 label,
-                style: GoogleFonts.patrickHand(
-                  color: activeTextColor,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 16,
+                style: GoogleFonts.plusJakartaSans(
+                  color: AppColors.inkBlack,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 13.5,
                 ),
               ),
             ],
@@ -256,11 +257,11 @@ class _NavTabItem extends StatelessWidget {
         onTap: onTap,
         behavior: HitTestBehavior.opaque,
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 6),
+          padding: const EdgeInsets.symmetric(vertical: 7),
           child: Center(
             child: Icon(
               icon,
-              color: inactiveTextColor,
+              color: inactiveIconColor,
               size: 22,
             ),
           ),
@@ -453,11 +454,11 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
                             child: Text(
                               formattedDate.toUpperCase(),
                               overflow: TextOverflow.ellipsis,
-                              style: GoogleFonts.patrickHand(
-                                fontSize: 14,
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 12,
                                 fontWeight: FontWeight.w700,
                                 color: headerGraphite,
-                                letterSpacing: 1.0,
+                                letterSpacing: 0.8,
                               ),
                             ),
                           ),
@@ -612,11 +613,11 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
                   _isArchiveMode
                       ? 'ARŞİV YARIŞMALARI (6 BÖLÜM)'
                       : 'GÜNLÜK YARIŞMALAR (6 BÖLÜM)',
-                  style: GoogleFonts.patrickHand(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                    color: isDark ? Colors.white : AppColors.pencilGraphite,
-                    letterSpacing: 1.0,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w800,
+                    color: isDark ? const Color(0xFFCBD5E1) : AppColors.pencilGraphite,
+                    letterSpacing: 0.8,
                   ),
                 ),
                 SketchCard(
@@ -642,8 +643,8 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
                       const SizedBox(width: 5),
                       Text(
                         'Zaman Makinesi',
-                        style: GoogleFonts.patrickHand(
-                          fontSize: 13.5,
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 12,
                           fontWeight: FontWeight.w700,
                           color: _isArchiveMode
                               ? AppColors.inkBlack
@@ -658,76 +659,40 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
           ),
         ),
 
-        // Oyun kutulari: capraz (zigzag) iki sutun, 2. sutun yarim kart asagida baslar
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                const gap = 16.0;
-                final cardSize =
-                    math.max(0.0, (constraints.maxWidth - gap) / 2);
+        // Oyun kutuları: Düzenli, dengeli ve gözü yormayan 2 sütunlu simetrik ızgara
+        SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+          sliver: SliverGrid(
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              mainAxisSpacing: 14,
+              crossAxisSpacing: 14,
+              childAspectRatio: 1.05,
+            ),
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                final game = GameType.values[index];
+                final perf = statsMap[game] ??
+                    GamePerformanceData(
+                      gameType: game,
+                      bestScore: 0,
+                      bestDurationMs: 0,
+                      totalGamesPlayed: 0,
+                      geniusTitle: 'Zühtü Ustası',
+                    );
+                final dailyPlay = ref.watch(dailyPlayServiceProvider);
+                final isCompleted = dailyPlay.isCompleted(game, _activeLevelId);
+                final record = dailyPlay.getRecord(game, _activeLevelId);
 
-                Widget buildCard(GameType game) {
-                  final perf = statsMap[game] ??
-                      GamePerformanceData(
-                        gameType: game,
-                        bestScore: 0,
-                        bestDurationMs: 0,
-                        totalGamesPlayed: 0,
-                        geniusTitle: 'Zühtü Ustası',
-                      );
-                  final dailyPlay = ref.watch(dailyPlayServiceProvider);
-                  final isCompleted = dailyPlay.isCompleted(game, _activeLevelId);
-                  final record = dailyPlay.getRecord(game, _activeLevelId);
-
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: gap),
-                    child: SizedBox(
-                      width: cardSize,
-                      height: cardSize,
-                      child: _GeniusGameButton(
-                        game: game,
-                        performance: perf,
-                        isCompleted: isCompleted,
-                        record: record,
-                        onTap: () => _launchGame(game),
-                      ),
-                    ),
-                  );
-                }
-
-                final games = GameType.values;
-                final leftGames = [
-                  for (var i = 0; i < games.length; i += 2) games[i]
-                ];
-                final rightGames = [
-                  for (var i = 1; i < games.length; i += 2) games[i]
-                ];
-
-                return Stack(
-                  children: [
-                    Positioned.fill(
-                      child: CustomPaint(
-                        painter: _LadderPathPainter(
-                          period: cardSize * 1.7,
-                          color: isDark ? AppColors.pencilGraphiteDark : AppColors.pencilGraphite,
-                        ),
-                      ),
-                    ),
-                    Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Column(children: leftGames.map(buildCard).toList()),
-                    const SizedBox(width: gap),
-                    Padding(
-                      padding: EdgeInsets.only(top: cardSize * 0.3),
-                      child: Column(children: rightGames.map(buildCard).toList()),
-                    ),
-                  ],
-                )],
+                return _GeniusGameButton(
+                  game: game,
+                  performance: perf,
+                  isCompleted: isCompleted,
+                  record: record,
+                  onTap: () => _launchGame(game),
                 );
               },
+              childCount: GameType.values.length,
             ),
           ),
         ),
@@ -856,9 +821,9 @@ class _GeniusGameButtonState extends State<_GeniusGameButton> {
                           widget.isCompleted
                               ? 'BİTTİ • ${widget.record?.score ?? 0}P'
                               : perf.percentileBadgeText,
-                          style: GoogleFonts.patrickHand(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w800,
                             color: (widget.isCompleted || perf.hasPlayed)
                                 ? AppColors.pencilBlack
                                 : (isDark ? AppColors.pencilWhite : AppColors.pencilBlack),

@@ -35,6 +35,7 @@ class QueensGenerator {
         if (queens == null) continue;
         final pairs = _pairQueens(queens, rng);
         final regionMap = _growRegionsFromPairs(n, pairs, rng);
+        if (regionMap == null) continue;
         final solutions = QueensLogic.solveBacktracking(
           n,
           regionMap,
@@ -306,20 +307,127 @@ class QueensGenerator {
     return pairs;
   }
 
-  static List<List<int>> _growRegionsFromPairs(int n, List<List<Point<int>>> pairs, Random rng) {
-    final map = List.generate(n, (_) => List<int>.filled(n, -1));
-    for (int reg = 0; reg < pairs.length; reg++) {
-      for (final q in pairs[reg]) {
-        map[q.x][q.y] = reg;
-      }
-    }
+  static bool _connectPair(int n, List<List<int>> map, Point<int> start, Point<int> target, int reg) {
+    if (start == target) return true;
+    final queue = <Point<int>>[start];
+    final parent = <Point<int>, Point<int>>{};
+    final visited = <Point<int>>{start};
+
     const dirs = [
       [-1, 0],
       [1, 0],
       [0, -1],
       [0, 1],
     ];
-    int remaining = n * n - 2 * n;
+
+    bool found = false;
+    while (queue.isNotEmpty) {
+      final curr = queue.removeAt(0);
+      if (curr == target) {
+        found = true;
+        break;
+      }
+      for (final d in dirs) {
+        final nr = curr.x + d[0];
+        final nc = curr.y + d[1];
+        if (nr < 0 || nr >= n || nc < 0 || nc >= n) continue;
+        final next = Point(nr, nc);
+        if ((map[nr][nc] == -1 || map[nr][nc] == reg) && visited.add(next)) {
+          parent[next] = curr;
+          queue.add(next);
+        }
+      }
+    }
+
+    if (!found) return false;
+
+    Point<int>? curr = target;
+    while (curr != null) {
+      map[curr.x][curr.y] = reg;
+      curr = parent[curr];
+    }
+    return true;
+  }
+
+  static bool _areAllRegionsConnected(int n, List<List<int>> map, int expectedRegions) {
+    for (var reg = 0; reg < expectedRegions; reg++) {
+      int startR = -1, startC = -1;
+      int totalCells = 0;
+      for (var r = 0; r < n; r++) {
+        for (var c = 0; c < n; c++) {
+          if (map[r][c] == reg) {
+            totalCells++;
+            if (startR == -1) {
+              startR = r;
+              startC = c;
+            }
+          }
+        }
+      }
+      if (totalCells == 0) return false;
+
+      final visited = <int>{startR * n + startC};
+      final queue = <int>[startR * n + startC];
+      while (queue.isNotEmpty) {
+        final curr = queue.removeAt(0);
+        final cr = curr ~/ n;
+        final cc = curr % n;
+        for (final d in const [[-1, 0], [1, 0], [0, -1], [0, 1]]) {
+          final nr = cr + d[0];
+          final nc = cc + d[1];
+          if (nr >= 0 && nr < n && nc >= 0 && nc < n && map[nr][nc] == reg) {
+            final key = nr * n + nc;
+            if (visited.add(key)) {
+              queue.add(key);
+            }
+          }
+        }
+      }
+      if (visited.length != totalCells) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  static List<List<int>>? _growRegionsFromPairs(int n, List<List<Point<int>>> pairs, Random rng) {
+    final map = List.generate(n, (_) => List<int>.filled(n, -1));
+    for (int reg = 0; reg < pairs.length; reg++) {
+      for (final q in pairs[reg]) {
+        map[q.x][q.y] = reg;
+      }
+    }
+
+    // 1. Her vezir çiftini boş hücreler üzerinden birleştirip her bölgenin başından itibaren
+    // TEK PARÇA (bağlantılı) olmasını garanti et.
+    final sortedIndices = List<int>.generate(pairs.length, (i) => i);
+    sortedIndices.sort((a, b) {
+      final da = (pairs[a][0].x - pairs[a][1].x).abs() + (pairs[a][0].y - pairs[a][1].y).abs();
+      final db = (pairs[b][0].x - pairs[b][1].x).abs() + (pairs[b][0].y - pairs[b][1].y).abs();
+      return da.compareTo(db);
+    });
+
+    for (final reg in sortedIndices) {
+      final connected = _connectPair(n, map, pairs[reg][0], pairs[reg][1], reg);
+      if (!connected) {
+        return null; // Koridor kurulamadıysa bu tohumu geç
+      }
+    }
+
+    const dirs = [
+      [-1, 0],
+      [1, 0],
+      [0, -1],
+      [0, 1],
+    ];
+
+    int remaining = 0;
+    for (var r = 0; r < n; r++) {
+      for (var c = 0; c < n; c++) {
+        if (map[r][c] == -1) remaining++;
+      }
+    }
+
     while (remaining > 0) {
       final candidates = <List<int>>[];
       for (int r = 0; r < n; r++) {
@@ -342,6 +450,10 @@ class QueensGenerator {
       final pick = candidates[rng.nextInt(candidates.length)];
       map[pick[0]][pick[1]] = pick[2];
       remaining--;
+    }
+
+    if (remaining > 0 || !_areAllRegionsConnected(n, map, pairs.length)) {
+      return null;
     }
     return map;
   }

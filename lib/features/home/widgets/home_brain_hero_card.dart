@@ -238,10 +238,10 @@ class _HomeBrainHeroCardState extends State<HomeBrainHeroCard>
                                     child: Text(
                                       badgeInfo.text,
                                       overflow: TextOverflow.ellipsis,
-                                      style: GoogleFonts.patrickHand(
+                                      style: GoogleFonts.plusJakartaSans(
                                         fontWeight: FontWeight.w700,
                                         color: AppColors.inkBlack,
-                                        fontSize: 12.5,
+                                        fontSize: 11.5,
                                       ),
                                     ),
                                   ),
@@ -284,9 +284,9 @@ class _HomeBrainHeroCardState extends State<HomeBrainHeroCard>
                                   playedCategories == 0
                                       ? 'BAŞLANGIÇ KALİBRASYONU'
                                       : 'PSİKOMETRİK ZEKÂ ENDEKSİ',
-                                  style: GoogleFonts.patrickHand(
+                                  style: GoogleFonts.plusJakartaSans(
                                     color: subtleTextColor,
-                                    fontSize: 11.5,
+                                    fontSize: 10.5,
                                     fontWeight: FontWeight.w700,
                                     letterSpacing: 0.6,
                                   ),
@@ -362,11 +362,11 @@ class _HomeBrainHeroCardState extends State<HomeBrainHeroCard>
                                   dynamicHeadline,
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
-                                  style: GoogleFonts.patrickHand(
+                                  style: GoogleFonts.plusJakartaSans(
                                     color: graphiteColor,
-                                    fontSize: 13.2,
+                                    fontSize: 12.5,
                                     fontWeight: FontWeight.w600,
-                                    height: 1.15,
+                                    height: 1.25,
                                   ),
                                 ),
                               ],

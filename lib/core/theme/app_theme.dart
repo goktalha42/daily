@@ -94,7 +94,7 @@ class AppTheme {
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
-          side: const BorderSide(color: AppColors.pencilWhite, width: 2.0),
+          side: const BorderSide(color: AppColors.borderDark, width: 1.8),
         ),
       ),
       dialogTheme: DialogThemeData(
@@ -102,7 +102,7 @@ class AppTheme {
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(18),
-          side: const BorderSide(color: AppColors.pencilWhite, width: 2.2),
+          side: const BorderSide(color: AppColors.borderDark, width: 2.0),
         ),
       ),
       appBarTheme: AppBarTheme(
@@ -120,7 +120,7 @@ class AppTheme {
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
-            side: const BorderSide(color: AppColors.pencilWhite, width: 2.0),
+            side: const BorderSide(color: AppColors.borderDark, width: 1.8),
           ),
           textStyle: AppTextStyles.labelLarge(AppColors.pencilBlack),
         ),

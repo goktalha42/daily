@@ -42,6 +42,36 @@ void main() {
           );
           expect(sols.length, 1, reason: '$id ${diff.name}');
           expect(level.solution.length, level.totalQueens);
+
+          // Her bölgenin tek parça (bağlantılı) olduğunu doğrula
+          for (var reg = 0; reg < n; reg++) {
+            final cells = <int>[];
+            for (var r = 0; r < n; r++) {
+              for (var c = 0; c < n; c++) {
+                if (level.regionMap[r][c] == reg) cells.add(r * n + c);
+              }
+            }
+            expect(cells.isNotEmpty, isTrue, reason: '$id ${diff.name} bolge $reg bos olamaz');
+            final visited = <int>{cells.first};
+            final queue = <int>[cells.first];
+            while (queue.isNotEmpty) {
+              final cur = queue.removeAt(0);
+              final cr = cur ~/ n;
+              final cc = cur % n;
+              for (final d in const [[-1, 0], [1, 0], [0, -1], [0, 1]]) {
+                final nr = cr + d[0];
+                final nc = cc + d[1];
+                if (nr >= 0 && nr < n && nc >= 0 && nc < n) {
+                  final key = nr * n + nc;
+                  if (level.regionMap[nr][nc] == reg && visited.add(key)) {
+                    queue.add(key);
+                  }
+                }
+              }
+            }
+            expect(visited.length, equals(cells.length),
+                reason: '$id ${diff.name} bolge $reg baglantili (tek parca) olmali!');
+          }
         }
       }
     });
