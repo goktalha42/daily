@@ -637,12 +637,23 @@ class ApiClient {
     }
   }
 
+  /// Bellekteki oturum, aygıt kimliği ve kullanıcı önbelleğini temizler
+  void clearLocalCache() {
+    _cachedBaseUrl = null;
+    _deviceId = null;
+    _authToken = null;
+    _cachedNickname = null;
+    _cachedRecoveryCode = null;
+    _isOnlineServerReachable = false;
+  }
+
   /// Google Play Data Safety: Hesabı ve sunucudaki tüm skor/kayıtları kalıcı olarak siler
   Future<bool> deleteAccount() async {
     try {
       final baseUrl = await getBaseUrl();
       final deviceId = await getDeviceId();
-      final token = await ensureAuthenticated();
+      final prefs = await SharedPreferences.getInstance();
+      final token = _authToken ?? prefs.getString(_authTokenKey);
       final url = Uri.parse('$baseUrl/auth/delete-account');
 
       final headers = <String, String>{
@@ -650,7 +661,7 @@ class ApiClient {
         'Accept': 'application/json',
         'X-Device-Id': deviceId,
       };
-      if (token != null) {
+      if (token != null && token.isNotEmpty) {
         headers['Authorization'] = 'Bearer $token';
       }
 
@@ -664,6 +675,8 @@ class ApiClient {
     } catch (e) {
       debugPrint('[ApiClient] deleteAccount sunucu hatası: $e');
       return false;
+    } finally {
+      clearLocalCache();
     }
   }
 }

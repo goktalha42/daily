@@ -1,9 +1,9 @@
-{
-    "version": "1.2.20",
-    "build_number": 38,
-    "title": "Zühtü v1.2.20 Güncellemesi",
-    "changelog": "• Uygulama yalnızca dikey (portrait) konumda çalışacak şekilde kilitlendi.\n• Ana sayfadaki Yeni Gün test butonu kaldırıldı.\n• Günlük seri ve Pazar haftalık rapor bildirim saati akşam 18:00 olarak güncellendi.\n• Ayarlar ekranı sadeleştirildi.",
-    "apk_url": "https://raw.githubusercontent.com/goktalha42/daily/main/releases/Zuhtu_v1.2.20_b38.apk",
-    "release_url": "https://github.com/goktalha42/daily/releases/tag/v1.2.20",
-    "force_update": false
+﻿{
+    "version":  "1.2.21",
+    "build_number":  39,
+    "title":  "ZÃ¼htÃ¼ v1.2.21 GÃ¼ncellemesi",
+    "changelog":  "• Ayarlar sayfasinda hesap ve tum verileri silme butonu tam olarak aktif edildi.\n• Veri sifirlama onay diyaloguna asenkron yukleme ve bellek temizligi eklendi.\n• Ayarlar sayfasinda uygulama surumu gorunurlugu korundu.",
+    "apk_url":  "https://raw.githubusercontent.com/goktalha42/daily/main/releases/Zuhtu_v1.2.21_b39.apk",
+    "release_url":  "https://github.com/goktalha42/daily/releases/tag/v1.2.21",
+    "force_update":  false
 }

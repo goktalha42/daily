@@ -204,9 +204,9 @@
     "semantic_hash": ""
   },
   "lib/features/home/home_screen.dart": {
-    "mtime": 1794492698.0981927,
-    "seen": 1794493413.2340088,
-    "ast_hash": "156fee94321add8ca18babbeb4ec4410",
+    "mtime": 1794495805.6777868,
+    "seen": 1794496169.1267421,
+    "ast_hash": "50ee79ad18947c7b4e6f9dc788c716d3",
     "semantic_hash": ""
   },
   "lib/features/leaderboard/leaderboard_screen.dart": {
@@ -450,10 +450,10 @@
     "semantic_hash": ""
   },
   "lib/main.dart": {
-    "mtime": 1793882141.1724346,
-    "seen": 1794487012.6517158,
-    "ast_hash": "9e49918c8f824794424322e14e4f6049",
-    "semantic_hash": "9e49918c8f824794424322e14e4f6049"
+    "mtime": 1794495807.1867301,
+    "seen": 1794496169.140218,
+    "ast_hash": "d5d55059be790e1ed37e702433ffaebf",
+    "semantic_hash": ""
   },
   "linux/runner/main.cc": {
     "mtime": 1791456355.4261713,
@@ -678,15 +678,15 @@
     "semantic_hash": "30cc1614b16214b66c014af09ba699eb"
   },
   "oyun_hatalari.md": {
-    "mtime": 1794492169.6995976,
-    "seen": 1794492215.1154282,
-    "ast_hash": "21f12f33b720c38c5effa4ba591d1a8e",
+    "mtime": 1794495305.8374252,
+    "seen": 1794495526.0461762,
+    "ast_hash": "907f7027f018e5d92ea89becca528e68",
     "semantic_hash": ""
   },
   "pubspec.yaml": {
-    "mtime": 1794492699.1649487,
-    "seen": 1794493413.9706814,
-    "ast_hash": "e691d40aff0396bba1cc2b8074b5eda5",
+    "mtime": 1794495904.244258,
+    "seen": 1794496169.1713054,
+    "ast_hash": "c9a0c2a0735caa7a85b4de5a8039f821",
     "semantic_hash": ""
   },
   "rozetler.md": {
@@ -1242,9 +1242,9 @@
     "semantic_hash": ""
   },
   "version.json": {
-    "mtime": 1794492699.3325002,
-    "seen": 1794493413.804123,
-    "ast_hash": "02aef1748425b6887f17ecd12039dc4d",
+    "mtime": 1794495905.991914,
+    "seen": 1794496169.1640766,
+    "ast_hash": "ba65a9070a6c815845f99b71d12da960",
     "semantic_hash": ""
   },
   "VPS_KURULUMU_VE_DURUM.md": {
@@ -1398,9 +1398,9 @@
     "semantic_hash": ""
   },
   "lib/core/services/retention_notification_service.dart": {
-    "mtime": 1794206908.0843604,
-    "seen": 1794487012.6515515,
-    "ast_hash": "77246822bb5b361650ceadbe53bf6b7b",
+    "mtime": 1794495804.8501785,
+    "seen": 1794496169.1196194,
+    "ast_hash": "b87de7df805ef1a5681c4c8c61b065d8",
     "semantic_hash": ""
   },
   "lib/core/services/sound_haptic_service.dart": {
@@ -1422,9 +1422,9 @@
     "semantic_hash": ""
   },
   "test/retention_services_test.dart": {
-    "mtime": 1794210987.6322656,
-    "seen": 1794487012.6518595,
-    "ast_hash": "5c1dd89ed36eeabeb7d1e5703f9851a7",
+    "mtime": 1794495807.542781,
+    "seen": 1794496169.1614628,
+    "ast_hash": "38c54c9d426a67aa981c8af56938c20d",
     "semantic_hash": ""
   },
   "test/score_consistency_and_babayaga_test.dart": {
@@ -1464,9 +1464,9 @@
     "semantic_hash": ""
   },
   "lib/features/profile/settings_screen.dart": {
-    "mtime": 1794393885.6296659,
-    "seen": 1794487012.6516428,
-    "ast_hash": "f0baf074deb6b6b9b3f256a08273a8f8",
+    "mtime": 1794495806.8738165,
+    "seen": 1794496169.129947,
+    "ast_hash": "bb373ec9e22535efd2dee5657a16a398",
     "semantic_hash": ""
   },
   "lib/features/profile/widgets/avatar_picker_dialog.dart": {
@@ -1476,9 +1476,9 @@
     "semantic_hash": ""
   },
   "test/avatar_and_settings_test.dart": {
-    "mtime": 1794479097.9084396,
-    "seen": 1794487012.6518247,
-    "ast_hash": "f4c3a0c8e270ff94beacc91d32aaf14b",
+    "mtime": 1794495807.3680372,
+    "seen": 1794496169.156838,
+    "ast_hash": "3a39a8eba70e56ad2146d7f414340e89",
     "semantic_hash": ""
   },
   "PRIVACY_POLICY.md": {
@@ -1590,8 +1590,8 @@
     "semantic_hash": ""
   },
   "web_portal/admin/admin.js": {
-    "mtime": 1794494681.0355513,
-    "seen": 1794494716.2524097,
+    "mtime": 1794495078.4270422,
+    "seen": 1794495526.0411851,
     "ast_hash": "77249661f39e5934cec9b36221033a2c",
     "semantic_hash": ""
   },
@@ -1614,8 +1614,8 @@
     "semantic_hash": ""
   },
   "web_portal/admin/index.php": {
-    "mtime": 1794494682.7682588,
-    "seen": 1794494716.256899,
+    "mtime": 1794495078.4784298,
+    "seen": 1794495526.0418673,
     "ast_hash": "df337ae598575217c02a353d5010e319",
     "semantic_hash": ""
   },

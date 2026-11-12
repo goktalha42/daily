@@ -12,6 +12,7 @@ import '../../core/services/game_stats_service.dart';
 import '../../core/services/league_service.dart';
 import '../../core/services/player_stats_service.dart';
 import '../../core/services/retention_notification_service.dart';
+import '../../core/puzzle/remote_puzzle_store.dart';
 import '../../core/services/sound_haptic_service.dart';
 import '../../core/services/theme_service.dart';
 import '../../core/services/update_service.dart';
@@ -21,6 +22,8 @@ import '../../core/theme/app_colors.dart';
 import '../../core/widgets/backup_restore_dialog.dart';
 import '../../core/widgets/sketch_decorations.dart';
 import '../../core/widgets/update_prompt_dialog.dart';
+import '../home/home_screen.dart';
+import '../leaderboard/leaderboard_service.dart';
 import '../onboarding/onboarding_screen.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -508,6 +511,7 @@ class SettingsScreen extends ConsumerWidget {
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                 child: SketchCard(
+                  onTap: () => _showResetConfirmationDialog(context, ref),
                   padding: const EdgeInsets.all(14),
                   borderRadius: 14,
                   borderWidth: 2.0,
@@ -632,143 +636,243 @@ class SettingsScreen extends ConsumerWidget {
     HapticFeedback.heavyImpact();
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final pencilColor = isDark ? AppColors.pencilWhite : AppColors.pencilBlack;
+    final graphiteColor =
+        isDark ? AppColors.pencilGraphiteDark : AppColors.pencilGraphite;
     final cardBg = isDark ? AppColors.cardBgDark : Colors.white;
 
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (dialogCtx) {
-        return Dialog(
-          backgroundColor: Colors.transparent,
-          insetPadding: const EdgeInsets.all(20),
-          child: SketchCard(
-            borderRadius: 18,
-            borderWidth: 2.5,
-            shadowOffset: const Offset(4.0, 4.0),
-            backgroundColor: cardBg,
-            borderColor: AppColors.error,
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 50,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: AppColors.error.withAlpha(30),
-                    shape: BoxShape.circle,
-                    border: Border.all(color: AppColors.error, width: 2.0),
-                  ),
-                  child: const Center(
-                    child: Icon(Icons.warning_amber_rounded,
-                        color: AppColors.error, size: 30),
-                  ),
-                ),
-                const SizedBox(height: 14),
-                Text(
-                  'Tüm Verilerini Silmek İstiyor musun?',
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.patrickHand(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                    color: pencilColor,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  'Bu işlem geri alınamaz!\n\nCihazınızdaki tüm günlük seriler, WAIS-IV IQ karnesi, rozetler ve sunucudaki lig puanlarınız tamamen silinecektir.',
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 13,
-                    color: isDark ? AppColors.pencilGraphiteDark : AppColors.pencilGraphite,
-                    height: 1.4,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        style: OutlinedButton.styleFrom(
-                          side: BorderSide(color: pencilColor, width: 1.5),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
+        bool isDeleting = false;
+
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return Dialog(
+              backgroundColor: Colors.transparent,
+              insetPadding: const EdgeInsets.all(20),
+              child: SketchCard(
+                borderRadius: 18,
+                borderWidth: 2.5,
+                shadowOffset: const Offset(4.0, 4.0),
+                backgroundColor: cardBg,
+                borderColor: AppColors.error,
+                padding: const EdgeInsets.all(20),
+                child: isDeleting
+                    ? Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 20),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const SizedBox(
+                              width: 38,
+                              height: 38,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 3,
+                                valueColor:
+                                    AlwaysStoppedAnimation<Color>(AppColors.error),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'Hesap ve Veriler Siliniyor...',
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.patrickHand(
+                                fontSize: 19,
+                                fontWeight: FontWeight.w700,
+                                color: pencilColor,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Lütfen bekleyin, sunucu ve cihazınızdaki tüm kayıtlar sıfırlanıyor.',
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 12.5,
+                                color: graphiteColor,
+                                height: 1.4,
+                              ),
+                            ),
+                          ],
                         ),
-                        onPressed: () => Navigator.of(dialogCtx).pop(),
-                        child: Text(
-                          'Vazgeç',
-                          style: GoogleFonts.patrickHand(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: pencilColor,
+                      )
+                    : Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 50,
+                            height: 50,
+                            decoration: BoxDecoration(
+                              color: AppColors.error.withAlpha(30),
+                              shape: BoxShape.circle,
+                              border:
+                                  Border.all(color: AppColors.error, width: 2.0),
+                            ),
+                            child: const Center(
+                              child: Icon(Icons.warning_amber_rounded,
+                                  color: AppColors.error, size: 30),
+                            ),
                           ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.error,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
+                          const SizedBox(height: 14),
+                          Text(
+                            'Tüm Verilerini Silmek İstiyor musun?',
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.patrickHand(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                              color: pencilColor,
+                            ),
                           ),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          elevation: 0,
-                        ),
-                        onPressed: () async {
-                          Navigator.of(dialogCtx).pop();
-                          HapticFeedback.vibrate();
-
-                          // 1. Sunucudan sil
-                          await ref.read(apiClientProvider).deleteAccount();
-
-                          // 2. Yerel hafızayı temizle
-                          final prefs = await SharedPreferences.getInstance();
-                          await prefs.clear();
-
-                          // 3. Provider'ları sıfırla
-                          ref.invalidate(dailyPlayServiceProvider);
-                          ref.invalidate(gameStatsServiceProvider);
-                          ref.invalidate(badgeServiceProvider);
-                          ref.invalidate(playerStatsServiceProvider);
-                          ref.invalidate(leagueServiceProvider);
-                          ref.invalidate(userNicknameProvider);
-                          ref.invalidate(userAvatarProvider);
-                          ref.invalidate(cloudBackupProvider);
-
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                backgroundColor: AppColors.pencilBlack,
-                                content: Text(
-                                  'Tüm hesap verileriniz başarıyla sıfırlandı.',
-                                  style: GoogleFonts.patrickHand(
-                                    fontSize: 15,
-                                    color: Colors.white,
+                          const SizedBox(height: 10),
+                          Text(
+                            'Bu işlem geri alınamaz!\n\nCihazınızdaki tüm günlük seriler, WAIS-IV IQ karnesi, rozetler ve sunucudaki lig puanlarınız tamamen silinecektir.',
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 13,
+                              color: graphiteColor,
+                              height: 1.4,
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: OutlinedButton(
+                                  style: OutlinedButton.styleFrom(
+                                    side:
+                                        BorderSide(color: pencilColor, width: 1.5),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    padding:
+                                        const EdgeInsets.symmetric(vertical: 12),
+                                  ),
+                                  onPressed: () =>
+                                      Navigator.of(dialogCtx).pop(),
+                                  child: Text(
+                                    'Vazgeç',
+                                    style: GoogleFonts.patrickHand(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w700,
+                                      color: pencilColor,
+                                    ),
                                   ),
                                 ),
                               ),
-                            );
-                            Navigator.of(context).pop();
-                          }
-                        },
-                        child: Text(
-                          'Evet, Sıfırla',
-                          style: GoogleFonts.patrickHand(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.error,
+                                    foregroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    padding:
+                                        const EdgeInsets.symmetric(vertical: 12),
+                                    elevation: 0,
+                                  ),
+                                  onPressed: () async {
+                                    setDialogState(() => isDeleting = true);
+                                    HapticFeedback.vibrate();
+
+                                    try {
+                                      // 1. Sunucudan sil
+                                      await ref
+                                          .read(apiClientProvider)
+                                          .deleteAccount();
+                                    } catch (e) {
+                                      debugPrint('[Settings] Sunucu silme hatası: $e');
+                                    }
+
+                                    // 2. Tema tercihini koruyarak yerel hafızayı temizle
+                                    final prefs =
+                                        await SharedPreferences.getInstance();
+                                    final currentTheme =
+                                        prefs.getString('zuhtu_theme_mode');
+                                    await prefs.clear();
+                                    if (currentTheme != null) {
+                                      await prefs.setString(
+                                          'zuhtu_theme_mode', currentTheme);
+                                    }
+
+                                    // 3. Bellek içi bulmaca önbelleğini temizle
+                                    RemotePuzzleStore.clearMemory();
+
+                                    // 4. Provider'ları sıfırla
+                                    ref.invalidate(dailyPlayServiceProvider);
+                                    ref.invalidate(gameStatsServiceProvider);
+                                    ref.invalidate(badgeServiceProvider);
+                                    ref.invalidate(playerStatsServiceProvider);
+                                    ref.invalidate(leagueServiceProvider);
+                                    ref.invalidate(userNicknameProvider);
+                                    ref.invalidate(userAvatarProvider);
+                                    ref.invalidate(cloudBackupProvider);
+                                    ref.invalidate(leaderboardServiceProvider);
+                                    ref.invalidate(apiClientProvider);
+
+                                    // 5. Ana menü lobisine yönlendir
+                                    ref
+                                        .read(homeBottomNavIndexProvider.notifier)
+                                        .state = 0;
+
+                                    if (dialogCtx.mounted) {
+                                      Navigator.of(dialogCtx).pop();
+                                    }
+
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          backgroundColor: AppColors.pencilBlack,
+                                          behavior: SnackBarBehavior.floating,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(12),
+                                            side: const BorderSide(
+                                                color: AppColors.error,
+                                                width: 1.5),
+                                          ),
+                                          content: Row(
+                                            children: [
+                                              const Icon(
+                                                  Icons.check_circle_rounded,
+                                                  color: AppColors.sunYellow,
+                                                  size: 20),
+                                              const SizedBox(width: 10),
+                                              Expanded(
+                                                child: Text(
+                                                  'Tüm hesap ve oyun verileriniz başarıyla sıfırlandı.',
+                                                  style: GoogleFonts.patrickHand(
+                                                    fontSize: 15,
+                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          duration: const Duration(seconds: 3),
+                                        ),
+                                      );
+                                      Navigator.of(context).pop();
+                                    }
+                                  },
+                                  child: Text(
+                                    'Evet, Sıfırla',
+                                    style: GoogleFonts.patrickHand(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
+                        ],
                       ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         );
       },
     );
@@ -962,7 +1066,7 @@ class _SettingsAppVersionCard extends StatefulWidget {
 
 class _SettingsAppVersionCardState extends State<_SettingsAppVersionCard> {
   bool _isChecking = false;
-  String _versionText = 'v1.2.11';
+  String _versionText = 'v1.2.21 (Build 39)';
 
   @override
   void initState() {

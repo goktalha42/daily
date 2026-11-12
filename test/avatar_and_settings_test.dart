@@ -119,11 +119,79 @@ void main() {
       expect(find.text('BİLDİRİMLER VE GÜNLÜK SERİ'), findsOneWidget);
       expect(find.text('İLERLEME YEDEKLEME VE CİHAZ TAŞIMA'), findsOneWidget);
       expect(find.text('Tanıtım Turunu Tekrar İzle'), findsOneWidget);
+      expect(find.text('UYGULAMA SÜRÜMÜ VE BİLGİLERİ'), findsOneWidget);
+      expect(find.textContaining('Zühtü v1.2.21 (Build 39)'), findsOneWidget);
       expect(find.text('GİZLİLİK VE POLİTİKALAR'), findsNothing);
       expect(find.text('Gizlilik Politikası (Privacy Policy)'), findsNothing);
       expect(find.text('Açık Kaynak & Lisanslar'), findsNothing);
       expect(find.text('VERİ YÖNETİMİ VE HESAP SIFIRLAMA'), findsOneWidget);
       expect(find.text('Tüm Verileri ve Hesabı Sıfırla'), findsOneWidget);
+    });
+
+    testWidgets('Verileri sıfırla butonuna basıldığında onay diyaloğu açılır ve vazgeçilebilir', (tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      SharedPreferences.setMockInitialValues({'zuhtu_user_nickname': 'TestOyuncu'});
+
+      await tester.pumpWidget(
+        const ProviderScope(
+          child: MaterialApp(
+            home: SettingsScreen(),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      final resetButton = find.text('Tüm Verileri ve Hesabı Sıfırla');
+      expect(resetButton, findsOneWidget);
+      await tester.ensureVisible(resetButton);
+      await tester.tap(resetButton);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Tüm Verilerini Silmek İstiyor musun?'), findsOneWidget);
+      expect(find.text('Vazgeç'), findsOneWidget);
+      expect(find.text('Evet, Sıfırla'), findsOneWidget);
+
+      await tester.tap(find.text('Vazgeç'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Tüm Verilerini Silmek İstiyor musun?'), findsNothing);
+    });
+
+    testWidgets('Verileri sıfırla onaylandığında sıfırlama işlemi yürütülür', (tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      SharedPreferences.setMockInitialValues({'zuhtu_user_nickname': 'TestOyuncu'});
+
+      await tester.pumpWidget(
+        const ProviderScope(
+          child: MaterialApp(
+            home: SettingsScreen(),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      final resetButton = find.text('Tüm Verileri ve Hesabı Sıfırla');
+      await tester.ensureVisible(resetButton);
+      await tester.tap(resetButton);
+      await tester.pumpAndSettle();
+
+      final confirmBtn = find.text('Evet, Sıfırla');
+      expect(confirmBtn, findsOneWidget);
+      await tester.tap(confirmBtn);
+      await tester.pumpAndSettle();
+
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getString('zuhtu_user_nickname'), isNull);
     });
   });
 

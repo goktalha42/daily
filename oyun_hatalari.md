@@ -26,9 +26,8 @@ yeni apk ler yaptıkca versiyonu v1.0.1, v1.0.2 olarak değişiklik büyüklüğ
 Uygulama için:
 1-) Google ile giriş eklenecek.
 2-) Uygulama içi güncelleme ve androdimanifest apk yukleme izni kaldırılacak.
-3-) Verileri silme butonu aktif edilecek.
-4-) Kurtarma kodu işlemi, google ile giriş oldugu için artık gereksiz.
-5-) Ayarlar sayfasında uygulama sürümü görünmeye devam edecek.
+3-) Kurtarma kodu işlemi, google ile giriş oldugu için artık gereksiz.
+
 
 
 
