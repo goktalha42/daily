@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/services/theme_service.dart';
 import 'core/theme/app_theme.dart';
@@ -6,8 +7,11 @@ import 'core/widgets/screen_shake.dart';
 import 'core/widgets/online_guard_widget.dart';
 import 'features/home/home_screen.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+  ]);
   runApp(
     const ProviderScope(
       child: DailyGamesApp(),

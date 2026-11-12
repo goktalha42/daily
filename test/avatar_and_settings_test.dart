@@ -118,7 +118,10 @@ void main() {
       expect(find.text('SES VE DOKUNSAL HİSSİYAT'), findsOneWidget);
       expect(find.text('BİLDİRİMLER VE GÜNLÜK SERİ'), findsOneWidget);
       expect(find.text('İLERLEME YEDEKLEME VE CİHAZ TAŞIMA'), findsOneWidget);
-      expect(find.text('GİZLİLİK VE POLİTİKALAR'), findsOneWidget);
+      expect(find.text('Tanıtım Turunu Tekrar İzle'), findsOneWidget);
+      expect(find.text('GİZLİLİK VE POLİTİKALAR'), findsNothing);
+      expect(find.text('Gizlilik Politikası (Privacy Policy)'), findsNothing);
+      expect(find.text('Açık Kaynak & Lisanslar'), findsNothing);
       expect(find.text('VERİ YÖNETİMİ VE HESAP SIFIRLAMA'), findsOneWidget);
       expect(find.text('Tüm Verileri ve Hesabı Sıfırla'), findsOneWidget);
     });

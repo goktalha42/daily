@@ -19,41 +19,41 @@ void main() {
   });
 
   group('RetentionNotificationService Zamanlama ve İçerik Testleri', () {
-    test('Bugün oyun çözülmediyse ve saat 20:00 öncesi ise bugün 20:00 döner', () {
+    test('Bugün oyun çözülmediyse ve saat 18:00 öncesi ise bugün 18:00 döner', () {
       final now = DateTime(2026, 11, 8, 15, 30);
       final next = RetentionNotificationService.computeNextStreakTriggerTime(
         now: now,
         hasCompletedGameToday: false,
       );
-      expect(next, DateTime(2026, 11, 8, 20, 0));
+      expect(next, DateTime(2026, 11, 8, 18, 0));
     });
 
-    test('Bugün en az 1 oyun çözüldüyse bildirim otomatik yarına (20:00) ertelenir', () {
+    test('Bugün en az 1 oyun çözüldüyse bildirim otomatik yarına (18:00) ertelenir', () {
       final now = DateTime(2026, 11, 8, 14, 10);
       final next = RetentionNotificationService.computeNextStreakTriggerTime(
         now: now,
         hasCompletedGameToday: true,
       );
-      expect(next, DateTime(2026, 11, 9, 20, 0));
+      expect(next, DateTime(2026, 11, 9, 18, 0));
     });
 
-    test('Pazar akşamı 20:00 Haftalık Zeka Raporu zamanlaması doğru hesaplanır', () {
-      // Çarşamba günü -> Aynı haftanın Pazar günü 20:00
+    test('Pazar akşamı 18:00 Haftalık Zeka Raporu zamanlaması doğru hesaplanır', () {
+      // Çarşamba günü -> Aynı haftanın Pazar günü 18:00
       final wednesday = DateTime(2026, 11, 4, 12, 0);
       final nextSunday =
           RetentionNotificationService.computeNextSundayReportTriggerTime(
             wednesday,
           );
       expect(nextSunday.weekday, DateTime.sunday);
-      expect(nextSunday, DateTime(2026, 11, 8, 20, 0));
+      expect(nextSunday, DateTime(2026, 11, 8, 18, 0));
 
-      // Pazar saat 21:00 -> Gelecek haftanın Pazar günü 20:00
-      final sundayLate = DateTime(2026, 11, 8, 21, 0);
+      // Pazar saat 19:00 -> Gelecek haftanın Pazar günü 18:00
+      final sundayLate = DateTime(2026, 11, 8, 19, 0);
       final followingSunday =
           RetentionNotificationService.computeNextSundayReportTriggerTime(
             sundayLate,
           );
-      expect(followingSunday, DateTime(2026, 11, 15, 20, 0));
+      expect(followingSunday, DateTime(2026, 11, 15, 18, 0));
     });
 
     test('Seri sayısına göre bildirim metni kişiselleştirilir', () {

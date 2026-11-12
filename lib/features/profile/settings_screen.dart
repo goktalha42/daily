@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/network/api_client.dart';
 import '../../core/services/badge_service.dart';
@@ -26,9 +25,6 @@ import '../onboarding/onboarding_screen.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
-
-  static const String privacyPolicyUrl =
-      'https://github.com/goktalha42/daily/blob/main/PRIVACY_POLICY.md';
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -238,9 +234,9 @@ class SettingsScreen extends ConsumerWidget {
                       _SettingsToggleRow(
                         icon: Icons.local_fire_department_rounded,
                         accentColor: AppColors.highlighterOrange,
-                        title: 'Günlük Seri Koruma Bildirimi (20:00)',
+                        title: 'Günlük Seri Koruma Bildirimi (18:00)',
                         subtitle:
-                            'O gün oyun çözülmediyse akşam 20:00\'de seriyi korumanız için uyarır',
+                            'O gün oyun çözülmediyse akşam 18:00\'de seriyi korumanız için uyarır',
                         value: notifySettings.streakReminderEnabled,
                         onToggle: () => ref
                             .read(retentionNotificationProvider.notifier)
@@ -254,7 +250,7 @@ class SettingsScreen extends ConsumerWidget {
                       _SettingsToggleRow(
                         icon: Icons.insights_rounded,
                         accentColor: AppColors.sunYellow,
-                        title: 'Pazar Akşamı Zeka Raporu (20:00)',
+                        title: 'Pazar Akşamı Zeka Raporu (18:00)',
                         subtitle:
                             'Haftalık 6 bilişsel alan karnesi hazır olduğunda bildirir',
                         value: notifySettings.sundayReportEnabled,
@@ -494,135 +490,6 @@ class SettingsScreen extends ConsumerWidget {
                         Icons.arrow_forward_ios_rounded,
                         size: 14,
                         color: pencilColor,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-
-            // 7. YASAL VE GİZLİLİK (GOOGLE PLAY STORE UYUMLULUK)
-            _buildSectionHeader(
-              title: 'GİZLİLİK VE POLİTİKALAR',
-              pencilColor: pencilColor,
-              graphiteColor: graphiteColor,
-              accentColor: AppColors.skyBlue,
-            ),
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                child: SketchCard(
-                  padding: const EdgeInsets.all(14),
-                  borderRadius: 14,
-                  borderWidth: 2.0,
-                  shadowOffset: const Offset(3.0, 3.0),
-                  backgroundColor: cardBg,
-                  borderColor: pencilColor,
-                  child: Column(
-                    children: [
-                      GestureDetector(
-                        onTap: () async {
-                          HapticFeedback.lightImpact();
-                          final uri = Uri.parse(privacyPolicyUrl);
-                          if (await canLaunchUrl(uri)) {
-                            await launchUrl(uri,
-                                mode: LaunchMode.externalApplication);
-                          } else if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Gizlilik politikası bağlantısı açılamadı.',
-                                  style: GoogleFonts.patrickHand(),
-                                ),
-                              ),
-                            );
-                          }
-                        },
-                        child: Row(
-                          children: [
-                            SketchCard(
-                              padding: const EdgeInsets.all(8),
-                              borderRadius: 10,
-                              borderWidth: 1.5,
-                              shadowOffset: const Offset(1.5, 1.5),
-                              backgroundColor: AppColors.skyBlue
-                                  .withAlpha(isDark ? 60 : 40),
-                              borderColor: pencilColor,
-                              child: Icon(Icons.privacy_tip_outlined,
-                                  size: 20, color: pencilColor),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Gizlilik Politikası (Privacy Policy)',
-                                    style: GoogleFonts.patrickHand(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w700,
-                                      color: pencilColor,
-                                    ),
-                                  ),
-                                  Text(
-                                    'Kişisel verilerinizin nasıl korunduğunu öğrenin',
-                                    style: GoogleFonts.plusJakartaSans(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w500,
-                                      color: graphiteColor,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Icon(Icons.open_in_new_rounded,
-                                size: 18, color: graphiteColor),
-                          ],
-                        ),
-                      ),
-                      Divider(
-                        height: 20,
-                        color: pencilColor.withAlpha(40),
-                        thickness: 1.1,
-                      ),
-                      Row(
-                        children: [
-                          SketchCard(
-                            padding: const EdgeInsets.all(8),
-                            borderRadius: 10,
-                            borderWidth: 1.5,
-                            shadowOffset: const Offset(1.5, 1.5),
-                            backgroundColor: AppColors.sunYellow
-                                .withAlpha(isDark ? 60 : 40),
-                            borderColor: pencilColor,
-                            child: Icon(Icons.code_rounded,
-                                size: 20, color: pencilColor),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Açık Kaynak & Lisanslar',
-                                  style: GoogleFonts.patrickHand(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w700,
-                                    color: pencilColor,
-                                  ),
-                                ),
-                                Text(
-                                  'Zühtü Psikometrik Zeka ve Bulmaca Platformu • MIT License',
-                                  style: GoogleFonts.plusJakartaSans(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w500,
-                                    color: graphiteColor,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
                       ),
                     ],
                   ),

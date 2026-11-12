@@ -27,12 +27,13 @@ class RetentionNotificationSettings {
   }
 }
 
-/// Akşam 20:00 Günlük Seri Koruma ve Pazar 20:00 Haftalık Zeka Raporu Bildirim Servisi.
+/// Akşam 18:00 Günlük Seri Koruma ve Pazar 18:00 Haftalık Zeka Raporu Bildirim Servisi.
 class RetentionNotificationService {
   RetentionNotificationService._();
   static final RetentionNotificationService instance =
       RetentionNotificationService._();
 
+  static const int dailyNotificationHour = 18;
   static const _streakPrefKey = 'zuhtu_notify_streak_20h_v1';
   static const _sundayPrefKey = 'zuhtu_notify_sunday_20h_v1';
 
@@ -65,37 +66,37 @@ class RetentionNotificationService {
     );
   }
 
-  /// Akşam 20:00 bildirim zamanını hesaplar.
-  /// Eğer bugün zaten en az 1 oyun çözülmüşse veya saat 20:00'yi geçmişse
-  /// bildirimi otomatik olarak YARIN 20:00'ye kurar.
+  /// Akşam 18:00 bildirim zamanını hesaplar.
+  /// Eğer bugün zaten en az 1 oyun çözülmüşse veya saat 18:00'i geçmişse
+  /// bildirimi otomatik olarak YARIN 18:00'e kurar.
   static DateTime computeNextStreakTriggerTime({
     required DateTime now,
     required bool hasCompletedGameToday,
   }) {
-    final todayAt20 = DateTime(now.year, now.month, now.day, 20, 0);
-    if (!hasCompletedGameToday && now.isBefore(todayAt20)) {
-      return todayAt20;
+    final todayAtTarget = DateTime(now.year, now.month, now.day, dailyNotificationHour, 0);
+    if (!hasCompletedGameToday && now.isBefore(todayAtTarget)) {
+      return todayAtTarget;
     }
     final tomorrow = now.add(const Duration(days: 1));
-    return DateTime(tomorrow.year, tomorrow.month, tomorrow.day, 20, 0);
+    return DateTime(tomorrow.year, tomorrow.month, tomorrow.day, dailyNotificationHour, 0);
   }
 
-  /// Pazar akşamı 20:00 Haftalık Zeka Raporu bildirim zamanını hesaplar.
+  /// Pazar akşamı 18:00 Haftalık Zeka Raporu bildirim zamanını hesaplar.
   static DateTime computeNextSundayReportTriggerTime(DateTime now) {
     final daysUntilSunday = (DateTime.sunday - now.weekday) % 7;
     final candidateDate = now.add(Duration(days: daysUntilSunday));
-    final candidateAt20 = DateTime(
+    final candidateAtTarget = DateTime(
       candidateDate.year,
       candidateDate.month,
       candidateDate.day,
-      20,
+      dailyNotificationHour,
       0,
     );
-    if (candidateAt20.isAfter(now)) {
-      return candidateAt20;
+    if (candidateAtTarget.isAfter(now)) {
+      return candidateAtTarget;
     }
     final nextSunday = candidateDate.add(const Duration(days: 7));
-    return DateTime(nextSunday.year, nextSunday.month, nextSunday.day, 20, 0);
+    return DateTime(nextSunday.year, nextSunday.month, nextSunday.day, dailyNotificationHour, 0);
   }
 
   /// Aktif seri sayısına göre kişiselleştirilmiş bildirim başlığı ve metni üretir.
@@ -129,7 +130,7 @@ class RetentionNotificationService {
     return true;
   }
 
-  /// Günlük seri durumuna göre akşam 20:00 ve Pazar 20:00 bildirimlerini senkronize eder.
+  /// Günlük seri durumuna göre akşam 18:00 ve Pazar 18:00 bildirimlerini senkronize eder.
   Future<void> syncSchedules(DailyPlayState playState) async {
     await ensureLoaded();
     final now = DateTime.now();
@@ -137,7 +138,7 @@ class RetentionNotificationService {
     final completedToday = playState.getCompletedCountForDate(todayId) > 0;
     final currentStreak = playState.getCurrentStreak();
 
-    // 1. Günlük Seri Koruma Bildirimi (20:00)
+    // 1. Günlük Seri Koruma Bildirimi (18:00)
     if (_streakReminderEnabled) {
       final nextTrigger = computeNextStreakTriggerTime(
         now: now,
@@ -155,7 +156,7 @@ class RetentionNotificationService {
       await _cancelNative(idStreakReminder);
     }
 
-    // 2. Pazar Akşamı 20:00 Haftalık Zeka Raporu Bildirimi
+    // 2. Pazar Akşamı 18:00 Haftalık Zeka Raporu Bildirimi
     if (_sundayReportEnabled) {
       final nextSunday = computeNextSundayReportTriggerTime(now);
       await _scheduleNative(

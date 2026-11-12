@@ -66,9 +66,9 @@
     "semantic_hash": ""
   },
   "lib/core/network/network_checker.dart": {
-    "mtime": 1793882141.0838819,
-    "seen": 1794487012.6515298,
-    "ast_hash": "73d4fb46157417b31226c2c3429fcd06",
+    "mtime": 1794494310.3136892,
+    "seen": 1794494716.1652915,
+    "ast_hash": "5d5c2ea7df81367625cb97e5213fac96",
     "semantic_hash": ""
   },
   "lib/core/puzzle/puzzle_repository.dart": {
@@ -204,9 +204,9 @@
     "semantic_hash": ""
   },
   "lib/features/home/home_screen.dart": {
-    "mtime": 1794491623.9216309,
-    "seen": 1794492215.0381567,
-    "ast_hash": "156fee94321add8ca18babbeb4ec4410",
+    "mtime": 1794495805.6777868,
+    "seen": 1794496169.1267421,
+    "ast_hash": "50ee79ad18947c7b4e6f9dc788c716d3",
     "semantic_hash": ""
   },
   "lib/features/leaderboard/leaderboard_screen.dart": {
@@ -264,8 +264,8 @@
     "semantic_hash": ""
   },
   "lib/games/crossclimb/crossclimb_levels.dart": {
-    "mtime": 1794491558.713324,
-    "seen": 1794492215.0473206,
+    "mtime": 1794492698.2868598,
+    "seen": 1794493413.2993338,
     "ast_hash": "eba0e5fb66efb6c589580b70996046f9",
     "semantic_hash": ""
   },
@@ -294,8 +294,8 @@
     "semantic_hash": "0552f5966b7aed64504158e4de983c03"
   },
   "lib/games/patches/patches_levels.dart": {
-    "mtime": 1794491562.6491516,
-    "seen": 1794492215.0506961,
+    "mtime": 1794492698.453024,
+    "seen": 1794493413.3069613,
     "ast_hash": "b4113e5d37ae03014714e755a7775ad3",
     "semantic_hash": ""
   },
@@ -324,8 +324,8 @@
     "semantic_hash": ""
   },
   "lib/games/pinpoint/pinpoint_levels.dart": {
-    "mtime": 1794491556.9899592,
-    "seen": 1794492215.053057,
+    "mtime": 1794492698.6011384,
+    "seen": 1794493413.310527,
     "ast_hash": "db665cc39b6384ce7a942e83d517af22",
     "semantic_hash": ""
   },
@@ -360,8 +360,8 @@
     "semantic_hash": ""
   },
   "lib/games/queens/queens_levels.dart": {
-    "mtime": 1794491555.7781446,
-    "seen": 1794492215.0555754,
+    "mtime": 1794492698.7111967,
+    "seen": 1794493413.3147862,
     "ast_hash": "f78540c1def1922a072de5eb373ffdf0",
     "semantic_hash": ""
   },
@@ -396,8 +396,8 @@
     "semantic_hash": ""
   },
   "lib/games/tango/tango_levels.dart": {
-    "mtime": 1794491560.0613916,
-    "seen": 1794492215.0577676,
+    "mtime": 1794492698.916159,
+    "seen": 1794493413.3799355,
     "ast_hash": "8e7e6e96cac64c2ef9fad1739dc96c3a",
     "semantic_hash": ""
   },
@@ -426,8 +426,8 @@
     "semantic_hash": ""
   },
   "lib/games/zip_path/zip_levels.dart": {
-    "mtime": 1794491561.3490708,
-    "seen": 1794492215.058944,
+    "mtime": 1794492698.9923196,
+    "seen": 1794493413.3974667,
     "ast_hash": "ca7967b220efb640749908bce8878f46",
     "semantic_hash": ""
   },
@@ -450,10 +450,10 @@
     "semantic_hash": ""
   },
   "lib/main.dart": {
-    "mtime": 1793882141.1724346,
-    "seen": 1794487012.6517158,
-    "ast_hash": "9e49918c8f824794424322e14e4f6049",
-    "semantic_hash": "9e49918c8f824794424322e14e4f6049"
+    "mtime": 1794495807.1867301,
+    "seen": 1794496169.140218,
+    "ast_hash": "d5d55059be790e1ed37e702433ffaebf",
+    "semantic_hash": ""
   },
   "linux/runner/main.cc": {
     "mtime": 1791456355.4261713,
@@ -678,15 +678,15 @@
     "semantic_hash": "30cc1614b16214b66c014af09ba699eb"
   },
   "oyun_hatalari.md": {
-    "mtime": 1794492169.6995976,
-    "seen": 1794492215.1154282,
-    "ast_hash": "21f12f33b720c38c5effa4ba591d1a8e",
+    "mtime": 1794495305.8374252,
+    "seen": 1794495526.0461762,
+    "ast_hash": "907f7027f018e5d92ea89becca528e68",
     "semantic_hash": ""
   },
   "pubspec.yaml": {
-    "mtime": 1794491939.4471283,
-    "seen": 1794492215.1154323,
-    "ast_hash": "e691d40aff0396bba1cc2b8074b5eda5",
+    "mtime": 1794495904.244258,
+    "seen": 1794496169.1713054,
+    "ast_hash": "c9a0c2a0735caa7a85b4de5a8039f821",
     "semantic_hash": ""
   },
   "rozetler.md": {
@@ -924,8 +924,8 @@
     "semantic_hash": "301a7604d45b3e739efc881eb04896ea"
   },
   "lib/core/network/api_client.dart": {
-    "mtime": 1794491601.5436833,
-    "seen": 1794492215.0254488,
+    "mtime": 1794492696.23655,
+    "seen": 1794493413.0648894,
     "ast_hash": "d84a4042070bc4f7b7b9b743f2854ed7",
     "semantic_hash": ""
   },
@@ -1092,9 +1092,9 @@
     "semantic_hash": ""
   },
   "server/config/services.php": {
-    "mtime": 1790740604.0,
-    "seen": 1794487012.651776,
-    "ast_hash": "918f5aa09663e375f4570301a91548f9",
+    "mtime": 1794492562.1061132,
+    "seen": 1794492581.695225,
+    "ast_hash": "18e0ce5b6914e6676af61ba02479d581",
     "semantic_hash": ""
   },
   "server/config/session.php": {
@@ -1188,8 +1188,8 @@
     "semantic_hash": ""
   },
   "server/routes/api.php": {
-    "mtime": 1794491721.003554,
-    "seen": 1794492215.097006,
+    "mtime": 1794492699.084768,
+    "seen": 1794493413.6391947,
     "ast_hash": "a6894d71f8f4f7c08c6a12ea25cc2c8b",
     "semantic_hash": ""
   },
@@ -1242,9 +1242,9 @@
     "semantic_hash": ""
   },
   "version.json": {
-    "mtime": 1794491941.3523803,
-    "seen": 1794492215.1086717,
-    "ast_hash": "02aef1748425b6887f17ecd12039dc4d",
+    "mtime": 1794495905.991914,
+    "seen": 1794496169.1640766,
+    "ast_hash": "ba65a9070a6c815845f99b71d12da960",
     "semantic_hash": ""
   },
   "VPS_KURULUMU_VE_DURUM.md": {
@@ -1284,9 +1284,9 @@
     "semantic_hash": ""
   },
   "web/index.html": {
-    "mtime": 1791456355.4667654,
-    "seen": 1794487012.651932,
-    "ast_hash": "7dff2fa4b3a0f26b0a2957850ae345fd",
+    "mtime": 1794494310.6045096,
+    "seen": 1794494716.2658608,
+    "ast_hash": "5e31bf0692e03faf4a90458616eff9b7",
     "semantic_hash": ""
   },
   "lib/features/home/widgets/home_brain_hero_card.dart": {
@@ -1398,9 +1398,9 @@
     "semantic_hash": ""
   },
   "lib/core/services/retention_notification_service.dart": {
-    "mtime": 1794206908.0843604,
-    "seen": 1794487012.6515515,
-    "ast_hash": "77246822bb5b361650ceadbe53bf6b7b",
+    "mtime": 1794495804.8501785,
+    "seen": 1794496169.1196194,
+    "ast_hash": "b87de7df805ef1a5681c4c8c61b065d8",
     "semantic_hash": ""
   },
   "lib/core/services/sound_haptic_service.dart": {
@@ -1422,9 +1422,9 @@
     "semantic_hash": ""
   },
   "test/retention_services_test.dart": {
-    "mtime": 1794210987.6322656,
-    "seen": 1794487012.6518595,
-    "ast_hash": "5c1dd89ed36eeabeb7d1e5703f9851a7",
+    "mtime": 1794495807.542781,
+    "seen": 1794496169.1614628,
+    "ast_hash": "38c54c9d426a67aa981c8af56938c20d",
     "semantic_hash": ""
   },
   "test/score_consistency_and_babayaga_test.dart": {
@@ -1464,9 +1464,9 @@
     "semantic_hash": ""
   },
   "lib/features/profile/settings_screen.dart": {
-    "mtime": 1794393885.6296659,
-    "seen": 1794487012.6516428,
-    "ast_hash": "f0baf074deb6b6b9b3f256a08273a8f8",
+    "mtime": 1794495806.8738165,
+    "seen": 1794496169.129947,
+    "ast_hash": "bb373ec9e22535efd2dee5657a16a398",
     "semantic_hash": ""
   },
   "lib/features/profile/widgets/avatar_picker_dialog.dart": {
@@ -1476,9 +1476,9 @@
     "semantic_hash": ""
   },
   "test/avatar_and_settings_test.dart": {
-    "mtime": 1794479097.9084396,
-    "seen": 1794487012.6518247,
-    "ast_hash": "f4c3a0c8e270ff94beacc91d32aaf14b",
+    "mtime": 1794495807.3680372,
+    "seen": 1794496169.156838,
+    "ast_hash": "3a39a8eba70e56ad2146d7f414340e89",
     "semantic_hash": ""
   },
   "PRIVACY_POLICY.md": {
@@ -1488,8 +1488,8 @@
     "semantic_hash": ""
   },
   "lib/core/utils/share_card_helper.dart": {
-    "mtime": 1794491603.2747045,
-    "seen": 1794492215.0344381,
+    "mtime": 1794492697.490325,
+    "seen": 1794493413.104843,
     "ast_hash": "ea262638390594a7cfa367d5faf23acb",
     "semantic_hash": ""
   },
@@ -1518,8 +1518,8 @@
     "semantic_hash": ""
   },
   "lib/core/puzzle/puzzle_serializer.dart": {
-    "mtime": 1794491758.9076245,
-    "seen": 1794492215.0269787,
+    "mtime": 1794492697.0586395,
+    "seen": 1794493413.0655046,
     "ast_hash": "3a8ee86ebae820eeac21397c5aa608fb",
     "semantic_hash": ""
   },
@@ -1536,9 +1536,9 @@
     "semantic_hash": ""
   },
   "server/app/Http/Controllers/Api/AdminPuzzleController.php": {
-    "mtime": 1794491761.2925813,
-    "seen": 1794492215.0836267,
-    "ast_hash": "df2b74d523f74419912a17cd03364522",
+    "mtime": 1794492564.3071058,
+    "seen": 1794492581.688701,
+    "ast_hash": "28b8e7c1536d46f5cd67b9d528bf4eac",
     "semantic_hash": ""
   },
   "server/app/Http/Controllers/Api/PuzzleController.php": {
@@ -1590,20 +1590,20 @@
     "semantic_hash": ""
   },
   "web_portal/admin/admin.js": {
-    "mtime": 1794491971.838418,
-    "seen": 1794492215.1100788,
-    "ast_hash": "48a19a1e94cfa82791d0d9e49638f87d",
+    "mtime": 1794495078.4270422,
+    "seen": 1794495526.0411851,
+    "ast_hash": "77249661f39e5934cec9b36221033a2c",
     "semantic_hash": ""
   },
   "web_portal/admin/api.php": {
-    "mtime": 1794491984.020129,
-    "seen": 1794492215.1100836,
+    "mtime": 1794492699.8076205,
+    "seen": 1794493413.8105798,
     "ast_hash": "134fc393a2385108e7b3fa41d1ecef0d",
     "semantic_hash": ""
   },
   "web_portal/admin/auth.php": {
-    "mtime": 1794491986.9261463,
-    "seen": 1794492215.1100874,
+    "mtime": 1794492699.8742094,
+    "seen": 1794493413.810584,
     "ast_hash": "9aa2767b4b4018554d3ace7c0f79d08f",
     "semantic_hash": ""
   },
@@ -1614,14 +1614,14 @@
     "semantic_hash": ""
   },
   "web_portal/admin/index.php": {
-    "mtime": 1794491990.7804418,
-    "seen": 1794492215.110093,
-    "ast_hash": "cf690474ca6367d81f354181d0433899",
+    "mtime": 1794495078.4784298,
+    "seen": 1794495526.0418673,
+    "ast_hash": "df337ae598575217c02a353d5010e319",
     "semantic_hash": ""
   },
   "web_portal/api_proxy.php": {
-    "mtime": 1794491991.4572368,
-    "seen": 1794492215.1100953,
+    "mtime": 1794492700.9719186,
+    "seen": 1794493413.8185363,
     "ast_hash": "c933ae12acfaa1d96bda169a49b5ce2a",
     "semantic_hash": ""
   }

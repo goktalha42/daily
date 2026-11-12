@@ -66,9 +66,9 @@
     "semantic_hash": ""
   },
   "lib/core/network/network_checker.dart": {
-    "mtime": 1793882141.0838819,
-    "seen": 1794487012.6515298,
-    "ast_hash": "73d4fb46157417b31226c2c3429fcd06",
+    "mtime": 1794494310.3136892,
+    "seen": 1794494716.1652915,
+    "ast_hash": "5d5c2ea7df81367625cb97e5213fac96",
     "semantic_hash": ""
   },
   "lib/core/puzzle/puzzle_repository.dart": {
@@ -204,9 +204,9 @@
     "semantic_hash": ""
   },
   "lib/features/home/home_screen.dart": {
-    "mtime": 1794395123.5171578,
-    "seen": 1794487012.6516166,
-    "ast_hash": "63300541eafa33d4ebc49f4ea5d34bbb",
+    "mtime": 1794492698.0981927,
+    "seen": 1794493413.2340088,
+    "ast_hash": "156fee94321add8ca18babbeb4ec4410",
     "semantic_hash": ""
   },
   "lib/features/leaderboard/leaderboard_screen.dart": {
@@ -264,9 +264,9 @@
     "semantic_hash": ""
   },
   "lib/games/crossclimb/crossclimb_levels.dart": {
-    "mtime": 1793882141.1285293,
-    "seen": 1794487012.6516552,
-    "ast_hash": "d9345b3688638d7af39bd6d2536c9ff2",
+    "mtime": 1794492698.2868598,
+    "seen": 1794493413.2993338,
+    "ast_hash": "eba0e5fb66efb6c589580b70996046f9",
     "semantic_hash": ""
   },
   "lib/games/crossclimb/crossclimb_logic.dart": {
@@ -294,9 +294,9 @@
     "semantic_hash": "0552f5966b7aed64504158e4de983c03"
   },
   "lib/games/patches/patches_levels.dart": {
-    "mtime": 1793882141.1346407,
-    "seen": 1794487012.651664,
-    "ast_hash": "139c4d30e7d728dff9a30bfbe431f743",
+    "mtime": 1794492698.453024,
+    "seen": 1794493413.3069613,
+    "ast_hash": "b4113e5d37ae03014714e755a7775ad3",
     "semantic_hash": ""
   },
   "lib/games/patches/patches_logic.dart": {
@@ -324,9 +324,9 @@
     "semantic_hash": ""
   },
   "lib/games/pinpoint/pinpoint_levels.dart": {
-    "mtime": 1793882141.1497712,
-    "seen": 1794487012.6516736,
-    "ast_hash": "d40a60e66d4a377369e28ba27b1604b7",
+    "mtime": 1794492698.6011384,
+    "seen": 1794493413.310527,
+    "ast_hash": "db665cc39b6384ce7a942e83d517af22",
     "semantic_hash": ""
   },
   "lib/games/pinpoint/pinpoint_logic.dart": {
@@ -360,9 +360,9 @@
     "semantic_hash": ""
   },
   "lib/games/queens/queens_levels.dart": {
-    "mtime": 1793882141.1583345,
-    "seen": 1794487012.6516855,
-    "ast_hash": "3df674470827233a1c4e8d6b60ff26e0",
+    "mtime": 1794492698.7111967,
+    "seen": 1794493413.3147862,
+    "ast_hash": "f78540c1def1922a072de5eb373ffdf0",
     "semantic_hash": ""
   },
   "lib/games/queens/queens_lobby_screen.dart": {
@@ -396,9 +396,9 @@
     "semantic_hash": ""
   },
   "lib/games/tango/tango_levels.dart": {
-    "mtime": 1793882141.1653166,
-    "seen": 1794487012.6516976,
-    "ast_hash": "f39ee261bd58ad31e61137e4475e7ef9",
+    "mtime": 1794492698.916159,
+    "seen": 1794493413.3799355,
+    "ast_hash": "8e7e6e96cac64c2ef9fad1739dc96c3a",
     "semantic_hash": ""
   },
   "lib/games/tango/tango_logic.dart": {
@@ -426,9 +426,9 @@
     "semantic_hash": ""
   },
   "lib/games/zip_path/zip_levels.dart": {
-    "mtime": 1793882141.169731,
-    "seen": 1794487012.6517076,
-    "ast_hash": "88a0fada4c5cbea4b6ad76efaf241ca2",
+    "mtime": 1794492698.9923196,
+    "seen": 1794493413.3974667,
+    "ast_hash": "ca7967b220efb640749908bce8878f46",
     "semantic_hash": ""
   },
   "lib/games/zip_path/zip_logic.dart": {
@@ -678,15 +678,15 @@
     "semantic_hash": "30cc1614b16214b66c014af09ba699eb"
   },
   "oyun_hatalari.md": {
-    "mtime": 1794489268.0962331,
-    "seen": 1794489551.6440957,
-    "ast_hash": "b05bffb8aa5c731a2adb4cdbb606b1ea",
+    "mtime": 1794492169.6995976,
+    "seen": 1794492215.1154282,
+    "ast_hash": "21f12f33b720c38c5effa4ba591d1a8e",
     "semantic_hash": ""
   },
   "pubspec.yaml": {
-    "mtime": 1794479097.2125247,
-    "seen": 1794487012.65192,
-    "ast_hash": "f3364ca1b0e55666a9ae6ac982a62ccc",
+    "mtime": 1794492699.1649487,
+    "seen": 1794493413.9706814,
+    "ast_hash": "e691d40aff0396bba1cc2b8074b5eda5",
     "semantic_hash": ""
   },
   "rozetler.md": {
@@ -924,9 +924,9 @@
     "semantic_hash": "301a7604d45b3e739efc881eb04896ea"
   },
   "lib/core/network/api_client.dart": {
-    "mtime": 1794479097.189618,
-    "seen": 1794487012.6515274,
-    "ast_hash": "2652ac5967f9ebefccd6105d19ab891e",
+    "mtime": 1794492696.23655,
+    "seen": 1794493413.0648894,
+    "ast_hash": "d84a4042070bc4f7b7b9b743f2854ed7",
     "semantic_hash": ""
   },
   "lib/core/services/update_service.dart": {
@@ -1092,9 +1092,9 @@
     "semantic_hash": ""
   },
   "server/config/services.php": {
-    "mtime": 1790740604.0,
-    "seen": 1794487012.651776,
-    "ast_hash": "918f5aa09663e375f4570301a91548f9",
+    "mtime": 1794492562.1061132,
+    "seen": 1794492581.695225,
+    "ast_hash": "18e0ce5b6914e6676af61ba02479d581",
     "semantic_hash": ""
   },
   "server/config/session.php": {
@@ -1188,9 +1188,9 @@
     "semantic_hash": ""
   },
   "server/routes/api.php": {
-    "mtime": 1794388676.4039824,
-    "seen": 1794487012.6518097,
-    "ast_hash": "4c720a5eb6168f401d351d20a3d77b37",
+    "mtime": 1794492699.084768,
+    "seen": 1794493413.6391947,
+    "ast_hash": "a6894d71f8f4f7c08c6a12ea25cc2c8b",
     "semantic_hash": ""
   },
   "server/routes/console.php": {
@@ -1242,9 +1242,9 @@
     "semantic_hash": ""
   },
   "version.json": {
-    "mtime": 1794479097.9104438,
-    "seen": 1794487012.6518788,
-    "ast_hash": "738b3e12546851745c0518a71837126b",
+    "mtime": 1794492699.3325002,
+    "seen": 1794493413.804123,
+    "ast_hash": "02aef1748425b6887f17ecd12039dc4d",
     "semantic_hash": ""
   },
   "VPS_KURULUMU_VE_DURUM.md": {
@@ -1284,9 +1284,9 @@
     "semantic_hash": ""
   },
   "web/index.html": {
-    "mtime": 1791456355.4667654,
-    "seen": 1794487012.651932,
-    "ast_hash": "7dff2fa4b3a0f26b0a2957850ae345fd",
+    "mtime": 1794494310.6045096,
+    "seen": 1794494716.2658608,
+    "ast_hash": "5e31bf0692e03faf4a90458616eff9b7",
     "semantic_hash": ""
   },
   "lib/features/home/widgets/home_brain_hero_card.dart": {
@@ -1488,9 +1488,9 @@
     "semantic_hash": ""
   },
   "lib/core/utils/share_card_helper.dart": {
-    "mtime": 1794479097.1906152,
-    "seen": 1794487012.6515884,
-    "ast_hash": "49ea5fb1f6cea56d952ac71eae60bcd8",
+    "mtime": 1794492697.490325,
+    "seen": 1794493413.104843,
+    "ast_hash": "ea262638390594a7cfa367d5faf23acb",
     "semantic_hash": ""
   },
   "lib/core/widgets/daily_social_share_dialog.dart": {
@@ -1500,14 +1500,14 @@
     "semantic_hash": ""
   },
   "lib/features/onboarding/onboarding_screen.dart": {
-    "mtime": 1794489450.4598684,
-    "seen": 1794489551.6437962,
+    "mtime": 1794490283.7895114,
+    "seen": 1794492215.0408385,
     "ast_hash": "652af270c1335f35e0099a0b6f16194d",
     "semantic_hash": ""
   },
   "test/onboarding_and_share_test.dart": {
-    "mtime": 1794489528.942842,
-    "seen": 1794489551.644017,
+    "mtime": 1794490284.1522093,
+    "seen": 1794492215.102562,
     "ast_hash": "9bed9b8532350c29c0e25ecc0a539206",
     "semantic_hash": ""
   },
@@ -1515,6 +1515,114 @@
     "mtime": 1794488994.1594234,
     "seen": 1794489551.6441104,
     "ast_hash": "95d2e4471ce905209cbd696d3167ac70",
+    "semantic_hash": ""
+  },
+  "lib/core/puzzle/puzzle_serializer.dart": {
+    "mtime": 1794492697.0586395,
+    "seen": 1794493413.0655046,
+    "ast_hash": "3a8ee86ebae820eeac21397c5aa608fb",
+    "semantic_hash": ""
+  },
+  "lib/core/puzzle/remote_puzzle_store.dart": {
+    "mtime": 1794491759.2154384,
+    "seen": 1794492215.0269835,
+    "ast_hash": "082aa5ce8ef9e17144eabfcd0ca74864",
+    "semantic_hash": ""
+  },
+  "server/app/Console/Commands/GenerateDailyPuzzlesCommand.php": {
+    "mtime": 1794491761.0950818,
+    "seen": 1794492215.083622,
+    "ast_hash": "773bc5b3c48a64668cc067f7036c7bb8",
+    "semantic_hash": ""
+  },
+  "server/app/Http/Controllers/Api/AdminPuzzleController.php": {
+    "mtime": 1794492564.3071058,
+    "seen": 1794492581.688701,
+    "ast_hash": "28b8e7c1536d46f5cd67b9d528bf4eac",
+    "semantic_hash": ""
+  },
+  "server/app/Http/Controllers/Api/PuzzleController.php": {
+    "mtime": 1794491761.6664965,
+    "seen": 1794492215.084823,
+    "ast_hash": "369b8cb262ca97eb1dd384ceddf30695",
+    "semantic_hash": ""
+  },
+  "server/app/Models/DailyPuzzle.php": {
+    "mtime": 1794491761.8323977,
+    "seen": 1794492215.0851846,
+    "ast_hash": "d65798b99172f496619edc2028d3a996",
+    "semantic_hash": ""
+  },
+  "server/app/Services/DailyPuzzleGeneratorService.php": {
+    "mtime": 1794491761.9652555,
+    "seen": 1794492215.086351,
+    "ast_hash": "efa74198c12720766d215e52d27594d9",
+    "semantic_hash": ""
+  },
+  "server/database/data/word_pools.json": {
+    "mtime": 1794491704.335327,
+    "seen": 1794492215.0904753,
+    "ast_hash": "4a7a0c05694c5fc28cc114659bf30c76",
+    "semantic_hash": ""
+  },
+  "server/database/migrations/2026_11_12_170000_create_daily_puzzles_table.php": {
+    "mtime": 1794491762.3451376,
+    "seen": 1794492215.0953865,
+    "ast_hash": "2453256c38f09ab9f7e9da809f2beccc",
+    "semantic_hash": ""
+  },
+  "server/tests/Feature/DailyPuzzleApiTest.php": {
+    "mtime": 1794491762.5995677,
+    "seen": 1794492215.097815,
+    "ast_hash": "131f041fb8c3397bf64a8c71340c59e3",
+    "semantic_hash": ""
+  },
+  "test/remote_puzzle_test.dart": {
+    "mtime": 1794492030.4049704,
+    "seen": 1794492215.105947,
+    "ast_hash": "475ba5022fc36710171376cb54f0fd86",
+    "semantic_hash": ""
+  },
+  "tool/export_365_puzzles.dart": {
+    "mtime": 1794491762.948251,
+    "seen": 1794492215.1086667,
+    "ast_hash": "64f3591afeac4cdd3fdd2d6edcff273e",
+    "semantic_hash": ""
+  },
+  "web_portal/admin/admin.js": {
+    "mtime": 1794494681.0355513,
+    "seen": 1794494716.2524097,
+    "ast_hash": "77249661f39e5934cec9b36221033a2c",
+    "semantic_hash": ""
+  },
+  "web_portal/admin/api.php": {
+    "mtime": 1794492699.8076205,
+    "seen": 1794493413.8105798,
+    "ast_hash": "134fc393a2385108e7b3fa41d1ecef0d",
+    "semantic_hash": ""
+  },
+  "web_portal/admin/auth.php": {
+    "mtime": 1794492699.8742094,
+    "seen": 1794493413.810584,
+    "ast_hash": "9aa2767b4b4018554d3ace7c0f79d08f",
+    "semantic_hash": ""
+  },
+  "web_portal/admin/config.example.php": {
+    "mtime": 1794491987.8652942,
+    "seen": 1794492215.1100905,
+    "ast_hash": "332ffccc62dced9e2c0a3e7854a7df98",
+    "semantic_hash": ""
+  },
+  "web_portal/admin/index.php": {
+    "mtime": 1794494682.7682588,
+    "seen": 1794494716.256899,
+    "ast_hash": "df337ae598575217c02a353d5010e319",
+    "semantic_hash": ""
+  },
+  "web_portal/api_proxy.php": {
+    "mtime": 1794492700.9719186,
+    "seen": 1794493413.8185363,
+    "ast_hash": "c933ae12acfaa1d96bda169a49b5ce2a",
     "semantic_hash": ""
   }
 }

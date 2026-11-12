@@ -1,9 +1,9 @@
 {
-    "version": "1.2.19",
-    "build_number": 37,
-    "title": "Zühtü v1.2.19 Güncellemesi",
-    "changelog": "• 365 günlük sunucu bulmaca takvimi ve özel gün bölümü desteği eklendi; tüm oyunlar canlı takvimden senkronize ediliyor.\n• Web sürümü (zuhtuapp.cyboros.com) tam uyumlu hale getirildi.",
-    "apk_url": "https://raw.githubusercontent.com/goktalha42/daily/main/releases/Zuhtu_v1.2.19_b37.apk",
-    "release_url": "https://github.com/goktalha42/daily/releases/tag/v1.2.19",
+    "version": "1.2.20",
+    "build_number": 38,
+    "title": "Zühtü v1.2.20 Güncellemesi",
+    "changelog": "• Uygulama yalnızca dikey (portrait) konumda çalışacak şekilde kilitlendi.\n• Ana sayfadaki Yeni Gün test butonu kaldırıldı.\n• Günlük seri ve Pazar haftalık rapor bildirim saati akşam 18:00 olarak güncellendi.\n• Ayarlar ekranı sadeleştirildi.",
+    "apk_url": "https://raw.githubusercontent.com/goktalha42/daily/main/releases/Zuhtu_v1.2.20_b38.apk",
+    "release_url": "https://github.com/goktalha42/daily/releases/tag/v1.2.20",
     "force_update": false
 }

@@ -13,7 +13,6 @@ import '../../core/services/theme_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/date_utils.dart';
 import '../../core/widgets/game_card_logos.dart';
-import '../../core/widgets/screen_shake.dart';
 import '../../core/widgets/sketch_decorations.dart';
 import '../../games/common/base_game.dart';
 import '../../games/queens/queens_lobby_screen.dart';
@@ -334,32 +333,6 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
 
   bool get _isArchiveMode => _activeLevelId != GameDateUtils.getTodayLevelId();
 
-  void _advanceToNextDay() {
-    setState(() {
-      GameDateUtils.advanceToNextDay();
-      ref.read(timeSyncServiceProvider).advanceDay();
-      _activeLevelId = GameDateUtils.getTodayLevelId();
-      _lastKnownToday = _activeLevelId;
-    });
-    _syncActiveDayPuzzles(forceRefresh: true);
-    // Lig servisindeki hafta kontrolünü ve lig atlama durumunu güncelle
-    ref.read(leagueServiceProvider.notifier).checkWeekTransition();
-
-    // Ekran sarsıntısı ve dopamin kutlaması
-    ScreenShake.shake(context, intensity: 12.0);
-    GeniusConfettiOverlay.explode(context);
-
-    final newDateStr = GameDateUtils.getFormattedDate(GameDateUtils.getActiveDate());
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('🌅 $newDateStr Yarışması Başladı! Tüm bölümler yenilendi.'),
-        backgroundColor: const Color(0xFF0F172A),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      ),
-    );
-  }
-
   Future<void> _openTimeMachine() async {
     HapticFeedback.selectionClick();
     final chosen = await TimeMachineDialog.show(
@@ -477,7 +450,7 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
     return CustomScrollView(
       physics: const BouncingScrollPhysics(),
       slivers: [
-        // 1. ÜST BAŞLIK & TARİH & YENİ GÜN & TEMA BUTONU
+        // 1. ÜST BAŞLIK & TARİH & TEMA BUTONU
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.only(left: 20, right: 20, top: 54, bottom: 12),
@@ -589,30 +562,6 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
                         isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
                         size: 18,
                         color: isDark ? AppColors.sunYellow : AppColors.pencilBlack,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    // Fotoğraftaki Gibi Kara Kalem "Yeni Gün" Butonu
-                    SketchCard(
-                      onTap: _advanceToNextDay,
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                      backgroundColor: isDark ? AppColors.surfaceSecondaryDark : AppColors.surfaceSecondaryLight,
-                      borderRadius: 10,
-                      borderWidth: 2.0,
-                      shadowOffset: const Offset(2.5, 2.5),
-                      child: Row(
-                        children: [
-                          Icon(Icons.bolt_rounded, size: 18, color: headerPencil),
-                          const SizedBox(width: 4),
-                          Text(
-                            'Yeni Gün',
-                            style: GoogleFonts.patrickHand(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w700,
-                              color: headerPencil,
-                            ),
-                          ),
-                        ],
                       ),
                     ),
                   ],
