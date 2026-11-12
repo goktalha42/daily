@@ -157,6 +157,14 @@ class UpdateService {
     }
   }
 
+  Map<String, dynamic> _decodeJsonSafe(List<int> bytes) {
+    var str = utf8.decode(bytes);
+    if (str.startsWith('\uFEFF')) {
+      str = str.substring(1);
+    }
+    return jsonDecode(str) as Map<String, dynamic>;
+  }
+
   /// Güncelleme olup olmadığını kontrol eder
   Future<AppUpdateInfo?> checkForUpdate({
     http.Client? httpClient,
@@ -179,7 +187,7 @@ class UpdateService {
         ).timeout(const Duration(seconds: 5));
 
         if (apiResponse.statusCode == 200) {
-          final data = jsonDecode(utf8.decode(apiResponse.bodyBytes)) as Map<String, dynamic>;
+          final data = _decodeJsonSafe(apiResponse.bodyBytes);
           return AppUpdateInfo.fromJson(
             json: data,
             currentVersion: installed.version,
@@ -198,7 +206,7 @@ class UpdateService {
             .timeout(const Duration(seconds: 5));
 
         if (response.statusCode == 200) {
-          final data = jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
+          final data = _decodeJsonSafe(response.bodyBytes);
           return AppUpdateInfo.fromJson(
             json: data,
             currentVersion: installed.version,
@@ -217,7 +225,7 @@ class UpdateService {
             .timeout(const Duration(seconds: 4));
 
         if (response.statusCode == 200) {
-          final data = jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
+          final data = _decodeJsonSafe(response.bodyBytes);
           return AppUpdateInfo.fromJson(
             json: data,
             currentVersion: installed.version,

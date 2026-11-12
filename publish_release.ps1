@@ -1,4 +1,4 @@
-param(
+﻿param(
     [Parameter(Mandatory = $true)]
     [string]$Version,
 
@@ -30,7 +30,8 @@ $versionJson = [ordered]@{
     release_url  = "https://github.com/goktalha42/daily/releases/tag/v$Version"
     force_update = $ForceUpdate
 }
-$versionJson | ConvertTo-Json -Depth 4 | Set-Content version.json -Encoding UTF8
+$jsonStr = $versionJson | ConvertTo-Json -Depth 4
+[System.IO.File]::WriteAllText("$PSScriptRoot\version.json", $jsonStr, [System.Text.UTF8Encoding]::new($false))
 
 Write-Host "2/5 İmzalı mobil ARM APK derleniyor (ortak zuhtu_keystore.jks)..." -ForegroundColor Cyan
 flutter build apk --release --target-platform android-arm,android-arm64 --build-name=$Version --build-number=$BuildNumber
