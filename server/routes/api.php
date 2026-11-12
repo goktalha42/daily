@@ -1,8 +1,10 @@
 <?php
 
+use App\Http\Controllers\Api\AdminPuzzleController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\GameController;
 use App\Http\Controllers\Api\LeaderboardController;
+use App\Http\Controllers\Api\PuzzleController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -28,7 +30,21 @@ Route::prefix('v1')->group(function () {
     // 5. Haftalık Genel Lig Sıralaması (Tüm oyunların bu haftaki puanları)
     Route::get('/league', [LeaderboardController::class, 'league']);
 
-    // 6. Uygulama Otomatik Güncelleme Bilgisi
+    // 6. 365 Günlük Bulmaca Takvimi & İstemci Yayını
+    Route::get('/puzzles/daily', [PuzzleController::class, 'daily']);
+    Route::get('/puzzles/{gameType}', [PuzzleController::class, 'showGame']);
+
+    // 7. Admin 365 Günlük Takvim Yönetimi (X-Admin-Secret korumalı)
+    Route::prefix('admin')->group(function () {
+        Route::get('/calendar', [AdminPuzzleController::class, 'calendar']);
+        Route::post('/generate-year', [AdminPuzzleController::class, 'generateYear']);
+        Route::get('/day/{dateId}', [AdminPuzzleController::class, 'showDay']);
+        Route::put('/day/{dateId}/meta', [AdminPuzzleController::class, 'updateDayMeta']);
+        Route::put('/day/{dateId}/{gameType}', [AdminPuzzleController::class, 'updateGame']);
+        Route::post('/day/{dateId}/regenerate', [AdminPuzzleController::class, 'regenerate']);
+    });
+
+    // 8. Uygulama Otomatik Güncelleme Bilgisi
     Route::get('/app-version', function () {
         $versionFile = base_path('../version.json');
         if (file_exists($versionFile)) {

@@ -1,5 +1,6 @@
 import '../../core/puzzle/puzzle_repository.dart';
 import '../../core/puzzle/puzzle_seed.dart';
+import '../../core/puzzle/remote_puzzle_store.dart';
 import 'queens_generator.dart';
 import 'queens_models.dart';
 
@@ -45,6 +46,8 @@ class QueensLevelRepository {
 
   /// Verilen levelId (tarih) ve zorluk için üretilmiş, tek çözümlü seviyeyi döner.
   static QueensLevel getLevelForDateAndDifficulty(String levelId, QueensDifficulty difficulty) {
+    final remote = RemotePuzzleStore.getQueens(levelId, difficulty);
+    if (remote != null) return remote;
     return _cache.putIfAbsent(
       '$levelId|${difficulty.name}',
       () => QueensGenerator.generate(levelId: levelId, difficulty: difficulty),

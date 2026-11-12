@@ -137,6 +137,18 @@ class ShareCardHelper {
   }) async {
     lastError = null;
     try {
+      if (kIsWeb) {
+        final pngBytes = await captureWidgetToPngBytes(boundaryKey);
+        if (pngBytes != null && pngBytes.isNotEmpty) {
+          await SharePlus.instance.share(
+            ShareParams(
+              files: [XFile.fromData(pngBytes, mimeType: 'image/png', name: fileName)],
+            ),
+          );
+          return true;
+        }
+        return false;
+      }
       final file = await captureWidgetToFile(boundaryKey, fileName: fileName);
       if (file != null && await file.exists() && await file.length() > 0) {
         await SharePlus.instance.share(

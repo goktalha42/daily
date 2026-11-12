@@ -155,8 +155,18 @@ class ApiClient {
       return _cachedBaseUrl!;
     }
 
-    // Canlı VPS Sunucusu devrede: Tüm istemciler (Android, iOS, Windows, Web)
-    // varsayılan olarak canlı sunucuya bağlanır.
+    // Web ortamında karışık içerik (HTTPS -> HTTP) engeline takılmamak için
+    // aynı alan adı üzerindeki /api/v1 proxy uç noktasına bağlanır.
+    if (kIsWeb) {
+      final origin = Uri.base.origin;
+      if (origin.startsWith('http://') || origin.startsWith('https://')) {
+        _cachedBaseUrl = '$origin/api/v1';
+        return _cachedBaseUrl!;
+      }
+    }
+
+    // Canlı VPS Sunucusu devrede: Mobil ve masaüstü istemciler
+    // doğrudan canlı VPS sunucusuna bağlanır.
     _cachedBaseUrl = _defaultLiveUrl;
     return _cachedBaseUrl!;
   }

@@ -1,5 +1,6 @@
 import '../../core/puzzle/puzzle_repository.dart';
 import '../../core/puzzle/puzzle_seed.dart';
+import '../../core/puzzle/remote_puzzle_store.dart';
 import 'tango_generator.dart';
 import 'tango_models.dart';
 
@@ -62,6 +63,8 @@ class TangoLevelRepository {
 
   /// Varsayılan günlük seviyeyi (tarihe göre programlanmış zorluk) döner.
   static TangoLevel getLevelForDate(String levelId) {
+    final remote = RemotePuzzleStore.getTango(levelId);
+    if (remote != null) return remote;
     final difficulty = TangoDifficultyScheduler.getDifficultyForDate(levelId);
     return getLevelForDateAndDifficulty(levelId, difficulty);
   }

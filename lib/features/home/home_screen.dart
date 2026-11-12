@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -28,6 +29,7 @@ import '../profile/profile_screen.dart';
 import '../league/league_screen.dart';
 import '../../core/services/league_service.dart';
 import '../../core/network/api_client.dart';
+import '../../core/puzzle/remote_puzzle_store.dart';
 import '../../core/widgets/nickname_prompt_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/services/update_service.dart';
@@ -131,6 +133,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Future<void> _checkAppUpdate() async {
+    if (kIsWeb) return;
     try {
       final info = await UpdateService.instance.checkForUpdate();
       if (info != null && info.isUpdateAvailable && mounted) {
@@ -310,6 +313,23 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
     super.initState();
     _activeLevelId = GameDateUtils.getTodayLevelId();
     _lastKnownToday = _activeLevelId;
+    Future.microtask(() => _syncActiveDayPuzzles(forceRefresh: true));
+  }
+
+  Future<void> _syncActiveDayPuzzles({bool forceRefresh = false}) async {
+    try {
+      final api = ref.read(apiClientProvider);
+      final updated = await RemotePuzzleStore.syncDay(
+        api,
+        _activeLevelId,
+        forceRefresh: forceRefresh,
+      );
+      if (updated && mounted) {
+        setState(() {});
+      }
+    } catch (e) {
+      debugPrint('[HomeScreen] Günlük bulmaca eşitleme hatası: $e');
+    }
   }
 
   bool get _isArchiveMode => _activeLevelId != GameDateUtils.getTodayLevelId();
@@ -321,6 +341,7 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
       _activeLevelId = GameDateUtils.getTodayLevelId();
       _lastKnownToday = _activeLevelId;
     });
+    _syncActiveDayPuzzles(forceRefresh: true);
     // Lig servisindeki hafta kontrolünü ve lig atlama durumunu güncelle
     ref.read(leagueServiceProvider.notifier).checkWeekTransition();
 
@@ -350,6 +371,7 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
       setState(() {
         _activeLevelId = chosen;
       });
+      _syncActiveDayPuzzles(forceRefresh: true);
     }
   }
 
@@ -358,6 +380,7 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
     setState(() {
       _activeLevelId = GameDateUtils.getTodayLevelId();
     });
+    _syncActiveDayPuzzles(forceRefresh: true);
   }
 
   void _showCompletedDialog(GameType game, DailyPlayRecord record) {
@@ -373,8 +396,15 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
     );
   }
 
-  void _launchGame(GameType game) {
+  Future<void> _launchGame(GameType game) async {
     HapticFeedback.mediumImpact();
+    try {
+      await RemotePuzzleStore.syncDay(
+        ref.read(apiClientProvider),
+        _activeLevelId,
+      ).timeout(const Duration(milliseconds: 800), onTimeout: () => false);
+    } catch (_) {}
+    if (!mounted) return;
 
     if (game == GameType.queens) {
       Navigator.push(
@@ -620,6 +650,7 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
               setState(() {
                 _activeLevelId = dateKey;
               });
+              _syncActiveDayPuzzles(forceRefresh: true);
             },
             onOpenTimeMachine: _openTimeMachine,
           ),

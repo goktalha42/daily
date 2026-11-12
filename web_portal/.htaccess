@@ -1,0 +1,16 @@
+RewriteEngine On
+
+# API isteklerini güvenli PHP proxy üzerinden VPS'e aktar
+RewriteRule ^api/(.*)$ api_proxy.php?path=$1 [QSA,L]
+
+# Admin paneli URL'leri (/admin ve /admin/)
+RewriteRule ^admin/?$ admin/index.php [QSA,L]
+
+# Mevcut dosya veya klasör varsa doğrudan sun
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Flutter Web SPA fallback
+RewriteRule ^ index.html [L]
+

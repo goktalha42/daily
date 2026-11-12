@@ -1,4 +1,5 @@
 import '../../core/puzzle/puzzle_repository.dart';
+import '../../core/puzzle/remote_puzzle_store.dart';
 import 'pinpoint_generator.dart';
 import 'pinpoint_models.dart';
 
@@ -150,6 +151,8 @@ class PinpointLevelRepository {
 
   /// Belirli bir tarih için tohumdan üretilmiş seviyeyi döner.
   static PinpointLevel getLevelForDate(String levelId) {
+    final remote = RemotePuzzleStore.getPinpoint(levelId);
+    if (remote != null) return remote;
     return _cache.putIfAbsent(levelId, () {
       try {
         return PinpointGenerator.generate(levelId: levelId);

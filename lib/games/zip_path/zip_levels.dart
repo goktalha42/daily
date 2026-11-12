@@ -1,5 +1,6 @@
 import '../../core/puzzle/puzzle_repository.dart';
 import '../../core/puzzle/puzzle_seed.dart';
+import '../../core/puzzle/remote_puzzle_store.dart';
 import 'zip_generator.dart';
 import 'zip_models.dart';
 
@@ -61,6 +62,8 @@ class ZipLevelRepository {
 
   /// Varsayılan günlük seviyeyi (tarihe göre programlanmış zorluk) döner.
   static ZipLevel getLevelForDate(String levelId) {
+    final remote = RemotePuzzleStore.getZip(levelId);
+    if (remote != null) return remote;
     final difficulty = ZipDifficultyScheduler.getDifficultyForDate(levelId);
     return getLevelForDateAndDifficulty(levelId, difficulty);
   }

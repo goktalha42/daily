@@ -1,5 +1,6 @@
 import '../../core/puzzle/puzzle_repository.dart';
 import '../../core/puzzle/puzzle_seed.dart';
+import '../../core/puzzle/remote_puzzle_store.dart';
 import 'patches_generator.dart';
 import 'patches_models.dart';
 
@@ -162,6 +163,8 @@ class PatchesLevelRepository {
 
   /// Varsayılan günlük seviyeyi (tarihe göre programlanmış zorluk) döner.
   static PatchesLevel getLevelForDate(String levelId) {
+    final remote = RemotePuzzleStore.getPatches(levelId);
+    if (remote != null) return remote;
     final difficulty = PatchesDifficultyScheduler.getDifficultyForDate(levelId);
     return getLevelForDateAndDifficulty(levelId, difficulty);
   }

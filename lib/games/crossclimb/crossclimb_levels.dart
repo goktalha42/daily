@@ -1,4 +1,5 @@
 import '../../core/puzzle/puzzle_repository.dart';
+import '../../core/puzzle/remote_puzzle_store.dart';
 import 'crossclimb_generator.dart';
 import 'crossclimb_models.dart';
 
@@ -158,6 +159,8 @@ class CrossclimbLevelRepository {
 
   /// Belirli bir tarih için tohumdan üretilmiş/seçilmiş seviyeyi döner.
   static CrossclimbLevel getLevelForDate(String levelId) {
+    final remote = RemotePuzzleStore.getCrossclimb(levelId);
+    if (remote != null) return remote;
     return _cache.putIfAbsent(levelId, () {
       try {
         return CrossclimbGenerator.generate(levelId: levelId);
