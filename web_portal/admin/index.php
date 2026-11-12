@@ -422,7 +422,7 @@ $loggedIn = isAdminLoggedIn();
   <script>
     window.ZUHTU_CSRF = <?= json_encode($csrfToken) ?>;
   </script>
-  <script src="/admin/admin.js?v=1"></script>
+  <script src="/admin/admin.js?v=2"></script>
 <?php endif; ?>
 </body>
 </html>

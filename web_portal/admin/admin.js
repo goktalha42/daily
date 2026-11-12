@@ -474,6 +474,7 @@
     let edgeWalls = (p.edgeWalls || []).slice();
 
     const wrap = document.createElement('div');
+    gameEditorArea.innerHTML = '';
     gameEditorArea.appendChild(wrap);
 
     function hasEdgeWall(r1, c1, r2, c2) {
@@ -682,6 +683,7 @@
     let paintMode = 'region'; // region | queen
 
     const wrap = document.createElement('div');
+    gameEditorArea.innerHTML = '';
     gameEditorArea.appendChild(wrap);
 
     function draw() {
@@ -708,7 +710,7 @@
       `;
 
       wrap.querySelectorAll('[data-qd]').forEach(b => {
-        b.onclick = () => { activeQueensDiff = b.dataset.qd; renderQueensEditor(); };
+        b.onclick = () => { activeQueensDiff = b.dataset.qd; renderActiveGameEditor(); };
       });
       wrap.querySelectorAll('[data-qm]').forEach(b => {
         b.onclick = () => { paintMode = b.dataset.qm; draw(); };
@@ -778,6 +780,7 @@
     let targetLayer = 'initial'; // initial | solution
 
     const wrap = document.createElement('div');
+    gameEditorArea.innerHTML = '';
     gameEditorArea.appendChild(wrap);
 
     function symChar(v) { return v === 1 ? '☀️' : (v === 2 ? '🌙' : ''); }
@@ -883,6 +886,7 @@
     const entry = findEntry('patches', 'default');
     const p = JSON.parse(JSON.stringify(entry?.payload || { gridSize: 6, difficulty: 'orta', clues: [], solution: [] }));
     const wrap = document.createElement('div');
+    gameEditorArea.innerHTML = '';
     gameEditorArea.appendChild(wrap);
 
     function draw() {
