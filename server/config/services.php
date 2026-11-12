@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'zuhtu' => [
+        'admin_api_secret' => env('ADMIN_API_SECRET', ''),
+    ],
+
 ];

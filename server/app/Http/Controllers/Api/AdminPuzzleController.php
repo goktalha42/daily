@@ -13,7 +13,7 @@ class AdminPuzzleController extends Controller
 {
     private function authorizeAdmin(Request $request): ?JsonResponse
     {
-        $configuredSecret = (string) env('ADMIN_API_SECRET', '');
+        $configuredSecret = (string) (config('services.zuhtu.admin_api_secret') ?: env('ADMIN_API_SECRET', ''));
         if ($configuredSecret === '') {
             return response()->json([
                 'status' => 'error',
