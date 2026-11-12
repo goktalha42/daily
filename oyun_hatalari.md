@@ -20,21 +20,18 @@ yeni apk ler yaptıkca versiyonu v1.0.1, v1.0.2 olarak değişiklik büyüklüğ
 
 
 
-
-OYUNLAR İÇİN ÖZEL BÖLÜMLER YAPACAĞIZ.
-ZUHTU.APP YAPACAĞIZ, WEB SİTESİNDEN DE OYNANABİLİR OLACAK.
+Özel Gün Notları eklenecek.
+24 Kasıma kadar.
 
 Uygulama için:
-Google ile giriş eklenecek.
-Uygulama içi güncelleme ve androdimanifest apk yukleme izni kaldırılacak.
-Verileri silme butonu aktif edilecek.
-Kurtarma kodu işlemi, google ile giriş oldugu için artık gereksiz.
-Ayarlar sayfasında uygulama sürümü görünmeye devam edecek.
-Uygulama sadece dikey konumda çalışacak, yatay konuma izin verilmeyecek, ekran dödürülse bile döndürülmeyecek.
-Tanıtım sunumu tekrar izlemek ayarlarda kalmaya devam edecek.
-Yeni gün butonu ana sayfadan, ve uygulamadan kaldırılacak.
-Gizlilik politikası ve açık kaynak lisanslar sayfası şimdilik uygulamadan kaldırılsın, bunları daha sonra bana hatırlat.
-Bildirim saati akşam 20:00 dan 18:00 a çekilecek.
+1-) Google ile giriş eklenecek.
+2-) Uygulama içi güncelleme ve androdimanifest apk yukleme izni kaldırılacak.
+3-) Verileri silme butonu aktif edilecek.
+4-) Kurtarma kodu işlemi, google ile giriş oldugu için artık gereksiz.
+5-) Ayarlar sayfasında uygulama sürümü görünmeye devam edecek.
+
+
+
 Google playe den reklam alma olayı gemini ile konusulacak.
 Logo Tasarlanacak.
 
