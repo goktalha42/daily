@@ -8,6 +8,7 @@ import 'package:daily_games/core/theme/app_colors.dart';
 import 'package:daily_games/core/utils/share_card_helper.dart';
 import 'package:daily_games/core/widgets/daily_social_share_dialog.dart';
 import 'package:daily_games/core/widgets/head_to_head_share_dialog.dart';
+import 'package:daily_games/core/widgets/sketch_badge_icons.dart';
 import 'package:daily_games/core/widgets/sketch_decorations.dart';
 import 'package:daily_games/features/onboarding/onboarding_screen.dart';
 import 'package:daily_games/features/profile/profile_screen.dart';
@@ -34,8 +35,8 @@ void main() {
 
       expect(find.text('ZÜHTÜ REHBERİ'), findsOneWidget);
       expect(find.text('Atla'), findsOneWidget);
-      expect(find.textContaining('Günde Sadece'), findsOneWidget);
-      expect(find.textContaining('10 Dakika! ☕'), findsOneWidget);
+      expect(find.text('Günde Sadece\n10 Dakika!'), findsOneWidget);
+      expect(find.textContaining('☕'), findsNothing);
       expect(find.text('Devam Et'), findsOneWidget);
     });
 
@@ -51,27 +52,34 @@ void main() {
       // 1. slayt -> 2. slayt
       await tester.tap(find.text('Devam Et'));
       await tester.pumpAndSettle();
-      expect(find.textContaining("Her Gece 00:00'da"), findsOneWidget);
-      expect(find.text('Vezirler'), findsOneWidget);
-      expect(find.text('Nokta Atışı'), findsOneWidget);
+      expect(find.text("Her Gece 00:00'da\n6 Yeni Oyun"), findsOneWidget);
+      expect(find.text(GameType.queens.title), findsOneWidget);
+      expect(find.text(GameType.pinpoint.title), findsOneWidget);
+      expect(find.text(GameType.crossclimb.title), findsOneWidget);
+      expect(find.text(GameType.tango.title), findsOneWidget);
+      expect(find.text(GameType.zipPath.title), findsOneWidget);
+      expect(find.text(GameType.patches.title), findsOneWidget);
+      expect(find.text('Nokta Atışı'), findsNothing);
 
       // 2. slayt -> 3. slayt
       await tester.tap(find.text('Devam Et'));
       await tester.pumpAndSettle();
-      expect(find.textContaining('Puanını ve Zeka'), findsOneWidget);
+      expect(find.text('Puanını ve Zeka\nSkorunu Gör'), findsOneWidget);
+      expect(find.textContaining('Skorunu Gör 🧠'), findsNothing);
       expect(find.text('ZÜHTÜ SKORU NEDİR?'), findsOneWidget);
 
       // 3. slayt -> 4. slayt
       await tester.tap(find.text('Devam Et'));
       await tester.pumpAndSettle();
-      expect(find.textContaining('Ateşi Söndürme'), findsOneWidget);
-      expect(find.textContaining('Serini Koru!'), findsOneWidget);
-      expect(find.byType(SketchDoodleFlame), findsWidgets);
+      expect(find.text('Ateşi Söndürme:\nSerini Koru!'), findsOneWidget);
 
       // 4. slayt -> 5. slayt (Son slayt)
       await tester.tap(find.text('Devam Et'));
       await tester.pumpAndSettle();
-      expect(find.textContaining('Liglerde Yarış'), findsOneWidget);
+      expect(find.text('Liglerde yarış ve\nrozetleri topla'), findsOneWidget);
+      expect(find.textContaining('42 kişiyle yarış'), findsOneWidget);
+      expect(find.textContaining("ilk 10'a girerek"), findsOneWidget);
+      expect(find.byType(SketchBadgeIcon), findsWidgets);
       expect(find.text("Zühtü'ye Başla! 🚀"), findsOneWidget);
 
       // Başla butonuna basıldığında SharedPreferences'a tamamlandı yazar

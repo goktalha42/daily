@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/services/league_service.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/widgets/sketch_badge_icons.dart';
 import '../../core/widgets/sketch_decorations.dart';
 import '../../core/widgets/sketch_league_emblems.dart';
 import '../../games/common/base_game.dart';
@@ -17,7 +18,7 @@ import '../profile/profile_screen.dart';
 /// 2. Her Gece 00:00'da 6 Yeni Oyun (Tüm Türkiye aynı anda çözer)
 /// 3. Puanını ve Zeka Skorunu Gör (Hızlı ve az hatayla çöz, resmi test değil eğlenceli zihin aynası)
 /// 4. Ateşi Söndürme: Serini Koru (Her gün en az 1 oyun bitirerek serini büyüt)
-/// 5. Liglerde Yarış & Arkadaşlarına Hava At (30 kişilik lig, WhatsApp/Instagram paylaşımı)
+/// 5. Liglerde yarış ve rozetleri topla (42 kişilik lig, ilk 10 terfi, rozetler ve paylaşım)
 class OnboardingScreen extends StatefulWidget {
   final bool isRevisit;
 
@@ -252,11 +253,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         children: [
           const SizedBox(height: 8),
 
-          // El Çizimi Kahve & Not Defteri İllüstrasyonu
+          // El Çizimi 10 Dakikalık Kronometre İllüstrasyonu
           Center(
             child: CustomPaint(
               size: const Size(120, 100),
-              painter: _DoodleCoffeePainter(
+              painter: _DoodleStopwatchPainter(
                 isDark: isDark,
                 pencilColor: pencilColor,
               ),
@@ -266,7 +267,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           const SizedBox(height: 18),
 
           Text(
-            'Günde Sadece\n10 Dakika! ☕',
+            'Günde Sadece\n10 Dakika!',
             textAlign: TextAlign.center,
             style: GoogleFonts.patrickHand(
               fontSize: 28,
@@ -348,24 +349,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
           const SizedBox(height: 18),
 
-          Text.rich(
-            TextSpan(
-              text: 'Her Gece 00:00\'da\n6 Yeni Oyun ',
-              children: [
-                WidgetSpan(
-                  alignment: PlaceholderAlignment.middle,
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 2),
-                    child: CustomPaint(
-                      size: const Size(26, 26),
-                      painter: _DoodleInlineMoonPainter(
-                        pencilColor: pencilColor,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
+          Text(
+            'Her Gece 00:00\'da\n6 Yeni Oyun',
             textAlign: TextAlign.center,
             style: GoogleFonts.patrickHand(
               fontSize: 28,
@@ -389,7 +374,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
           const SizedBox(height: 16),
 
-          // 6 Oyunun Minik Vitrini (2x3 Izgara)
+          // 6 Oyunun Minik Vitrini (2x3 Izgara — Ana sayfadaki gerçek oyun isimleri)
           SketchCard(
             padding: const EdgeInsets.all(10),
             borderRadius: 14,
@@ -404,7 +389,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     Expanded(
                       child: _buildMiniGamePill(
                         game: GameType.queens,
-                        title: 'Vezirler',
+                        title: GameType.queens.title,
                         desc: 'Strateji',
                         color: AppColors.queensGame,
                         pencilColor: pencilColor,
@@ -415,8 +400,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     Expanded(
                       child: _buildMiniGamePill(
                         game: GameType.pinpoint,
-                        title: 'Nokta Atışı',
-                        desc: 'Görsel Hız',
+                        title: GameType.pinpoint.title,
+                        desc: 'Çağrışım',
                         color: AppColors.pinpointGame,
                         pencilColor: pencilColor,
                         isDark: isDark,
@@ -430,7 +415,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     Expanded(
                       child: _buildMiniGamePill(
                         game: GameType.crossclimb,
-                        title: 'Kelime T.',
+                        title: GameType.crossclimb.title,
                         desc: 'Kelime Dağarcığı',
                         color: AppColors.crossclimbGame,
                         pencilColor: pencilColor,
@@ -441,7 +426,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     Expanded(
                       child: _buildMiniGamePill(
                         game: GameType.tango,
-                        title: 'Tango',
+                        title: GameType.tango.title,
                         desc: 'Akıl Yürütme',
                         color: AppColors.tangoGame,
                         pencilColor: pencilColor,
@@ -456,7 +441,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     Expanded(
                       child: _buildMiniGamePill(
                         game: GameType.zipPath,
-                        title: 'Sayı Yolu',
+                        title: GameType.zipPath.title,
                         desc: 'İşlem Hafızası',
                         color: AppColors.zipGame,
                         pencilColor: pencilColor,
@@ -467,7 +452,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     Expanded(
                       child: _buildMiniGamePill(
                         game: GameType.patches,
-                        title: 'Yamalar',
+                        title: GameType.patches.title,
                         desc: 'Şekil Mantığı',
                         color: AppColors.patchesGame,
                         pencilColor: pencilColor,
@@ -510,7 +495,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           const SizedBox(height: 18),
 
           Text(
-            'Puanını ve Zeka\nSkorunu Gör 🧠',
+            'Puanını ve Zeka\nSkorunu Gör',
             textAlign: TextAlign.center,
             style: GoogleFonts.patrickHand(
               fontSize: 28,
@@ -602,22 +587,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
           const SizedBox(height: 18),
 
-          Text.rich(
-            TextSpan(
-              text: 'Ateşi Söndürme:\nSerini Koru! ',
-              children: [
-                WidgetSpan(
-                  alignment: PlaceholderAlignment.middle,
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 2),
-                    child: SketchDoodleFlame(
-                      size: 28,
-                      color: pencilColor,
-                    ),
-                  ),
-                ),
-              ],
-            ),
+          Text(
+            'Ateşi Söndürme:\nSerini Koru!',
             textAlign: TextAlign.center,
             style: GoogleFonts.patrickHand(
               fontSize: 28,
@@ -689,36 +660,18 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         children: [
           const SizedBox(height: 8),
 
-          // El Çizimi Kupa & Paylaşım Balonu İllüstrasyonu
+          // Kupa İçinden Taşan Profil Rozetleri İllüstrasyonu
           Center(
-            child: CustomPaint(
-              size: const Size(120, 100),
-              painter: _DoodleTrophyChallengePainter(
-                isDark: isDark,
-                pencilColor: pencilColor,
-              ),
+            child: _buildOverflowingBadgesCup(
+              isDark: isDark,
+              pencilColor: pencilColor,
             ),
           ),
 
           const SizedBox(height: 18),
 
-          Text.rich(
-            TextSpan(
-              text: 'Liglerde Yarış ve\nArkadaşlarına Hava At! ',
-              children: [
-                WidgetSpan(
-                  alignment: PlaceholderAlignment.middle,
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 2),
-                    child: SketchDoodleTrophy(
-                      size: 27,
-                      color: pencilColor,
-                      fillColor: AppColors.sunYellow,
-                    ),
-                  ),
-                ),
-              ],
-            ),
+          Text(
+            'Liglerde yarış ve\nrozetleri topla',
             textAlign: TextAlign.center,
             style: GoogleFonts.patrickHand(
               fontSize: 27,
@@ -731,7 +684,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           const SizedBox(height: 8),
 
           Text(
-            'Haftalık ligde 30 kişiyle yarış, ilk 7\'ye girerek üst lige terfi et! Şık el çizimi karne kartını WhatsApp\'tan paylaşarak arkadaşlarına meydan oku.',
+            'Haftalık ligde 42 kişiyle yarış, ilk 10\'a girerek üst lige terfi et! Şık el çizimi karne kartını WhatsApp\'tan paylaşarak arkadaşlarına meydan oku.',
             textAlign: TextAlign.center,
             style: GoogleFonts.patrickHand(
               fontSize: 16,
@@ -859,15 +812,18 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.patrickHand(
-                    fontSize: 13.5,
-                    fontWeight: FontWeight.bold,
-                    color: pencilColor,
-                    height: 1.1,
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    title,
+                    maxLines: 1,
+                    style: GoogleFonts.patrickHand(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.bold,
+                      color: pencilColor,
+                      height: 1.1,
+                    ),
                   ),
                 ),
                 Text(
@@ -882,6 +838,122 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 ),
               ],
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOverflowingBadgesCup({
+    required bool isDark,
+    required Color pencilColor,
+  }) {
+    Widget badgeCoin(BadgeArtType type, Color bgColor, double size) {
+      return Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          color: isDark ? bgColor.withValues(alpha: 0.9) : bgColor,
+          shape: BoxShape.circle,
+          border: Border.all(color: pencilColor, width: 1.6),
+          boxShadow: [
+            BoxShadow(
+              color: pencilColor.withValues(alpha: 0.35),
+              offset: const Offset(1.2, 1.2),
+              blurRadius: 0,
+            ),
+          ],
+        ),
+        child: Center(
+          child: SketchBadgeIcon(
+            type: type,
+            size: size * 0.62,
+            strokeColor: AppColors.pencilBlack,
+          ),
+        ),
+      );
+    }
+
+    return SizedBox(
+      width: 156,
+      height: 108,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          // 1. Arka Plan: Kupa kulpları, ayak ve ağız içi derinliği
+          Positioned.fill(
+            child: CustomPaint(
+              painter: _DoodleCupBackPainter(
+                isDark: isDark,
+                pencilColor: pencilColor,
+              ),
+            ),
+          ),
+
+          // 2. Kupanın içindeki alt sıra rozetler (ön duvarın arkasında kalır)
+          Positioned(
+            left: 42,
+            top: 33,
+            child: badgeCoin(BadgeArtType.sprout, const Color(0xFFD1FAE5), 24),
+          ),
+          Positioned(
+            left: 66,
+            top: 30,
+            child: badgeCoin(BadgeArtType.rocket, const Color(0xFFE0F2FE), 25),
+          ),
+          Positioned(
+            left: 91,
+            top: 33,
+            child: badgeCoin(BadgeArtType.diamondGem, const Color(0xFFDBEAFE), 24),
+          ),
+
+          // 3. Kupanın ön altın gövdesi ve ağız kenarı
+          Positioned.fill(
+            child: CustomPaint(
+              painter: _DoodleCupFrontPainter(
+                isDark: isDark,
+                pencilColor: pencilColor,
+              ),
+            ),
+          ),
+
+          // 4. Ağızdan dışarı taşan orta ve tepe rozet yığını
+          Positioned(
+            left: 48,
+            top: 16,
+            child: badgeCoin(BadgeArtType.einsteinBrain, const Color(0xFFEDE9FE), 25),
+          ),
+          Positioned(
+            left: 81,
+            top: 15,
+            child: badgeCoin(BadgeArtType.lightning, const Color(0xFFFFEDD5), 25),
+          ),
+          Positioned(
+            left: 64,
+            top: 2,
+            child: badgeCoin(BadgeArtType.royalCrown, AppColors.sunYellow, 28),
+          ),
+
+          // 5. Kenarlardan taşan ve aşağı sıçrayan rozetler
+          Positioned(
+            left: 22,
+            top: 23,
+            child: badgeCoin(BadgeArtType.queenPiece, const Color(0xFFFCE7F3), 22),
+          ),
+          Positioned(
+            left: 112,
+            top: 22,
+            child: badgeCoin(BadgeArtType.mortarboard, const Color(0xFFFEF3C7), 22),
+          ),
+          Positioned(
+            left: 22,
+            top: 79,
+            child: badgeCoin(BadgeArtType.sparkFlame, const Color(0xFFFFEDD5), 21),
+          ),
+          Positioned(
+            left: 112,
+            top: 78,
+            child: badgeCoin(BadgeArtType.hexagramStar, const Color(0xFFFEF9C3), 21),
           ),
         ],
       ),
@@ -909,52 +981,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 }
 
-/// 2. Slayt Başlığı İçin Satır İçi El Çizimi Hilal Ay
-class _DoodleInlineMoonPainter extends CustomPainter {
-  final Color pencilColor;
-
-  _DoodleInlineMoonPainter({required this.pencilColor});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final w = size.width;
-    final h = size.height;
-
-    final moonFill = Paint()
-      ..color = AppColors.sunYellow
-      ..style = PaintingStyle.fill;
-    final moonPen = Paint()
-      ..color = pencilColor
-      ..strokeWidth = 1.8
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
-
-    final moonPath = Path()
-      ..moveTo(w * 0.62, h * 0.12)
-      ..cubicTo(w * 0.16, h * 0.22, w * 0.16, h * 0.78, w * 0.68, h * 0.88)
-      ..cubicTo(w * 0.42, h * 0.68, w * 0.42, h * 0.32, w * 0.62, h * 0.12)
-      ..close();
-
-    canvas.drawPath(moonPath, moonFill);
-    canvas.drawPath(moonPath, moonPen);
-  }
-
-  @override
-  bool shouldRepaint(covariant _DoodleInlineMoonPainter oldDelegate) =>
-      oldDelegate.pencilColor != pencilColor;
-}
-
 // =============================================================================
 // ÖZEL EL ÇİZİMİ VEKTÖR RESMEDİCİLERİ (DOODLE CUSTOM PAINTERS)
 // =============================================================================
 
-/// 1. Slayt İllüstrasyonu: El Çizimi Dumanı Tüten Kahve Fincanı & Kurşun Kalem
-class _DoodleCoffeePainter extends CustomPainter {
+/// 1. Slayt İllüstrasyonu: 10 Dakikayı Gösteren El Çizimi Kronometre
+class _DoodleStopwatchPainter extends CustomPainter {
   final bool isDark;
   final Color pencilColor;
 
-  _DoodleCoffeePainter({required this.isDark, required this.pencilColor});
+  _DoodleStopwatchPainter({required this.isDark, required this.pencilColor});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -965,83 +1001,144 @@ class _DoodleCoffeePainter extends CustomPainter {
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
 
-    final cupFill = Paint()
-      ..color = isDark ? const Color(0xFF334155) : const Color(0xFFFEF3C7)
-      ..style = PaintingStyle.fill;
+    const center = Offset(60, 56);
+    const double outerR = 34.0;
+    const double dialR = 27.0;
 
-    // Fincan Gövdesi
-    final cupRect = RRect.fromRectAndCorners(
-      Rect.fromLTWH(30, 42, 52, 44),
-      bottomLeft: const Radius.circular(16),
-      bottomRight: const Radius.circular(16),
-      topLeft: const Radius.circular(4),
-      topRight: const Radius.circular(4),
+    // Tepe Başlatma Düğmesi (Boyun + Taç)
+    canvas.drawRect(
+      const Rect.fromLTWH(55, 13, 10, 8),
+      Paint()
+        ..color = isDark ? const Color(0xFF475569) : const Color(0xFFE2E8F0)
+        ..style = PaintingStyle.fill,
     );
-    canvas.drawRRect(cupRect, cupFill);
-    canvas.drawRRect(cupRect, pen);
+    canvas.drawRect(const Rect.fromLTWH(55, 13, 10, 8), pen..strokeWidth = 1.8);
 
-    // Fincan Kulpu (Sağda)
-    final handlePath = Path();
-    handlePath.moveTo(82, 50);
-    handlePath.cubicTo(98, 50, 98, 74, 82, 74);
-    canvas.drawPath(handlePath, pen);
+    final crownRect = RRect.fromRectAndRadius(
+      const Rect.fromLTWH(50, 7, 20, 7),
+      const Radius.circular(3),
+    );
+    canvas.drawRRect(
+      crownRect,
+      Paint()
+        ..color = AppColors.sunYellow
+        ..style = PaintingStyle.fill,
+    );
+    canvas.drawRRect(crownRect, pen);
 
-    // Fincan Tabağı
-    final saucerPath = Path();
-    saucerPath.moveTo(22, 88);
-    saucerPath.quadraticBezierTo(56, 94, 90, 88);
-    canvas.drawPath(saucerPath, pen);
+    // Sağ Üst Yan Sıfırlama Düğmesi (45 derece)
+    canvas.save();
+    canvas.translate(center.dx, center.dy);
+    canvas.rotate(math.pi / 4);
+    final sideBtn = RRect.fromRectAndRadius(
+      const Rect.fromLTWH(-4, -outerR - 8, 8, 8),
+      const Radius.circular(2.5),
+    );
+    canvas.drawRRect(
+      sideBtn,
+      Paint()
+        ..color = const Color(0xFFF97316)
+        ..style = PaintingStyle.fill,
+    );
+    canvas.drawRRect(sideBtn, pen..strokeWidth = 1.6);
+    canvas.restore();
 
-    // Kahve Buharı Dalgaları (3 dalga)
-    final steamPaint = Paint()
-      ..color = isDark ? AppColors.sunYellow : const Color(0xFFD97706)
-      ..strokeWidth = 2.0
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
+    // Kronometre Dış Kasası
+    canvas.drawCircle(
+      center,
+      outerR,
+      Paint()
+        ..color = AppColors.sunYellow
+        ..style = PaintingStyle.fill,
+    );
+    canvas.drawCircle(center, outerR, pen..strokeWidth = 2.4);
 
-    for (int i = 0; i < 3; i++) {
-      final sx = 42.0 + i * 14.0;
-      final steam = Path();
-      steam.moveTo(sx, 36);
-      steam.cubicTo(sx - 5, 26, sx + 5, 18, sx, 10);
-      canvas.drawPath(steam, steamPaint);
+    // Kadran Zemini
+    canvas.drawCircle(
+      center,
+      dialR,
+      Paint()
+        ..color = isDark ? const Color(0xFF1E293B) : Colors.white
+        ..style = PaintingStyle.fill,
+    );
+
+    // 10 Dakikalık Dilim Vurgusu (Saat 12'den Saat 2'ye = 60 derece = pi/3)
+    final slicePaint = Paint()
+      ..color = AppColors.sunYellow.withValues(alpha: isDark ? 0.55 : 0.6)
+      ..style = PaintingStyle.fill;
+    canvas.drawArc(
+      Rect.fromCircle(center: center, radius: dialR - 1),
+      -math.pi / 2,
+      math.pi / 3,
+      true,
+      slicePaint,
+    );
+
+    canvas.drawCircle(center, dialR, pen..strokeWidth = 1.8);
+
+    // 12 adet saat/dakika çizgisi (5'er dakikalık aralıklar)
+    for (int i = 0; i < 12; i++) {
+      final angle = -math.pi / 2 + (i * math.pi / 6);
+      final isMajor = i == 0 || i == 2 || i == 3 || i == 6 || i == 9;
+      final rStart = isMajor ? dialR - 6 : dialR - 3.5;
+      final p1 = Offset(
+        center.dx + rStart * math.cos(angle),
+        center.dy + rStart * math.sin(angle),
+      );
+      final p2 = Offset(
+        center.dx + (dialR - 1) * math.cos(angle),
+        center.dy + (dialR - 1) * math.sin(angle),
+      );
+      canvas.drawLine(p1, p2, pen..strokeWidth = isMajor ? 2.0 : 1.2);
     }
 
-    // Yanında Çizilen Minik Kurşun Kalem
-    final pencilPaint = Paint()
-      ..color = AppColors.sunYellow
-      ..style = PaintingStyle.fill;
-    final pencilPath = Path();
-    pencilPath.moveTo(102, 28);
-    pencilPath.lineTo(112, 18);
-    pencilPath.lineTo(116, 22);
-    pencilPath.lineTo(106, 32);
-    pencilPath.close();
-    canvas.drawPath(pencilPath, pencilPaint);
-    canvas.drawPath(pencilPath, pen..strokeWidth = 1.6);
+    // 10 Dakikayı Gösteren İbre (Saat 2 yönü = -pi/6)
+    const double handAngle = -math.pi / 6;
+    final handTip = Offset(
+      center.dx + (dialR - 6) * math.cos(handAngle),
+      center.dy + (dialR - 6) * math.sin(handAngle),
+    );
+    canvas.drawLine(
+      center,
+      handTip,
+      Paint()
+        ..color = const Color(0xFFEF4444)
+        ..strokeWidth = 2.6
+        ..strokeCap = StrokeCap.round,
+    );
+    canvas.drawCircle(
+      center,
+      3.4,
+      Paint()
+        ..color = pencilColor
+        ..style = PaintingStyle.fill,
+    );
 
-    // Kalem Ucu
-    final tipPath = Path();
-    tipPath.moveTo(102, 28);
-    tipPath.lineTo(96, 34);
-    tipPath.lineTo(106, 32);
-    tipPath.close();
-    canvas.drawPath(
-        tipPath,
-        Paint()
-          ..color = pencilColor
-          ..style = PaintingStyle.fill);
+    // Kadran Altında Net "10 dk" Etiketi
+    final tp = TextPainter(
+      text: TextSpan(
+        text: '10 dk',
+        style: GoogleFonts.patrickHand(
+          fontSize: 13,
+          fontWeight: FontWeight.w900,
+          color: pencilColor,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    tp.paint(canvas, Offset(center.dx - tp.width / 2, center.dy + 6));
 
-    // Parıltı Yıldızları
-    _drawSparkle(canvas, const Offset(20, 28), pencilColor);
-    _drawSparkle(canvas, const Offset(105, 78), AppColors.sunYellow);
+    // Parıltı ve Hareket Çizgileri
+    _drawSparkle(canvas, const Offset(16, 30), AppColors.sunYellow);
+    _drawSparkle(canvas, const Offset(104, 72), pencilColor);
   }
 
   void _drawSparkle(Canvas canvas, Offset center, Color color) {
     final p = Paint()
       ..color = color
-      ..strokeWidth = 1.4
-      ..style = PaintingStyle.stroke;
+      ..strokeWidth = 1.6
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
     canvas.drawLine(
         Offset(center.dx - 4, center.dy), Offset(center.dx + 4, center.dy), p);
     canvas.drawLine(
@@ -1049,7 +1146,7 @@ class _DoodleCoffeePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _DoodleCoffeePainter oldDelegate) =>
+  bool shouldRepaint(covariant _DoodleStopwatchPainter oldDelegate) =>
       oldDelegate.isDark != isDark || oldDelegate.pencilColor != pencilColor;
 }
 
@@ -1153,7 +1250,7 @@ class _DoodleMidnightClockPainter extends CustomPainter {
       oldDelegate.isDark != isDark || oldDelegate.pencilColor != pencilColor;
 }
 
-/// 3. Slayt İllüstrasyonu: Gülen Zeki Beyin & Hız Göstergesi
+/// 3. Slayt İllüstrasyonu: Tatlı, Güler Yüzlü Zeki Beyin
 class _DoodleBrainGaugePainter extends CustomPainter {
   final bool isDark;
   final Color pencilColor;
@@ -1169,85 +1266,132 @@ class _DoodleBrainGaugePainter extends CustomPainter {
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
 
+    // Yumuşak pastel pembe dolgu (zombi moru yerine sıcak ve sevimli)
     final brainFill = Paint()
-      ..color = isDark ? const Color(0xFF4C1D95) : const Color(0xFFF3E8FF)
+      ..color = isDark ? const Color(0xFFBE185D) : const Color(0xFFFCE7F3)
       ..style = PaintingStyle.fill;
 
-    // Beyin Lobları (Solda ve Sağda wobbly loblar)
+    // Tatlı, tombul ve yuvarlak hatlı chibi beyin silueti
     final brainPath = Path();
-    brainPath.moveTo(60, 20);
-    // Sol loblar
-    brainPath.cubicTo(45, 15, 30, 25, 30, 40);
-    brainPath.cubicTo(20, 48, 22, 65, 35, 70);
-    brainPath.cubicTo(32, 80, 50, 84, 60, 80);
-    // Sağ loblar
-    brainPath.cubicTo(70, 84, 88, 80, 85, 70);
-    brainPath.cubicTo(98, 65, 100, 48, 90, 40);
-    brainPath.cubicTo(90, 25, 75, 15, 60, 20);
+    brainPath.moveTo(60, 22);
+    // Üst sol kıvrım -> sol yanak -> alt sol
+    brainPath.cubicTo(48, 16, 33, 21, 30, 34);
+    brainPath.cubicTo(19, 40, 19, 59, 29, 67);
+    brainPath.cubicTo(31, 79, 48, 84, 60, 80);
+    // Alt sağ -> sağ yanak -> üst sağ kıvrım
+    brainPath.cubicTo(72, 84, 89, 79, 91, 67);
+    brainPath.cubicTo(101, 59, 101, 40, 90, 34);
+    brainPath.cubicTo(87, 21, 72, 16, 60, 22);
     brainPath.close();
 
     canvas.drawPath(brainPath, brainFill);
+
+    // Alt gölge bandı (hacim hissi)
+    final shadePaint = Paint()
+      ..color = isDark
+          ? const Color(0xFF9D174D).withValues(alpha: 0.45)
+          : const Color(0xFFFBCFE8).withValues(alpha: 0.7)
+      ..style = PaintingStyle.fill;
+    final shadePath = Path()
+      ..moveTo(32, 68)
+      ..cubicTo(42, 79, 78, 79, 88, 68)
+      ..cubicTo(82, 78, 68, 82, 60, 79)
+      ..cubicTo(52, 82, 38, 78, 32, 68)
+      ..close();
+    canvas.drawPath(shadePath, shadePaint);
+
     canvas.drawPath(brainPath, pen);
 
-    // Beyin Orta Kıvrım Çizgisi
-    final midLine = Path();
-    midLine.moveTo(60, 22);
-    midLine.cubicTo(56, 40, 64, 60, 60, 78);
-    canvas.drawPath(midLine, pen..strokeWidth = 1.8);
+    // Yüzün etrafında nazik, kısa beyin kıvrımları (yüzü kalabalıklaştırmadan)
+    final softFoldPen = Paint()
+      ..color = pencilColor.withValues(alpha: 0.55)
+      ..strokeWidth = 1.6
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
 
-    // İç Kıvrımlar (Sulcus)
-    final sulcus1 = Path();
-    sulcus1.moveTo(38, 42);
-    sulcus1.cubicTo(48, 44, 46, 56, 38, 62);
-    canvas.drawPath(sulcus1, pen..strokeWidth = 1.5);
+    // Üst ortadaki minik ayrım
+    canvas.drawPath(
+      Path()
+        ..moveTo(60, 22)
+        ..quadraticBezierTo(58, 29, 60, 34),
+      softFoldPen,
+    );
+    // Sol ve sağ üst minik kıvrımlar
+    canvas.drawPath(
+      Path()
+        ..moveTo(39, 31)
+        ..quadraticBezierTo(45, 29, 49, 34),
+      softFoldPen,
+    );
+    canvas.drawPath(
+      Path()
+        ..moveTo(81, 31)
+        ..quadraticBezierTo(75, 29, 71, 34),
+      softFoldPen,
+    );
 
-    final sulcus2 = Path();
-    sulcus2.moveTo(82, 42);
-    sulcus2.cubicTo(72, 44, 74, 56, 82, 62);
-    canvas.drawPath(sulcus2, pen..strokeWidth = 1.5);
+    // Pembe allıklar (sevimli yanaklar)
+    final cheekPaint = Paint()
+      ..color = isDark
+          ? const Color(0xFFF472B6).withValues(alpha: 0.65)
+          : const Color(0xFFFB7185).withValues(alpha: 0.45)
+      ..style = PaintingStyle.fill;
+    canvas.drawOval(
+      Rect.fromCenter(center: const Offset(39, 57), width: 10, height: 6),
+      cheekPaint,
+    );
+    canvas.drawOval(
+      Rect.fromCenter(center: const Offset(81, 57), width: 10, height: 6),
+      cheekPaint,
+    );
 
-    // Gülen Gözler ve Ağız (^ ^ ve gülümseme)
-    canvas.drawArc(
-        Rect.fromCircle(center: const Offset(46, 50), radius: 4),
-        math.pi,
-        math.pi,
-        false,
-        pen..strokeWidth = 2.0);
-    canvas.drawArc(
-        Rect.fromCircle(center: const Offset(74, 50), radius: 4),
-        math.pi,
-        math.pi,
-        false,
-        pen..strokeWidth = 2.0);
+    // Parlak, gülen büyük sevimli gözler
+    final eyeFill = Paint()
+      ..color = pencilColor
+      ..style = PaintingStyle.fill;
+    final eyeShine = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.fill;
 
-    // Minik Ağız
-    final smile = Path();
-    smile.moveTo(54, 62);
-    smile.quadraticBezierTo(60, 67, 66, 62);
-    canvas.drawPath(smile, pen);
+    canvas.drawCircle(const Offset(47, 49), 3.6, eyeFill);
+    canvas.drawCircle(const Offset(73, 49), 3.6, eyeFill);
+    canvas.drawCircle(const Offset(45.8, 47.7), 1.3, eyeShine);
+    canvas.drawCircle(const Offset(71.8, 47.7), 1.3, eyeShine);
 
-    // Beyin Etrafında Zeka Kıvılcımları (Şimşekler)
-    final boltPaint = Paint()
+    // Sıcak, mutlu gülümseme
+    final smilePen = Paint()
+      ..color = pencilColor
+      ..strokeWidth = 2.1
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+    canvas.drawPath(
+      Path()
+        ..moveTo(52, 57)
+        ..quadraticBezierTo(60, 65, 68, 57),
+      smilePen,
+    );
+
+    // Baş üstünde ve yanlarda neşeli pırıltılar & minik yıldızlar
+    final sparklePen = Paint()
       ..color = AppColors.sunYellow
       ..strokeWidth = 2.0
       ..style = PaintingStyle.stroke
-      ..strokeJoin = StrokeJoin.miter;
+      ..strokeCap = StrokeCap.round;
 
-    // Sol Şimşek
-    final boltLeft = Path();
-    boltLeft.moveTo(18, 30);
-    boltLeft.lineTo(14, 42);
-    boltLeft.lineTo(20, 42);
-    boltLeft.lineTo(12, 54);
-    canvas.drawPath(boltLeft, boltPaint);
+    void drawSparkle(Offset c, double r) {
+      canvas.drawLine(
+          Offset(c.dx - r, c.dy), Offset(c.dx + r, c.dy), sparklePen);
+      canvas.drawLine(
+          Offset(c.dx, c.dy - r), Offset(c.dx, c.dy + r), sparklePen);
+    }
 
-    // Sağ Şimşek
-    final boltRight = Path();
-    boltRight.moveTo(104, 30);
-    boltRight.lineTo(100, 42);
-    boltRight.lineTo(106, 42);
-    boltRight.lineTo(98, 54);
-    canvas.drawPath(boltRight, boltPaint);
+    drawSparkle(const Offset(16, 30), 4.5);
+    drawSparkle(const Offset(104, 34), 4.5);
+    drawSparkle(const Offset(60, 10), 3.8);
+
+    // Yanlarda minik neşe noktaları
+    canvas.drawCircle(const Offset(14, 60), 2.2, Paint()..color = const Color(0xFF38BDF8));
+    canvas.drawCircle(const Offset(106, 62), 2.2, Paint()..color = const Color(0xFFFB7185));
   }
 
   @override
@@ -1368,12 +1512,12 @@ class _DoodleStreakCalendarPainter extends CustomPainter {
       oldDelegate.isDark != isDark || oldDelegate.pencilColor != pencilColor;
 }
 
-/// 5. Slayt İllüstrasyonu: Şampiyonluk Kupası & WhatsApp Paylaşım Balonu
-class _DoodleTrophyChallengePainter extends CustomPainter {
+/// 5. Slayt İllüstrasyonu (Arka Katman): Kupa Kulpları, Ayak ve Ağız İçi Derinliği
+class _DoodleCupBackPainter extends CustomPainter {
   final bool isDark;
   final Color pencilColor;
 
-  _DoodleTrophyChallengePainter({required this.isDark, required this.pencilColor});
+  _DoodleCupBackPainter({required this.isDark, required this.pencilColor});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -1384,90 +1528,165 @@ class _DoodleTrophyChallengePainter extends CustomPainter {
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
 
+    final cx = size.width / 2; // 78.0
+
+    // Kupa ağız içi (koyu altın/amber derinlik)
+    final innerMouthRect = Rect.fromCenter(
+      center: Offset(cx, 44),
+      width: 86,
+      height: 18,
+    );
+    canvas.drawOval(
+      innerMouthRect,
+      Paint()
+        ..color = isDark ? const Color(0xFF78350F) : const Color(0xFFD97706)
+        ..style = PaintingStyle.fill,
+    );
+    canvas.drawOval(innerMouthRect, pen..strokeWidth = 2.0);
+
+    // Sol Kulp
+    final leftHandle = Path()
+      ..moveTo(cx - 41, 50)
+      ..cubicTo(cx - 62, 48, cx - 62, 71, cx - 35, 71);
+    canvas.drawPath(leftHandle, pen..strokeWidth = 2.6);
+
+    // Sağ Kulp
+    final rightHandle = Path()
+      ..moveTo(cx + 41, 50)
+      ..cubicTo(cx + 62, 48, cx + 62, 71, cx + 35, 71);
+    canvas.drawPath(rightHandle, pen..strokeWidth = 2.6);
+
+    // Kupa Sapı & Kaidesi
+    final goldFill = Paint()
+      ..color = AppColors.sunYellow
+      ..style = PaintingStyle.fill;
+    final darkGoldFill = Paint()
+      ..color = const Color(0xFFF59E0B)
+      ..style = PaintingStyle.fill;
+
+    // Boyun
+    final stemPath = Path()
+      ..moveTo(cx - 9, 80)
+      ..lineTo(cx + 9, 80)
+      ..lineTo(cx + 12, 92)
+      ..lineTo(cx - 12, 92)
+      ..close();
+    canvas.drawPath(stemPath, darkGoldFill);
+    canvas.drawPath(stemPath, pen..strokeWidth = 2.1);
+
+    // Alt Kaide
+    final baseRect = RRect.fromRectAndRadius(
+      Rect.fromLTWH(cx - 28, 92, 56, 10),
+      const Radius.circular(4),
+    );
+    canvas.drawRRect(baseRect, goldFill);
+    canvas.drawRRect(baseRect, pen..strokeWidth = 2.2);
+
+    // Arka plan konfeti noktaları
+    canvas.drawCircle(
+      const Offset(14, 14),
+      2.4,
+      Paint()..color = const Color(0xFF38BDF8),
+    );
+    canvas.drawCircle(
+      const Offset(142, 16),
+      2.4,
+      Paint()..color = const Color(0xFFF43F5E),
+    );
+    canvas.drawCircle(
+      const Offset(10, 56),
+      2.0,
+      Paint()..color = AppColors.sunYellow,
+    );
+    canvas.drawCircle(
+      const Offset(146, 56),
+      2.0,
+      Paint()..color = const Color(0xFFA855F7),
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _DoodleCupBackPainter oldDelegate) =>
+      oldDelegate.isDark != isDark || oldDelegate.pencilColor != pencilColor;
+}
+
+/// 5. Slayt İllüstrasyonu (Ön Katman): Kupanın Ön Altın Duvarı ve Ağız Kenarı
+class _DoodleCupFrontPainter extends CustomPainter {
+  final bool isDark;
+  final Color pencilColor;
+
+  _DoodleCupFrontPainter({required this.isDark, required this.pencilColor});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final pen = Paint()
+      ..color = pencilColor
+      ..strokeWidth = 2.3
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    final cx = size.width / 2; // 78.0
+
     final goldFill = Paint()
       ..color = AppColors.sunYellow
       ..style = PaintingStyle.fill;
 
-    // Kupa Gövdesi (Solda)
-    final cupPath = Path();
-    cupPath.moveTo(24, 28);
-    cupPath.lineTo(66, 28);
-    cupPath.cubicTo(66, 58, 45, 66, 45, 72);
-    cupPath.lineTo(45, 78);
-    cupPath.lineTo(54, 86);
-    cupPath.lineTo(36, 86);
-    cupPath.lineTo(45, 78);
-    cupPath.lineTo(45, 72);
-    cupPath.cubicTo(45, 66, 24, 58, 24, 28);
-    cupPath.close();
+    // Ön kupa duvarı (ağızın ön yayı y=45 civarından başlar; içteki rozetlerin alt yarısını örter)
+    final bodyPath = Path()
+      ..moveTo(cx - 43, 45)
+      ..quadraticBezierTo(cx, 52, cx + 43, 45)
+      ..cubicTo(cx + 42, 70, cx + 24, 82, cx, 82)
+      ..cubicTo(cx - 24, 82, cx - 42, 70, cx - 43, 45)
+      ..close();
 
-    canvas.drawPath(cupPath, goldFill);
-    canvas.drawPath(cupPath, pen);
+    canvas.drawPath(bodyPath, goldFill);
 
-    // Kupa Sol Kulpu
-    final leftHandle = Path();
-    leftHandle.moveTo(24, 34);
-    leftHandle.cubicTo(10, 34, 10, 52, 27, 52);
-    canvas.drawPath(leftHandle, pen);
-
-    // Kupa Sağ Kulpu
-    final rightHandle = Path();
-    rightHandle.moveTo(66, 34);
-    rightHandle.cubicTo(80, 34, 80, 52, 63, 52);
-    canvas.drawPath(rightHandle, pen);
-
-    // Kupa Üzerinde Yıldız Karalaması
-    final starCenter = const Offset(45, 44);
-    final p = Paint()
-      ..color = pencilColor
-      ..strokeWidth = 1.8
-      ..style = PaintingStyle.stroke;
-    canvas.drawLine(Offset(starCenter.dx - 6, starCenter.dy),
-        Offset(starCenter.dx + 6, starCenter.dy), p);
-    canvas.drawLine(Offset(starCenter.dx, starCenter.dy - 6),
-        Offset(starCenter.dx, starCenter.dy + 6), p);
-
-    // Sağda WhatsApp / Mesaj Paylaşım Kartpostalı Balonu
-    final bubbleFill = Paint()
-      ..color = isDark ? const Color(0xFF064E3B) : const Color(0xFFDCFCE7)
+    // Kupa üzerinde parlak şerit yansıması
+    final highlightPaint = Paint()
+      ..color = Colors.white.withValues(alpha: isDark ? 0.25 : 0.45)
       ..style = PaintingStyle.fill;
+    final shinePath = Path()
+      ..moveTo(cx - 32, 51)
+      ..quadraticBezierTo(cx - 24, 52, cx - 22, 52)
+      ..cubicTo(cx - 21, 66, cx - 15, 75, cx - 10, 78)
+      ..lineTo(cx - 17, 78)
+      ..cubicTo(cx - 25, 73, cx - 31, 64, cx - 32, 51)
+      ..close();
+    canvas.drawPath(shinePath, highlightPaint);
 
-    final bubblePath = Path();
-    bubblePath.moveTo(76, 20);
-    bubblePath.lineTo(112, 20);
-    bubblePath.quadraticBezierTo(118, 20, 118, 26);
-    bubblePath.lineTo(118, 54);
-    bubblePath.quadraticBezierTo(118, 60, 112, 60);
-    bubblePath.lineTo(88, 60);
-    bubblePath.lineTo(80, 68);
-    bubblePath.lineTo(82, 60);
-    bubblePath.lineTo(76, 60);
-    bubblePath.quadraticBezierTo(70, 60, 70, 54);
-    bubblePath.lineTo(70, 26);
-    bubblePath.quadraticBezierTo(70, 20, 76, 20);
-    bubblePath.close();
+    canvas.drawPath(bodyPath, pen);
 
-    canvas.drawPath(bubblePath, bubbleFill);
-    canvas.drawPath(bubblePath, pen..strokeWidth = 1.8);
-
-    // Balon İçindeki Simge (WhatsApp Benzeri Paylaşım Karalaması)
-    final msgPen = Paint()
-      ..color = isDark ? AppColors.pencilWhite : const Color(0xFF15803D)
-      ..strokeWidth = 2.0
+    // Ön gövdede küçük yıldız arması
+    final starCenter = Offset(cx, 66);
+    final starPen = Paint()
+      ..color = pencilColor.withValues(alpha: 0.75)
+      ..strokeWidth = 1.7
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
-
-    // İki minik satır çizgi
-    canvas.drawLine(const Offset(78, 34), const Offset(110, 34), msgPen);
-    canvas.drawLine(const Offset(78, 44), const Offset(102, 44), msgPen);
-
-    // Konfeti parçacıkları
-    canvas.drawCircle(const Offset(16, 18), 2.5, Paint()..color = const Color(0xFF38BDF8));
-    canvas.drawCircle(const Offset(52, 12), 2.0, Paint()..color = const Color(0xFFF43F5E));
-    canvas.drawCircle(const Offset(108, 76), 2.5, Paint()..color = AppColors.sunYellow);
+    canvas.drawLine(
+      Offset(starCenter.dx - 5.5, starCenter.dy),
+      Offset(starCenter.dx + 5.5, starCenter.dy),
+      starPen,
+    );
+    canvas.drawLine(
+      Offset(starCenter.dx, starCenter.dy - 5.5),
+      Offset(starCenter.dx, starCenter.dy + 5.5),
+      starPen,
+    );
+    canvas.drawLine(
+      Offset(starCenter.dx - 3.6, starCenter.dy - 3.6),
+      Offset(starCenter.dx + 3.6, starCenter.dy + 3.6),
+      starPen..strokeWidth = 1.3,
+    );
+    canvas.drawLine(
+      Offset(starCenter.dx + 3.6, starCenter.dy - 3.6),
+      Offset(starCenter.dx - 3.6, starCenter.dy + 3.6),
+      starPen,
+    );
   }
 
   @override
-  bool shouldRepaint(covariant _DoodleTrophyChallengePainter oldDelegate) =>
+  bool shouldRepaint(covariant _DoodleCupFrontPainter oldDelegate) =>
       oldDelegate.isDark != isDark || oldDelegate.pencilColor != pencilColor;
 }

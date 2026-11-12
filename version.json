@@ -1,9 +1,9 @@
 ﻿{
-    "version":  "1.2.17",
-    "build_number":  35,
-    "title":  "Zühtü v1.2.17 Güncellemesi",
-    "changelog":  "• Günün Karnesi ve Kafa Kafaya paylaşım kartlarında görsel paylaşım yakalama ve Android paylaşım hedefleri düzeltildi.\n• Paylaşım kartlarındaki tüm standart emojiler profil ekranındaki el çizimi oyun ikonları ve doodle çizimlerle yenilendi.\n• Profilde seçilen avatar arka plan renginin Lig, Sıralama ve Paylaşım Karne kartlarında birebir görünmesi sağlandı.",
-    "apk_url":  "https://raw.githubusercontent.com/goktalha42/daily/main/releases/Zuhtu_v1.2.17_b35.apk",
-    "release_url":  "https://github.com/goktalha42/daily/releases/tag/v1.2.17",
-    "force_update":  false
+    "version": "1.2.18",
+    "build_number": 36,
+    "title": "Zühtü v1.2.18 Güncellemesi",
+    "changelog": "• Kelime İzleri oyununda klavye kapatıldıktan sonra kelime kutusuna basıldığında klavyenin tekrar açılmaması sorunu düzeltildi.\n• Kelime Tırmanışı kelime havuzu 222 benzersiz zincire çıkarıldı ve ardışık günlerde kelime tekrarı önlendi.\n• Tanıtım (Onboarding) ekranındaki 10 dakikalık kronometre, tatlı beyin çizimi, ana sayfa oyun adları, 42/10 lig bilgisi ve kupadan taşan rozetler yenilendi.",
+    "apk_url": "https://raw.githubusercontent.com/goktalha42/daily/main/releases/Zuhtu_v1.2.18_b36.apk",
+    "release_url": "https://github.com/goktalha42/daily/releases/tag/v1.2.18",
+    "force_update": false
 }

@@ -101,5 +101,31 @@ void main() {
       expect(level.endWord.isNotEmpty, isTrue);
       expect(CrossclimbLogic.validateLevel(level), isTrue);
     });
+
+    test('Crossclimb havuzu genişletilmiştir ve tüm zincirler benzersizdir', () {
+      final pool = CrossclimbGenerator.pool;
+      expect(pool.length, greaterThanOrEqualTo(120));
+
+      final ids = <String>{};
+      final chains = <String>{};
+      for (final level in pool) {
+        expect(ids.add(level.id), isTrue, reason: 'Tekrarlanan id: ${level.id}');
+        final sig = [level.startWord, ...level.steps.map((s) => s.targetWord)].join('->');
+        expect(chains.add(sig), isTrue, reason: 'Tekrarlanan kelime zinciri: $sig');
+      }
+    });
+
+    test('CrossclimbGenerator bir tam döngü boyunca ardışık günlerde tekrar etmez', () {
+      final poolSize = CrossclimbGenerator.pool.length;
+      final seen = <String>{};
+      final start = DateTime.utc(2026, 1, 1);
+      for (int i = 0; i < poolSize; i++) {
+        final d = start.add(Duration(days: i));
+        final id = '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+        final level = CrossclimbGenerator.generate(levelId: id);
+        final sig = [level.startWord, ...level.steps.map((s) => s.targetWord)].join('->');
+        expect(seen.add(sig), isTrue, reason: '$i. günde tekrar eden seviye: $sig');
+      }
+    });
   });
 }

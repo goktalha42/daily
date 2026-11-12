@@ -1,7 +1,11 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:daily_games/games/pinpoint/pinpoint_logic.dart';
 import 'package:daily_games/games/pinpoint/pinpoint_generator.dart';
 import 'package:daily_games/games/pinpoint/pinpoint_levels.dart';
+import 'package:daily_games/games/pinpoint/pinpoint_screen.dart';
 
 void main() {
   group('Pinpoint (Kelime İzleri) Mantık ve Doğrulama Testleri', () {
@@ -97,6 +101,69 @@ void main() {
       expect(level.targetWord.isNotEmpty, isTrue);
       expect(level.clues.length, equals(5));
       expect(PinpointLogic.validateLevel(level), isTrue);
+    });
+
+    testWidgets('Gizli kelime kutusuna basıp klavye kapatıldıktan sonra tekrar basınca klavye yeniden açılır',
+        (tester) async {
+      SharedPreferences.setMockInitialValues({});
+
+      await tester.pumpWidget(
+        const ProviderScope(
+          child: MaterialApp(
+            home: PinpointScreen(levelId: '2026-10-15'),
+          ),
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 150));
+
+      final targetArea = find.textContaining('GİZLİ KELİME');
+      expect(targetArea, findsOneWidget);
+
+      // 1. İlk dokunuş: klavye açılmalı
+      await tester.ensureVisible(targetArea);
+      await tester.tap(targetArea);
+      await tester.pump();
+      await tester.pump();
+      expect(tester.testTextInput.isVisible, isTrue);
+      final initialShowCalls =
+          tester.testTextInput.log.where((c) => c.method == 'TextInput.show').length;
+      final initialSetClientCalls =
+          tester.testTextInput.log.where((c) => c.method == 'TextInput.setClient').length;
+      expect(initialShowCalls, greaterThanOrEqualTo(1));
+      expect(initialSetClientCalls, greaterThanOrEqualTo(1));
+
+      // 2. Klavyenin kullanıcı/sistem tarafından kapatılmasını simüle et (FocusNode hala odaklıyken)
+      tester.testTextInput.closeConnection();
+      tester.testTextInput.hide();
+      await tester.pump();
+      expect(tester.testTextInput.isVisible, isFalse);
+
+      // 3. Tekrar gizli kelimeye dokunuş: yeni client bağlantısı ve TextInput.show tetiklenmeli
+      await tester.tap(targetArea);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+      expect(tester.testTextInput.isVisible, isTrue);
+      expect(
+        tester.testTextInput.log.where((c) => c.method == 'TextInput.setClient').length,
+        greaterThan(initialSetClientCalls),
+      );
+      expect(
+        tester.testTextInput.log.where((c) => c.method == 'TextInput.show').length,
+        greaterThan(initialShowCalls),
+      );
+
+      // 4. Sadece TextInput.hide sonrasında tekrar dokunuşta da klavye açılmalı
+      tester.testTextInput.hide();
+      await tester.pump();
+      expect(tester.testTextInput.isVisible, isFalse);
+
+      await tester.tap(targetArea);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+      expect(tester.testTextInput.isVisible, isTrue);
+
+      // Dispose sırasında aktif timer kalmaması için ağacı temizle
+      await tester.pumpWidget(const SizedBox.shrink());
     });
   });
 }

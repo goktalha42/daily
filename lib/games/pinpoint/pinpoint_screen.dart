@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -156,6 +157,31 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> with WidgetsBin
     _focusNode.dispose();
     SoundHapticService.instance.stopAll();
     super.dispose();
+  }
+
+  void _requestKeyboardFocus() {
+    if (_isSolved || !mounted) return;
+    if (_focusNode.hasFocus) {
+      _focusNode.unfocus();
+      WidgetsBinding.instance.ensureVisualUpdate();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && !_isSolved) {
+          _focusNode.requestFocus();
+          Future.microtask(() {
+            if (mounted && !_isSolved) {
+              SystemChannels.textInput.invokeMethod<void>('TextInput.show');
+            }
+          });
+        }
+      });
+    } else {
+      _focusNode.requestFocus();
+      Future.microtask(() {
+        if (mounted && !_isSolved) {
+          SystemChannels.textInput.invokeMethod<void>('TextInput.show');
+        }
+      });
+    }
   }
 
   void _submitGuess() {
@@ -665,11 +691,8 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> with WidgetsBin
 
                       // 4. HEDEF KELİME KUTULARI (Kullanıcı Doğrudan Buraya Yazar!)
                       GestureDetector(
-                        onTap: () {
-                          if (!_isSolved) {
-                            _focusNode.requestFocus();
-                          }
-                        },
+                        behavior: HitTestBehavior.opaque,
+                        onTap: _requestKeyboardFocus,
                         child: SketchCard(
                           backgroundColor: isDark ? AppColors.surfaceDark : Colors.white,
                           borderRadius: 14,
@@ -794,17 +817,19 @@ class _PinpointScreenState extends ConsumerState<PinpointScreen> with WidgetsBin
                       // Gizli TextField (Kullanıcı kutulara bastığında klavyeyi yönetir)
                       if (!_isSolved)
                         SizedBox(
-                          height: 0,
-                          width: 0,
-                          child: Opacity(
-                            opacity: 0,
-                            child: TextField(
-                              controller: _guessController,
-                              focusNode: _focusNode,
-                              maxLength: targetLength,
-                              textCapitalization: TextCapitalization.characters,
-                              textInputAction: TextInputAction.done,
-                              onSubmitted: (_) => _submitGuess(),
+                          height: 1,
+                          width: 1,
+                          child: IgnorePointer(
+                            child: Opacity(
+                              opacity: 0,
+                              child: TextField(
+                                controller: _guessController,
+                                focusNode: _focusNode,
+                                maxLength: targetLength,
+                                textCapitalization: TextCapitalization.characters,
+                                textInputAction: TextInputAction.done,
+                                onSubmitted: (_) => _submitGuess(),
+                              ),
                             ),
                           ),
                         ),

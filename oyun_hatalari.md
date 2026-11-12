@@ -27,6 +27,28 @@ Oyunların bazılarında ses, dokunmalara yetişemiyor. Örneğin: sayı yolu oy
 
 
 
+OYUNLAR İÇİN ÖZEL BÖLÜMLER YAPACAĞIZ.
+ZUHTU.APP YAPACAĞIZ, WEB SİTESİNDEN DE OYNANABİLİR OLACAK.
+
+Uygulama için:
+Google ile giriş eklenecek.
+Uygulama içi güncelleme ve androdimanifest apk yukleme izni kaldırılacak.
+Verileri silme butonu aktif edilecek.
+Kurtarma kodu işlemi, google ile giriş oldugu için artık gereksiz.
+Ayarlar sayfasında uygulama sürümü görünmeye devam edecek.
+Uygulama sadece dikey konumda çalışacak, yatay konuma izin verilmeyecek, ekran dödürülse bile döndürülmeyecek.
+Tanıtım sunumu tekrar izlemek ayarlarda kalmaya devam edecek.
+Yeni gün butonu ana sayfadan, ve uygulamadan kaldırılacak.
+Gizlilik politikası ve açık kaynak lisanslar sayfası şimdilik uygulamadan kaldırılsın, bunları daha sonra bana hatırlat.
+
+
+Onboarding için:
+ilk sayfada ki kahve emojisi yerine 10 dakika gösteren bir kronometre çizelim. Ve cümle sonunda ki kahve emojisini de kaldıralım.
+ikinci sayfada, yine cümle sonunda ki hilal emojisini kaldıralım ve 2. sayfada bulunan oyun isimleri, ana sayfadaki oyunlarımızın isimleri ile aynı değil. oyun isimlerini de ana sayfadan alalım.
+Üçüncü sayfa için, büyük beyin emojisi zombi beyni gibi duruyor, dahah tatlı ve gülen bir beyin çizelim. ve cümle sonunda ki beyin emojisini kaldıralım.
+Dördüncü sayfa için, cümle sonunda ki alev emojisini kaldıralım.
+Beşinci sayfada ki kupa çizimi yerine, kupanın içerisinde sanki bir bardak içinde dolu toplar gibi, dışarı taşarmışcasına rozetlerimizi, profil sayfasında ki rozet emojilerini koyalım. Beşinci sayfadaki başlık olan yazıyı "Liglerde yarış ve rozetleri topla" olarak değiştirelim. ve cümle sonunda ki emojiyi kaldıralım. Beşinci sayfada ki yazıda 30 kişilik ligler ve ilk 7nin ligeden çıktıgından bahsediyor, liglerimiz 42 kişilik ve ilk 10 kişi çıkıyor. beşinci sayfadaki cümleyi de buna göre düzeltelim.  
+
 ---
 
 ### 1-) Vezirler (Queens):
@@ -41,7 +63,7 @@ Oyunların bazılarında ses, dokunmalara yetişemiyor. Örneğin: sayı yolu oy
 
 ### 3-) Kelime Tırmanışı (Crossclimb):
 
-
+tdk apı si gibi bir yerden kelimeler almak ve her gün için farklı kelimelerle oluşturmak gibi bir seçenek olabilir. en azından 365 günlük yani yaklaşık 1200 kelime ihtiyacımız var.
 ---
 
 ### 4-) Güneş ve Ay (Tango):
