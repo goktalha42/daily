@@ -139,11 +139,16 @@ class ShareCardHelper {
       );
       if (pngBytes == null || pngBytes.isEmpty) return null;
 
-      final tempDir = await getTemporaryDirectory();
-      if (!await tempDir.exists()) {
-        await tempDir.create(recursive: true);
+      Directory? targetDir;
+      try {
+        targetDir = await getTemporaryDirectory();
+      } catch (_) {
+        targetDir = await getApplicationCacheDirectory();
       }
-      final file = File('${tempDir.path}/$fileName');
+      if (!await targetDir.exists()) {
+        await targetDir.create(recursive: true);
+      }
+      final file = File('${targetDir.path}/$fileName');
       await file.writeAsBytes(pngBytes, flush: true);
       return file;
     } catch (e) {
@@ -198,6 +203,18 @@ class ShareCardHelper {
         } catch (sharePlatformError) {
           debugPrint(
               '[ShareCardHelper] SharePlus platform hatası: $sharePlatformError');
+          // Bazı Android cihazlarda/ROM'larda subject/title/mimeType ile chooser açılmazsa yalın parametrelerle tekrar dene
+          try {
+            await SharePlus.instance.share(
+              ShareParams(
+                files: [XFile(file.path)],
+                text: effectiveText,
+              ),
+            );
+            return true;
+          } catch (retryError) {
+            debugPrint('[ShareCardHelper] SharePlus yalın tekrar hatası: $retryError');
+          }
           // Masaüstü platformlarında (Windows/Linux/macOS) share sheet açılamazsa dosyayı görüntüleyicide aç
           if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
             try {
@@ -214,6 +231,7 @@ class ShareCardHelper {
           return false;
         }
       }
+      lastError ??= 'Kart görseli dosyaya yazılamadı.';
       return false;
     } catch (e) {
       lastError = '$e';

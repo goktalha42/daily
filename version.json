@@ -1,9 +1,9 @@
 {
-    "version":  "1.2.24",
-    "build_number":  42,
-    "title":  "Zühtü v1.2.24 Güncellemesi",
-    "changelog":  "• Lig Tablosu ekranında üst şerit kaldırılarak sıralama alanı genişletildi.\n• Ana lig kartına \u0027?\u0027 butonu eklenerek tüm 10 lig basamağı ve kurallar açılır pencereye taşındı.",
-    "apk_url":  "https://raw.githubusercontent.com/goktalha42/daily/main/releases/Zuhtu_v1.2.24_b42.apk",
-    "release_url":  "https://github.com/goktalha42/daily/releases/tag/v1.2.24",
+    "version":  "1.2.25",
+    "build_number":  43,
+    "title":  "Zühtü v1.2.25 Güncellemesi",
+    "changelog":  "• Günlük karne görseli paylaşımında kartın yeniden çizilmesini önleyen ValueNotifier iyileştirmesi eklendi.\n• Android paylaşımında yalın parametrelerle tekrar deneme ve hata detayı gösterme desteği eklendi.",
+    "apk_url":  "https://raw.githubusercontent.com/goktalha42/daily/main/releases/Zuhtu_v1.2.25_b43.apk",
+    "release_url":  "https://github.com/goktalha42/daily/releases/tag/v1.2.25",
     "force_update":  false
 }

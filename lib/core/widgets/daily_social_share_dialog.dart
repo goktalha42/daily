@@ -62,7 +62,13 @@ class DailySocialShareDialog extends ConsumerStatefulWidget {
 
 class _DailySocialShareDialogState extends ConsumerState<DailySocialShareDialog> {
   final GlobalKey _cardKey = GlobalKey();
-  bool _isSharing = false;
+  final ValueNotifier<bool> _isSharingNotifier = ValueNotifier<bool>(false);
+
+  @override
+  void dispose() {
+    _isSharingNotifier.dispose();
+    super.dispose();
+  }
 
   String _buildShareText({
     required String nickname,
@@ -131,16 +137,9 @@ class _DailySocialShareDialogState extends ConsumerState<DailySocialShareDialog>
   }
 
   Future<void> _shareImageCard(String shareText) async {
-    if (_isSharing) return;
-    setState(() => _isSharing = true);
+    if (_isSharingNotifier.value) return;
+    _isSharingNotifier.value = true;
     HapticFeedback.heavyImpact();
-
-    // Butonun "Hazırlanıyor..." durumuna geçişinin çizilmesini bekle
-    try {
-      if (WidgetsBinding.instance.hasScheduledFrame) {
-        await WidgetsBinding.instance.endOfFrame;
-      }
-    } catch (_) {}
 
     try {
       final success = await ShareCardHelper.shareCard(
@@ -155,10 +154,14 @@ class _DailySocialShareDialogState extends ConsumerState<DailySocialShareDialog>
       if (!success) {
         await Clipboard.setData(ClipboardData(text: shareText));
         if (!mounted) return;
+        final err = ShareCardHelper.lastError;
+        final msg = (err != null && err.isNotEmpty)
+            ? 'Görsel paylaşılamadı ($err), karne metni panoya kopyalandı! 📋'
+            : 'Görsel paylaşılamadı, karne metni panoya kopyalandı! 📋';
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Görsel paylaşılamadı, karne metni panoya kopyalandı! 📋',
+              msg,
               style: GoogleFonts.patrickHand(fontSize: 15),
             ),
           ),
@@ -179,7 +182,7 @@ class _DailySocialShareDialogState extends ConsumerState<DailySocialShareDialog>
       }
     } finally {
       if (mounted) {
-        setState(() => _isSharing = false);
+        _isSharingNotifier.value = false;
       }
     }
   }
@@ -803,46 +806,52 @@ class _DailySocialShareDialogState extends ConsumerState<DailySocialShareDialog>
                     // Görsel Olarak Paylaş (WhatsApp & Instagram)
                     Expanded(
                       flex: 6,
-                      child: SketchCard(
-                        onTap: _isSharing
-                            ? null
-                            : () => _shareImageCard(shareText),
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                        borderRadius: 12,
-                        borderWidth: 2.2,
-                        shadowOffset: const Offset(2.5, 2.5),
-                        backgroundColor: AppColors.sunYellow,
-                        borderColor: pencilColor,
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              if (_isSharing)
-                                const SizedBox(
-                                  width: 16,
-                                  height: 16,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                        AppColors.inkBlack),
+                      child: ValueListenableBuilder<bool>(
+                        valueListenable: _isSharingNotifier,
+                        builder: (context, isSharing, _) {
+                          return SketchCard(
+                            onTap: isSharing
+                                ? null
+                                : () => _shareImageCard(shareText),
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            borderRadius: 12,
+                            borderWidth: 2.2,
+                            shadowOffset: const Offset(2.5, 2.5),
+                            backgroundColor: AppColors.sunYellow,
+                            borderColor: pencilColor,
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  if (isSharing)
+                                    const SizedBox(
+                                      width: 16,
+                                      height: 16,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                                AppColors.inkBlack),
+                                      ),
+                                    )
+                                  else
+                                    const Icon(Icons.share_rounded,
+                                        size: 17, color: AppColors.inkBlack),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    isSharing ? 'Hazırlanıyor...' : 'Görsel Paylaş',
+                                    style: GoogleFonts.patrickHand(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w900,
+                                      color: AppColors.inkBlack,
+                                    ),
                                   ),
-                                )
-                              else
-                                const Icon(Icons.share_rounded,
-                                    size: 17, color: AppColors.inkBlack),
-                              const SizedBox(width: 6),
-                              Text(
-                                _isSharing ? 'Hazırlanıyor...' : 'Görsel Paylaş',
-                                style: GoogleFonts.patrickHand(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w900,
-                                  color: AppColors.inkBlack,
-                                ),
+                                ],
                               ),
-                            ],
-                          ),
-                        ),
+                            ),
+                          );
+                        },
                       ),
                     ),
                     const SizedBox(width: 8),
