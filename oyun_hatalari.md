@@ -37,6 +37,8 @@ Uygulama için:
 3-) Kurtarma kodu işlemi, google ile giriş oldugu için artık gereksiz.
 
 
+Sıralama sayfası her seferinde tablo güncelleniyor burayı stabil ve cache olmayan hale getirelim.
+2 Tane karne var. Birisi 6 oyun tamamlayınca geliyor birisi sürekli var. Birisi kalacak birisi gidecek.
 
 
 Google playe den reklam alma olayı gemini ile konusulacak.
