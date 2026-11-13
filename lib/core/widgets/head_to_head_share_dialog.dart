@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../games/common/base_game.dart';
 import '../models/user_avatar.dart';
@@ -120,7 +121,7 @@ class _HeadToHeadShareDialogState extends ConsumerState<HeadToHeadShareDialog> {
     buffer.writeln('');
     buffer.writeln('Beni geçebileceğini mi sanıyorsun? 😉');
     buffer.writeln('Hemen Zühtü\'ye gel, günün bulmacasını çöz ve meydan oku!');
-    buffer.writeln('👉 https://zuhtu.app');
+    buffer.writeln('👉 https://zuhtuapp.cyboros.com');
     return buffer.toString();
   }
 
@@ -509,30 +510,65 @@ class _HeadToHeadShareDialogState extends ConsumerState<HeadToHeadShareDialog> {
                           const SizedBox(height: 6),
 
                           // WATERMARK
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              SketchDoodleBolt(
-                                size: 13,
-                                color: pencilColor,
-                              ),
-                              const SizedBox(width: 4),
-                              Flexible(
-                                child: Text(
-                                  'zuhtu.app • Her Gece 00:00\'da Yeni Bulmacalar',
-                                  overflow: TextOverflow.ellipsis,
-                                  style: GoogleFonts.patrickHand(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
-                                    color: isDark
-                                        ? AppColors.pencilWhite
-                                            .withValues(alpha: 0.7)
-                                        : AppColors.pencilGraphite,
-                                    letterSpacing: 0.4,
+                          GestureDetector(
+                            onTap: () async {
+                              HapticFeedback.lightImpact();
+                              final uri = Uri.parse('https://zuhtuapp.cyboros.com');
+                              if (await canLaunchUrl(uri)) {
+                                await launchUrl(uri, mode: LaunchMode.externalApplication);
+                              }
+                            },
+                            child: MouseRegion(
+                              cursor: SystemMouseCursors.click,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  SketchDoodleBolt(
+                                    size: 13,
+                                    color: pencilColor,
                                   ),
-                                ),
+                                  const SizedBox(width: 4),
+                                  Flexible(
+                                    child: Text.rich(
+                                      TextSpan(
+                                        children: [
+                                          TextSpan(
+                                            text: 'zuhtuapp.cyboros.com',
+                                            style: GoogleFonts.patrickHand(
+                                              fontSize: 11.5,
+                                              fontWeight: FontWeight.bold,
+                                              color: isDark
+                                                  ? AppColors.sunYellow
+                                                  : const Color(0xFF1D4ED8),
+                                              decoration: TextDecoration.underline,
+                                              decorationColor: isDark
+                                                  ? AppColors.sunYellow
+                                                  : const Color(0xFF1D4ED8),
+                                              letterSpacing: 0.3,
+                                            ),
+                                          ),
+                                          TextSpan(
+                                            text: " • Her Gece 00:00'da Yeni Bulmacalar",
+                                            style: GoogleFonts.patrickHand(
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.bold,
+                                              color: isDark
+                                                  ? AppColors.pencilWhite
+                                                      .withValues(alpha: 0.7)
+                                                  : AppColors.pencilGraphite,
+                                              letterSpacing: 0.4,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ],
+                            ),
                           ),
                         ],
                       ),

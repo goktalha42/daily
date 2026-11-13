@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../features/profile/profile_screen.dart' show GameSketchThumbnail;
 import '../../games/common/base_game.dart';
@@ -91,7 +92,7 @@ class _DailySocialShareDialogState extends ConsumerState<DailySocialShareDialog>
 
     buffer.writeln('');
     buffer.writeln('Bugünün zeka antrenmanını tamamladım! Beni geçebilir misin? 😉');
-    buffer.writeln('Sen de zihnini sına 👉 https://zuhtu.app');
+    buffer.writeln('Sen de zihnini sına 👉 https://zuhtuapp.cyboros.com');
     return buffer.toString();
   }
 
@@ -100,15 +101,15 @@ class _DailySocialShareDialogState extends ConsumerState<DailySocialShareDialog>
       case GameType.queens:
         return '👑 Vezirler';
       case GameType.pinpoint:
-        return '🎯 Nokta Atışı';
+        return '🔍 Kelime İzleri';
       case GameType.crossclimb:
         return '🧗 Kelime Tırmanışı';
       case GameType.tango:
-        return '⚪ Tango';
+        return '☀️ Güneş & Ay';
       case GameType.zipPath:
         return '🔢 Sayı Yolu';
       case GameType.patches:
-        return '🧩 Yamalar';
+        return '🧩 Alan Bölme';
     }
   }
 
@@ -236,32 +237,72 @@ class _DailySocialShareDialogState extends ConsumerState<DailySocialShareDialog>
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          // ÜST DAMGA & BAŞLIK
+                          // ÜST DAMGA & BAŞLIK & GÜNÜN TARİHİ
                           Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
+                              Flexible(
+                                child: SketchCard(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 4),
+                                  borderRadius: 8,
+                                  borderWidth: 1.6,
+                                  shadowOffset: const Offset(1.5, 1.5),
+                                  backgroundColor: AppColors.sunYellow,
+                                  borderColor: pencilColor,
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const SketchDoodleBrain(
+                                        size: 16,
+                                        color: AppColors.inkBlack,
+                                      ),
+                                      const SizedBox(width: 5),
+                                      Flexible(
+                                        child: Text(
+                                          'ZÜHTÜ GÜNÜN KARNESİ',
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: GoogleFonts.patrickHand(
+                                            fontSize: 13.5,
+                                            fontWeight: FontWeight.w900,
+                                            color: AppColors.inkBlack,
+                                            letterSpacing: 0.5,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 6),
                               SketchCard(
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 8, vertical: 4),
                                 borderRadius: 8,
-                                borderWidth: 1.6,
-                                shadowOffset: const Offset(1.5, 1.5),
-                                backgroundColor: AppColors.sunYellow,
+                                borderWidth: 1.4,
+                                shadowOffset: const Offset(1.4, 1.4),
+                                backgroundColor: isDark
+                                    ? AppColors.surfaceSecondaryDark
+                                    : Colors.white,
                                 borderColor: pencilColor,
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    const SketchDoodleBrain(
-                                      size: 16,
-                                      color: AppColors.inkBlack,
+                                    Icon(
+                                      Icons.calendar_today_rounded,
+                                      size: 12,
+                                      color: isDark
+                                          ? AppColors.sunYellow
+                                          : const Color(0xFFB45309),
                                     ),
-                                    const SizedBox(width: 5),
+                                    const SizedBox(width: 4),
                                     Text(
-                                      'ZÜHTÜ GÜNÜN KARNESİ',
+                                      formattedDate,
                                       style: GoogleFonts.patrickHand(
-                                        fontSize: 13.5,
-                                        fontWeight: FontWeight.w900,
-                                        color: AppColors.inkBlack,
-                                        letterSpacing: 0.5,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w700,
+                                        color: pencilColor,
                                       ),
                                     ),
                                   ],
@@ -628,30 +669,65 @@ class _DailySocialShareDialogState extends ConsumerState<DailySocialShareDialog>
                           ),
 
                           const SizedBox(height: 5),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              SketchDoodleBolt(
-                                size: 13,
-                                color: pencilColor,
-                              ),
-                              const SizedBox(width: 4),
-                              Flexible(
-                                child: Text(
-                                  'zuhtu.app • Her Gece 00:00\'da Yeni Bulmacalar',
-                                  overflow: TextOverflow.ellipsis,
-                                  style: GoogleFonts.patrickHand(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
-                                    color: isDark
-                                        ? AppColors.pencilWhite
-                                            .withValues(alpha: 0.7)
-                                        : AppColors.pencilGraphite,
-                                    letterSpacing: 0.4,
+                          GestureDetector(
+                            onTap: () async {
+                              HapticFeedback.lightImpact();
+                              final uri = Uri.parse('https://zuhtuapp.cyboros.com');
+                              if (await canLaunchUrl(uri)) {
+                                await launchUrl(uri, mode: LaunchMode.externalApplication);
+                              }
+                            },
+                            child: MouseRegion(
+                              cursor: SystemMouseCursors.click,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  SketchDoodleBolt(
+                                    size: 13,
+                                    color: pencilColor,
                                   ),
-                                ),
+                                  const SizedBox(width: 4),
+                                  Flexible(
+                                    child: Text.rich(
+                                      TextSpan(
+                                        children: [
+                                          TextSpan(
+                                            text: 'zuhtuapp.cyboros.com',
+                                            style: GoogleFonts.patrickHand(
+                                              fontSize: 11.5,
+                                              fontWeight: FontWeight.bold,
+                                              color: isDark
+                                                  ? AppColors.sunYellow
+                                                  : const Color(0xFF1D4ED8),
+                                              decoration: TextDecoration.underline,
+                                              decorationColor: isDark
+                                                  ? AppColors.sunYellow
+                                                  : const Color(0xFF1D4ED8),
+                                              letterSpacing: 0.3,
+                                            ),
+                                          ),
+                                          TextSpan(
+                                            text: " • Her Gece 00:00'da Yeni Bulmacalar",
+                                            style: GoogleFonts.patrickHand(
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.bold,
+                                              color: isDark
+                                                  ? AppColors.pencilWhite
+                                                      .withValues(alpha: 0.7)
+                                                  : AppColors.pencilGraphite,
+                                              letterSpacing: 0.4,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ],
+                            ),
                           ),
                         ],
                       ),
@@ -869,20 +945,7 @@ class _DailySocialShareDialogState extends ConsumerState<DailySocialShareDialog>
   }
 
   String _getGameName(GameType type) {
-    switch (type) {
-      case GameType.queens:
-        return 'Vezirler';
-      case GameType.pinpoint:
-        return 'Nokta Atışı';
-      case GameType.crossclimb:
-        return 'Kelime T.';
-      case GameType.tango:
-        return 'Tango';
-      case GameType.zipPath:
-        return 'Sayı Yolu';
-      case GameType.patches:
-        return 'Yamalar';
-    }
+    return type.title;
   }
 }
 
@@ -1030,7 +1093,7 @@ class _SketchPostcardBackgroundPainter extends CustomPainter {
 
     // Minik dalgalı damga çizgileri
     final wavePaint = Paint()
-      ..color = const Color(0xFFDC2626).withValues(alpha: 0.5)
+      ..color = const Color(0xFFDC2626).withValues(alpha: 0.45)
       ..strokeWidth = 1.2
       ..style = PaintingStyle.stroke;
 
@@ -1044,6 +1107,27 @@ class _SketchPostcardBackgroundPainter extends CustomPainter {
           center.dx + 7, y + 2, center.dx + 14, y);
       canvas.drawPath(wave, wavePaint);
     }
+
+    // Damga içindeki tarih
+    final textPainter = TextPainter(
+      text: TextSpan(
+        text: dateString,
+        style: const TextStyle(
+          color: Color(0xFFDC2626),
+          fontSize: 7.5,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 0.5,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    textPainter.paint(
+      canvas,
+      Offset(
+        center.dx - textPainter.width / 2,
+        center.dy - textPainter.height / 2,
+      ),
+    );
   }
 
   @override

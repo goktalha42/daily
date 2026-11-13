@@ -151,12 +151,28 @@ void main() {
 
       // Kart bileşenleri
       expect(find.text('ZÜHTÜ GÜNÜN KARNESİ'), findsOneWidget);
+      expect(find.text('11 Kasım 2026'), findsOneWidget);
       expect(find.text('@ZekaTestcisi'), findsOneWidget);
       expect(find.text('🦉'), findsOneWidget);
       expect(find.text('135'), findsOneWidget);
       expect(find.byType(GameSketchThumbnail), findsNWidgets(6));
       expect(find.byType(SketchDoodleBrain), findsWidgets);
       expect(find.byType(SketchDoodleClipboard), findsOneWidget);
+
+      // Ana sayfadaki güncel oyun isimleri yer almalı, eski isimler bulunmamalı
+      expect(find.text('Vezirler'), findsOneWidget);
+      expect(find.text('Kelime İzleri'), findsOneWidget);
+      expect(find.text('Kelime Tırmanışı'), findsOneWidget);
+      expect(find.text('Güneş & Ay'), findsOneWidget);
+      expect(find.text('Sayı Yolu'), findsOneWidget);
+      expect(find.text('Alan Bölme'), findsOneWidget);
+      expect(find.text('Nokta Atışı'), findsNothing);
+      expect(find.text('Yamalar'), findsNothing);
+
+      // Link zuhtuapp.cyboros.com olmalı
+      expect(find.textContaining('zuhtuapp.cyboros.com'), findsOneWidget);
+      expect(find.textContaining('zuhtu.app'), findsNothing);
+
       expect(find.text('Görsel Paylaş'), findsOneWidget);
       expect(find.text('Metin'), findsOneWidget);
       expect(find.text('Kapat'), findsOneWidget);

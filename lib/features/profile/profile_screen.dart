@@ -862,8 +862,8 @@ class ProfileScreen extends ConsumerWidget {
           ),
         ),
 
-        const SliverToBoxAdapter(
-          child: SizedBox(height: 120), // Floating nav bar için pay
+        SliverToBoxAdapter(
+          child: SizedBox(height: 120 + MediaQuery.paddingOf(context).bottom), // Floating nav bar için pay
         ),
       ],
     ),

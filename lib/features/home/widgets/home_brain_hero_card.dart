@@ -252,6 +252,7 @@ class _HomeBrainHeroCardState extends State<HomeBrainHeroCard>
                           const SizedBox(width: 8),
                           const SketchCountdownTimer(
                             fontSize: 12.5,
+                            width: 108,
                             padding: EdgeInsets.symmetric(
                                 horizontal: 9, vertical: 4),
                           ),
