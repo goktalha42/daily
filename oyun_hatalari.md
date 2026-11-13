@@ -21,7 +21,8 @@ yeni apk ler yaptıkca versiyonu v1.0.1, v1.0.2 olarak değişiklik büyüklüğ
 - **v1.2.25:** Günlük karne görseli paylaşımında kartın yeniden çizilmesini önleyen ValueNotifier iyileştirmesi, cache dizini yedeği, yalın Android paylaşım parametreleri ile tekrar deneme ve hata detayını gösterme desteği eklendi.
 - **v1.2.26:** Release APK derlemelerinde `RenderObject.debugNeedsPaint` çağrısının yol açtığı `LateInitializationError` hatası giderilerek görsel karne/sertifika paylaşımı tamamen düzeltildi.
 - **v1.2.27:** Günlük karne görsel paylaşımında uzun metin yerine yalnızca kısa davet mesajı ve `https://zuhtuapp.cyboros.com` bağlantısı paylaşılacak şekilde sadeleştirildi.
-- **v1.2.28 (Güncel):** Profil sağ üstündeki ve karne paylaşım kartındaki `LVL` seviye hesabı `GameStatsNotifier.calculateUserLevel` ile birleştirilerek tutarsızlık giderildi.
+- **v1.2.28:** Profil sağ üstündeki ve karne paylaşım kartındaki `LVL` seviye hesabı `GameStatsNotifier.calculateUserLevel` ile birleştirilerek tutarsızlık giderildi.
+- **v1.2.29 (Güncel):** Sıralama sayfasında oyun, zaman ve Vezirler zorluk sekmeleri arası geçişte milisaniyelik eski önbellek verisinin görünmesi kaldırıldı; veriler doğrudan canlı sunucudan taze çekiliyor.
 
 
 

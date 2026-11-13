@@ -27,6 +27,7 @@ class LeaderboardService extends ChangeNotifier {
   final String userNickname;
   final List<GameResult> _resultsStore = [];
   bool _isSyncingWithServer = false;
+  int _refreshSeq = 0;
   bool _disposed = false;
 
   @override
@@ -109,19 +110,6 @@ class LeaderboardService extends ChangeNotifier {
     }
   }
 
-  Future<void> _saveCacheToPrefs() async {
-    try {
-      WidgetsFlutterBinding.ensureInitialized();
-      final prefs = await SharedPreferences.getInstance();
-      final mapToSave = <String, dynamic>{};
-      _serverLeaderboardCache.forEach((key, list) {
-        mapToSave[key] = list.map((e) => e.toJson()).toList();
-      });
-      await prefs.setString(_prefsCacheKey, jsonEncode(mapToSave));
-    } catch (e) {
-      debugPrint('[LeaderboardService] Cache save error: $e');
-    }
-  }
 
   Future<void> refreshCurrentLeaderboard() async {
     await refreshFromServer(
@@ -177,7 +165,11 @@ class LeaderboardService extends ChangeNotifier {
     this.userNickname = 'Oyuncu',
     this.enableMockBots = false,
   }) {
-    _loadCacheFromPrefs();
+    // Canlı sunucu aktifken disk önbelleğinden eski sıralama yükleme;
+    // sekmeler arası geçişte milisaniyelik bayat veri görünmesini önler.
+    if (apiClient == null) {
+      _loadCacheFromPrefs();
+    }
     if (enableMockBots) {
       _seedMockData();
     }
@@ -606,7 +598,8 @@ class LeaderboardService extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Canlı sunucudan liderlik tablosunu çeker ve doğrudan önbelleğe yazar
+  /// Canlı sunucudan liderlik tablosunu çeker; eski önbellek flash'ını önlemek için
+  /// ilgili anahtarın önbelleğini anında temizler ve yalnızca en son isteği uygular.
   Future<void> refreshFromServer({
     required GameType gameType,
     required LeaderboardTimeframe timeframe,
@@ -618,6 +611,10 @@ class LeaderboardService extends ChangeNotifier {
     lastRequestedDifficulty = difficulty;
 
     if (apiClient == null) return;
+
+    final int seq = ++_refreshSeq;
+    final key = _buildCacheKey(gameType, timeframe, difficulty, levelId);
+    _serverLeaderboardCache.remove(key);
     _isSyncingWithServer = true;
     notifyListeners();
 
@@ -632,8 +629,10 @@ class LeaderboardService extends ChangeNotifier {
         dateId: effectiveDateId,
       );
 
+      // Daha yeni bir sekme/filtre isteği başlatıldıysa eski yanıtı yoksay
+      if (seq != _refreshSeq) return;
+
       if (remoteEntries != null) {
-        final key = _buildCacheKey(gameType, timeframe, difficulty, levelId);
         final normalizedMyNick = userNickname.trim().toLowerCase();
 
         final mapped = remoteEntries.map((entry) {
@@ -652,13 +651,14 @@ class LeaderboardService extends ChangeNotifier {
         }).toList();
 
         _serverLeaderboardCache[key] = mapped;
-        _saveCacheToPrefs();
       }
     } catch (e) {
       debugPrint('[LeaderboardService] refreshFromServer hatası: $e');
     } finally {
-      _isSyncingWithServer = false;
-      notifyListeners();
+      if (seq == _refreshSeq) {
+        _isSyncingWithServer = false;
+        notifyListeners();
+      }
     }
   }
 
