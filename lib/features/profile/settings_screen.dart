@@ -1066,7 +1066,7 @@ class _SettingsAppVersionCard extends StatefulWidget {
 
 class _SettingsAppVersionCardState extends State<_SettingsAppVersionCard> {
   bool _isChecking = false;
-  String _versionText = 'v1.2.22 (Build 40)';
+  String _versionText = 'v1.2.23 (Build 41)';
 
   @override
   void initState() {

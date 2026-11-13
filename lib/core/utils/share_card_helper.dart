@@ -7,6 +7,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 /// Zühtü - Sosyal Medya (WhatsApp, Instagram, X vb.) Görsel Kart Paylaşım Yardımcısı.
 /// RepaintBoundary ile sarılmış skeç kartları yüksek çözünürlüklü PNG'ye dönüştürüp
@@ -18,15 +19,21 @@ class ShareCardHelper {
 
   static Future<void> _waitForPaintFrame() async {
     final binding = SchedulerBinding.instance;
-    if (binding.hasScheduledFrame || binding.schedulerPhase != SchedulerPhase.idle) {
+    if (binding.hasScheduledFrame ||
+        binding.schedulerPhase != SchedulerPhase.idle) {
       final completer = Completer<void>();
       binding.addPostFrameCallback((_) {
         if (!completer.isCompleted) completer.complete();
       });
       await completer.future.timeout(
-        const Duration(milliseconds: 120),
+        const Duration(milliseconds: 250),
         onTimeout: () {},
       );
+    }
+    if (binding.hasScheduledFrame) {
+      try {
+        await binding.endOfFrame;
+      } catch (_) {}
     } else {
       await Future<void>.delayed(const Duration(milliseconds: 24));
     }
@@ -47,17 +54,27 @@ class ShareCardHelper {
       await _waitForPaintFrame();
 
       RenderRepaintBoundary? boundary;
-      for (int attempt = 0; attempt < 4; attempt++) {
+      for (int attempt = 0; attempt < 8; attempt++) {
         final context = boundaryKey.currentContext;
-        boundary = context?.findRenderObject() as RenderRepaintBoundary?;
-        if (boundary != null &&
-            boundary.attached &&
-            boundary.hasSize &&
-            !boundary.size.isEmpty &&
-            !boundary.debugNeedsPaint) {
-          break;
+        final ro = context?.findRenderObject();
+        if (ro is RenderRepaintBoundary) {
+          boundary = ro;
+          if (boundary.attached &&
+              boundary.hasSize &&
+              !boundary.size.isEmpty &&
+              !boundary.debugNeedsPaint) {
+            break;
+          }
         }
-        await Future<void>.delayed(const Duration(milliseconds: 50));
+        if (SchedulerBinding.instance.schedulerPhase == SchedulerPhase.idle) {
+          SchedulerBinding.instance.scheduleFrame();
+        }
+        await Future<void>.delayed(const Duration(milliseconds: 35));
+        if (SchedulerBinding.instance.hasScheduledFrame) {
+          try {
+            await SchedulerBinding.instance.endOfFrame;
+          } catch (_) {}
+        }
       }
 
       if (boundary == null ||
@@ -66,6 +83,14 @@ class ShareCardHelper {
           boundary.size.isEmpty) {
         lastError = 'Kart henüz çizilmedi.';
         return null;
+      }
+
+      if (boundary.debugNeedsPaint) {
+        SchedulerBinding.instance.scheduleFrame();
+        await Future<void>.delayed(const Duration(milliseconds: 60));
+        try {
+          await SchedulerBinding.instance.endOfFrame;
+        } catch (_) {}
       }
 
       final ratios = <double>{
@@ -128,7 +153,7 @@ class ShareCardHelper {
     }
   }
 
-  /// Görseli yakalayıp yerel paylaşım sayfası üzerinden sadece kart görseli olarak paylaşır.
+  /// Görseli yakalayıp yerel paylaşım sayfası üzerinden kart görseli ve açıklama metni ile paylaşır.
   static Future<bool> shareCard({
     required GlobalKey boundaryKey,
     String? shareText,
@@ -136,6 +161,11 @@ class ShareCardHelper {
     String fileName = 'zuhtu_share.png',
   }) async {
     lastError = null;
+    final effectiveSubject = subject ?? '🧠 Zühtü Günlük Zeka Karnesi';
+    final effectiveText = (shareText != null && shareText.trim().isNotEmpty)
+        ? shareText
+        : 'Sen de zihnini sına 👉 https://zuhtuapp.cyboros.com';
+
     try {
       if (kIsWeb) {
         final pngBytes = await captureWidgetToPngBytes(boundaryKey);
@@ -143,20 +173,46 @@ class ShareCardHelper {
           await SharePlus.instance.share(
             ShareParams(
               files: [XFile.fromData(pngBytes, mimeType: 'image/png', name: fileName)],
+              text: effectiveText,
+              subject: effectiveSubject,
+              title: effectiveSubject,
             ),
           );
           return true;
         }
         return false;
       }
+
       final file = await captureWidgetToFile(boundaryKey, fileName: fileName);
       if (file != null && await file.exists() && await file.length() > 0) {
-        await SharePlus.instance.share(
-          ShareParams(
-            files: [XFile(file.path, mimeType: 'image/png', name: fileName)],
-          ),
-        );
-        return true;
+        try {
+          await SharePlus.instance.share(
+            ShareParams(
+              files: [XFile(file.path, mimeType: 'image/png', name: fileName)],
+              text: effectiveText,
+              subject: effectiveSubject,
+              title: effectiveSubject,
+            ),
+          );
+          return true;
+        } catch (sharePlatformError) {
+          debugPrint(
+              '[ShareCardHelper] SharePlus platform hatası: $sharePlatformError');
+          // Masaüstü platformlarında (Windows/Linux/macOS) share sheet açılamazsa dosyayı görüntüleyicide aç
+          if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+            try {
+              final uri = Uri.file(file.path);
+              if (await canLaunchUrl(uri)) {
+                await launchUrl(uri);
+                return true;
+              }
+            } catch (launchError) {
+              debugPrint('[ShareCardHelper] launchUrl hatası: $launchError');
+            }
+          }
+          lastError = '$sharePlatformError';
+          return false;
+        }
       }
       return false;
     } catch (e) {

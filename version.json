@@ -1,9 +1,9 @@
 {
-    "version":  "1.2.22",
-    "build_number":  40,
-    "title":  "ZÃ¼htÃ¼ v1.2.22 GÃ¼ncellemesi",
-    "changelog":  "• Gunluk sosyal paylasim kartlari ve kafa kafaya kart tasarimi gelistirildi.\n• Gece yarisi geri sayim sayaci organik kara kalem cercevesiyle yenilendi.\n• Liderlik ve lig siralamasi sekme gecisi ve otomatik esitleme iyilestirmeleri.",
-    "apk_url":  "https://raw.githubusercontent.com/goktalha42/daily/main/releases/Zuhtu_v1.2.22_b40.apk",
-    "release_url":  "https://github.com/goktalha42/daily/releases/tag/v1.2.22",
+    "version":  "1.2.23",
+    "build_number":  41,
+    "title":  "Zühtü v1.2.23 Güncellemesi",
+    "changelog":  "• Günlük zeka karnesi görsel paylaşımı düzeltildi ve https://zuhtuapp.cyboros.com bağlantı desteği eklendi.\n• Sıralama sayfasında Zaman, Oyun ve Seviye filtreleme hiyerarşisi netleştirildi.",
+    "apk_url":  "https://raw.githubusercontent.com/goktalha42/daily/main/releases/Zuhtu_v1.2.23_b41.apk",
+    "release_url":  "https://github.com/goktalha42/daily/releases/tag/v1.2.23",
     "force_update":  false
 }

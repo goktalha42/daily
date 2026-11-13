@@ -135,6 +135,13 @@ class _DailySocialShareDialogState extends ConsumerState<DailySocialShareDialog>
     setState(() => _isSharing = true);
     HapticFeedback.heavyImpact();
 
+    // Butonun "Hazırlanıyor..." durumuna geçişinin çizilmesini bekle
+    try {
+      if (WidgetsBinding.instance.hasScheduledFrame) {
+        await WidgetsBinding.instance.endOfFrame;
+      }
+    } catch (_) {}
+
     try {
       final success = await ShareCardHelper.shareCard(
         boundaryKey: _cardKey,
@@ -143,8 +150,11 @@ class _DailySocialShareDialogState extends ConsumerState<DailySocialShareDialog>
         fileName: 'zuhtu_gunun_karnesi.png',
       );
 
-      if (!success && mounted) {
+      if (!mounted) return;
+
+      if (!success) {
         await Clipboard.setData(ClipboardData(text: shareText));
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(

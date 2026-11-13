@@ -189,6 +189,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
               child: Row(
                 children: LeaderboardTimeframe.values.map((tf) {
                   final isSelected = _timeframe == tf;
+                  final displayLabel = _getTimeframeDisplayLabel(tf);
                   return Expanded(
                     child: isSelected
                         ? SketchCard(
@@ -199,9 +200,9 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                             padding: const EdgeInsets.symmetric(vertical: 6),
                             child: Center(
                               child: Text(
-                                tf.label,
+                                displayLabel,
                                 style: GoogleFonts.patrickHand(
-                                  fontSize: 15,
+                                  fontSize: 14.5,
                                   fontWeight: FontWeight.w700,
                                   color: AppColors.inkBlack,
                                 ),
@@ -223,9 +224,9 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                               padding: const EdgeInsets.symmetric(vertical: 6),
                               child: Center(
                                 child: Text(
-                                  tf.label,
+                                  displayLabel,
                                   style: GoogleFonts.patrickHand(
-                                    fontSize: 15,
+                                    fontSize: 14.5,
                                     fontWeight: FontWeight.w700,
                                     color: AppColors.pencil(context),
                                   ),
@@ -291,53 +292,86 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
           ),
         ),
 
-        // 3.1. VEZİRLER ZORLUK SEÇİCİ (Yalnızca Bugün seçiliyken)
+        // 3.1. VEZİRLER ZORLUK SEÇİCİ (Yalnızca Bugün seçiliyken Vezirler'in alt kırılımı olarak hiyerarşik panel)
         if (_selectedGame == GameType.queens && _timeframe == LeaderboardTimeframe.daily)
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-              child: Row(
-                children: [
-                  _buildQueensDifficultyChip(
-                    label: 'Toplam Puan',
-                    isSelected: _selectedQueensDifficulty == null,
-                    onTap: () {
-                      HapticFeedback.selectionClick();
-                      setState(() => _selectedQueensDifficulty = null);
-                      _triggerRefresh();
-                    },
-                  ),
-                  const SizedBox(width: 6),
-                  _buildQueensDifficultyChip(
-                    label: 'Kolay',
-                    isSelected: _selectedQueensDifficulty == 'kolay',
-                    onTap: () {
-                      HapticFeedback.selectionClick();
-                      setState(() => _selectedQueensDifficulty = 'kolay');
-                      _triggerRefresh();
-                    },
-                  ),
-                  const SizedBox(width: 6),
-                  _buildQueensDifficultyChip(
-                    label: 'Zor',
-                    isSelected: _selectedQueensDifficulty == 'zor',
-                    onTap: () {
-                      HapticFeedback.selectionClick();
-                      setState(() => _selectedQueensDifficulty = 'zor');
-                      _triggerRefresh();
-                    },
-                  ),
-                  const SizedBox(width: 6),
-                  _buildQueensDifficultyChip(
-                    label: 'Master',
-                    isSelected: _selectedQueensDifficulty == 'master',
-                    onTap: () {
-                      HapticFeedback.selectionClick();
-                      setState(() => _selectedQueensDifficulty = 'master');
-                      _triggerRefresh();
-                    },
-                  ),
-                ],
+              padding: const EdgeInsets.fromLTRB(20, 3, 20, 6),
+              child: SketchCard(
+                borderRadius: 12,
+                borderWidth: 1.6,
+                shadowOffset: const Offset(2.0, 2.0),
+                backgroundColor: _selectedGame.color.withValues(alpha: isDark ? 0.22 : 0.12),
+                borderColor: _selectedGame.color.withValues(alpha: isDark ? 0.7 : 0.5),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                child: Row(
+                  children: [
+                    // Hiyerarşik alt dal göstergesi (Vezirler oyununa bağlı olduğunu belirtir)
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.subdirectory_arrow_right_rounded,
+                          size: 16,
+                          color: _selectedGame.color,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Seviye:',
+                          style: GoogleFonts.patrickHand(
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.pencil(context),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(width: 8),
+                    _buildQueensDifficultyChip(
+                      label: 'Toplam',
+                      isSelected: _selectedQueensDifficulty == null,
+                      accentColor: _selectedGame.color,
+                      onTap: () {
+                        HapticFeedback.selectionClick();
+                        setState(() => _selectedQueensDifficulty = null);
+                        _triggerRefresh();
+                      },
+                    ),
+                    const SizedBox(width: 5),
+                    _buildQueensDifficultyChip(
+                      label: 'Kolay',
+                      isSelected: _selectedQueensDifficulty == 'kolay',
+                      accentColor: _selectedGame.color,
+                      onTap: () {
+                        HapticFeedback.selectionClick();
+                        setState(() => _selectedQueensDifficulty = 'kolay');
+                        _triggerRefresh();
+                      },
+                    ),
+                    const SizedBox(width: 5),
+                    _buildQueensDifficultyChip(
+                      label: 'Zor',
+                      isSelected: _selectedQueensDifficulty == 'zor',
+                      accentColor: _selectedGame.color,
+                      onTap: () {
+                        HapticFeedback.selectionClick();
+                        setState(() => _selectedQueensDifficulty = 'zor');
+                        _triggerRefresh();
+                      },
+                    ),
+                    const SizedBox(width: 5),
+                    _buildQueensDifficultyChip(
+                      label: 'Master',
+                      isSelected: _selectedQueensDifficulty == 'master',
+                      accentColor: _selectedGame.color,
+                      onTap: () {
+                        HapticFeedback.selectionClick();
+                        setState(() => _selectedQueensDifficulty = 'master');
+                        _triggerRefresh();
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -827,19 +861,41 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
     );
   }
 
+  String _getTimeframeDisplayLabel(LeaderboardTimeframe tf) {
+    switch (tf) {
+      case LeaderboardTimeframe.daily:
+        return '☀️ Bugün';
+      case LeaderboardTimeframe.weekly:
+        return '📅 Haftalık';
+      case LeaderboardTimeframe.monthly:
+        return '🌙 Aylık';
+      case LeaderboardTimeframe.allTime:
+        return '🏆 Genel';
+    }
+  }
+
   Widget _buildQueensDifficultyChip({
     required String label,
     required bool isSelected,
+    required Color accentColor,
     required VoidCallback onTap,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final activeBg = accentColor;
+    final activeTextColor = AppColors.onColor(accentColor);
+    final inactiveBg = isDark ? Colors.white.withValues(alpha: 0.08) : Colors.white;
+
     return Expanded(
       child: GestureDetector(
         onTap: onTap,
         child: SketchCard(
           borderRadius: 8,
-          borderWidth: isSelected ? 2.0 : 1.4,
-          shadowOffset: isSelected ? const Offset(1.8, 1.8) : const Offset(1.0, 1.0),
-          backgroundColor: isSelected ? AppColors.sunYellow : AppColors.surfaceOf(context),
+          borderWidth: isSelected ? 1.8 : 1.2,
+          shadowOffset: isSelected ? const Offset(1.5, 1.5) : const Offset(0.8, 0.8),
+          backgroundColor: isSelected ? activeBg : inactiveBg,
+          borderColor: isSelected
+              ? AppColors.pencil(context)
+              : AppColors.pencil(context).withValues(alpha: 0.35),
           padding: const EdgeInsets.symmetric(vertical: 5),
           child: Center(
             child: Text(
@@ -847,7 +903,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
               style: GoogleFonts.patrickHand(
                 fontSize: 13,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-                color: isSelected ? AppColors.inkBlack : AppColors.pencil(context),
+                color: isSelected ? activeTextColor : AppColors.pencil(context),
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,

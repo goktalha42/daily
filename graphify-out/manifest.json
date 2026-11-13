@@ -210,9 +210,9 @@
     "semantic_hash": ""
   },
   "lib/features/leaderboard/leaderboard_screen.dart": {
-    "mtime": 1794586412.8297064,
-    "seen": 1794586679.7284653,
-    "ast_hash": "f7e5cae46bf0dfcaf98c9505e454aa4d",
+    "mtime": 1794599888.953258,
+    "seen": 1794600184.150818,
+    "ast_hash": "933431bfb715f6157838d03aa49b74cb",
     "semantic_hash": ""
   },
   "lib/features/leaderboard/leaderboard_service.dart": {
@@ -678,15 +678,15 @@
     "semantic_hash": "30cc1614b16214b66c014af09ba699eb"
   },
   "oyun_hatalari.md": {
-    "mtime": 1794509883.1580398,
-    "seen": 1794586679.728634,
-    "ast_hash": "3e5b2d83c8d62e4d63ef656ae460522d",
+    "mtime": 1794600025.7703338,
+    "seen": 1794600184.1630154,
+    "ast_hash": "bbf3e80c09d06dc8765385993486e003",
     "semantic_hash": ""
   },
   "pubspec.yaml": {
-    "mtime": 1794586612.8338397,
-    "seen": 1794586679.7286348,
-    "ast_hash": "e6972b50312e5d7b9aacbf4f3a22f240",
+    "mtime": 1794600114.9573262,
+    "seen": 1794600184.1630173,
+    "ast_hash": "02dced952b72147089290998864dd082",
     "semantic_hash": ""
   },
   "rozetler.md": {
@@ -930,9 +930,9 @@
     "semantic_hash": ""
   },
   "lib/core/services/update_service.dart": {
-    "mtime": 1794586574.8677685,
-    "seen": 1794586679.7284324,
-    "ast_hash": "d981218d8eb6bd4681a1471886c01d42",
+    "mtime": 1794600011.3186312,
+    "seen": 1794600184.148569,
+    "ast_hash": "b3767e1c79b759638bccf7713970821e",
     "semantic_hash": ""
   },
   "lib/core/services/user_nickname_provider.dart": {
@@ -1242,9 +1242,9 @@
     "semantic_hash": ""
   },
   "version.json": {
-    "mtime": 1794586612.8637345,
-    "seen": 1794586679.7286084,
-    "ast_hash": "790cba0560598a6eecc2b7ca4e49d966",
+    "mtime": 1794600114.9875813,
+    "seen": 1794600184.1612206,
+    "ast_hash": "77c7067c322d6f244da15f4915508abf",
     "semantic_hash": ""
   },
   "VPS_KURULUMU_VE_DURUM.md": {
@@ -1464,9 +1464,9 @@
     "semantic_hash": ""
   },
   "lib/features/profile/settings_screen.dart": {
-    "mtime": 1794586578.8795314,
-    "seen": 1794586679.7284749,
-    "ast_hash": "7b8c78c42766dbb86121876cfecdb24d",
+    "mtime": 1794600015.436912,
+    "seen": 1794600184.151387,
+    "ast_hash": "0b4788d84bd07e8148e14ad9b7959ba2",
     "semantic_hash": ""
   },
   "lib/features/profile/widgets/avatar_picker_dialog.dart": {
@@ -1476,9 +1476,9 @@
     "semantic_hash": ""
   },
   "test/avatar_and_settings_test.dart": {
-    "mtime": 1794586582.8798633,
-    "seen": 1794586679.7285762,
-    "ast_hash": "6ab4b8b4c88274b4c9e8b4e1d915cb0c",
+    "mtime": 1794600019.5746605,
+    "seen": 1794600184.1590655,
+    "ast_hash": "454f1085561c9c416acf24294f76fd7e",
     "semantic_hash": ""
   },
   "PRIVACY_POLICY.md": {
@@ -1488,15 +1488,15 @@
     "semantic_hash": ""
   },
   "lib/core/utils/share_card_helper.dart": {
-    "mtime": 1794503991.138378,
-    "seen": 1794586679.7284436,
-    "ast_hash": "ea262638390594a7cfa367d5faf23acb",
+    "mtime": 1794599588.191449,
+    "seen": 1794599828.3442059,
+    "ast_hash": "d5cc162914a212bc126b04e9d8c6ee4b",
     "semantic_hash": ""
   },
   "lib/core/widgets/daily_social_share_dialog.dart": {
-    "mtime": 1794586412.8256297,
-    "seen": 1794586679.7284458,
-    "ast_hash": "6b708c62e39444805b506cb8bab4f205",
+    "mtime": 1794599588.223342,
+    "seen": 1794599828.3442974,
+    "ast_hash": "7bd59acf5ca53c6c1871fd86a83f5acf",
     "semantic_hash": ""
   },
   "lib/features/onboarding/onboarding_screen.dart": {
@@ -1506,9 +1506,9 @@
     "semantic_hash": ""
   },
   "test/onboarding_and_share_test.dart": {
-    "mtime": 1794586412.8327048,
-    "seen": 1794586679.7285879,
-    "ast_hash": "e7f5a9dc3e56abca4e68badcfa1fb0d7",
+    "mtime": 1794599588.2566361,
+    "seen": 1794599828.3547873,
+    "ast_hash": "3163fdd889dbb2522b8fede9827d6993",
     "semantic_hash": ""
   },
   "vps_ve_website_erisim.md": {
@@ -1629,6 +1629,12 @@
     "mtime": 1794586412.8327048,
     "seen": 1794586679.7285814,
     "ast_hash": "d8ac4877f4b679948e0fe535403652d7",
+    "semantic_hash": ""
+  },
+  "test/leaderboard_hierarchy_test.dart": {
+    "mtime": 1794599889.008167,
+    "seen": 1794600184.1595712,
+    "ast_hash": "05666df5dc6e9c894b3610639d9f7210",
     "semantic_hash": ""
   }
 }

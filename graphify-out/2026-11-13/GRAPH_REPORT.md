@@ -1,17 +1,17 @@
 # Graph Report - daily  (2026-11-13)
 
 ## Corpus Check
-- 227 files · ~216,822 words
+- 227 files · ~217,090 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 75 file(s) not represented in the graph (top: (none) 25, .xml 9, .xcconfig 8)
 
 ## Summary
-- 3137 nodes · 4825 edges · 175 communities (130 shown, 45 thin omitted)
-- Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 85 edges (avg confidence: 0.79)
+- 3137 nodes · 4825 edges · 177 communities (129 shown, 48 thin omitted)
+- Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 84 edges (avg confidence: 0.79)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `76610711`
+- Built from commit: `01f9ab69`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -145,7 +145,7 @@
 - Point
 - share_card_helper.dart
 - themeServiceProvider
-- GameScore
+- Controller
 - package:flutter_riverpod/flutter_riverpod.dart
 - DailyPuzzleGeneratorService
 - dart:math
@@ -153,13 +153,16 @@
 - _
 - UpdateDownloadException
 - 🚀 Daily Games (Zühtü) - Devir Teslim & VPS Geçiş Kılavuzu
+- GameScore
 - zip_logic.dart
 - _
-- DailyPuzzleGeneratorService.php
-- DailyPlayState
+- LeaderboardService
+- LeagueLevel
 - PuzzleRepository
 - bootstrap/app.php
+- LeagueNotifier
 - admin/auth.php
+- BadgeArtType
 - clearMemory
 
 ## God Nodes (most connected - your core abstractions)
@@ -193,7 +196,7 @@
 - **The 6 Daily Puzzle Games** — readme_game_queens, readme_game_tango, readme_game_zip, readme_game_pinpoint, readme_game_crossclimb, readme_game_patches [EXTRACTED 1.00]
 - **Zühtü Gamification & Motivation Architecture** — ilerleme_league_system, ilerleme_iq_index_system, ilerleme_steam_badge_system, rozetler_championship_belts, rozetler_streak_badges [INFERRED 0.95]
 
-## Communities (175 total, 45 thin omitted)
+## Communities (177 total, 48 thin omitted)
 
 ### Community 0 - "Color Theme & Palette Tokens"
 Cohesion: 0.02
@@ -213,7 +216,7 @@ Nodes (24): allBadges, artType, BadgeCategory, badgeId, _buildStreakBadges, cate
 
 ### Community 4 - "Weekly League & Bot Engine"
 Cohesion: 0.04
-Nodes (56): _allBotNames, apiClient, avatarId, _buildLeaguePlayers, _calculateUserScoreForWeek, _calculateUserWeeklyScore, checkWeekTransition, clearPendingLeagueChange (+48 more)
+Nodes (54): _allBotNames, apiClient, avatarId, _buildLeaguePlayers, _calculateUserScoreForWeek, _calculateUserWeeklyScore, checkWeekTransition, clearPendingLeagueChange (+46 more)
 
 ### Community 5 - "Patches Screen & Grid Division"
 Cohesion: 0.05
@@ -285,7 +288,7 @@ Nodes (46): activeDateKey, ambientAnimation, _ambientController, build, _buildWo
 
 ### Community 23 - "sketch_badge_icons.dart"
 Cohesion: 0.04
-Nodes (53): accentColor, BadgeArtType, BadgeArtTypeExt, build, _buildWobblySeal, color, _DoodleLockPainter, _drawDashedPath (+45 more)
+Nodes (51): accentColor, build, _buildWobblySeal, color, _DoodleLockPainter, _drawDashedPath, _drawFivePointStar, _drawMiniSpark (+43 more)
 
 ### Community 24 - "Zip Path Grid & Difficulty Models"
 Cohesion: 0.09
@@ -304,8 +307,8 @@ Cohesion: 0.13
 Nodes (11): main, main, main, main, main, debugState, main, main (+3 more)
 
 ### Community 28 - "Daily Play Service Module"
-Cohesion: 0.07
-Nodes (28): completedAt, copyWith, DailyPlayRecord, dateId, durationMs, exportBackupMap, _formatDateKey, fromJson (+20 more)
+Cohesion: 0.06
+Nodes (31): completedAt, copyWith, DailyPlayNotifier, DailyPlayRecord, DailyPlayState, dateId, durationMs, exportBackupMap (+23 more)
 
 ### Community 29 - "game_logic_test.dart"
 Cohesion: 0.07
@@ -373,7 +376,7 @@ Nodes (10): autoCrossNeighbors, DeductiveResult, isSolvable, QueensLogic, soluti
 
 ### Community 47 - "leaderboard_service.dart"
 Cohesion: 0.06
-Nodes (29): apiClient, _buildCacheKey, dispose, _disposed, enableMockBots, _excess, getLeaderboard, hasServerDataFor (+21 more)
+Nodes (28): apiClient, _buildCacheKey, dispose, _disposed, enableMockBots, _excess, getLeaderboard, hasServerDataFor (+20 more)
 
 ### Community 48 - "App Spacing Module"
 Cohesion: 0.14
@@ -608,8 +611,8 @@ Cohesion: 0.12
 Nodes (14): DailySocialShareDialog, HeadToHeadShareDialog, LeagueScreen, _LeagueScreenState, BadgesScreen, AvatarPickerDialog, CrossclimbScreen, PatchesScreen (+6 more)
 
 ### Community 137 - "player_stats_service.dart"
-Cohesion: 0.14
-Nodes (10): PlayerServerStats, apiClient, initialize, _isRefreshing, _loadFromLocal, notifier, PlayerStatsNotifier, _prefKey (+2 more)
+Cohesion: 0.17
+Nodes (8): apiClient, initialize, _isRefreshing, _loadFromLocal, notifier, _prefKey, refreshStats, userNickname
 
 ### Community 138 - "badge_service.dart"
 Cohesion: 0.12
@@ -637,7 +640,7 @@ Nodes (32): build, _buildMiniGamePill, _buildOverflowingBadgesCup, _buildSlide1,
 
 ### Community 145 - "Map"
 Cohesion: 0.22
-Nodes (9): NetworkCheckerNotifier, BadgeNotifier, GameStatsNotifier, LeagueNotifier, LeagueState, UserAvatarNotifier, UserNicknameNotifier, _FakeOnlineNotifier (+1 more)
+Nodes (9): PlayerServerStats, NetworkCheckerNotifier, BadgeNotifier, GameStatsNotifier, PlayerStatsNotifier, UserAvatarNotifier, UserNicknameNotifier, _FakeOnlineNotifier (+1 more)
 
 ### Community 146 - "puzzle_serializer.dart"
 Cohesion: 0.09
@@ -660,16 +663,16 @@ Cohesion: 0.50
 Nodes (3): Point, x, y
 
 ### Community 151 - "share_card_helper.dart"
-Cohesion: 0.15
+Cohesion: 0.14
 Nodes (6): captureWidgetToFile, captureWidgetToPngBytes, lastError, shareCard, ShareCardHelper, _waitForPaintFrame
 
 ### Community 152 - "themeServiceProvider"
 Cohesion: 0.18
 Nodes (12): retentionNotificationProvider, soundHapticProvider, themeServiceProvider, _checkOnboarding, initState, _launchGame, build, SettingsScreen (+4 more)
 
-### Community 154 - "GameScore"
-Cohesion: 0.17
-Nodes (4): GameController, LeaderboardController, Controller, GameScore
+### Community 154 - "Controller"
+Cohesion: 0.11
+Nodes (5): GameController, LeaderboardController, Controller, {closure#1}(), {closure#2}()
 
 ### Community 155 - "package:flutter_riverpod/flutter_riverpod.dart"
 Cohesion: 0.17
@@ -680,7 +683,7 @@ Cohesion: 0.22
 Nodes (7): _, derive, devSecret, fingerprint, PuzzleSeed, random, toInt
 
 ### Community 158 - "Illuminate\Http\Request"
-Cohesion: 0.33
+Cohesion: 0.26
 Nodes (3): AdminPuzzleController, PuzzleController, DailyPuzzle
 
 ### Community 159 - "_"
@@ -699,10 +702,6 @@ Nodes (3): countSolutions, validatePath, ZipLogic
 Cohesion: 0.22
 Nodes (8): _, calculateScore, CrossclimbLogic, findChangedIndex, hammingDistance, isStepValid, normalize, validateLevel
 
-### Community 166 - "DailyPlayState"
-Cohesion: 0.67
-Nodes (3): DailyPlayNotifier, DailyPlayState, DailyPlayNotifierTestExt
-
 ### Community 167 - "PuzzleRepository"
 Cohesion: 0.22
 Nodes (8): getDaily, PuzzleRepository, LocalCrossclimbPuzzleRepository, LocalPatchesPuzzleRepository, LocalPinpointPuzzleRepository, LocalQueensPuzzleRepository, LocalTangoPuzzleRepository, LocalZipPuzzleRepository
@@ -718,7 +717,7 @@ Nodes (6): getAdminCsrfToken(), isAdminLoggedIn(), loadAdminConfig(), logoutAdmi
 ## Knowledge Gaps
 - **1754 isolated node(s):** `DailyBadge`, `UserBadge`, `label`, `subtitle`, `id` (+1749 more)
   These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 2163 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **45 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **48 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_

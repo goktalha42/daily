@@ -238,6 +238,47 @@ void main() {
       final result = await ShareCardHelper.captureWidgetToFile(unattachedKey);
       expect(result, isNull);
     });
+
+    testWidgets('DailySocialShareDialog zuhtuapp.cyboros.com bağlantısını ve Görsel Paylaş butonunu eksiksiz içerir',
+        (tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() => tester.view.resetPhysicalSize());
+
+      final dummyState = DailyPlayState(
+        records: {
+          GameType.queens.id: DailyPlayRecord(
+            gameType: GameType.queens,
+            dateId: '2026-11-13',
+            score: 950,
+            durationMs: 40000,
+            completedAt: DateTime.now(),
+          ),
+        },
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: DailySocialShareDialog(
+                dailyPlayState: dummyState,
+                overallIQ: 130,
+                dateId: '2026-11-13',
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Kartpostalın altındaki zuhtuapp.cyboros.com link metni
+      expect(find.textContaining('zuhtuapp.cyboros.com'), findsOneWidget);
+      // Görsel Paylaş butonu
+      expect(find.text('Görsel Paylaş'), findsOneWidget);
+      // Metin kopyalama butonu
+      expect(find.text('Metin'), findsOneWidget);
+    });
   });
 
   group('HeadToHeadShareDialog Tests', () {

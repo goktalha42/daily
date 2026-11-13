@@ -15,7 +15,8 @@ yeni apk ler yaptıkca versiyonu v1.0.1, v1.0.2 olarak değişiklik büyüklüğ
 - **v1.1.8:** Haftalık lig sistemi terfi ve hafta geçişi kökten düzeltildi; 1. sırada tamamlayan oyuncuların Demir liginde takılı kalma sorunu giderildi, Riverpod notifier kararlılığı ve SharedPreferences asenkron kilitleri sağlandı, otomatik Bronz telafisi ve tebrik kutlaması eklendi.
 - **v1.1.9:** Lig skoru ve profil toplam puan hesaplamaları düzeltildi; haftalık önbellek anahtarlarına hafta numarası (`weekId`) eklenerek eski haftadan kalan puanların taşınması önlendi, Vezirler 3 seviye (Kolay+Zor+Master) puanının profilde ve ligde eksiksiz toplanması sağlandı.
 - **v1.2.10:** Sayı Yolu (Zip Path) oyununda bitiş ve rota kuralları tam güvenlik altına alındı.
-- **v1.2.11 (Güncel):** Kullanıcı geri bildirim paketi: İkili tipografi mimarisi (gövde metinleri ve kurallar için gözü dinlendiren Plus Jakarta Sans), karanlık modda yumuşatılmış tebeşir kenarlıkları, belirgin altın sarısı alt menü çubuğu (Bottom Bar), Master Vezirler bağlantılı tek parça bölge garantisi ve netleştirilen kurallar, Kelime İzleri (Pinpoint) güncel ipucu spotlight odak alanı, ana sayfada simetrik 2 sütunlu düzenli ızgara.
+- **v1.2.11:** Kullanıcı geri bildirim paketi: İkili tipografi mimarisi (gövde metinleri ve kurallar için gözü dinlendiren Plus Jakarta Sans), karanlık modda yumuşatılmış tebeşir kenarlıkları, belirgin altın sarısı alt menü çubuğu (Bottom Bar), Master Vezirler bağlantılı tek parça bölge garantisi ve netleştirilen kurallar, Kelime İzleri (Pinpoint) güncel ipucu spotlight odak alanı, ana sayfada simetrik 2 sütunlu düzenli ızgara.
+- **v1.2.23 (Güncel):** Günlük zeka karnesi görsel paylaşımı düzeltildi, 'zuhtuapp.cyboros.com' bağlantısı görsel açıklamasına eklendi, Sıralama sayfasında Zaman (☀️ Bugün, 📅 Haftalık, 🌙 Aylık, 🏆 Genel), Oyun ve Seviye alt menü hiyerarşisi netleştirildi.
 
 
 
