@@ -39,6 +39,15 @@ class ShareCardHelper {
     }
   }
 
+  static bool _needsPaint(RenderRepaintBoundary boundary) {
+    var needsPaint = false;
+    assert(() {
+      needsPaint = boundary.debugNeedsPaint;
+      return true;
+    }());
+    return needsPaint;
+  }
+
   /// Belirtilen [boundaryKey]'e sahip widget'ı PNG baytları olarak yakalar.
   static Future<Uint8List?> captureWidgetToPngBytes(
     GlobalKey boundaryKey, {
@@ -62,7 +71,7 @@ class ShareCardHelper {
           if (boundary.attached &&
               boundary.hasSize &&
               !boundary.size.isEmpty &&
-              !boundary.debugNeedsPaint) {
+              !_needsPaint(boundary)) {
             break;
           }
         }
@@ -85,7 +94,7 @@ class ShareCardHelper {
         return null;
       }
 
-      if (boundary.debugNeedsPaint) {
+      if (_needsPaint(boundary)) {
         SchedulerBinding.instance.scheduleFrame();
         await Future<void>.delayed(const Duration(milliseconds: 60));
         try {

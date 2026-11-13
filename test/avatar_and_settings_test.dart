@@ -120,7 +120,7 @@ void main() {
       expect(find.text('İLERLEME YEDEKLEME VE CİHAZ TAŞIMA'), findsOneWidget);
       expect(find.text('Tanıtım Turunu Tekrar İzle'), findsOneWidget);
       expect(find.text('UYGULAMA SÜRÜMÜ VE BİLGİLERİ'), findsOneWidget);
-      expect(find.textContaining('Zühtü v1.2.25 (Build 43)'), findsOneWidget);
+      expect(find.textContaining('Zühtü v1.2.26 (Build 44)'), findsOneWidget);
       expect(find.text('GİZLİLİK VE POLİTİKALAR'), findsNothing);
       expect(find.text('Gizlilik Politikası (Privacy Policy)'), findsNothing);
       expect(find.text('Açık Kaynak & Lisanslar'), findsNothing);

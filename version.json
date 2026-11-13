@@ -1,9 +1,9 @@
 {
-    "version":  "1.2.25",
-    "build_number":  43,
-    "title":  "Zühtü v1.2.25 Güncellemesi",
-    "changelog":  "• Günlük karne görseli paylaşımında kartın yeniden çizilmesini önleyen ValueNotifier iyileştirmesi eklendi.\n• Android paylaşımında yalın parametrelerle tekrar deneme ve hata detayı gösterme desteği eklendi.",
-    "apk_url":  "https://raw.githubusercontent.com/goktalha42/daily/main/releases/Zuhtu_v1.2.25_b43.apk",
-    "release_url":  "https://github.com/goktalha42/daily/releases/tag/v1.2.25",
+    "version":  "1.2.26",
+    "build_number":  44,
+    "title":  "Zühtü v1.2.26 Güncellemesi",
+    "changelog":  "• Release APK\u0027da karne görseli paylaşımını engelleyen debugNeedsPaint (LateInitializationError) hatası düzeltildi.",
+    "apk_url":  "https://raw.githubusercontent.com/goktalha42/daily/main/releases/Zuhtu_v1.2.26_b44.apk",
+    "release_url":  "https://github.com/goktalha42/daily/releases/tag/v1.2.26",
     "force_update":  false
 }
