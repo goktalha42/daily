@@ -1,17 +1,17 @@
 # Graph Report - daily  (2026-11-13)
 
 ## Corpus Check
-- 227 files · ~216,822 words
+- 227 files · ~216,824 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 75 file(s) not represented in the graph (top: (none) 25, .xml 9, .xcconfig 8)
 
 ## Summary
-- 3137 nodes · 4825 edges · 175 communities (130 shown, 45 thin omitted)
-- Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 85 edges (avg confidence: 0.79)
+- 3137 nodes · 4824 edges · 174 communities (130 shown, 44 thin omitted)
+- Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 84 edges (avg confidence: 0.79)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `76610711`
+- Built from commit: `aabd8f16`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -145,7 +145,7 @@
 - Point
 - share_card_helper.dart
 - themeServiceProvider
-- GameScore
+- Controller
 - package:flutter_riverpod/flutter_riverpod.dart
 - DailyPuzzleGeneratorService
 - dart:math
@@ -153,9 +153,9 @@
 - _
 - UpdateDownloadException
 - 🚀 Daily Games (Zühtü) - Devir Teslim & VPS Geçiş Kılavuzu
+- GameScore
 - zip_logic.dart
 - _
-- DailyPuzzleGeneratorService.php
 - DailyPlayState
 - PuzzleRepository
 - bootstrap/app.php
@@ -193,7 +193,7 @@
 - **The 6 Daily Puzzle Games** — readme_game_queens, readme_game_tango, readme_game_zip, readme_game_pinpoint, readme_game_crossclimb, readme_game_patches [EXTRACTED 1.00]
 - **Zühtü Gamification & Motivation Architecture** — ilerleme_league_system, ilerleme_iq_index_system, ilerleme_steam_badge_system, rozetler_championship_belts, rozetler_streak_badges [INFERRED 0.95]
 
-## Communities (175 total, 45 thin omitted)
+## Communities (174 total, 44 thin omitted)
 
 ### Community 0 - "Color Theme & Palette Tokens"
 Cohesion: 0.02
@@ -667,9 +667,9 @@ Nodes (6): captureWidgetToFile, captureWidgetToPngBytes, lastError, shareCard, S
 Cohesion: 0.18
 Nodes (12): retentionNotificationProvider, soundHapticProvider, themeServiceProvider, _checkOnboarding, initState, _launchGame, build, SettingsScreen (+4 more)
 
-### Community 154 - "GameScore"
-Cohesion: 0.17
-Nodes (4): GameController, LeaderboardController, Controller, GameScore
+### Community 154 - "Controller"
+Cohesion: 0.11
+Nodes (5): GameController, LeaderboardController, Controller, {closure#1}(), {closure#2}()
 
 ### Community 155 - "package:flutter_riverpod/flutter_riverpod.dart"
 Cohesion: 0.17
@@ -680,7 +680,7 @@ Cohesion: 0.22
 Nodes (7): _, derive, devSecret, fingerprint, PuzzleSeed, random, toInt
 
 ### Community 158 - "Illuminate\Http\Request"
-Cohesion: 0.33
+Cohesion: 0.26
 Nodes (3): AdminPuzzleController, PuzzleController, DailyPuzzle
 
 ### Community 159 - "_"
@@ -718,7 +718,7 @@ Nodes (6): getAdminCsrfToken(), isAdminLoggedIn(), loadAdminConfig(), logoutAdmi
 ## Knowledge Gaps
 - **1754 isolated node(s):** `DailyBadge`, `UserBadge`, `label`, `subtitle`, `id` (+1749 more)
   These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 2163 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **45 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **44 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
