@@ -136,7 +136,11 @@ class _DailySocialShareDialogState extends ConsumerState<DailySocialShareDialog>
     }
   }
 
-  Future<void> _shareImageCard(String shareText) async {
+  static const String _imageShareCaption =
+      'Bugünün zeka antrenmanını tamamladım! Beni geçebilir misin? 😉\n'
+      'Sen de zihnini sına 👉 https://zuhtuapp.cyboros.com';
+
+  Future<void> _shareImageCard(String fallbackShareText) async {
     if (_isSharingNotifier.value) return;
     _isSharingNotifier.value = true;
     HapticFeedback.heavyImpact();
@@ -144,7 +148,7 @@ class _DailySocialShareDialogState extends ConsumerState<DailySocialShareDialog>
     try {
       final success = await ShareCardHelper.shareCard(
         boundaryKey: _cardKey,
-        shareText: shareText,
+        shareText: _imageShareCaption,
         subject: '🧠 Zühtü Günlük Zeka Karnesi: ${widget.overallIQ} Puan',
         fileName: 'zuhtu_gunun_karnesi.png',
       );
@@ -152,7 +156,7 @@ class _DailySocialShareDialogState extends ConsumerState<DailySocialShareDialog>
       if (!mounted) return;
 
       if (!success) {
-        await Clipboard.setData(ClipboardData(text: shareText));
+        await Clipboard.setData(ClipboardData(text: fallbackShareText));
         if (!mounted) return;
         final err = ShareCardHelper.lastError;
         final msg = (err != null && err.isNotEmpty)
@@ -169,7 +173,7 @@ class _DailySocialShareDialogState extends ConsumerState<DailySocialShareDialog>
       }
     } catch (e) {
       debugPrint('[DailySocialShareDialog] Paylaşım hatası: $e');
-      await Clipboard.setData(ClipboardData(text: shareText));
+      await Clipboard.setData(ClipboardData(text: fallbackShareText));
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

@@ -19,7 +19,8 @@ yeni apk ler yaptıkca versiyonu v1.0.1, v1.0.2 olarak değişiklik büyüklüğ
 - **v1.2.23:** Günlük zeka karnesi görsel paylaşımı düzeltildi, 'zuhtuapp.cyboros.com' bağlantısı görsel açıklamasına eklendi, Sıralama sayfasında Zaman (☀️ Bugün, 📅 Haftalık, 🌙 Aylık, 🏆 Genel), Oyun ve Seviye alt menü hiyerarşisi netleştirildi.
 - **v1.2.24:** Lig Tablosu sayfasında üstteki yatay lig şeridi kaldırılarak sıralama listesine yer açıldı; kart başlığına '?' (Lig Basamakları & Kurallar) butonu eklenerek tüm 10 lig ve haftalık kurallar açılır pencereye taşındı.
 - **v1.2.25:** Günlük karne görseli paylaşımında kartın yeniden çizilmesini önleyen ValueNotifier iyileştirmesi, cache dizini yedeği, yalın Android paylaşım parametreleri ile tekrar deneme ve hata detayını gösterme desteği eklendi.
-- **v1.2.26 (Güncel):** Release APK derlemelerinde `RenderObject.debugNeedsPaint` çağrısının yol açtığı `LateInitializationError` hatası giderilerek görsel karne/sertifika paylaşımı tamamen düzeltildi.
+- **v1.2.26:** Release APK derlemelerinde `RenderObject.debugNeedsPaint` çağrısının yol açtığı `LateInitializationError` hatası giderilerek görsel karne/sertifika paylaşımı tamamen düzeltildi.
+- **v1.2.27 (Güncel):** Günlük karne görsel paylaşımında uzun metin yerine yalnızca kısa davet mesajı ve `https://zuhtuapp.cyboros.com` bağlantısı paylaşılacak şekilde sadeleştirildi.
 
 
 

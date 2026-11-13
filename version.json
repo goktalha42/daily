@@ -1,9 +1,9 @@
 {
-    "version":  "1.2.26",
-    "build_number":  44,
-    "title":  "Zühtü v1.2.26 Güncellemesi",
-    "changelog":  "• Release APK\u0027da karne görseli paylaşımını engelleyen debugNeedsPaint (LateInitializationError) hatası düzeltildi.",
-    "apk_url":  "https://raw.githubusercontent.com/goktalha42/daily/main/releases/Zuhtu_v1.2.26_b44.apk",
-    "release_url":  "https://github.com/goktalha42/daily/releases/tag/v1.2.26",
+    "version":  "1.2.27",
+    "build_number":  45,
+    "title":  "Zühtü v1.2.27 Güncellemesi",
+    "changelog":  "• Günlük karne görsel paylaşımında yalnızca kısa davet mesajı ve https://zuhtuapp.cyboros.com bağlantısı paylaşılacak şekilde sadeleştirildi.",
+    "apk_url":  "https://raw.githubusercontent.com/goktalha42/daily/main/releases/Zuhtu_v1.2.27_b45.apk",
+    "release_url":  "https://github.com/goktalha42/daily/releases/tag/v1.2.27",
     "force_update":  false
 }
