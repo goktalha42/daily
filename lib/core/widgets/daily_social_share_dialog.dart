@@ -10,6 +10,7 @@ import '../../games/common/base_game.dart';
 import '../models/user_avatar.dart';
 import '../services/daily_play_service.dart';
 import '../services/game_stats_service.dart';
+import '../services/player_stats_service.dart';
 import '../services/user_avatar_provider.dart';
 import '../services/user_nickname_provider.dart';
 import '../theme/app_colors.dart';
@@ -203,10 +204,15 @@ class _DailySocialShareDialogState extends ConsumerState<DailySocialShareDialog>
     final completedMap = widget.dailyPlayState.getCompletedGamesForDate(widget.dateId);
     final completedCount = completedMap.length;
 
-    // Seviye: her 5 tamamlanan oyun için 1 seviye
-    final totalCompleted = widget.dailyPlayState.records.length;
-    final effectiveTotal = totalCompleted > 0 ? totalCompleted : completedCount;
-    final userLevel = (effectiveTotal / 5).floor() + 1;
+    // Seviye: Profil ekranıyla birebir aynı kural (her 5 tamamlanan oyun için 1 seviye)
+    final watchedStatsMap = ref.watch(gameStatsServiceProvider);
+    final effectiveStatsMap = widget.statsMap ?? watchedStatsMap;
+    final serverTotalPlayed =
+        ref.watch(playerStatsServiceProvider).totalGamesPlayed;
+    final userLevel = GameStatsNotifier.calculateUserLevel(
+      effectiveStatsMap,
+      serverTotalGamesPlayed: serverTotalPlayed,
+    );
 
     final activeMilestone =
         IQMilestone.currentMilestone(widget.overallIQ) ?? IQMilestone.all.first;

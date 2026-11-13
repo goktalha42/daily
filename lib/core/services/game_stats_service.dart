@@ -498,6 +498,20 @@ class GameStatsNotifier extends StateNotifier<Map<GameType, GamePerformanceData>
   /// İlk açılışta diskteki istatistiklerin ve Vezirler migrasyonunun yüklenmesini bekler.
   Future<void> ensureLoaded() => _initFuture;
 
+  /// Profil ve karne ekranlarında tutarlı kullanıcı seviyesi (LVL) hesaplar.
+  /// Her 5 tamamlanan oyun için 1 seviye artar (minimum LVL 1).
+  static int calculateUserLevel(
+    Map<GameType, GamePerformanceData> statsMap, {
+    int serverTotalGamesPlayed = 0,
+  }) {
+    final localTotal = statsMap.values.fold<int>(
+      0,
+      (sum, perf) => sum + perf.totalGamesPlayed,
+    );
+    final effectiveTotal = math.max(localTotal, serverTotalGamesPlayed);
+    return (effectiveTotal / 5).floor() + 1;
+  }
+
   /// Temiz başlangıç: hiçbir oyun oynanmamış, sahte veri yok
   static Map<GameType, GamePerformanceData> _createInitialState() {
     return {

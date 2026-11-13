@@ -162,7 +162,7 @@ class ProfileScreen extends ConsumerWidget {
                           const Icon(Icons.psychology_rounded, size: 16, color: AppColors.pencilBlack),
                           const SizedBox(width: 4),
                           Text(
-                            'LVL ${(effectiveTotalPlayed / 5).floor() + 1}',
+                            'LVL ${GameStatsNotifier.calculateUserLevel(statsMap, serverTotalGamesPlayed: serverStats.totalGamesPlayed)}',
                             style: GoogleFonts.patrickHand(
                               fontSize: 14,
                               fontWeight: FontWeight.w700,
