@@ -431,7 +431,7 @@ class _DailyGeniusCertificateDialogState
                                   certText.writeln(
                                       'Bugünün 6 bulmacasını da çözüp zeka karnemi tamamladım! 🧠🔥');
                                   certText.writeln(
-                                      'Sen de zihnini sına: 👉 https://zuhtu.app');
+                                      'Sen de zihnini sına: 👉 https://zuhtuapp.cyboros.com');
 
                                   try {
                                     final success =

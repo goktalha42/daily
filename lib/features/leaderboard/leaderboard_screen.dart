@@ -646,8 +646,8 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
               ),
         ],
 
-        const SliverToBoxAdapter(
-          child: SizedBox(height: 120), // Floating nav bar için pay
+        SliverToBoxAdapter(
+          child: SizedBox(height: 120 + MediaQuery.paddingOf(context).bottom), // Floating nav bar için pay
         ),
       ],
       ),

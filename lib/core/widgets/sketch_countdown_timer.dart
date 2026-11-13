@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -11,12 +12,14 @@ class SketchCountdownTimer extends ConsumerWidget {
   final bool showLabel;
   final double fontSize;
   final EdgeInsetsGeometry padding;
+  final double? width;
 
   const SketchCountdownTimer({
     super.key,
     this.showLabel = false,
     this.fontSize = 14,
     this.padding = const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+    this.width,
   });
 
   @override
@@ -29,7 +32,12 @@ class SketchCountdownTimer extends ConsumerWidget {
     final isDark = AppColors.isDark(context);
     final textColor = isDark ? Colors.white : AppColors.pencilBlack;
 
-    return SketchCard(
+    // Sabit metin kutusu genişliği: "00:00:00" metninin karakter değişikliklerinde
+    // (özellikle '1' ile diğer rakamların genişlik farkından kaynaklı) boyutunun
+    // saniye bazında oynamasını/titremesini tamamen önler.
+    final timerTextWidth = (fontSize * 5.2).ceilToDouble();
+
+    final card = SketchCard(
       padding: padding,
       backgroundColor: isDark ? AppColors.surfaceSecondaryDark : AppColors.surfaceSecondaryLight,
       borderColor: isDark ? AppColors.sketchBorderDark : AppColors.pencilBlack,
@@ -38,6 +46,7 @@ class SketchCountdownTimer extends ConsumerWidget {
       shadowOffset: const Offset(2.0, 2.0),
       child: Row(
         mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
             Icons.timer_outlined,
@@ -55,17 +64,30 @@ class SketchCountdownTimer extends ConsumerWidget {
               ),
             ),
           ],
-          Text(
-            formatted,
-            style: GoogleFonts.plusJakartaSans(
-              fontWeight: FontWeight.w700,
-              fontSize: fontSize,
-              color: textColor,
-              letterSpacing: 0.5,
+          SizedBox(
+            width: timerTextWidth,
+            child: Text(
+              formatted,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.plusJakartaSans(
+                fontWeight: FontWeight.w700,
+                fontSize: fontSize,
+                color: textColor,
+                letterSpacing: 0.5,
+                fontFeatures: const [FontFeature.tabularFigures()],
+              ),
             ),
           ),
         ],
       ),
     );
+
+    if (width != null) {
+      return SizedBox(
+        width: width,
+        child: card,
+      );
+    }
+    return card;
   }
 }

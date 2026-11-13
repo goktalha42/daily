@@ -149,6 +149,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bottomNavIndex = ref.watch(homeBottomNavIndexProvider);
+    final bottomInset = MediaQuery.paddingOf(context).bottom;
+    // 3'lü tuş navigasyonu olan ekranlarda (bottomInset genelde 48-56px arasıdır)
+    // menünün tuşların altında yarım kalmasını önlemek için bottomInset kadar yukarı kaydırıyoruz.
+    final navBottom = bottomInset > 0 ? (bottomInset + 10.0) : 22.0;
 
     return Scaffold(
       backgroundColor: isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
@@ -168,7 +172,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
             // Fotoğraftaki Gibi Kara Kalem Skeç Navigasyon Çubuğu (Hand-Drawn Sketch Bar)
             Positioned(
-              bottom: 22,
+              bottom: navBottom,
               left: 20,
               right: 20,
               child: SketchCard(
@@ -698,8 +702,8 @@ class _GeniusLobbyTabState extends ConsumerState<_GeniusLobbyTab> {
             ),
           ),
         ),
-        const SliverToBoxAdapter(
-          child: SizedBox(height: 110), // Nav bar için boşluk
+        SliverToBoxAdapter(
+          child: SizedBox(height: 110 + MediaQuery.paddingOf(context).bottom), // Nav bar için boşluk
         ),
       ],
     );

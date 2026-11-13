@@ -279,8 +279,8 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen>
             ),
 
             // ─── ALT NAV BAR BOŞLUĞU ──────────────────────────────────────
-            const SliverToBoxAdapter(
-              child: SizedBox(height: 110),
+            SliverToBoxAdapter(
+              child: SizedBox(height: 110 + MediaQuery.paddingOf(context).bottom),
             ),
           ],
         ),

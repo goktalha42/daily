@@ -27,6 +27,20 @@ class LeaderboardService extends ChangeNotifier {
   final String userNickname;
   final List<GameResult> _resultsStore = [];
   bool _isSyncingWithServer = false;
+  bool _disposed = false;
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
+
+  @override
+  void notifyListeners() {
+    if (!_disposed) {
+      super.notifyListeners();
+    }
+  }
 
   GameType lastRequestedGame = GameType.queens;
   LeaderboardTimeframe lastRequestedTimeframe = LeaderboardTimeframe.daily;

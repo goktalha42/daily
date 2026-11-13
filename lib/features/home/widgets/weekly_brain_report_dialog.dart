@@ -220,7 +220,7 @@ class WeeklyBrainReportDialog extends ConsumerWidget {
     buffer.writeln('🧠 Psikometrik Zeka: $overallIQ IQ');
     buffer.writeln('');
     buffer.writeln('Sen de haftalık zeka karneni al, zihnini sına!');
-    buffer.writeln('👉 https://zuhtu.app');
+    buffer.writeln('👉 https://zuhtuapp.cyboros.com');
     return buffer.toString();
   }
 
