@@ -1,9 +1,9 @@
 {
-    "version":  "1.2.23",
-    "build_number":  41,
-    "title":  "Zühtü v1.2.23 Güncellemesi",
-    "changelog":  "• Günlük zeka karnesi görsel paylaşımı düzeltildi ve https://zuhtuapp.cyboros.com bağlantı desteği eklendi.\n• Sıralama sayfasında Zaman, Oyun ve Seviye filtreleme hiyerarşisi netleştirildi.",
-    "apk_url":  "https://raw.githubusercontent.com/goktalha42/daily/main/releases/Zuhtu_v1.2.23_b41.apk",
-    "release_url":  "https://github.com/goktalha42/daily/releases/tag/v1.2.23",
+    "version":  "1.2.24",
+    "build_number":  42,
+    "title":  "Zühtü v1.2.24 Güncellemesi",
+    "changelog":  "• Lig Tablosu ekranında üst şerit kaldırılarak sıralama alanı genişletildi.\n• Ana lig kartına \u0027?\u0027 butonu eklenerek tüm 10 lig basamağı ve kurallar açılır pencereye taşındı.",
+    "apk_url":  "https://raw.githubusercontent.com/goktalha42/daily/main/releases/Zuhtu_v1.2.24_b42.apk",
+    "release_url":  "https://github.com/goktalha42/daily/releases/tag/v1.2.24",
     "force_update":  false
 }

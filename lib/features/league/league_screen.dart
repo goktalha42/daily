@@ -158,26 +158,24 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen>
                       ],
                     ),
 
-                    // Sağ üst: El çizimi lig rozeti
-                    _SketchLeagueTopBadge(level: level),
+                    // Sağ üst: El çizimi lig rozeti (tıklanınca Lig Yolu & Kurallar penceresini açar)
+                    _SketchLeagueTopBadge(
+                      level: level,
+                      onTap: () => _showLeagueJourneyDialog(context, level),
+                    ),
                   ],
                 ),
               ),
             ),
 
-            // ─── 2. DUOLINGO TARZI SKEÇ LİG BASAMAKLARI ──────────────────
+            // ─── 2. ANA LİG SKEÇ KARTI (Gövde + İlerleme + Not) ───────────
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: _SketchLeagueJourneyStepper(currentLevel: level),
-              ),
-            ),
-
-            // ─── 3. ANA LİG SKEÇ KARTI (Gövde + İlerleme + Not) ───────────
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
-                child: _SketchMainLeagueCard(league: league),
+                padding: const EdgeInsets.fromLTRB(20, 4, 20, 6),
+                child: _SketchMainLeagueCard(
+                  league: league,
+                  onShowJourney: () => _showLeagueJourneyDialog(context, level),
+                ),
               ),
             ),
 
@@ -296,12 +294,22 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen>
 
 class _SketchLeagueTopBadge extends StatelessWidget {
   final LeagueLevel level;
+  final VoidCallback? onTap;
 
-  const _SketchLeagueTopBadge({required this.level});
+  const _SketchLeagueTopBadge({
+    required this.level,
+    this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     return SketchCard(
+      onTap: onTap == null
+          ? null
+          : () {
+              HapticFeedback.selectionClick();
+              onTap!();
+            },
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       borderRadius: 10,
       borderWidth: 2.0,
@@ -332,177 +340,309 @@ class _SketchLeagueTopBadge extends StatelessWidget {
 }
 
 // ============================================================================
-// 2. DUOLINGO TARZI SKEÇ LİG BASAMAKLARI (Yatay Stepper)
+// 2. LİG YOLU & KURALLAR DİYALOĞU (? İkonuna Basılınca Açılır)
 // ============================================================================
 
-class _SketchLeagueJourneyStepper extends StatelessWidget {
-  final LeagueLevel currentLevel;
-
-  const _SketchLeagueJourneyStepper({required this.currentLevel});
-
-  @override
-  Widget build(BuildContext context) {
-    final currentIndex = LeagueLevel.values.indexOf(currentLevel);
-
-    return SizedBox(
-      height: 62,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-        itemCount: LeagueLevel.values.length,
-        separatorBuilder: (context, index) => Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 2),
-          child: Center(
-            child: CustomPaint(
-              size: const Size(12, 4),
-              painter: _DoodleArrowConnectorPainter(
-                color: AppColors.graphite(context),
-              ),
-            ),
-          ),
-        ),
-        itemBuilder: (context, index) {
-          final level = LeagueLevel.values[index];
-          final isCurrent = index == currentIndex;
-          final isCompleted = index < currentIndex;
-
-          return _SketchLeagueStepItem(
-            level: level,
-            isCurrent: isCurrent,
-            isCompleted: isCompleted,
-          );
-        },
-      ),
-    );
-  }
+void _showLeagueJourneyDialog(BuildContext context, LeagueLevel currentLevel) {
+  HapticFeedback.lightImpact();
+  showDialog<void>(
+    context: context,
+    builder: (ctx) => _LeagueJourneyDialog(currentLevel: currentLevel),
+  );
 }
 
-class _SketchLeagueStepItem extends StatelessWidget {
-  final LeagueLevel level;
-  final bool isCurrent;
-  final bool isCompleted;
+class _LeagueJourneyDialog extends StatelessWidget {
+  final LeagueLevel currentLevel;
 
-  const _SketchLeagueStepItem({
-    required this.level,
-    required this.isCurrent,
-    required this.isCompleted,
-  });
+  const _LeagueJourneyDialog({required this.currentLevel});
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final currentIndex = LeagueLevel.values.indexOf(currentLevel);
 
-    final bgColor = isCurrent
-        ? AppColors.sunYellow
-        : isCompleted
-            ? (isDark ? AppColors.surfaceSecondaryDark : AppColors.surfaceSecondaryLight)
-            : (isDark ? AppColors.surfaceDark : Colors.white);
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 420),
+        child: SketchCard(
+          enableHatching: true,
+          borderRadius: 18,
+          borderWidth: 2.4,
+          shadowOffset: const Offset(4, 4),
+          backgroundColor: AppColors.surfaceOf(context),
+          padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Başlık
+                Row(
+                  children: [
+                    SketchCard(
+                      padding: const EdgeInsets.all(6),
+                      borderRadius: 10,
+                      borderWidth: 1.8,
+                      shadowOffset: const Offset(1.5, 1.5),
+                      backgroundColor: AppColors.sunYellow,
+                      child: const Icon(
+                        Icons.emoji_events_rounded,
+                        size: 20,
+                        color: AppColors.inkBlack,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Lig Basamakları & Kurallar',
+                            style: GoogleFonts.patrickHand(
+                              fontSize: 21,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.pencil(context),
+                              height: 1.1,
+                            ),
+                          ),
+                          Text(
+                            'Demir\'den Şampiyonluğa 10 kademeli yolculuk',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 11.5,
+                              color: AppColors.gray(context),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    InkWell(
+                      borderRadius: BorderRadius.circular(8),
+                      onTap: () => Navigator.of(context).pop(),
+                      child: Padding(
+                        padding: const EdgeInsets.all(4),
+                        child: Icon(
+                          Icons.close_rounded,
+                          size: 22,
+                          color: AppColors.pencil(context),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
 
-    final borderColor = isCurrent
-        ? (isDark ? AppColors.sunYellow : AppColors.pencilBlack)
-        : isCompleted
-            ? (isDark ? AppColors.pencilWhite.withValues(alpha: 0.6) : AppColors.pencilGraphite)
-            : (isDark ? AppColors.pencilWhite.withValues(alpha: 0.25) : AppColors.pencilLight);
+                const SizedBox(height: 14),
 
-    return SketchCard(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      borderRadius: 9,
-      borderWidth: isCurrent ? 2.2 : 1.4,
-      shadowOffset: isCurrent ? const Offset(2.5, 2.5) : const Offset(1.5, 1.5),
-      backgroundColor: bgColor,
-      borderColor: borderColor,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SketchLeagueEmblem(
-            level: level,
-            size: 24,
-            isLocked: !isCompleted && !isCurrent,
-            strokeColor: isCurrent ? AppColors.inkBlack : null,
+                // 10 Lig Basamağı (2 Sütunlu Kompakt Grid)
+                GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 8,
+                    mainAxisSpacing: 8,
+                    childAspectRatio: 2.55,
+                  ),
+                  itemCount: LeagueLevel.values.length,
+                  itemBuilder: (context, index) {
+                    final level = LeagueLevel.values[index];
+                    final isCurrent = index == currentIndex;
+                    final isCompleted = index < currentIndex;
+
+                    final bgColor = isCurrent
+                        ? AppColors.sunYellow
+                        : isCompleted
+                            ? (isDark
+                                ? AppColors.surfaceSecondaryDark
+                                : AppColors.surfaceSecondaryLight)
+                            : (isDark ? AppColors.surfaceDark : Colors.white);
+
+                    final borderColor = isCurrent
+                        ? (isDark ? AppColors.sunYellow : AppColors.pencilBlack)
+                        : isCompleted
+                            ? (isDark
+                                ? AppColors.pencilWhite.withValues(alpha: 0.6)
+                                : AppColors.pencilGraphite)
+                            : (isDark
+                                ? AppColors.pencilWhite.withValues(alpha: 0.25)
+                                : AppColors.pencilLight);
+
+                    return SketchCard(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 6),
+                      borderRadius: 10,
+                      borderWidth: isCurrent ? 2.2 : 1.4,
+                      shadowOffset: isCurrent
+                          ? const Offset(2.2, 2.2)
+                          : const Offset(1.2, 1.2),
+                      backgroundColor: bgColor,
+                      borderColor: borderColor,
+                      child: Row(
+                        children: [
+                          SketchLeagueEmblem(
+                            level: level,
+                            size: 24,
+                            isLocked: !isCompleted && !isCurrent,
+                            strokeColor: isCurrent ? AppColors.inkBlack : null,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '${index + 1}. ${level.displayName}',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: GoogleFonts.patrickHand(
+                                    fontSize: 13.5,
+                                    fontWeight: isCurrent
+                                        ? FontWeight.w700
+                                        : FontWeight.w600,
+                                    color: isCurrent
+                                        ? AppColors.inkBlack
+                                        : isCompleted
+                                            ? AppColors.pencil(context)
+                                            : AppColors.gray(context),
+                                  ),
+                                ),
+                                Text(
+                                  isCurrent
+                                      ? 'BURADASIN'
+                                      : isCompleted
+                                          ? '✓ GEÇİLDİ'
+                                          : 'KİLİTLİ',
+                                  style: GoogleFonts.patrickHand(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                    color: isCurrent
+                                        ? AppColors.inkBlack
+                                        : isCompleted
+                                            ? AppColors.success
+                                            : AppColors.gray(context),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+
+                const SizedBox(height: 14),
+
+                // Yükselme & Düşme Kuralları Kutusu
+                SketchCard(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  borderRadius: 12,
+                  borderWidth: 1.5,
+                  shadowOffset: const Offset(1.5, 1.5),
+                  backgroundColor: isDark
+                      ? AppColors.surfaceSecondaryDark
+                      : const Color(0xFFF8FAFC),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Haftalık Lig Kuralları (Pazar 23:59 Kapanış)',
+                        style: GoogleFonts.patrickHand(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.pencil(context),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      _buildRuleLine(
+                        context,
+                        '▲ İlk 10 Sıra:',
+                        'Bir üst lige yükselirsin.',
+                        AppColors.success,
+                      ),
+                      _buildRuleLine(
+                        context,
+                        '— Orta Sıralar:',
+                        'Mevcut liginde kalırsın.',
+                        AppColors.gray(context),
+                      ),
+                      _buildRuleLine(
+                        context,
+                        '▼ Son 10 Sıra:',
+                        'Bir alt lige gerilersin (Demir hariç).',
+                        AppColors.error,
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+
+                // Kapat Butonu
+                SketchCard(
+                  onTap: () => Navigator.of(context).pop(),
+                  borderRadius: 10,
+                  borderWidth: 1.8,
+                  shadowOffset: const Offset(2, 2),
+                  backgroundColor: AppColors.sunYellow,
+                  padding: const EdgeInsets.symmetric(vertical: 9),
+                  child: Center(
+                    child: Text(
+                      'Anladım',
+                      style: GoogleFonts.patrickHand(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.inkBlack,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
-          const SizedBox(width: 6),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                level.displayName,
-                style: GoogleFonts.patrickHand(
-                  fontSize: 12,
-                  fontWeight: isCurrent ? FontWeight.w700 : FontWeight.w600,
-                  color: isCurrent
-                      ? AppColors.inkBlack
-                      : isCompleted
-                          ? AppColors.pencil(context)
-                          : AppColors.gray(context),
-                ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRuleLine(
+    BuildContext context,
+    String prefix,
+    String text,
+    Color prefixColor,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 2),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            prefix,
+            style: GoogleFonts.patrickHand(
+              fontSize: 12.5,
+              fontWeight: FontWeight.w700,
+              color: prefixColor,
+            ),
+          ),
+          const SizedBox(width: 5),
+          Expanded(
+            child: Text(
+              text,
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 11.5,
+                color: AppColors.graphite(context),
               ),
-              if (isCurrent)
-                Text(
-                  'BURADASIN',
-                  style: GoogleFonts.patrickHand(
-                    fontSize: 9,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.inkBlack,
-                    letterSpacing: 0.3,
-                  ),
-                )
-              else if (isCompleted)
-                Text(
-                  '✓ GEÇİLDİ',
-                  style: GoogleFonts.patrickHand(
-                    fontSize: 9,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.success,
-                  ),
-                )
-              else
-                Text(
-                  'KİLİTLİ',
-                  style: GoogleFonts.patrickHand(
-                    fontSize: 9,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.gray(context),
-                  ),
-                ),
-            ],
+            ),
           ),
         ],
       ),
     );
   }
-}
-
-class _DoodleArrowConnectorPainter extends CustomPainter {
-  final Color? color;
-
-  _DoodleArrowConnectorPainter({this.color});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = (color ?? AppColors.pencilGraphite).withValues(alpha: 0.5)
-      ..strokeWidth = 1.4
-      ..strokeCap = StrokeCap.round;
-
-    // Titrek ok çizgisi
-    final y = size.height / 2;
-    canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
-    canvas.drawLine(
-      Offset(size.width - 3, y - 2.5),
-      Offset(size.width, y),
-      paint,
-    );
-    canvas.drawLine(
-      Offset(size.width - 3, y + 2.5),
-      Offset(size.width, y),
-      paint,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 // ============================================================================
@@ -511,8 +651,12 @@ class _DoodleArrowConnectorPainter extends CustomPainter {
 
 class _SketchMainLeagueCard extends ConsumerWidget {
   final LeagueState league;
+  final VoidCallback onShowJourney;
 
-  const _SketchMainLeagueCard({required this.league});
+  const _SketchMainLeagueCard({
+    required this.league,
+    required this.onShowJourney,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -576,12 +720,15 @@ class _SketchMainLeagueCard extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ─── ÜST SATIR: El çizimi lig madalyonu + Başlık & Sıra ───────
+          // ─── ÜST SATIR: El çizimi lig madalyonu + Başlık & Sıra + ? Butonu ─
           Row(
             children: [
-              SketchLeagueCrestMedallion(
-                level: level,
-                size: 62,
+              GestureDetector(
+                onTap: onShowJourney,
+                child: SketchLeagueCrestMedallion(
+                  level: level,
+                  size: 62,
+                ),
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -617,6 +764,29 @@ class _SketchMainLeagueCard extends ConsumerWidget {
                           child: userAvatar.buildWidget(
                             size: 16,
                             tintColor: AppColors.pencil(context),
+                          ),
+                        ),
+                        const Spacer(),
+                        // El çizimi ? (Tüm Lig Basamakları & Kurallar) butonu
+                        Tooltip(
+                          message: 'Tüm Ligler & Kurallar',
+                          child: SketchCard(
+                            onTap: onShowJourney,
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            borderRadius: 8,
+                            borderWidth: 1.6,
+                            shadowOffset: const Offset(1.5, 1.5),
+                            backgroundColor: isDark
+                                ? AppColors.surfaceSecondaryDark
+                                : AppColors.sunYellow.withValues(alpha: 0.35),
+                            child: Text(
+                              '?',
+                              style: GoogleFonts.patrickHand(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.pencil(context),
+                              ),
+                            ),
                           ),
                         ),
                       ],
