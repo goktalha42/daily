@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'core/network/network_checker.dart';
 import 'core/services/theme_service.dart';
 import 'core/theme/app_theme.dart';
 import 'core/widgets/screen_shake.dart';
@@ -12,9 +13,15 @@ Future<void> main() async {
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
   ]);
+  final initialOnline = await NetworkCheckerNotifier.checkInitialConnectivity();
   runApp(
-    const ProviderScope(
-      child: DailyGamesApp(),
+    ProviderScope(
+      overrides: [
+        networkCheckerProvider.overrideWith(
+          (ref) => NetworkCheckerNotifier(initialState: initialOnline),
+        ),
+      ],
+      child: const DailyGamesApp(),
     ),
   );
 }
