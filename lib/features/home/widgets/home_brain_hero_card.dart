@@ -11,7 +11,6 @@ import '../../../core/widgets/sketch_badge_icons.dart';
 import '../../../core/widgets/sketch_countdown_timer.dart';
 import '../../../core/widgets/sketch_decorations.dart';
 import '../../../games/common/base_game.dart';
-import 'daily_genius_certificate_dialog.dart';
 import 'weekly_brain_report_dialog.dart';
 import '../../../core/widgets/daily_social_share_dialog.dart';
 
@@ -462,7 +461,7 @@ class _HomeBrainHeroCardState extends State<HomeBrainHeroCard>
 
                       const SizedBox(height: 11),
 
-                      // 4. ALT ŞERİT: 6 El Çizimi Günlük Oyun Mührü + Analiz / Karne / Paylaş Butonları
+                      // 4. ALT ŞERİT: 6 El Çizimi Günlük Oyun Mührü + Analiz / Paylaş Butonları
                       SketchCard(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 10, vertical: 8),
@@ -526,52 +525,9 @@ class _HomeBrainHeroCardState extends State<HomeBrainHeroCard>
                               ],
                             ),
                             const SizedBox(height: 8),
-                            // Alt Satır: Karne, Analiz ve Paylaş Aksiyon Butonları
+                            // Alt Satır: Analiz ve Paylaş Aksiyon Butonları
                             Row(
                               children: [
-                                if (todayCompleted == 6) ...[
-                                  Expanded(
-                                    child: SketchCard(
-                                      onTap: () {
-                                        DailyGeniusCertificateDialog.show(
-                                          context,
-                                          dateId: widget.activeDateKey,
-                                          overallIQ: widget.userIQ,
-                                          statsMap: widget.statsMap,
-                                          dailyPlayState: widget.dailyPlayState,
-                                        );
-                                      },
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 6, vertical: 4),
-                                      backgroundColor: AppColors.sunYellow,
-                                      borderColor: pencilColor,
-                                      borderWidth: 1.4,
-                                      borderRadius: 8,
-                                      shadowOffset: const Offset(1.2, 1.2),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          const SketchBadgeIcon(
-                                            type: BadgeArtType.centuryLaurel,
-                                            size: 13,
-                                            strokeColor: AppColors.inkBlack,
-                                          ),
-                                          const SizedBox(width: 4),
-                                          Text(
-                                            'Karne',
-                                            style: GoogleFonts.patrickHand(
-                                              fontSize: 12.5,
-                                              fontWeight: FontWeight.bold,
-                                              color: AppColors.inkBlack,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 6),
-                                ],
                                 Expanded(
                                   child: SketchCard(
                                     onTap: _toggleExpanded,

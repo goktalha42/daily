@@ -87,5 +87,62 @@ void main() {
     expect(find.text('6 BİLİŞSEL ALAN KARNESİ'), findsOneWidget);
     expect(find.textContaining('Einstein Kriteri'), findsOneWidget);
   });
+
+  testWidgets('HomeBrainHeroCard 6/6 tamamlandığında Karne butonunu göstermez, Analiz ve Paylaş butonlarını gösterir',
+      (WidgetTester tester) async {
+    final activeDate = GameDateUtils.getActiveDate();
+    final todayKey = GameDateUtils.getTodayLevelId();
+
+    final statsMap = {
+      for (final type in GameType.values)
+        type: GamePerformanceData(
+          gameType: type,
+          percentile: 5,
+          bestScore: 1850,
+          bestDurationMs: 20000,
+          totalGamesPlayed: 3,
+          geniusTitle: 'Deha',
+          emaZScore: 1.8,
+          peakZScore: 2.0,
+        ),
+    };
+
+    final dailyPlayState = DailyPlayState(
+      records: {
+        for (final type in GameType.values)
+          '${type.id}|$todayKey': DailyPlayRecord(
+            gameType: type,
+            dateId: todayKey,
+            score: 1850,
+            durationMs: 20000,
+            completedAt: activeDate,
+          ),
+      },
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: HomeBrainHeroCard(
+                userIQ: 128,
+                statsMap: statsMap,
+                dailyPlayState: dailyPlayState,
+                activeDateKey: todayKey,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.pump(const Duration(milliseconds: 1200));
+
+    expect(find.text('GÜNLÜK 6/6'), findsOneWidget);
+    expect(find.text('Karne'), findsNothing);
+    expect(find.text('Analiz ▾'), findsOneWidget);
+    expect(find.text('Paylaş'), findsOneWidget);
+  });
 }
 
